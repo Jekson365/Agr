@@ -27,6 +27,15 @@ export const Colors = {
   },
 };
 
+export const Brand = {
+  green: '#2E7D5B',
+  greenMuted: '#EAF4EE',
+  dark: '#1F2A24',
+  border: '#E1E4E0',
+  muted: '#8A938C',
+  background: '#FFFFFF',
+};
+
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */

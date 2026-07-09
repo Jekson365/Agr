@@ -41,3 +41,11 @@ app-example
 # generated native folders
 /ios
 /android
+
+# .NET
+server/bin/
+server/obj/
+
+# runtime-uploaded images (not source)
+server/wwwroot/uploads/*/*
+!server/wwwroot/uploads/*/.gitkeep

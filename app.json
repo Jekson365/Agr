@@ -38,7 +38,15 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos to add a picture for your farmland."
+        }
+      ],
+      "expo-secure-store",
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
