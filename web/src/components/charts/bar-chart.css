@@ -1,0 +1,171 @@
+.bar-chart {
+  --bar-chart-gutter: 56px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.bar-chart-plot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+/* Gridlines + y-axis labels, layered behind the bars and spanning the full plot. */
+.bar-chart-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Zero-height rows so space-between lands them exactly on 0/25/50/75/100%; the
+   line and label are centred on that y position via align-items. */
+.bar-chart-grid-row {
+  display: flex;
+  align-items: center;
+  height: 0;
+}
+
+.bar-chart-grid-label {
+  /* Padded (not gapped) so the line still begins exactly at the gutter width,
+     keeping the bar track aligned to the gridlines. */
+  flex: 0 0 var(--bar-chart-gutter);
+  padding-right: 8px;
+  text-align: right;
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-chart-grid-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* Reserves the y-axis gutter in normal flow so the bar track lines up with the
+   gridlines (which start after their label). */
+.bar-chart-gutter-spacer {
+  flex: 0 0 var(--bar-chart-gutter);
+}
+
+.bar-chart-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.bar-chart-bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px; /* 2px surface gap between adjacent bars */
+}
+
+.bar-chart-col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  cursor: default;
+}
+
+.bar-chart-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0; /* rounded data-end, anchored to the baseline */
+  background: var(--color-green);
+  transition: opacity 0.12s ease, filter 0.12s ease;
+}
+
+.bar-chart-col.clickable {
+  cursor: pointer;
+}
+
+.bar-chart-col.clickable:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Bring the hovered/selected bar forward by receding the rest. */
+.bar-chart-track.has-hover .bar-chart-col:not(.hovered) .bar-chart-bar,
+.bar-chart-track.has-selection .bar-chart-col:not(.selected):not(.hovered) .bar-chart-bar {
+  opacity: 0.4;
+}
+
+.bar-chart-col.hovered .bar-chart-bar {
+  filter: brightness(1.06);
+}
+
+/* The selected bar reads as "pressed" — kept full opacity with a darker fill. */
+.bar-chart-col.selected .bar-chart-bar {
+  opacity: 1;
+  filter: brightness(0.9);
+}
+
+.bar-chart-tooltip {
+  position: absolute;
+  transform: translate(-50%, -8px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 20px var(--color-shadow-strong);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.bar-chart-tooltip-label {
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+}
+
+.bar-chart-tooltip-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.bar-chart-xaxis {
+  display: flex;
+  gap: 0;
+}
+
+.bar-chart-xlabels {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: 2px;
+}
+
+.bar-chart-xlabel {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-chart-xlabel.hovered {
+  color: var(--color-dark);
+  font-weight: 600;
+}

@@ -20,7 +20,7 @@ import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { getFarms } from '@/services/farm-service';
 import { createHarvest, updateHarvest } from '@/services/harvest-service';
-import { getLandPlot, getLandPlots } from '@/services/land-plot-service';
+import { getLandPlots } from '@/services/land-plot-service';
 import type { Farm } from '@/types/farm';
 import type { Harvest, HarvestStatus } from '@/types/harvest';
 import type { LandPlot } from '@/types/land-plot';
@@ -41,6 +41,7 @@ export function HarvestFormModal({ visible, editingHarvest, onClose, onSaved }: 
 
   const [titleInput, setTitleInput] = useState('');
   const [date, setDate] = useState<string | null>(null);
+  const [expectedHarvestDate, setExpectedHarvestDate] = useState<string | null>(null);
   const [status, setStatus] = useState<HarvestStatus>('Planning');
 
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -63,6 +64,7 @@ export function HarvestFormModal({ visible, editingHarvest, onClose, onSaved }: 
     if (!visible) return;
     setTitleInput(editingHarvest?.title ?? '');
     setDate(editingHarvest?.date ?? null);
+    setExpectedHarvestDate(editingHarvest?.expectedHarvestDate ?? null);
     setStatus(editingHarvest?.status ?? 'Planning');
     setFormError(null);
     setFarmPickerOpen(false);
@@ -77,21 +79,16 @@ export function HarvestFormModal({ visible, editingHarvest, onClose, onSaved }: 
       const farmList = await getFarms();
       setFarms(farmList);
 
-      let farmId = farmList[0]?.id ?? null;
-      let presetPlotId: number | null = null;
-
-      if (editingHarvest?.landPlotId != null) {
-        try {
-          const plot = await getLandPlot(editingHarvest.landPlotId);
-          farmId = plot.farmId;
-          presetPlotId = plot.id;
-        } catch {
-          // The plot no longer exists — fall back to the first farm below.
-        }
-      }
-
+      const farmId = editingHarvest?.farmId ?? farmList[0]?.id ?? null;
       setSelectedFarmId(farmId);
-      await loadPlots(farmId, presetPlotId);
+
+      // The plot picker only appears when editing, so only bother fetching plots then.
+      if (editingHarvest != null) {
+        await loadPlots(farmId, editingHarvest.landPlotId);
+      } else {
+        setPlots([]);
+        setSelectedPlotId(null);
+      }
     } catch {
       setFarms([]);
       setSelectedFarmId(null);
@@ -127,27 +124,49 @@ export function HarvestFormModal({ visible, editingHarvest, onClose, onSaved }: 
   function handleSelectFarm(farmId: number) {
     setSelectedFarmId(farmId);
     setFarmPickerOpen(false);
-    loadPlots(farmId);
+    if (isEditing) {
+      loadPlots(farmId);
+    }
   }
 
   const selectedFarm = farms.find((f) => f.id === selectedFarmId) ?? null;
   const selectedPlot = plots.find((p) => p.id === selectedPlotId) ?? null;
 
   const trimmedTitle = titleInput.trim();
-  const canSubmit = !!trimmedTitle && !!date && selectedPlotId != null && !saving;
+  const canSubmit = !!trimmedTitle && !!date && selectedFarmId != null && !saving;
 
   async function handleSubmit() {
-    if (!canSubmit || !date || selectedPlotId == null) return;
+    if (!canSubmit || !date || selectedFarmId == null) return;
 
     setSaving(true);
     setFormError(null);
     try {
       if (isEditing) {
-        const updated: Harvest = { ...editingHarvest, title: trimmedTitle, date, status, landPlotId: selectedPlotId };
+        const updated: Harvest = {
+          ...editingHarvest,
+          title: trimmedTitle,
+          date,
+          expectedHarvestDate,
+          status,
+          farmId: selectedFarmId,
+          landPlotId: selectedPlotId,
+        };
         await updateHarvest(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createHarvest({ title: trimmedTitle, date, status, landPlotId: selectedPlotId });
+        const created = await createHarvest({
+          title: trimmedTitle,
+          date,
+          expectedHarvestDate,
+          status,
+          farmId: selectedFarmId,
+          landPlotId: null,
+          equipmentCost: null,
+          workersCost: null,
+          fuelCost: null,
+          otherCost: null,
+          revenue: null,
+        });
         onSaved(created, true);
       }
       onClose();
@@ -177,19 +196,31 @@ export function HarvestFormModal({ visible, editingHarvest, onClose, onSaved }: 
           <Text style={styles.fieldLabel}>{t('harvest.date')}</Text>
           <DateField value={date} onChange={setDate} placeholder={t('harvest.datePlaceholder')} />
 
-          <Text style={styles.fieldLabel}>{t('harvest.statusLabel')}</Text>
-          <View style={styles.kindRow}>
-            {HARVEST_STATUSES.map((option) => (
-              <Pressable
-                key={option}
-                style={[styles.kindChip, status === option && styles.kindChipActive]}
-                onPress={() => setStatus(option)}>
-                <Text style={[styles.kindChipLabel, status === option && styles.kindChipLabelActive]}>
-                  {t(HARVEST_STATUS_LABEL_KEY[option])}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <Text style={styles.fieldLabel}>{t('harvest.expectedDate')}</Text>
+          <DateField
+            value={expectedHarvestDate}
+            onChange={setExpectedHarvestDate}
+            placeholder={t('harvest.datePlaceholder')}
+          />
+          <Text style={styles.emptyHint}>{t('harvest.expectedDateHint')}</Text>
+
+          {isEditing && (
+            <>
+              <Text style={styles.fieldLabel}>{t('harvest.statusLabel')}</Text>
+              <View style={styles.kindRow}>
+                {HARVEST_STATUSES.map((option) => (
+                  <Pressable
+                    key={option}
+                    style={[styles.kindChip, status === option && styles.kindChipActive]}
+                    onPress={() => setStatus(option)}>
+                    <Text style={[styles.kindChipLabel, status === option && styles.kindChipLabelActive]}>
+                      {t(HARVEST_STATUS_LABEL_KEY[option])}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
 
           <Text style={styles.fieldLabel}>{t('harvest.landLabel')}</Text>
           {farmsLoading ? (
@@ -223,42 +254,46 @@ export function HarvestFormModal({ visible, editingHarvest, onClose, onSaved }: 
             </>
           )}
 
-          <Text style={styles.fieldLabel}>{t('harvest.plotLabel')}</Text>
-          {plotsLoading ? (
-            <ActivityIndicator color={Brand.dark} style={{ marginBottom: 14 }} />
-          ) : !farmsLoading && farms.length > 0 && plots.length === 0 ? (
-            <Text style={styles.emptyHint}>{t('harvest.noPlots')}</Text>
-          ) : farms.length > 0 ? (
+          {isEditing && (
             <>
-              <Pressable
-                style={styles.selectField}
-                onPress={() => setPlotPickerOpen((prev) => !prev)}
-                accessibilityRole="button"
-                accessibilityLabel={t('harvest.plotLabel')}>
-                <Text style={styles.selectFieldText}>
-                  {selectedPlot ? plotLabel(selectedPlot, t) : t('harvest.plotPlaceholder')}
-                </Text>
-                <Ionicons name={plotPickerOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Brand.muted} />
-              </Pressable>
+              <Text style={styles.fieldLabel}>{t('harvest.plotLabel')}</Text>
+              {plotsLoading ? (
+                <ActivityIndicator color={Brand.dark} style={{ marginBottom: 14 }} />
+              ) : !farmsLoading && farms.length > 0 && plots.length === 0 ? (
+                <Text style={styles.emptyHint}>{t('harvest.noPlots')}</Text>
+              ) : farms.length > 0 ? (
+                <>
+                  <Pressable
+                    style={styles.selectField}
+                    onPress={() => setPlotPickerOpen((prev) => !prev)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('harvest.plotLabel')}>
+                    <Text style={styles.selectFieldText}>
+                      {selectedPlot ? plotLabel(selectedPlot, t) : t('harvest.plotPlaceholder')}
+                    </Text>
+                    <Ionicons name={plotPickerOpen ? 'chevron-up' : 'chevron-down'} size={18} color={Brand.muted} />
+                  </Pressable>
 
-              {plotPickerOpen && (
-                <View style={styles.selectOptionsList}>
-                  {plots.map((plot) => (
-                    <Pressable
-                      key={plot.id}
-                      style={[styles.selectOption, selectedPlotId === plot.id && styles.selectOptionActive]}
-                      onPress={() => {
-                        setSelectedPlotId(plot.id);
-                        setPlotPickerOpen(false);
-                      }}>
-                      <Text style={styles.selectOptionLabel}>{plotLabel(plot, t)}</Text>
-                      {selectedPlotId === plot.id && <Ionicons name="checkmark" size={18} color={Brand.green} />}
-                    </Pressable>
-                  ))}
-                </View>
-              )}
+                  {plotPickerOpen && (
+                    <View style={styles.selectOptionsList}>
+                      {plots.map((plot) => (
+                        <Pressable
+                          key={plot.id}
+                          style={[styles.selectOption, selectedPlotId === plot.id && styles.selectOptionActive]}
+                          onPress={() => {
+                            setSelectedPlotId(plot.id);
+                            setPlotPickerOpen(false);
+                          }}>
+                          <Text style={styles.selectOptionLabel}>{plotLabel(plot, t)}</Text>
+                          {selectedPlotId === plot.id && <Ionicons name="checkmark" size={18} color={Brand.green} />}
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                </>
+              ) : null}
             </>
-          ) : null}
+          )}
 
           {formError && <Text style={styles.errorText}>{formError}</Text>}
 

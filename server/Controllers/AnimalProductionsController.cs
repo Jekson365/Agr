@@ -13,14 +13,17 @@ public class AnimalProductionsController(IAnimalProductionRepository animalProdu
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AnimalProduction>>> Get([FromQuery] int? animalId, [FromQuery] int? livestockId)
     {
-        if (animalId is null == livestockId is null)
+        if (animalId is not null && livestockId is not null)
         {
-            return BadRequest("Provide exactly one of animalId or livestockId.");
+            return BadRequest("Provide at most one of animalId or livestockId.");
         }
 
+        // Neither provided: return every production record for the tenant (used by the report screen).
         var records = animalId is not null
             ? await animalProductionRepository.GetByAnimalAsync(animalId.Value)
-            : await animalProductionRepository.GetByLivestockAsync(livestockId!.Value);
+            : livestockId is not null
+                ? await animalProductionRepository.GetByLivestockAsync(livestockId.Value)
+                : await animalProductionRepository.GetAllAsync();
         return Ok(records);
     }
 
@@ -41,6 +44,22 @@ public class AnimalProductionsController(IAnimalProductionRepository animalProdu
 
         var created = await animalProductionRepository.AddAsync(production);
         return Ok(created);
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, AnimalProduction production)
+    {
+        if (id != production.Id)
+        {
+            return BadRequest();
+        }
+
+        // The client sends a plain date (Kind=Unspecified), but Npgsql requires Kind=Utc for
+        // "timestamp with time zone" columns.
+        production.CollectionDate = DateTime.SpecifyKind(production.CollectionDate, DateTimeKind.Utc);
+
+        var updated = await animalProductionRepository.UpdateAsync(production);
+        return updated ? NoContent() : NotFound();
     }
 
     [HttpDelete("{id:int}")]

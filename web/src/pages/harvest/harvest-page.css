@@ -1,0 +1,40 @@
+/* Larger, more readable text scoped to the harvest list (shared list/page classes live in
+   farm-crud.css, so overriding them here keeps other pages at their original sizes). */
+.harvest-page .page-title {
+  font-size: 1.5rem;
+}
+
+.harvest-page .list-card-title {
+  font-size: 1rem;
+}
+
+.harvest-page .list-card-subtitle {
+  font-size: 0.875rem;
+}
+
+.harvest-status-badge {
+  margin-top: 4px;
+}
+
+.harvest-overdue-badge,
+.harvest-due-badge {
+  display: inline-block;
+  margin-top: 4px;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.harvest-overdue-badge {
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+.harvest-due-badge {
+  background: var(--color-green-muted);
+  border: 1px solid var(--color-green-muted);
+  color: var(--color-green);
+}

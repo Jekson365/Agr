@@ -16,6 +16,8 @@ import { StockFormModal } from '@/components/farm/stock/stock-form-modal';
 import { styles } from '@/components/farm/shared/styles';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
+import { isAtLimit, isOverLimit } from '@/constants/plan-benefits';
+import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteFarm, getFarms } from '@/services/farm-service';
 import { deleteLivestock, getLivestock } from '@/services/livestock-service';
@@ -46,6 +48,7 @@ type Props = { type: Tab };
 
 export function FarmSection({ type }: Props) {
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [livestockLoading, setLivestockLoading] = useState(type === 'livestock');
@@ -117,8 +120,20 @@ export function FarmSection({ type }: Props) {
 
   function openAddForm() {
     if (type === 'stock') {
+      if (isAtLimit(user?.maxStockKinds, stock.length)) {
+        router.push({ pathname: '/farm/upgrade', params: { resource: t(TITLE_KEY[type]) } });
+        return;
+      }
       setEditingStock(null);
       setStockFormVisible(true);
+      return;
+    }
+    if (type === 'livestock' && isAtLimit(user?.maxLivestockKinds, livestock.length)) {
+      router.push({ pathname: '/farm/upgrade', params: { resource: t(TITLE_KEY[type]) } });
+      return;
+    }
+    if (type === 'land' && isAtLimit(user?.maxLand, land.length)) {
+      router.push({ pathname: '/farm/upgrade', params: { resource: t(TITLE_KEY[type]) } });
       return;
     }
     setEditingItem(null);
@@ -127,6 +142,18 @@ export function FarmSection({ type }: Props) {
 
   function openEditForm(id: number) {
     setActionSheetId(null);
+    // A downgrade can leave more rows than the plan allows; the server refuses edits until the
+    // count is back within the cap, so send the user to the packets instead of the form.
+    const overLimit =
+      type === 'land'
+        ? isOverLimit(user?.maxLand, land.length)
+        : type === 'stock'
+          ? isOverLimit(user?.maxStockKinds, stock.length)
+          : isOverLimit(user?.maxLivestockKinds, livestock.length);
+    if (overLimit) {
+      router.push({ pathname: '/farm/upgrade', params: { resource: t(TITLE_KEY[type]), over: '1' } });
+      return;
+    }
     if (type === 'stock') {
       const item = stock.find((i) => i.id === id);
       if (!item) return;
@@ -275,7 +302,7 @@ export function FarmSection({ type }: Props) {
         {content}
 
         <Pressable style={styles.addButton} onPress={openAddForm}>
-          <Ionicons name="add" size={18} color={Brand.dark} />
+          <Ionicons name="add" size={18} color="#FFFFFF" />
           <Text style={styles.addButtonLabel}>{t(ADD_LABEL_KEY[type])}</Text>
         </Pressable>
       </ScrollView>

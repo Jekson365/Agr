@@ -454,8 +454,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    borderWidth: 1,
-    borderColor: Brand.border,
+    backgroundColor: Brand.green,
     borderRadius: 14,
     paddingVertical: 14,
     marginTop: 4,
@@ -463,7 +462,7 @@ export const styles = StyleSheet.create({
   addButtonLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: Brand.dark,
+    color: '#FFFFFF',
   },
   overlay: {
     flex: 1,

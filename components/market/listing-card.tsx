@@ -9,6 +9,7 @@ import {
   listingItemLabel,
 } from '@/components/market/market-listing';
 import { Brand } from '@/constants/theme';
+import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import type { MarketListing } from '@/types/market-listing';
@@ -22,6 +23,7 @@ type Props = {
 
 export function ListingCard({ item, onPress, onMenu, onToggleStatus }: Props) {
   const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
   const typeLabel = listingItemLabel(item.category, item.itemType, t);
   const title = item.title.trim() || typeLabel;
   const fallbackImage = listingImage(item.category, item.itemType);
@@ -70,7 +72,7 @@ export function ListingCard({ item, onPress, onMenu, onToggleStatus }: Props) {
             {title}
           </Text>
           <Text style={local.price}>
-            ${item.price}
+            {formatPrice(item.price)}
             {item.priceUnit ? ` / ${item.priceUnit}` : ''}
           </Text>
           {item.location ? (
@@ -83,13 +85,18 @@ export function ListingCard({ item, onPress, onMenu, onToggleStatus }: Props) {
 
       {onToggleStatus && (
         <Pressable
-          style={[local.statusBadge, isCompleted && local.statusBadgeCompleted]}
+          style={local.soldBadge}
           onPress={onToggleStatus}
-          accessibilityRole="button"
+          hitSlop={6}
+          accessibilityRole="checkbox"
+          accessibilityState={{ checked: isCompleted }}
           accessibilityLabel={isCompleted ? t('market.markActive') : t('market.markCompleted')}>
-          <Text style={[local.statusBadgeText, isCompleted && local.statusBadgeTextCompleted]}>
-            {isCompleted ? t('market.statusCompleted') : t('market.statusActive')}
-          </Text>
+          <Ionicons
+            name={isCompleted ? 'checkbox' : 'square-outline'}
+            size={16}
+            color={isCompleted ? Brand.green : Brand.muted}
+          />
+          <Text style={[local.soldBadgeText, isCompleted && local.soldBadgeTextChecked]}>{t('market.sold')}</Text>
         </Pressable>
       )}
 
@@ -109,10 +116,13 @@ const local = StyleSheet.create({
     color: Brand.green,
     marginBottom: 2,
   },
-  statusBadge: {
+  soldBadge: {
     position: 'absolute',
     top: 12,
     left: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     borderWidth: 1,
     borderColor: Brand.border,
     borderRadius: 20,
@@ -120,16 +130,12 @@ const local = StyleSheet.create({
     paddingVertical: 4,
     backgroundColor: 'rgba(255,255,255,0.85)',
   },
-  statusBadgeCompleted: {
-    backgroundColor: Brand.greenMuted,
-    borderColor: Brand.greenMuted,
-  },
-  statusBadgeText: {
+  soldBadgeText: {
     fontSize: 11,
     fontWeight: '600',
     color: Brand.muted,
   },
-  statusBadgeTextCompleted: {
+  soldBadgeTextChecked: {
     color: Brand.green,
   },
   photoCountBadge: {

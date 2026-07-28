@@ -5,7 +5,15 @@ namespace Server.Repositories.Interfaces;
 public interface ITreeStockMovementRepository
 {
     Task<IEnumerable<TreeStockMovement>> GetByTreeStockAsync(int treeStockId);
+    Task<TreeStockMovement?> GetByIdAsync(int id);
     Task<TreeStockMovement> AddAsync(TreeStockMovement movement);
+
+    /// <summary>
+    /// Removes a single movement by id. The caller is responsible for reversing its effect on
+    /// the tree stock's amount (see <see cref="ITreeStockRepository.AdjustAmountRawAsync"/>) so
+    /// the remaining history still explains the balance.
+    /// </summary>
+    Task<bool> DeleteAsync(int id);
 
     /// <summary>
     /// Updates the movement linked to <paramref name="harvestItemId"/> in place (rather than

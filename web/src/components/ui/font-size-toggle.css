@@ -1,0 +1,38 @@
+.font-size-toggle {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.font-size-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 28px;
+  padding: 0 8px;
+  border: none;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  /* Deliberately fixed in px: the control that changes text size shouldn't resize itself. */
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.font-size-btn-small {
+  font-size: 11px;
+  border-right: 1px solid var(--color-border);
+}
+
+.font-size-btn:hover:not(:disabled) {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.font-size-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

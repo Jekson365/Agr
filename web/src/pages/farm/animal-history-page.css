@@ -1,0 +1,27 @@
+.history-hero-image {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--color-green-muted);
+  object-fit: cover;
+  display: block;
+}
+
+.history-hero-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--color-green-muted);
+}
+
+.animal-history-sidebar {
+  flex: 1 1 0%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.animal-history-wide-column {
+  flex: 2 1 0%;
+}

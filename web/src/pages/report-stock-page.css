@@ -1,0 +1,266 @@
+/* Headline counts. Deliberately counts, not summed quantities: products are measured in
+   different units (kg, litres, boxes), so a cross-product quantity total would be meaningless.
+   Quantities live in the per-product rows, where the unit is known. */
+.stock-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.stock-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+.stock-summary-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stock-summary-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.stock-summary-value.green {
+  color: var(--color-green);
+}
+
+.stock-summary-value.red {
+  color: var(--color-danger);
+}
+
+.stock-summary-value.small {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* One line per product. */
+.stock-rows {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-surface);
+  margin-bottom: 20px;
+}
+
+.stock-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 2fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(110px, 1fr) minmax(70px, 0.6fr);
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  min-height: 46px;
+  border-top: 1px solid var(--color-border);
+}
+
+.stock-group:first-child .stock-row {
+  border-top: none;
+}
+
+/* The product row is a button so the whole line toggles its movements. */
+.stock-row-button {
+  width: 100%;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stock-row-button.open {
+  background: var(--color-green-muted);
+}
+
+.stock-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--color-muted);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.stock-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* Individual movements, revealed under their product. */
+.stock-movements {
+  padding: 4px 16px 10px 52px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.stock-movement {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(90px, 0.8fr) minmax(120px, 1.2fr) minmax(90px, 0.7fr);
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+  font-size: 0.75rem;
+}
+
+.stock-movement + .stock-movement {
+  border-top: 1px solid var(--color-border);
+}
+
+.stock-movement-head {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.stock-movement-delta-head {
+  text-align: right;
+}
+
+.stock-movement-date {
+  color: var(--color-dark);
+}
+
+.stock-movement-source {
+  color: var(--color-muted);
+}
+
+/* The harvest a movement came from — long titles ellipsise rather than push the amount out. */
+.stock-movement-harvest {
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-movement-delta {
+  text-align: right;
+  font-weight: 700;
+  color: var(--color-green);
+  white-space: nowrap;
+}
+
+.stock-movement-delta.negative {
+  color: var(--color-danger);
+}
+
+.stock-row:not(.stock-row-head):hover {
+  background: var(--color-green-muted);
+}
+
+.stock-row-head {
+  background: var(--color-green-muted);
+  min-height: 36px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.stock-row-head .num {
+  text-align: right;
+}
+
+.stock-cell {
+  min-width: 0;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stock-cell.num {
+  text-align: right;
+}
+
+.stock-cell.muted {
+  color: var(--color-muted);
+}
+
+.stock-cell.product {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stock-cell.product img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.stock-product-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.stock-kind-tag {
+  flex-shrink: 0;
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.stock-kind-tag.tree {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.stock-cell.inflow {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.stock-cell.outflow {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.stock-cell.net {
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.stock-cell.net.negative {
+  color: var(--color-danger);
+}
+
+.stock-unit {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+@media (max-width: 900px) {
+  .stock-rows {
+    overflow-x: auto;
+  }
+
+  .stock-row {
+    min-width: 760px;
+  }
+
+  .stock-movements {
+    min-width: 760px;
+  }
+}

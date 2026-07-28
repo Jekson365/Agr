@@ -18,6 +18,11 @@ public class TreeStockMovement
     /// new one.
     /// </summary>
     public int? HarvestResultId { get; set; }
+
+    /// <summary>The marketplace listing this sale came from — see
+    /// <see cref="StockMovement.MarketListingId"/>.</summary>
+    public int? MarketListingId { get; set; }
+
     public decimal Delta { get; set; }
     public StockMovementSource Source { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

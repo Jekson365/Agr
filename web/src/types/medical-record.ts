@@ -1,0 +1,47 @@
+export type MedicalRecord = {
+  id: number;
+  stockId: number;
+  visitDate: string;
+  recordType: string;
+  diagnosis: string | null;
+  symptoms: string | null;
+  treatment: string | null;
+  medication: string | null;
+  dosage: string | null;
+  route: string | null;
+  durationDays: number | null;
+  veterinarianId: number | null;
+  clinicName: string | null;
+  temperature: number | null;
+  weight: number | null;
+  heartRate: number | null;
+  respiratoryRate: number | null;
+  followUpDate: string | null;
+  cost: number | null;
+  outcome: string | null;
+  notes: string | null;
+  createdAt: string;
+};
+
+export type MedicalRecordInput = {
+  stockId: number;
+  visitDate: string;
+  recordType: string;
+  diagnosis: string | null;
+  symptoms: string | null;
+  treatment: string | null;
+  medication: string | null;
+  dosage: string | null;
+  route: string | null;
+  durationDays: number | null;
+  veterinarianId: number | null;
+  clinicName: string | null;
+  temperature: number | null;
+  weight: number | null;
+  heartRate: number | null;
+  respiratoryRate: number | null;
+  followUpDate: string | null;
+  cost: number | null;
+  outcome: string | null;
+  notes: string | null;
+};

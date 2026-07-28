@@ -4,7 +4,8 @@ namespace Server.Repositories.Interfaces;
 
 public interface IHarvestRepository
 {
-    Task<IEnumerable<Harvest>> GetAllAsync();
+    /// <summary>Every harvest, or just those of one kind when <paramref name="kind"/> is given.</summary>
+    Task<IEnumerable<Harvest>> GetAllAsync(HarvestKind? kind = null);
     Task<Harvest?> GetByIdAsync(int id);
     Task<Harvest> AddAsync(Harvest harvest);
     Task<bool> UpdateAsync(Harvest harvest);

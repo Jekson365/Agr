@@ -24,6 +24,11 @@ public class MarketListingRepository(MasterDbContext context) : IMarketListingRe
         {
             query = query.Where(l => l.SellerId == sellerId);
         }
+        else
+        {
+            // Public buy/rent browsing never shows listings the seller has marked sold/completed.
+            query = query.Where(l => l.Status == ListingStatus.Active);
+        }
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim().ToLower();
@@ -90,6 +95,25 @@ public class MarketListingRepository(MasterDbContext context) : IMarketListingRe
         existing.ImagePaths = listing.ImagePaths;
         existing.Status = listing.Status;
         // SellerId, SellerName, and CreatedAt are fixed once created.
+
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> RestoreAfterSaleAsync(int id, decimal quantity)
+    {
+        var existing = await context.MarketListings.FindAsync(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        // A listing with no quantity was never reduced — completing it was the whole change.
+        if (existing.Quantity is not null)
+        {
+            existing.Quantity += quantity;
+        }
+        existing.Status = ListingStatus.Active;
 
         await context.SaveChangesAsync();
         return true;

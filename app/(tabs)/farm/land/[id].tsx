@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ConfirmDeleteModal } from '@/components/farm/shared/confirm-delete-modal';
@@ -29,6 +29,7 @@ export default function LandDetailScreen() {
   const [plots, setPlots] = useState<LandPlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [formVisible, setFormVisible] = useState(false);
   const [editingPlot, setEditingPlot] = useState<LandPlot | null>(null);
@@ -39,8 +40,8 @@ export default function LandDetailScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [farmId]);
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       const [item, list] = await Promise.all([getFarm(farmId), getLandPlots(farmId)]);
@@ -49,8 +50,14 @@ export default function LandDetailScreen() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
   }
 
   function openAdd() {
@@ -97,7 +104,9 @@ export default function LandDetailScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -105,7 +114,7 @@ export default function LandDetailScreen() {
         ) : error ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('landPlot.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
@@ -171,7 +180,7 @@ export default function LandDetailScreen() {
             )}
 
             <Pressable style={styles.addButton} onPress={openAdd}>
-              <Ionicons name="add" size={18} color={Brand.dark} />
+              <Ionicons name="add" size={18} color="#FFFFFF" />
               <Text style={styles.addButtonLabel}>{t('landPlot.add')}</Text>
             </Pressable>
           </>

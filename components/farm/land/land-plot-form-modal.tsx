@@ -108,8 +108,8 @@ export function LandPlotFormModal({ visible, farmId, editingPlot, onClose, onSav
         onSaved(created, true);
       }
       onClose();
-    } catch {
-      setFormError(t('farm.saveError'));
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);
     }

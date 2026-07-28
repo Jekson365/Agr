@@ -1,0 +1,326 @@
+.calendar-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-layout {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 24px;
+}
+
+.calendar-events-panel {
+  flex: 0 0 30%;
+  min-width: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.calendar-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.calendar-month-nav-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--color-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.calendar-month-nav-button:hover {
+  background: var(--color-green-muted);
+}
+
+.calendar-month-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.calendar-weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.calendar-weekday-label {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  padding-bottom: 4px;
+}
+
+.calendar-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.calendar-day-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background: none;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  border-left: 1px solid var(--color-border);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.calendar-day-cell:nth-child(7n + 1) {
+  border-left: none;
+}
+
+.calendar-day-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  color: var(--color-dark);
+}
+
+.calendar-day-cell.muted .calendar-day-circle {
+  color: var(--color-muted);
+}
+
+.calendar-day-circle.today {
+  border: 1px solid var(--color-green);
+}
+
+.calendar-day-circle.marked-event {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  font-weight: 700;
+  box-shadow: 0 0 0 3px var(--color-green-muted);
+}
+
+.calendar-day-circle.marked-harvest {
+  background: var(--color-amber-soft);
+}
+
+.calendar-day-circle.selected {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  font-weight: 700;
+}
+
+.calendar-day-circle.selected.marked-event {
+  box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 5px var(--color-green);
+}
+
+.calendar-day-dots {
+  position: absolute;
+  bottom: 4px;
+  display: flex;
+  gap: 4px;
+}
+
+.calendar-day-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-surface);
+}
+
+.calendar-day-dot.event {
+  background: var(--color-green);
+  box-shadow: 0 0 4px 1px rgba(46, 125, 91, 0.6);
+}
+
+.calendar-day-dot.event.selected {
+  background: var(--color-surface);
+  border-color: var(--color-green);
+  box-shadow: none;
+}
+
+.calendar-day-dot.harvest {
+  background: var(--color-amber);
+  box-shadow: 0 0 4px 1px rgba(217, 119, 6, 0.6);
+}
+
+.calendar-day-dot.harvest.selected {
+  background: var(--color-surface);
+  border-color: var(--color-amber);
+  box-shadow: none;
+}
+
+.calendar-events-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: 12px;
+}
+
+.calendar-event-title-field {
+  margin-bottom: 10px;
+}
+
+.calendar-harvests-list {
+  margin-bottom: 14px;
+}
+
+.calendar-harvest-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.calendar-harvest-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--color-amber);
+  flex-shrink: 1;
+}
+
+.calendar-harvest-row-text {
+  font-size: 0.875rem;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-event-form-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.calendar-event-form-row .field {
+  flex: 1;
+}
+
+.calendar-event-add-button {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  border: none;
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-event-add-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.calendar-event-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.calendar-event-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.calendar-event-row-time {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-green);
+  flex-shrink: 0;
+}
+
+.calendar-event-row-text {
+  font-size: 0.875rem;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendar-event-remove {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: 0.8125rem;
+}
+
+.calendar-event-remove:hover {
+  color: var(--color-danger);
+}
+
+/* An overdue harvest takes the danger marker in place of the normal harvest amber. */
+.calendar-day-dot.overdue {
+  background: var(--color-danger);
+  box-shadow: 0 0 4px 1px rgba(220, 38, 38, 0.6);
+}
+
+.calendar-day-dot.overdue.selected {
+  background: var(--color-surface);
+  border-color: var(--color-danger);
+  box-shadow: none;
+}
+
+/* Marks a row as the harvest's expected pick date rather than its record date. */
+.calendar-harvest-tag {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.calendar-harvest-tag.overdue {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}

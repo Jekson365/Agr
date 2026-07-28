@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { styles } from '@/components/farm/shared/styles';
+import { formatLocalizedIsoDate, type DateLanguage } from '@/components/ui/date-utils';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import {
@@ -32,7 +33,7 @@ type Props = {
  * "add new record" button that opens a small form to log another weight.
  */
 export function StockHistoryView({ stockId }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [records, setRecords] = useState<StockHistory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,7 +142,7 @@ export function StockHistoryView({ stockId }: Props) {
       ) : (
         newestFirst.map(({ record, decreased }) => (
           <View key={record.id} style={[styles.historyRow, decreased ? styles.historyRowDown : styles.historyRowUp]}>
-            <Text style={styles.historyRowDate}>{formatDateTime(record.createdAt)}</Text>
+            <Text style={styles.historyRowDate}>{formatDateTime(record.createdAt, language)}</Text>
             <View style={styles.historyRowRight}>
               <Text
                 style={[
@@ -165,7 +166,7 @@ export function StockHistoryView({ stockId }: Props) {
       {error ? <Text style={styles.errorText}>{t('history.loadError')}</Text> : null}
 
       <Pressable style={styles.addButton} onPress={openAdd}>
-        <Ionicons name="add" size={18} color={Brand.dark} />
+        <Ionicons name="add" size={18} color="#FFFFFF" />
         <Text style={styles.addButtonLabel}>{t('history.addRecord')}</Text>
       </Pressable>
 
@@ -212,8 +213,8 @@ export function StockHistoryView({ stockId }: Props) {
   );
 }
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string, language: DateLanguage): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  return `${formatLocalizedIsoDate(iso, language)} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }

@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { formatAge } from '@/components/farm/livestock/age';
@@ -28,6 +28,7 @@ export default function LivestockDetailScreen() {
   const [details, setDetails] = useState<LivestockDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [formVisible, setFormVisible] = useState(false);
   const [editingDetail, setEditingDetail] = useState<LivestockDetail | null>(null);
@@ -52,8 +53,8 @@ export default function LivestockDetailScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [livestockId]);
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       const [item, list] = await Promise.all([getLivestockItem(livestockId), getLivestockDetails(livestockId)]);
@@ -62,8 +63,14 @@ export default function LivestockDetailScreen() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
   }
 
   function openAdd() {
@@ -110,7 +117,9 @@ export default function LivestockDetailScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -118,7 +127,7 @@ export default function LivestockDetailScreen() {
         ) : error ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('livestockDetail.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
@@ -197,7 +206,7 @@ export default function LivestockDetailScreen() {
             )}
 
             <Pressable style={styles.addButton} onPress={openAdd}>
-              <Ionicons name="add" size={18} color={Brand.dark} />
+              <Ionicons name="add" size={18} color="#FFFFFF" />
               <Text style={styles.addButtonLabel}>{t('livestockDetail.add')}</Text>
             </Pressable>
           </>

@@ -17,4 +17,12 @@ public class HarvestItem
     public int? TreeStockId { get; set; }
 
     public decimal Amount { get; set; }
+
+    /// <summary>
+    /// The unit <see cref="Amount"/> is planned in — a <see cref="StockUnit"/> or
+    /// <see cref="TreeStockUnit"/> name, held as a plain string since either catalog can supply it.
+    /// A plan may use a different unit than the good is stocked in, so it is stored per row rather
+    /// than read off the target. Left blank by a client, it falls back to the target's own unit.
+    /// </summary>
+    public string Unit { get; set; } = string.Empty;
 }

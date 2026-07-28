@@ -8,6 +8,7 @@ import { type Tab } from '@/components/farm/livestock/livestock';
 import { styles } from '@/components/farm/shared/styles';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 
 const SECTIONS: {
@@ -51,6 +52,9 @@ const SECTIONS: {
 
 export default function FarmScreen() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+
+  const sections = user?.plan === 'Free' ? SECTIONS.filter((s) => s.key !== 'equipment') : SECTIONS;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -71,7 +75,7 @@ export default function FarmScreen() {
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.tabBoxGrid}>
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <Pressable
               key={section.key}
               style={styles.tabBox}

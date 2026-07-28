@@ -22,5 +22,10 @@ public class StockMovementReportRow
     public string Unit { get; set; } = string.Empty;
     public decimal Delta { get; set; }
     public StockMovementSource Source { get; set; }
+
+    /// <summary>The harvest this movement came from, for rows with
+    /// <see cref="StockMovementSource.Harvest"/>; null for manual edits and market sales.</summary>
+    public string? HarvestTitle { get; set; }
+
     public DateTime CreatedAt { get; set; }
 }

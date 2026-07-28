@@ -1,0 +1,205 @@
+.page-help {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 90; /* below modals (100) so open dialogs cover the mascot */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none; /* the gap between bubble and mascot stays click-through */
+}
+
+.page-help-btn {
+  pointer-events: auto;
+  position: relative;
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.18s ease;
+  animation: page-help-float 4s ease-in-out infinite;
+}
+
+/* Attention badge that pops above the mascot's head every 10s so the user
+   notices the guide is here. Suppressed while the guide bubble is open. */
+.page-help-hint {
+  position: absolute;
+  top: -4px;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  border: 2px solid var(--color-surface);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 10px var(--color-shadow-strong);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px) scale(0.4);
+  animation: page-help-hint-pop 10s ease-in-out infinite;
+}
+
+.page-help:hover .page-help-hint,
+.page-help:focus-within .page-help-hint,
+.page-help[data-open='true'] .page-help-hint {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes page-help-hint-pop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.4);
+  }
+  3% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px) scale(1.15);
+  }
+  6% {
+    transform: translateX(-50%) translateY(-6px) scale(1);
+  }
+  13% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px) scale(1);
+  }
+  17% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px) scale(0.4);
+  }
+}
+
+.page-help-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.page-help-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.page-help-btn:focus-visible {
+  outline: 3px solid var(--color-green);
+  outline-offset: 3px;
+}
+
+.page-help-mascot {
+  display: block;
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  user-select: none;
+  filter: drop-shadow(0 6px 14px var(--color-shadow-strong));
+}
+
+@keyframes page-help-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+.page-help-bubble {
+  pointer-events: auto;
+  position: relative;
+  width: 300px;
+  max-width: min(300px, calc(100vw - 48px));
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 12px 28px var(--color-shadow-strong);
+  transform-origin: bottom right;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px) scale(0.96);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  /* Small delay before hiding so moving the pointer from the mascot up into
+     the bubble (across the gap) doesn't flicker it closed. */
+  transition-delay: 0.12s;
+}
+
+.page-help:hover .page-help-bubble,
+.page-help:focus-within .page-help-bubble,
+.page-help[data-open='true'] .page-help-bubble {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+  transition-delay: 0s;
+}
+
+/* Little tail pointing down toward the mascot. */
+.page-help-bubble::after {
+  content: '';
+  position: absolute;
+  right: 32px;
+  bottom: -8px;
+  width: 16px;
+  height: 16px;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  transform: rotate(45deg);
+}
+
+.page-help-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-green);
+  margin-bottom: 6px;
+}
+
+.page-help-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-dark);
+  white-space: pre-line;
+}
+
+@media (max-width: 640px) {
+  .page-help {
+    right: 6px;
+    bottom: 6px;
+  }
+
+  .page-help-mascot {
+    width: 150px;
+    height: 150px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-help-btn {
+    animation: none;
+  }
+
+  /* No pulsing for reduced-motion users, but keep the badge visible so the
+     affordance that "there is something here" is still communicated. */
+  .page-help-hint {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%) translateY(-6px) scale(1);
+  }
+
+  .page-help:hover .page-help-hint,
+  .page-help:focus-within .page-help-hint,
+  .page-help[data-open='true'] .page-help-hint {
+    opacity: 0;
+  }
+}

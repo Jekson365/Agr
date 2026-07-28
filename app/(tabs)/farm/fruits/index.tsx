@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/farm/shared/action-sheet';
@@ -12,16 +12,20 @@ import { TreeStockCard } from '@/components/farm/tree-stock/tree-stock-card';
 import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form-modal';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
+import { isAtLimit, isOverLimit } from '@/constants/plan-benefits';
+import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteTreeStock, getTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 
 export default function FruitsScreen() {
   const { t } = useLanguage();
+  const { user } = useAuth();
 
   const [treeStock, setTreeStock] = useState<TreeStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [actionSheetId, setActionSheetId] = useState<number | null>(null);
   const [formVisible, setFormVisible] = useState(false);
@@ -34,25 +38,41 @@ export default function FruitsScreen() {
     }, [])
   );
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       setTreeStock(await getTreeStock());
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
   }
 
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
+  }
+
   function openAdd() {
+    if (isAtLimit(user?.maxFruitKinds, treeStock.length)) {
+      router.push({ pathname: '/farm/upgrade', params: { resource: t('farm.fruits') } });
+      return;
+    }
     setEditingStock(null);
     setFormVisible(true);
   }
 
   function openEdit(id: number) {
     setActionSheetId(null);
+    // A downgrade can leave more kinds than the plan allows; the server refuses edits until the
+    // count is back within the cap, so send the user to the packets instead of the form.
+    if (isOverLimit(user?.maxFruitKinds, treeStock.length)) {
+      router.push({ pathname: '/farm/upgrade', params: { resource: t('farm.fruits'), over: '1' } });
+      return;
+    }
     const item = treeStock.find((i) => i.id === id);
     if (!item) return;
     setEditingStock(item);
@@ -100,7 +120,9 @@ export default function FruitsScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -108,7 +130,7 @@ export default function FruitsScreen() {
         ) : error ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('treeStock.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
@@ -133,7 +155,7 @@ export default function FruitsScreen() {
         )}
 
         <Pressable style={styles.addButton} onPress={openAdd}>
-          <Ionicons name="add" size={18} color={Brand.dark} />
+          <Ionicons name="add" size={18} color="#FFFFFF" />
           <Text style={styles.addButtonLabel}>{t('treeStock.add')}</Text>
         </Pressable>
       </ScrollView>

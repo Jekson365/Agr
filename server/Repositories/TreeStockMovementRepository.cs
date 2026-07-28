@@ -16,11 +16,29 @@ public class TreeStockMovementRepository(AppDbContext context) : ITreeStockMovem
             .ToListAsync();
     }
 
+    public async Task<TreeStockMovement?> GetByIdAsync(int id)
+    {
+        return await context.TreeStockMovements.FindAsync(id);
+    }
+
     public async Task<TreeStockMovement> AddAsync(TreeStockMovement movement)
     {
         context.TreeStockMovements.Add(movement);
         await context.SaveChangesAsync();
         return movement;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var existing = await context.TreeStockMovements.FindAsync(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        context.TreeStockMovements.Remove(existing);
+        await context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> UpdateForHarvestItemAsync(int harvestItemId, int treeStockId, decimal delta)

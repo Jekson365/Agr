@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { EquipmentCard } from '@/components/farm/equipment/equipment-card';
@@ -20,6 +20,7 @@ export default function EquipmentScreen() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [formVisible, setFormVisible] = useState(false);
   const [editingItem, setEditingItem] = useState<Equipment | null>(null);
@@ -31,16 +32,22 @@ export default function EquipmentScreen() {
     }, [])
   );
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       setEquipment(await getEquipment());
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
   }
 
   function openAdd() {
@@ -94,7 +101,9 @@ export default function EquipmentScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -102,7 +111,7 @@ export default function EquipmentScreen() {
         ) : error ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('equipment.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
@@ -119,7 +128,7 @@ export default function EquipmentScreen() {
         )}
 
         <Pressable style={styles.addButton} onPress={openAdd}>
-          <Ionicons name="add" size={18} color={Brand.dark} />
+          <Ionicons name="add" size={18} color="#FFFFFF" />
           <Text style={styles.addButtonLabel}>{t('equipment.add')}</Text>
         </Pressable>
       </ScrollView>

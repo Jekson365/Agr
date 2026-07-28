@@ -81,13 +81,37 @@ public class TreeStockRepository(AppDbContext context, ITreeStockMovementReposit
         await context.SaveChangesAsync();
     }
 
-    private Task LogMovementAsync(int treeStockId, decimal delta)
+    public async Task<TreeStock?> AdjustAmountAsync(int treeStockId, decimal delta, StockMovementSource source, int? marketListingId = null)
+    {
+        var existing = await context.TreeStocks.FindAsync(treeStockId);
+        if (existing is null)
+        {
+            return null;
+        }
+
+        existing.Amount += delta;
+        await context.SaveChangesAsync();
+
+        if (delta != 0)
+        {
+            await LogMovementAsync(treeStockId, delta, source, marketListingId);
+        }
+
+        return existing;
+    }
+
+    private Task LogMovementAsync(
+        int treeStockId,
+        decimal delta,
+        StockMovementSource source = StockMovementSource.Manual,
+        int? marketListingId = null)
     {
         return treeStockMovementRepository.AddAsync(new TreeStockMovement
         {
             TreeStockId = treeStockId,
             Delta = delta,
-            Source = StockMovementSource.Manual,
+            Source = source,
+            MarketListingId = marketListingId,
         });
     }
 }

@@ -1,18 +1,84 @@
-import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router, Tabs } from 'expo-router';
-import React from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { router, Tabs, usePathname } from 'expo-router';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HapticTab } from '@/components/haptic-tab';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
+import { useLogout } from '@/hooks/use-logout';
 
-function AddTabButton({ onPress }: { onPress?: BottomTabBarButtonProps['onPress'] }) {
+const DANGER = '#DC2626';
+
+function FloatingNavButtons() {
+  const pathname = usePathname();
+  const insets = useSafeAreaInsets();
+  const { confirmSignOut, signingOut } = useLogout();
+  const isProfile = pathname === '/profile';
+  const isScanner = pathname === '/scanner';
+
+  function haptic() {
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }
+
+  function goHome() {
+    haptic();
+    router.push('/');
+  }
+
+  function handleRightPress() {
+    haptic();
+    if (isProfile) {
+      confirmSignOut();
+    } else {
+      router.push('/profile');
+    }
+  }
+
+  function goScanHistory() {
+    haptic();
+    router.push('/scanner-history');
+  }
+
   return (
-    <Pressable style={styles.addButton} onPress={onPress} accessibilityLabel="Quick add" accessibilityRole="button">
-      <Ionicons name="add" size={28} color="#FFFFFF" />
-    </Pressable>
+    <View style={[styles.floatingRow, { bottom: insets.bottom + 16 }]} pointerEvents="box-none">
+      <Pressable
+        style={[styles.circleButton, !isProfile && styles.circleButtonActive]}
+        onPress={goHome}
+        accessibilityRole="button"
+        accessibilityLabel="Home">
+        <Ionicons name={isProfile ? 'home-outline' : 'home'} size={26} color={!isProfile ? '#FFFFFF' : Brand.dark} />
+      </Pressable>
+      <View style={styles.floatingRightGroup}>
+        {isScanner && (
+          <Pressable
+            style={styles.circleButton}
+            onPress={goScanHistory}
+            accessibilityRole="button"
+            accessibilityLabel="Scan history">
+            <Ionicons name="time-outline" size={26} color={Brand.dark} />
+          </Pressable>
+        )}
+        <Pressable
+          style={[styles.circleButton, isProfile && styles.circleButtonDanger]}
+          onPress={handleRightPress}
+          disabled={isProfile && signingOut}
+          accessibilityRole="button"
+          accessibilityLabel={isProfile ? 'Log out' : 'Profile'}>
+          {isProfile && signingOut ? (
+            <ActivityIndicator color={DANGER} />
+          ) : (
+            <Ionicons
+              name={isProfile ? 'log-out-outline' : 'person-outline'}
+              size={26}
+              color={isProfile ? DANGER : Brand.dark}
+            />
+          )}
+        </Pressable>
+      </View>
+    </View>
   );
 }
 
@@ -20,88 +86,68 @@ export default function TabLayout() {
   const { t } = useLanguage();
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarActiveTintColor: Brand.green,
-        tabBarInactiveTintColor: Brand.muted,
-        tabBarStyle: styles.tabBar,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: t('tabs.home'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="home-outline" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="market"
-        options={{
-          title: t('tabs.market'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="storefront-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="add"
-        options={{
-          title: '',
-          tabBarButton: (props) => <AddTabButton onPress={props.onPress} />,
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            router.push('/modal');
-          },
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: t('tabs.chat'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: t('tabs.profile'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
-        }}
-      />
-      {/* Reachable via quick-access tiles, not bottom-bar buttons — href: null keeps them part of
-          the Tabs navigator (so the tab bar stays visible) without showing a tab icon. */}
-      <Tabs.Screen name="farm" options={{ href: null }} />
-      <Tabs.Screen name="harvest" options={{ href: null }} />
-      <Tabs.Screen name="workers" options={{ href: null }} />
-      <Tabs.Screen name="scanner" options={{ href: null }} />
-      <Tabs.Screen name="calendar" options={{ href: null }} />
-    </Tabs>
+    <View style={styles.root}>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+        }}>
+        <Tabs.Screen name="index" options={{ title: t('tabs.home') }} />
+        <Tabs.Screen name="profile" options={{ title: t('tabs.profile') }} />
+        {/* Reachable via quick-access tiles, not bottom-bar buttons — href: null keeps them part of
+            the Tabs navigator (so routing/back behavior stays consistent) without a tab bar entry. */}
+        <Tabs.Screen name="market" options={{ href: null }} />
+        <Tabs.Screen name="chat" options={{ href: null }} />
+        <Tabs.Screen name="farm" options={{ href: null }} />
+        <Tabs.Screen name="harvest" options={{ href: null }} />
+        <Tabs.Screen name="report" options={{ href: null }} />
+        <Tabs.Screen name="workers" options={{ href: null }} />
+        <Tabs.Screen name="scanner" options={{ href: null }} />
+        <Tabs.Screen name="calendar" options={{ href: null }} />
+        <Tabs.Screen name="profile-location" options={{ href: null }} />
+        <Tabs.Screen name="scanner-history" options={{ href: null }} />
+      </Tabs>
+      <FloatingNavButtons />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  tabBar: {
-    height: 62,
-    paddingTop: 6,
+  root: {
+    flex: 1,
   },
-  addButton: {
-    alignSelf: 'center',
-    top: -18,
+  floatingRow: {
+    position: 'absolute',
+    left: 24,
+    right: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  floatingRightGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  circleButton: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Brand.dark,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Brand.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  circleButtonActive: {
+    backgroundColor: Brand.green,
+    borderColor: Brand.green,
+  },
+  circleButtonDanger: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
   },
 });

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Server.Data;
+using Server.Integrations.OpenAi;
 using Server.Integrations.WeatherApi;
 using Server.Repositories;
 using Server.Repositories.Interfaces;
@@ -41,10 +42,32 @@ builder.Services.AddScoped<ILivestockRepository, LivestockRepository>();
 builder.Services.AddScoped<ILivestockDetailRepository, LivestockDetailRepository>();
 builder.Services.AddScoped<ILandPlotRepository, LandPlotRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
+builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
+builder.Services.AddScoped<IGreenhouseRepository, GreenhouseRepository>();
+builder.Services.AddScoped<IGreenhouseHarvestRepository, GreenhouseHarvestRepository>();
+builder.Services.AddScoped<IGreenhouseStockRepository, GreenhouseStockRepository>();
+builder.Services.AddScoped<IGreenhouseSeedRepository, GreenhouseSeedRepository>();
+builder.Services.AddScoped<IGreenhouseHarvestItemRepository, GreenhouseHarvestItemRepository>();
+builder.Services.AddScoped<IGreenhouseHarvestSeedRepository, GreenhouseHarvestSeedRepository>();
+builder.Services.AddScoped<IGreenhouseHarvestResultRepository, GreenhouseHarvestResultRepository>();
+builder.Services.AddScoped<IGreenhouseHarvestChemicalRepository, GreenhouseHarvestChemicalRepository>();
+builder.Services.AddScoped<IGreenhouseFloorRepository, GreenhouseFloorRepository>();
+builder.Services.AddScoped<IGreenhouseSectionRepository, GreenhouseSectionRepository>();
+builder.Services.AddScoped<IGreenhouseSectionStockRepository, GreenhouseSectionStockRepository>();
 builder.Services.AddScoped<IStockKindRepository, StockKindRepository>();
+builder.Services.AddScoped<ILivestockKindRepository, LivestockKindRepository>();
 builder.Services.AddScoped<IFruitKindRepository, FruitKindRepository>();
 builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
+builder.Services.AddScoped<ISeedMovementRepository, SeedMovementRepository>();
+builder.Services.AddScoped<ISeedRepository, SeedRepository>();
+builder.Services.AddScoped<IHarvestSeedRepository, HarvestSeedRepository>();
+builder.Services.AddScoped<IHarvestTreeRepository, HarvestTreeRepository>();
+builder.Services.AddScoped<IHarvestChemicalRepository, HarvestChemicalRepository>();
+builder.Services.AddScoped<ITreeProductRepository, TreeProductRepository>();
+builder.Services.AddScoped<ITreeProductMovementRepository, TreeProductMovementRepository>();
+builder.Services.AddScoped<IHarvestProductRepository, HarvestProductRepository>();
 builder.Services.AddScoped<IStockHistoryRepository, StockHistoryRepository>();
+builder.Services.AddScoped<IStockPhotoRepository, StockPhotoRepository>();
 builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 builder.Services.AddScoped<IStockFeedRepository, StockFeedRepository>();
 builder.Services.AddScoped<ITreeStockRepository, TreeStockRepository>();
@@ -52,14 +75,17 @@ builder.Services.AddScoped<ITreeStockMovementRepository, TreeStockMovementReposi
 builder.Services.AddScoped<IHarvestRepository, HarvestRepository>();
 builder.Services.AddScoped<IHarvestItemRepository, HarvestItemRepository>();
 builder.Services.AddScoped<IHarvestResultRepository, HarvestResultRepository>();
-builder.Services.AddScoped<IProductionTypeRepository, ProductionTypeRepository>();
+builder.Services.AddScoped<IProductionTypeRepository, ProductionTypeRepository>();  
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 builder.Services.AddScoped<IAnimalProductionRepository, AnimalProductionRepository>();
+builder.Services.AddScoped<IProductionMovementRepository, ProductionMovementRepository>();
 builder.Services.AddScoped<ICalendarEventRepository, CalendarEventRepository>();
+builder.Services.AddScoped<IPlantScanHistoryRepository, PlantScanHistoryRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IMarketListingRepository, MarketListingRepository>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
-builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
 
 // WeatherAPI.com integration (see server/Integrations/WeatherApi). Registered as a typed
 // HttpClient so the API key stays server-side and calls are pooled/retried by the factory.
@@ -69,6 +95,16 @@ builder.Services.AddHttpClient<IWeatherClient, WeatherApiClient>((sp, client) =>
     var weatherOptions = sp.GetRequiredService<IOptions<WeatherApiOptions>>().Value;
     client.BaseAddress = new Uri(weatherOptions.BaseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
+});
+
+// OpenAI integration (see server/Integrations/OpenAi). Registered as a typed HttpClient so the
+// API key stays server-side and calls are pooled/retried by the factory.
+builder.Services.Configure<OpenAiOptions>(builder.Configuration.GetSection(OpenAiOptions.SectionName));
+builder.Services.AddHttpClient<IPlantScanClient, OpenAiPlantScanClient>((sp, client) =>
+{
+    var openAiOptions = sp.GetRequiredService<IOptions<OpenAiOptions>>().Value;
+    client.BaseAddress = new Uri(openAiOptions.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(60);
 });
 
 var jwt = builder.Configuration.GetSection("Jwt");
@@ -119,7 +155,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("ExpoClient");
 
 app.UseStaticFiles();
-
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -17,4 +17,11 @@ public interface ITreeStockRepository
     /// (see <see cref="Server.Repositories.HarvestResultRepository"/>).
     /// </summary>
     Task AdjustAmountRawAsync(int treeStockId, decimal delta);
+
+    /// <summary>
+    /// Adds <paramref name="delta"/> to the tree stock's amount and logs a
+    /// <see cref="TreeStockMovement"/> tagged with <paramref name="source"/>. Returns the updated
+    /// tree stock, or null if no row with that id exists.
+    /// </summary>
+    Task<TreeStock?> AdjustAmountAsync(int treeStockId, decimal delta, StockMovementSource source, int? marketListingId = null);
 }

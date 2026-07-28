@@ -12,6 +12,11 @@ public class FruitKindRepository(AppDbContext context) : IFruitKindRepository
         return await context.FruitKinds.AsNoTracking().OrderBy(k => k.Id).ToListAsync();
     }
 
+    public async Task<bool> ExistsByNameAsync(string name)
+    {
+        return await context.FruitKinds.AnyAsync(k => k.Name.ToLower() == name.ToLower());
+    }
+
     public async Task<FruitKind> AddAsync(string name)
     {
         var existing = await context.FruitKinds.FirstOrDefaultAsync(k => k.Name.ToLower() == name.ToLower());
@@ -24,5 +29,26 @@ public class FruitKindRepository(AppDbContext context) : IFruitKindRepository
         context.FruitKinds.Add(kind);
         await context.SaveChangesAsync();
         return kind;
+    }
+
+    public async Task<DeleteFruitKindResult> DeleteAsync(int id)
+    {
+        var existing = await context.FruitKinds.FindAsync(id);
+        if (existing is null)
+        {
+            return DeleteFruitKindResult.NotFound;
+        }
+
+        // Tree stock references the kind by name; deleting one that is still in use would leave
+        // rows with a type no picker can show. Report it as a conflict the client can explain.
+        var inUse = await context.TreeStocks.AnyAsync(s => s.Type.ToLower() == existing.Name.ToLower());
+        if (inUse)
+        {
+            return DeleteFruitKindResult.InUse;
+        }
+
+        context.FruitKinds.Remove(existing);
+        await context.SaveChangesAsync();
+        return DeleteFruitKindResult.Deleted;
     }
 }

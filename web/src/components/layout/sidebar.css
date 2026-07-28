@@ -1,0 +1,231 @@
+.sidebar {
+  /* Always expanded — never collapses to icons, at any window width. rem so it widens and
+     narrows along with the user's font size setting. */
+  width: 16.5rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 12px;
+  border-right: 1px solid var(--color-border);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 4px 12px 24px;
+}
+
+.sidebar-brand-icon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-title {
+  font-size: 1.3125rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  color: var(--color-green);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The group's own row: its link (or name) plus the control that folds the group away. */
+.sidebar-group-header {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sidebar-group-header > .sidebar-link {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-caret {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.sidebar-caret:hover {
+  background: var(--color-green-muted);
+  color: var(--color-dark);
+}
+
+.sidebar-caret-icon {
+  transition: transform 0.15s ease;
+}
+
+/* Pointing at the group it would open, rather than down into children that aren't there. */
+.sidebar-caret-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* A header that toggles its group instead of navigating: a button, styled as the link row it
+   replaces, with the caret pushed out to the end. */
+.sidebar-link-toggle {
+  width: 100%;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-link-toggle .sidebar-caret-icon {
+  margin-left: auto;
+}
+
+/* Folded away, but the page you're on is inside it — the lit child link can't say so itself. */
+.sidebar-group.has-active-child > .sidebar-group-header .sidebar-link {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-caret-icon {
+    transition: none;
+  }
+}
+
+.sidebar-subnav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 4px 20px;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-border);
+}
+
+.sidebar-subnav .sidebar-link-icon {
+  width: 25px;
+  height: 25px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  color: var(--color-muted);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.sidebar-link svg {
+  flex-shrink: 0;
+}
+
+.sidebar-link-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+  background: var(--color-green-muted);
+  color: var(--color-dark);
+}
+
+.sidebar-link.active {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  min-width: 0;
+}
+
+.sidebar-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sidebar-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sidebar-user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-signout {
+  width: 100%;
+  height: 44px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: #b0280f;
+  border-color: #b0280f;
+  color: #fff;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sidebar-signout:hover {
+  background: #97220d;
+  border-color: #97220d;
+}

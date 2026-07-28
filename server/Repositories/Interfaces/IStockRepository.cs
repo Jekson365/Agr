@@ -18,4 +18,11 @@ public interface IStockRepository
     /// per harvest item and updates it in place instead of logging a new one each edit).
     /// </summary>
     Task AdjustAmountRawAsync(int stockId, decimal delta);
+
+    /// <summary>
+    /// Adds <paramref name="delta"/> to the stock's amount and logs a <see cref="StockMovement"/>
+    /// tagged with <paramref name="source"/>. Returns the updated stock, or null if no stock with
+    /// that id exists.
+    /// </summary>
+    Task<Stock?> AdjustAmountAsync(int stockId, decimal delta, StockMovementSource source, int? marketListingId = null);
 }

@@ -20,6 +20,10 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .Property(u => u.Role)
             .HasConversion<string>();
 
+        modelBuilder.Entity<User>()
+            .Property(u => u.Plan)
+            .HasConversion<string>();
+
         // Email is the login identifier, unique across all users.
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)

@@ -1,0 +1,563 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+  background: var(--color-green-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-green);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.back-link:hover {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.back-link:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
+}
+
+.page-title {
+  font-size: 1.375rem;
+  margin: 0;
+  color: var(--color-dark);
+}
+
+.add-button {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 20px;
+  border: none;
+  background: var(--color-dark);
+  color: var(--color-on-accent);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Outline counterpart to .add-button, for a secondary action beside it in a page header. */
+.secondary-button {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  color: var(--color-green);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.secondary-button:hover {
+  background: var(--color-green-muted);
+  border-color: var(--color-green);
+}
+
+.state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: var(--color-muted);
+}
+
+.retry-button {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.empty-state {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+.limit-hint {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* Icon-based list card: Livestock, Stock, Fruits */
+.list-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+/* Fixed two-column variant; collapses to one column when cards would get too cramped. */
+.list-card-grid.two-col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.list-card-grid.two-col .list-card {
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .list-card-grid.two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.list-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1 1 calc(33.333% - 8px);
+  min-width: 400px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.list-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px var(--color-shadow);
+}
+
+.list-card-production-link {
+  flex-shrink: 0;
+  height: 34px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  border-radius: 17px;
+  border: 1px solid var(--color-green);
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.list-card-production-link:hover {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+/* The filled primary of the button pair on a livestock card. */
+.list-card-production-link.primary {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.list-card-production-link.primary:hover {
+  filter: brightness(1.08);
+}
+
+/* A filled red action — the fruit-product Sell button. */
+.list-card-production-link.danger {
+  border-color: var(--color-danger);
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+}
+
+.list-card-production-link.danger:hover {
+  filter: brightness(1.08);
+}
+
+.list-card-production-link.danger:disabled {
+  opacity: 0.5;
+  cursor: default;
+  filter: none;
+}
+
+.list-card-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.list-card-icon-wrap {
+  width: 144px;
+  height: 144px;
+  border-radius: 12px;
+  background: var(--color-green-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.list-card-icon-wrap img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.list-card-info {
+  min-width: 0;
+}
+
+.list-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-card-subtitle {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+/* Image-based card grid: Equipment */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  max-width: 720px;
+  margin-bottom: 20px;
+}
+
+.product-card {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.product-image {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  display: block;
+  background: var(--color-green-muted);
+}
+
+.product-info {
+  padding: 10px 12px;
+}
+
+/* Land card */
+.land-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  max-width: 720px;
+  margin-bottom: 20px;
+}
+
+.land-card {
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.land-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+}
+
+.land-card-body {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  min-width: 0;
+}
+
+.land-card-image {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+  display: block;
+  background: var(--color-green-muted);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Balance table */
+/* Four side-by-side balances: plant stock, livestock production, fruit trees, greenhouse. */
+.balance-columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 20px;
+}
+
+.balance-column {
+  min-width: 0;
+}
+
+.balance-column-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  margin: 0 0 10px;
+}
+
+/* Four columns need more room than three did before the tables start wrapping their figures. */
+@media (max-width: 1400px) {
+  .balance-columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .balance-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .balance-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.balance-table {
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--color-surface);
+}
+
+.balance-table th,
+.balance-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+}
+
+.balance-table th {
+  background: var(--color-green-muted);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.balance-table td {
+  color: var(--color-dark);
+}
+
+.balance-table tr:last-child td {
+  border-bottom: none;
+}
+
+.balance-amount {
+  text-align: right;
+  font-weight: 700;
+}
+
+/* How much of the product is listed on the marketplace — secondary to the balance beside it. */
+.balance-listed {
+  font-weight: 600;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+/* Form */
+.form-title {
+  margin: 0 0 18px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* The seed block on the stock form: the seed's own amount and unit, always part of adding stock. */
+.stock-seed-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-sunken);
+}
+
+/* Stands in for the kind picker when editing a seed: the crop is fixed at that point, so it reads
+   as a value rather than offering a choice. */
+.seed-crop-readout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.seed-crop-readout img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.form-delete {
+  width: 100%;
+  height: 40px;
+  margin-top: 16px;
+  border: 1px solid var(--color-danger-border);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Quantity hint turns red once the entered amount exceeds what's available. */
+.listing-quantity-over {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Lists a balance row's holding on the marketplace. */
+.balance-sell {
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--color-danger-border);
+  border-radius: 13px;
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.balance-sell:hover {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--color-on-accent);
+}
+
+/* Confirmation shown once a balance row has been listed on the marketplace. */
+.sell-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+
+.sell-success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+  border-radius: 50%;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.sell-success .modal-body-text {
+  margin: 0;
+}
+
+.sell-success-link {
+  display: inline-flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 18px;
+  text-decoration: none;
+}
+
+.balance-sell-cell {
+  width: 1%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.balance-sell:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-muted);
+}

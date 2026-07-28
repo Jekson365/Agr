@@ -17,6 +17,12 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         return await context.Livestock.FindAsync(id);
     }
 
+    public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
+    {
+        return await context.Livestock
+            .AnyAsync(l => l.Name.ToLower() == name.ToLower() && (excludeId == null || l.Id != excludeId));
+    }
+
     public async Task<Livestock> AddAsync(Livestock livestock)
     {
         context.Livestock.Add(livestock);

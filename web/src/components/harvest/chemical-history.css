@@ -1,0 +1,76 @@
+.chemical-history {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  gap: 10px;
+}
+
+.chemical-history-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.chemical-history-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.chemical-history-total {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-green);
+  white-space: nowrap;
+}
+
+.chemical-history-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.chemical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chemical-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 8px 8px 8px 12px;
+  background: var(--color-surface);
+}
+
+.chemical-row-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chemical-row-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chemical-row-meta {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+/* The add button sits flush at the bottom of the panel. */
+.chemical-history > .add-button {
+  margin-top: 0;
+}

@@ -1,3 +1,4 @@
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Models;
@@ -14,7 +15,8 @@ public class AuthController(
     ITokenService tokenService,
     ITenantDatabaseProvisioner tenantDatabaseProvisioner,
     ICurrentTenant currentTenant,
-    IFileStorageService fileStorageService) : ControllerBase
+    IFileStorageService fileStorageService,
+    IConfiguration configuration) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost("register")]
@@ -49,7 +51,11 @@ public class AuthController(
     {
         var user = await userRepository.GetByEmailAsync(Normalize(request.Email));
 
-        if (user is null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        // An empty PasswordHash means the account was created via Google sign-in and has no
+        // password — reject before BCrypt.Verify (which would throw on an empty hash).
+        if (user is null
+            || string.IsNullOrEmpty(user.PasswordHash)
+            || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
         {
             return Unauthorized("Invalid email or password.");
         }
@@ -57,6 +63,65 @@ public class AuthController(
         // Bring the user's database up to date on every login. This is idempotent — it creates
         // the database if it is somehow missing and applies any migrations added since last time.
         await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+
+        return Ok(BuildResponse(user));
+    }
+
+    [AllowAnonymous]
+    [HttpPost("google")]
+    public async Task<ActionResult<AuthResponse>> Google(GoogleAuthRequest request)
+    {
+        var clientId = configuration["Google:ClientId"];
+        if (string.IsNullOrWhiteSpace(clientId))
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, "Google sign-in is not configured.");
+        }
+
+        GoogleJsonWebSignature.Payload payload;
+        try
+        {
+            // Verifies the token's signature against Google's public keys and checks that it was
+            // issued for this app (audience) and has not expired.
+            payload = await GoogleJsonWebSignature.ValidateAsync(request.IdToken, new GoogleJsonWebSignature.ValidationSettings
+            {
+                Audience = [clientId],
+            });
+        }
+        catch (InvalidJwtException)
+        {
+            return Unauthorized("Invalid Google token.");
+        }
+
+        if (!payload.EmailVerified || string.IsNullOrWhiteSpace(payload.Email))
+        {
+            return Unauthorized("Google account email is not verified.");
+        }
+
+        var email = Normalize(payload.Email);
+        var user = await userRepository.GetByEmailAsync(email);
+
+        if (user is null)
+        {
+            // First Google sign-in for this email → register a new account (mirrors Register).
+            // No password is set; the account authenticates through Google only.
+            user = new User
+            {
+                Name = string.IsNullOrWhiteSpace(payload.Name) ? email : payload.Name.Trim(),
+                Email = email,
+                PasswordHash = string.Empty,
+                Role = UserRole.Owner,
+            };
+            await userRepository.AddAsync(user);
+
+            // Provision the new user's own database (farm_user_{id}) and apply its migrations.
+            await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+        }
+        else
+        {
+            // Existing account (registered with a password or a previous Google sign-in): just
+            // bring its database up to date, exactly like Login does.
+            await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+        }
 
         return Ok(BuildResponse(user));
     }
@@ -73,14 +138,35 @@ public class AuthController(
     [HttpPut("profile")]
     public async Task<ActionResult<UserDto>> UpdateProfile(UpdateProfileRequest request)
     {
+        var existing = await userRepository.GetByIdAsync(currentTenant.UserId);
+        var oldImagePath = existing?.ImagePath;
+
         var user = await userRepository.UpdateProfileAsync(currentTenant.UserId, request);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (oldImagePath != request.ImagePath)
+        {
+            await fileStorageService.DeleteImageAsync(oldImagePath);
+        }
+
+        return Ok(UserDto.From(user));
+    }
+
+    [Authorize]
+    [HttpPut("profile/location")]
+    public async Task<ActionResult<UserDto>> UpdateLocation(UpdateLocationRequest request)
+    {
+        var user = await userRepository.UpdateLocationAsync(currentTenant.UserId, request);
         return user is null ? NotFound() : Ok(UserDto.From(user));
     }
 
     [Authorize]
     [HttpPost("profile/upload-image")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(10_000_000)]
+    [RequestSizeLimit(25_000_000)]
     public async Task<IActionResult> UploadProfileImage(IFormFile file)
     {
         if (file is null || file.Length == 0)

@@ -1,0 +1,74 @@
+.feed-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.feed-loading {
+  color: var(--color-muted);
+}
+
+.feed-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 60px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.feed-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: var(--color-green-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.feed-item:hover .feed-icon-wrap {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.feed-icon-wrap img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.feed-add .feed-icon-wrap {
+  background: transparent;
+  border: 1.5px dashed var(--color-border);
+}
+
+.feed-amount {
+  max-width: 100%;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feed-delete {
+  color: var(--color-danger);
+}
+
+/* The feed strip sits under a small heading on the group and animal pages. */
+.feed-section-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  margin: 0 0 8px;
+}

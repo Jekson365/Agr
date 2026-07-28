@@ -1,19 +1,39 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/farm/shared/action-sheet';
 import { ConfirmDeleteModal } from '@/components/farm/shared/confirm-delete-modal';
 import { styles } from '@/components/farm/shared/styles';
 import { HarvestCard } from '@/components/harvest/harvest-card';
+import { isOverdue } from '@/components/harvest/harvest-analysis';
 import { HarvestFormModal } from '@/components/harvest/harvest-form-modal';
+import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/components/harvest/status';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteHarvest, getHarvests } from '@/services/harvest-service';
-import type { Harvest } from '@/types/harvest';
+import type { Harvest, HarvestStatus } from '@/types/harvest';
+
+type SortOrder = 'dateDesc' | 'dateAsc' | 'titleAsc' | 'expectedAsc';
+
+const SORT_OPTIONS: { value: SortOrder; labelKey: string }[] = [
+  { value: 'dateDesc', labelKey: 'harvest.sortNewest' },
+  { value: 'dateAsc', labelKey: 'harvest.sortOldest' },
+  { value: 'titleAsc', labelKey: 'harvest.sortTitle' },
+  { value: 'expectedAsc', labelKey: 'harvest.sortExpected' },
+];
 
 export default function HarvestScreen() {
   const { t } = useLanguage();
@@ -21,6 +41,13 @@ export default function HarvestScreen() {
   const [harvests, setHarvests] = useState<Harvest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [search, setSearch] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<HarvestStatus | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('dateDesc');
+  const [overdueOnly, setOverdueOnly] = useState(false);
 
   const [actionSheetId, setActionSheetId] = useState<number | null>(null);
   const [formVisible, setFormVisible] = useState(false);
@@ -33,16 +60,22 @@ export default function HarvestScreen() {
     }, [])
   );
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       setHarvests(await getHarvests());
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
   }
 
   function openAdd() {
@@ -82,6 +115,27 @@ export default function HarvestScreen() {
     setHarvests((prev) => (isNew ? [harvest, ...prev] : prev.map((h) => (h.id === harvest.id ? harvest : h))));
   }
 
+  const overdueCount = harvests.filter((h) => isOverdue(h)).length;
+
+  const visibleHarvests = harvests
+    .filter((h) => (statusFilter ? h.status === statusFilter : true))
+    .filter((h) => (overdueOnly ? isOverdue(h) : true))
+    .filter((h) => {
+      const term = search.trim().toLowerCase();
+      return term ? h.title.toLowerCase().includes(term) : true;
+    })
+    .sort((a, b) => {
+      if (sortOrder === 'dateAsc') return a.date.localeCompare(b.date);
+      if (sortOrder === 'titleAsc') return a.title.localeCompare(b.title);
+      if (sortOrder === 'expectedAsc') {
+        // Harvests without an expected date sort last rather than jumping to the front.
+        if (a.expectedHarvestDate == null) return b.expectedHarvestDate == null ? 0 : 1;
+        if (b.expectedHarvestDate == null) return -1;
+        return a.expectedHarvestDate.localeCompare(b.expectedHarvestDate);
+      }
+      return b.date.localeCompare(a.date);
+    });
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.header}>
@@ -99,7 +153,73 @@ export default function HarvestScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={local.searchRow}>
+        <View style={local.searchField}>
+          <Ionicons name="search" size={18} color={Brand.muted} />
+          <TextInput
+            style={local.searchInput}
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t('harvest.searchPlaceholder')}
+            placeholderTextColor={Brand.muted}
+          />
+        </View>
+        <Pressable
+          style={[local.filterButton, filtersOpen && local.filterButtonActive]}
+          onPress={() => setFiltersOpen((prev) => !prev)}
+          accessibilityRole="button"
+          accessibilityLabel={t('harvest.filtersLabel')}>
+          <Ionicons name="options-outline" size={20} color={filtersOpen ? '#FFFFFF' : Brand.dark} />
+        </Pressable>
+      </View>
+
+      {filtersOpen && (
+        <>
+          <View style={local.filterRow}>
+            <Pressable
+              style={[styles.kindChip, statusFilter == null && styles.kindChipActive]}
+              onPress={() => setStatusFilter(null)}>
+              <Text style={[styles.kindChipLabel, statusFilter == null && styles.kindChipLabelActive]}>
+                {t('harvest.filterAll')}
+              </Text>
+            </Pressable>
+            {HARVEST_STATUSES.map((status) => (
+              <Pressable
+                key={status}
+                style={[styles.kindChip, statusFilter === status && styles.kindChipActive]}
+                onPress={() => setStatusFilter(status)}>
+                <Text style={[styles.kindChipLabel, statusFilter === status && styles.kindChipLabelActive]}>
+                  {t(HARVEST_STATUS_LABEL_KEY[status])}
+                </Text>
+              </Pressable>
+            ))}
+            <Pressable
+              style={[styles.kindChip, overdueOnly && styles.kindChipActive]}
+              onPress={() => setOverdueOnly((prev) => !prev)}>
+              <Text style={[styles.kindChipLabel, overdueOnly && styles.kindChipLabelActive]}>
+                {t('harvest.filterOverdue')}
+                {overdueCount > 0 ? ` (${overdueCount})` : ''}
+              </Text>
+            </Pressable>
+          </View>
+          <View style={local.filterRow}>
+            {SORT_OPTIONS.map((opt) => (
+              <Pressable
+                key={opt.value}
+                style={[styles.kindChip, sortOrder === opt.value && styles.kindChipActive]}
+                onPress={() => setSortOrder(opt.value)}>
+                <Text style={[styles.kindChipLabel, sortOrder === opt.value && styles.kindChipLabelActive]}>
+                  {t(opt.labelKey)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </>
+      )}
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -107,7 +227,7 @@ export default function HarvestScreen() {
         ) : error ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('harvest.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
@@ -115,8 +235,12 @@ export default function HarvestScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{t('harvest.empty')}</Text>
           </View>
+        ) : visibleHarvests.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>{t('harvest.noResults')}</Text>
+          </View>
         ) : (
-          harvests.map((item) => (
+          visibleHarvests.map((item) => (
             <HarvestCard
               key={item.id}
               item={item}
@@ -127,7 +251,7 @@ export default function HarvestScreen() {
         )}
 
         <Pressable style={styles.addButton} onPress={openAdd}>
-          <Ionicons name="add" size={18} color={Brand.dark} />
+          <Ionicons name="add" size={18} color="#FFFFFF" />
           <Text style={styles.addButtonLabel}>{t('harvest.add')}</Text>
         </Pressable>
       </ScrollView>
@@ -155,3 +279,49 @@ export default function HarvestScreen() {
     </SafeAreaView>
   );
 }
+
+const local = StyleSheet.create({
+  searchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  searchField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: Brand.border,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: Brand.dark,
+  },
+  filterButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Brand.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  filterButtonActive: {
+    backgroundColor: Brand.green,
+    borderColor: Brand.green,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+});

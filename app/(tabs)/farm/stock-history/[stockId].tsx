@@ -1,11 +1,13 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { STOCK_UNIT_LABEL_KEY } from '@/components/farm/stock/stock';
 import { styles } from '@/components/farm/shared/styles';
+import { STOCK_UNIT_LABEL_KEY } from '@/components/farm/stock/stock';
+import { StockPhotoHistoryView } from '@/components/farm/stock/stock-photo-history';
+import { formatLocalizedIsoDate, type DateLanguage } from '@/components/ui/date-utils';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
@@ -19,15 +21,20 @@ const SOURCE_LABEL_KEY: Record<StockMovementSource, string> = {
   Harvest: 'stockHistory.sourceHarvest',
 };
 
+type Tab = 'movements' | 'photos';
+
 export default function StockHistoryScreen() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const params = useLocalSearchParams<{ stockId: string; label?: string }>();
   const stockId = Number(params.stockId);
 
+  const [tab, setTab] = useState<Tab>('movements');
   const [stock, setStock] = useState<Stock | null>(null);
   const [movements, setMovements] = useState<StockMovement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [photosRefreshKey, setPhotosRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!stockId) return;
@@ -35,8 +42,8 @@ export default function StockHistoryScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stockId]);
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       const [item, list] = await Promise.all([getStockItem(stockId), getStockMovements(stockId)]);
@@ -45,7 +52,19 @@ export default function StockHistoryScreen() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    if (tab === 'photos') {
+      // StockPhotoHistoryView fetches its own data; remount it to refresh.
+      setPhotosRefreshKey((key) => key + 1);
+      setTimeout(() => setRefreshing(false), 400);
+    } else {
+      load({ silent: true });
     }
   }
 
@@ -70,64 +89,85 @@ export default function StockHistoryScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {loading ? (
-          <View style={styles.stateBox}>
-            <ActivityIndicator color={Brand.dark} />
-          </View>
-        ) : error ? (
-          <View style={styles.stateBox}>
-            <Text style={styles.errorText}>{t('stockHistory.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
-              <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <>
-            {stock ? (
-              <View style={styles.historySummary}>
-                <View>
-                  <Text style={styles.historyStatLabel}>{t('stockHistory.current')}</Text>
-                  <Text style={styles.historyStatValue}>
-                    {stock.amount} {unitLabel}
-                  </Text>
-                </View>
-              </View>
-            ) : null}
+      <View style={styles.tabRow}>
+        <Pressable style={styles.tabItem} onPress={() => setTab('movements')}>
+          <Text style={[styles.tabLabel, tab === 'movements' && styles.tabLabelActive]}>
+            {t('stockHistory.movementsTab')}
+          </Text>
+          {tab === 'movements' && <View style={styles.tabIndicator} />}
+        </Pressable>
+        <Pressable style={styles.tabItem} onPress={() => setTab('photos')}>
+          <Text style={[styles.tabLabel, tab === 'photos' && styles.tabLabelActive]}>
+            {t('stockHistory.photosTab')}
+          </Text>
+          {tab === 'photos' && <View style={styles.tabIndicator} />}
+        </Pressable>
+      </View>
 
-            {movements.length === 0 ? (
-              <View style={styles.emptyState}>
-                <Text style={styles.emptyStateText}>{t('stockHistory.empty')}</Text>
-              </View>
-            ) : (
-              newestFirst.map((movement) => (
-                <View
-                  key={movement.id}
-                  style={[styles.historyRow, movement.delta < 0 ? styles.historyRowDown : styles.historyRowUp]}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
+        {tab === 'movements' ? (
+          loading ? (
+            <View style={styles.stateBox}>
+              <ActivityIndicator color={Brand.dark} />
+            </View>
+          ) : error ? (
+            <View style={styles.stateBox}>
+              <Text style={styles.errorText}>{t('stockHistory.loadError')}</Text>
+              <Pressable style={styles.retryButton} onPress={() => load()}>
+                <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              {stock ? (
+                <View style={styles.historySummary}>
                   <View>
-                    <Text style={styles.historyRowDate}>{formatDateTime(movement.createdAt)}</Text>
-                    <Text style={styles.historyRowDate}>{t(SOURCE_LABEL_KEY[movement.source])}</Text>
+                    <Text style={styles.historyStatLabel}>{t('stockHistory.current')}</Text>
+                    <Text style={styles.historyStatValue}>
+                      {stock.amount} {unitLabel}
+                    </Text>
                   </View>
-                  <Text
-                    style={[
-                      styles.historyRowWeight,
-                      movement.delta < 0 ? styles.historyRowWeightDown : styles.historyRowWeightUp,
-                    ]}>
-                    {movement.delta >= 0 ? '+' : ''}
-                    {movement.delta} {unitLabel}
-                  </Text>
                 </View>
-              ))
-            )}
-          </>
+              ) : null}
+
+              {movements.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyStateText}>{t('stockHistory.empty')}</Text>
+                </View>
+              ) : (
+                newestFirst.map((movement) => (
+                  <View
+                    key={movement.id}
+                    style={[styles.historyRow, movement.delta < 0 ? styles.historyRowDown : styles.historyRowUp]}>
+                    <View>
+                      <Text style={styles.historyRowDate}>{formatDateTime(movement.createdAt, language)}</Text>
+                      <Text style={styles.historyRowDate}>{t(SOURCE_LABEL_KEY[movement.source])}</Text>
+                    </View>
+                    <Text
+                      style={[
+                        styles.historyRowWeight,
+                        movement.delta < 0 ? styles.historyRowWeightDown : styles.historyRowWeightUp,
+                      ]}>
+                      {movement.delta >= 0 ? '+' : ''}
+                      {movement.delta} {unitLabel}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </>
+          )
+        ) : (
+          <StockPhotoHistoryView key={photosRefreshKey} stockId={stockId} />
         )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function formatDateTime(iso: string): string {
+function formatDateTime(iso: string, language: DateLanguage): string {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
-  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  return `${formatLocalizedIsoDate(iso, language)} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 }

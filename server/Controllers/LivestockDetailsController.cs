@@ -11,6 +11,7 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class LivestockDetailsController(
     ILivestockDetailRepository livestockDetailRepository,
+    IAnimalProductionRepository animalProductionRepository,
     IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpGet]
@@ -41,20 +42,55 @@ public class LivestockDetailsController(
             return BadRequest();
         }
 
+        var existing = await livestockDetailRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+        var oldImagePath = existing.ImagePath;
+
         var updated = await livestockDetailRepository.UpdateAsync(detail);
-        return updated ? NoContent() : NotFound();
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        if (oldImagePath != detail.ImagePath)
+        {
+            await fileStorageService.DeleteImageAsync(oldImagePath);
+        }
+
+        return NoContent();
     }
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var existing = await livestockDetailRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        // Its production records cascade with it — see the matching guard in LivestockController.
+        if (await animalProductionRepository.ExistsForAnimalAsync(id))
+        {
+            return Conflict("This animal still has production records. Remove them first.");
+        }
+
         var deleted = await livestockDetailRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        await fileStorageService.DeleteImageAsync(existing.ImagePath);
+        return NoContent();
     }
 
     [HttpPost("upload-image")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(10_000_000)]
+    [RequestSizeLimit(25_000_000)]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
         if (file is null || file.Length == 0)

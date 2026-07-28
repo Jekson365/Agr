@@ -2,13 +2,17 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
+using Server.Services.Interfaces;
 
 namespace Server.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class StocksController(IStockRepository stockRepository) : ControllerBase
+public class StocksController(
+    IStockRepository stockRepository,
+    ISeedRepository seedRepository,
+    IPlanLimitService planLimitService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Stock>>> GetAll()
@@ -26,8 +30,79 @@ public class StocksController(IStockRepository stockRepository) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Stock>> Create(Stock stock)
     {
+        var invalid = Validate(stock.Type, stock.Amount);
+        if (invalid is not null)
+        {
+            return BadRequest(invalid);
+        }
+
+        try
+        {
+            var currentCount = (await stockRepository.GetAllAsync()).Count();
+            await planLimitService.EnsureCanAddStockAsync(currentCount);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return PlanLimitReached(ex.Message);
+        }
+
         var created = await stockRepository.AddAsync(stock);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
+
+    /// <summary>
+    /// Creates a stock and the seed for the same crop in one call. Greenhouse stock is added this
+    /// way: the seed isn't optional there, and a client that created the stock and then failed to
+    /// send the seed would leave the pair half-made.
+    /// </summary>
+    [HttpPost("with-seed")]
+    public async Task<ActionResult<StockWithSeedResponse>> CreateWithSeed(StockWithSeedRequest request)
+    {
+        var invalid = Validate(request.Type, request.Amount);
+        if (invalid is not null)
+        {
+            return BadRequest(invalid);
+        }
+        if (request.SeedAmount < 0)
+        {
+            return BadRequest("Seed amount cannot be negative.");
+        }
+        if (!Enum.IsDefined(request.Unit) || !Enum.IsDefined(request.SeedUnit))
+        {
+            return BadRequest("Unknown unit.");
+        }
+
+        try
+        {
+            var currentCount = (await stockRepository.GetAllAsync()).Count();
+            await planLimitService.EnsureCanAddStockAsync(currentCount);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return PlanLimitReached(ex.Message);
+        }
+
+        var type = request.Type.Trim();
+        var name = request.Name.Trim();
+
+        var stock = await stockRepository.AddAsync(new Stock
+        {
+            Type = type,
+            Name = name,
+            Amount = request.Amount,
+            Unit = request.Unit,
+        });
+
+        // Same crop and same label, so the seed and the produce it grows into read identically.
+        var seed = await seedRepository.AddAsync(new Seed
+        {
+            Type = type,
+            Name = name,
+            Amount = request.SeedAmount,
+            Unit = request.SeedUnit,
+        });
+
+        return Ok(new StockWithSeedResponse { Stock = stock, Seed = seed });
     }
 
     [HttpPut("{id:int}")]
@@ -38,8 +113,46 @@ public class StocksController(IStockRepository stockRepository) : ControllerBase
             return BadRequest();
         }
 
+        var invalid = Validate(stock.Type, stock.Amount);
+        if (invalid is not null)
+        {
+            return BadRequest(invalid);
+        }
+
+        try
+        {
+            var currentCount = (await stockRepository.GetAllAsync()).Count();
+            await planLimitService.EnsureStockWithinLimitAsync(currentCount);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return PlanLimitReached(ex.Message);
+        }
+
         var updated = await stockRepository.UpdateAsync(stock);
         return updated ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// 402 is the plan-limit signal the clients watch for: it lets them answer with the list of
+    /// available packets instead of just printing the message, which a plain 400 can't be told from
+    /// an ordinary validation failure.
+    /// </summary>
+    private ObjectResult PlanLimitReached(string message) =>
+        StatusCode(StatusCodes.Status402PaymentRequired, message);
+
+    /// <summary>Shared checks for creating or editing a stock. Returns the problem, or null.</summary>
+    private static string? Validate(string type, decimal amount)
+    {
+        if (string.IsNullOrWhiteSpace(type))
+        {
+            return "A stock needs a type.";
+        }
+        if (amount < 0)
+        {
+            return "Amount cannot be negative.";
+        }
+        return null;
     }
 
     [HttpDelete("{id:int}")]
@@ -47,5 +160,19 @@ public class StocksController(IStockRepository stockRepository) : ControllerBase
     {
         var deleted = await stockRepository.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
+    }
+
+    /// <summary>Records a marketplace sale: deducts the sold quantity and logs a movement
+    /// tagged <see cref="StockMovementSource.Market"/> (instead of a plain manual edit).</summary>
+    [HttpPost("{id:int}/sale")]
+    public async Task<ActionResult<Stock>> RecordSale(int id, StockSaleRequest request)
+    {
+        if (request.Quantity <= 0)
+        {
+            return BadRequest("Quantity must be positive.");
+        }
+
+        var updated = await stockRepository.AdjustAmountAsync(id, -request.Quantity, StockMovementSource.Market, request.MarketListingId);
+        return updated is null ? NotFound() : Ok(updated);
     }
 }

@@ -1,0 +1,607 @@
+.report-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.report-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Domain tabs below the title: crop / livestock / fruit. */
+.report-category-row {
+  margin: 0 0 16px;
+}
+
+/* Colour swatch beside the selected series' name in the cell-4 details header. */
+.report-series-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+/* --- Dashboard: 2×2 grid of report panels --- */
+.report-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  /* A chart's hover tooltip overflows its cell at the edges; clip that horizontally so it never
+     forces a page scrollbar. `clip` (not `hidden`) leaves the vertical axis visible, so tooltips
+     still rise above the bars and the stock dropdown still opens downward. */
+  overflow-x: clip;
+}
+
+.report-panel {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  padding: 16px;
+}
+
+/* Empty-for-now cells read as reserved space, not broken cards. */
+.report-panel-placeholder {
+  border-style: dashed;
+  background: transparent;
+}
+
+.report-panel-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.report-panel-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.report-panel-body {
+  flex: 1;
+  min-height: 0;
+  margin-top: 14px;
+}
+
+
+.report-panel-empty-msg {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+
+/* Cell 3 — selected-day harvest details. */
+.report-panel-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.report-panel-heading {
+  min-width: 0;
+}
+
+.report-details-close {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.report-details-close:hover {
+  background: var(--color-green-muted);
+  color: var(--color-dark);
+}
+
+.report-details-scroll {
+  overflow-y: auto;
+}
+
+.report-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+}
+
+.report-detail-card:hover {
+  border-color: var(--color-green);
+}
+
+.report-detail-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-detail-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.report-detail-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.report-detail-metric em {
+  font-style: normal;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.report-detail-metric.net-pos {
+  color: var(--color-green);
+}
+
+.report-detail-metric.net-neg {
+  color: var(--color-danger);
+}
+
+/* Planned / Seeded / Harvested summaries under the money metrics. */
+.report-detail-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.report-detail-spec {
+  display: flex;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+}
+
+.report-detail-spec em {
+  flex: 0 0 76px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.report-detail-spec span {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 10px;
+}
+
+.report-good {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.report-good-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* On narrow screens the four cells stack and the page scrolls instead of squeezing. */
+@media (max-width: 900px) {
+  .report-page {
+    height: auto;
+  }
+
+  .report-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .report-panel {
+    min-height: 280px;
+  }
+}
+
+.report-filter-panel {
+  margin-bottom: 16px;
+}
+
+.report-filter-section-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 12px 0 6px;
+}
+
+.report-year-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 12px;
+}
+
+.report-year-nav-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  color: var(--color-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.report-year-nav-button:hover {
+  background: var(--color-green-muted);
+}
+
+.report-year-text {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  min-width: 56px;
+  text-align: center;
+}
+
+.report-custom-range-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.report-column-search {
+  flex: 0 0 auto;
+  margin-bottom: 12px;
+}
+
+.report-column-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.report-total-card {
+  border: 1px solid var(--color-green);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: var(--color-green-muted);
+}
+
+.report-card {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: var(--color-surface);
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.report-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.report-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.report-card-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.report-card-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-count-badge {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-on-accent);
+  flex-shrink: 0;
+}
+
+.report-card-subtitle {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  margin: 2px 0 0;
+}
+
+.report-card-expenses,
+.report-card-value {
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+  margin: 2px 0 0;
+}
+
+.report-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  margin: 10px 0 6px;
+}
+
+.report-empty-hint {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.report-yield-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.report-yield-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-yield-amount {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  flex-shrink: 0;
+}
+
+/* Ledger tone on the totals card: sold deducts (red), what's left is the net (green). */
+.report-yield-amount.report-yield-sold {
+  color: var(--color-danger);
+}
+
+.report-yield-amount.report-yield-balance {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.report-quantity-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  margin-top: 8px;
+}
+
+/* Single-line production record row: icon, title, type, date, farm, quantity, value.
+   A modifier on .report-card so the harvest report's stacked cards are unaffected. */
+.report-card-inline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.report-card-inline:hover {
+  border-color: var(--color-green);
+}
+
+.report-inline-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: var(--color-green-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-inline-icon img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.report-inline-title {
+  flex: 1 1 140px;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .status-badge carries align-self/margin for the stacked cards; neutralise both so it sits
+   centred on this row. */
+.report-inline-badge {
+  align-self: center;
+  margin-top: 0;
+  flex-shrink: 0;
+}
+
+.report-inline-meta {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.report-inline-qty {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.report-inline-value {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-green);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 72px;
+  text-align: right;
+}
+
+/* Section header for one livestock group's production records. */
+.report-group {
+  margin-bottom: 18px;
+}
+
+.production-singles-toggle {
+  margin: 14px 0 4px;
+}
+
+.report-group-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 16px 0 8px;
+}
+
+/* The header doubles as the link to the group's production page. */
+.report-group-header-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.report-group-header-link:hover .report-group-name {
+  color: var(--color-green);
+}
+
+.report-group-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--color-green-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.report-group-icon img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.report-group-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+
+.report-group-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.report-group-meta {
+  font-size: 0.78125rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.report-group-totals {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-align: right;
+}
+
+.report-group-value {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+/* Production of one specific animal, as opposed to a whole livestock group. */
+.report-card-inline.single {
+  background: var(--color-green-muted);
+  border-color: var(--color-border);
+}
+
+/* The icon tile is normally green-tinted; flip it to white so it still reads as a tile
+   against the tinted row. */
+.report-card-inline.single .report-inline-icon {
+  background: var(--color-surface);
+}

@@ -1,0 +1,141 @@
+/* This greenhouse's own harvests: one collapsible row each, revealing its recorded yield
+   underneath — mirrors the report stock page's expand-for-movements pattern. */
+.greenhouse-harvest-rows {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-surface);
+  margin-bottom: 20px;
+}
+
+.greenhouse-harvest-group:not(:first-child) {
+  border-top: 1px solid var(--color-border);
+}
+
+.greenhouse-harvest-row {
+  display: flex;
+  align-items: stretch;
+}
+
+.greenhouse-harvest-row.open {
+  background: var(--color-green-muted);
+}
+
+.greenhouse-harvest-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.greenhouse-harvest-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--color-muted);
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+
+.greenhouse-harvest-chevron.open {
+  transform: rotate(180deg);
+}
+
+.greenhouse-harvest-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.greenhouse-harvest-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.greenhouse-harvest-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.greenhouse-harvest-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* Opens the harvest's own detail page — planning, seed, status changes all live there; this row
+   is a read-only summary. */
+.greenhouse-harvest-open {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  flex-shrink: 0;
+  color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+}
+
+.greenhouse-harvest-open:hover {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.greenhouse-harvest-items {
+  padding: 6px 14px 10px 52px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.greenhouse-harvest-items .empty-state {
+  margin: 6px 0;
+}
+
+.greenhouse-harvest-item-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.8125rem;
+}
+
+.greenhouse-harvest-item-row + .greenhouse-harvest-item-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.greenhouse-harvest-item-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.greenhouse-harvest-item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-dark);
+}
+
+.greenhouse-harvest-item-amount {
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--color-green);
+  white-space: nowrap;
+}

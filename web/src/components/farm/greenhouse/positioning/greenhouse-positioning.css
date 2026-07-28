@@ -1,0 +1,319 @@
+/* Fills the modal's `size="full"` card: a slim toolbar on top, then a left properties panel next
+   to the interactive canvas — a small floor-plan editor rather than a centered form. */
+.gh-positioning {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.gh-positioning-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.gh-positioning-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.gh-positioning-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gh-toolbar-btn {
+  height: 34px;
+  min-width: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gh-toolbar-btn.active {
+  background: var(--color-green-muted);
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.gh-positioning-toolbar-actions .gh-toolbar-action {
+  height: 34px;
+  padding: 0 16px;
+  margin-left: 4px;
+}
+
+.gh-positioning-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.gh-positioning-panel {
+  width: 680px;
+  flex-shrink: 0;
+  overflow-y: auto;
+  padding: 16px;
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.gh-positioning-section {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.gh-positioning-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.gh-positioning-section h3 {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+}
+
+.gh-positioning-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.gh-positioning-section-header h3 {
+  margin: 0;
+}
+
+.gh-positioning-hint {
+  margin: 0 0 10px;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.gh-icon-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  cursor: pointer;
+}
+
+.gh-icon-btn:hover {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.gh-floor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gh-floor-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 8px;
+  padding: 2px 4px 2px 8px;
+}
+
+.gh-floor-row:hover {
+  background: var(--color-surface-sunken);
+}
+
+.gh-floor-row.selected {
+  background: var(--color-green-muted);
+}
+
+.gh-floor-name {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  border: none;
+  background: none;
+  font: inherit;
+  padding: 8px 0;
+  color: var(--color-dark);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gh-floor-row.selected .gh-floor-name {
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.gh-floor-rename-input {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  padding: 0 8px;
+  font-size: 0.875rem;
+  background: var(--color-surface);
+  color: var(--color-dark);
+}
+
+.gh-new-area-btn {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.gh-section-properties {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gh-section-properties .field-row {
+  gap: 10px;
+}
+
+.gh-stock-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.gh-stock-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.gh-stock-check-row:hover {
+  background: var(--color-surface-sunken);
+}
+
+.gh-stock-check-row input[type='checkbox'] {
+  flex-shrink: 0;
+}
+
+.gh-stock-check-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.gh-delete-area-btn {
+  align-self: flex-start;
+  border: none;
+  background: none;
+  color: var(--color-danger);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.gh-positioning-canvas-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background: var(--color-surface-sunken);
+  overflow: hidden;
+}
+
+.gh-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+
+.gh-canvas:active {
+  cursor: grabbing;
+}
+
+.gh-canvas-boundary {
+  fill: none;
+  stroke: var(--color-green);
+  stroke-width: 2;
+}
+
+.gh-canvas-grid-line {
+  stroke: var(--color-border);
+  stroke-width: 1;
+}
+
+.gh-section-body {
+  cursor: move;
+}
+
+.gh-section-rect {
+  fill: var(--color-green-muted);
+  fill-opacity: 0.85;
+  stroke: var(--color-green);
+  stroke-width: 1.5;
+}
+
+.gh-section-rect.selected {
+  stroke: var(--color-dark);
+  stroke-width: 2.5;
+}
+
+.gh-section-label {
+  fill: var(--color-dark);
+  pointer-events: none;
+  user-select: none;
+}
+
+.gh-section-handle {
+  fill: var(--color-surface);
+  stroke: var(--color-dark);
+  stroke-width: 1.2;
+}
+
+.gh-section-rotate-handle {
+  fill: var(--color-surface);
+  stroke: var(--color-dark);
+  stroke-width: 1.2;
+  cursor: grab;
+}
+
+@media (max-width: 900px) {
+  .gh-positioning-panel {
+    width: 240px;
+  }
+}

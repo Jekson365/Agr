@@ -1,7 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimalProductionView } from '@/components/farm/livestock/production-view';
@@ -20,6 +20,8 @@ export default function LivestockProductionScreen() {
   const [livestock, setLivestock] = useState<Livestock | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!livestockId) return;
@@ -27,16 +29,23 @@ export default function LivestockProductionScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [livestockId]);
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       setLivestock(await getLivestockItem(livestockId));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    setRefreshKey((key) => key + 1);
+    load({ silent: true });
   }
 
   return (
@@ -56,7 +65,9 @@ export default function LivestockProductionScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -64,12 +75,17 @@ export default function LivestockProductionScreen() {
         ) : error || !livestock ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('production.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
         ) : (
-          <AnimalProductionView target="livestock" livestockId={livestockId} animalCount={livestock.count} />
+          <AnimalProductionView
+            key={refreshKey}
+            target="livestock"
+            livestockId={livestockId}
+            animalCount={livestock.count}
+          />
         )}
       </ScrollView>
     </SafeAreaView>

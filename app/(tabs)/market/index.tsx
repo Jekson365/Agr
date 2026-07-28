@@ -1,7 +1,16 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ActionSheet } from '@/components/farm/shared/action-sheet';
@@ -10,6 +19,7 @@ import { styles } from '@/components/farm/shared/styles';
 import { ListingCard } from '@/components/market/listing-card';
 import { ListingFormModal } from '@/components/market/listing-form-modal';
 import { LISTING_CATEGORY_OPTIONS, listingItemLabel } from '@/components/market/market-listing';
+import { CurrencyToggle } from '@/components/ui/currency-toggle';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
@@ -31,6 +41,7 @@ export default function MarketScreen() {
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [search, setSearch] = useState('');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -48,8 +59,8 @@ export default function MarketScreen() {
     }, [tab, category])
   );
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
       const result = await getMarketListings({
@@ -61,8 +72,14 @@ export default function MarketScreen() {
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
   }
 
   const visibleListings = listings.filter((item) => {
@@ -128,7 +145,8 @@ export default function MarketScreen() {
       <View style={styles.header}>
         <View style={styles.headerSide} />
         <Text style={styles.headerTitle}>{t('market.title')}</Text>
-        <View style={styles.headerSide}>
+        <View style={[styles.headerSide, local.headerActions]}>
+          <CurrencyToggle />
           <LanguageToggle />
         </View>
       </View>
@@ -184,7 +202,9 @@ export default function MarketScreen() {
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {loading ? (
           <View style={styles.stateBox}>
             <ActivityIndicator color={Brand.dark} />
@@ -192,7 +212,7 @@ export default function MarketScreen() {
         ) : error ? (
           <View style={styles.stateBox}>
             <Text style={styles.errorText}>{t('market.loadError')}</Text>
-            <Pressable style={styles.retryButton} onPress={load}>
+            <Pressable style={styles.retryButton} onPress={() => load()}>
               <Text style={styles.retryButtonLabel}>{t('common.retry')}</Text>
             </Pressable>
           </View>
@@ -215,7 +235,7 @@ export default function MarketScreen() {
         )}
 
         <Pressable style={styles.addButton} onPress={openAdd}>
-          <Ionicons name="add" size={18} color={Brand.dark} />
+          <Ionicons name="add" size={18} color="#FFFFFF" />
           <Text style={styles.addButtonLabel}>{t('market.add')}</Text>
         </Pressable>
       </ScrollView>
@@ -245,6 +265,11 @@ export default function MarketScreen() {
 }
 
 const local = StyleSheet.create({
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   searchRow: {
     flexDirection: 'row',
     alignItems: 'center',

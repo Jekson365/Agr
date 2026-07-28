@@ -140,7 +140,7 @@ export function EquipmentFormModal({ visible, editingItem, onClose, onSaved, onD
             </Text>
           </Pressable>
 
-          {formError && <Text style={styles.errorText}>{t('equipment.saveError')}</Text>}
+          {formError && <Text style={styles.errorText}>{formError}</Text>}
 
           <View style={styles.formActions}>
             <Pressable style={styles.formCancelButton} onPress={onClose}>

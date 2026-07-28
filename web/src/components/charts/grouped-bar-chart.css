@@ -1,0 +1,204 @@
+/* Horizontal grouped bars: groups stack down the y axis, values run left to right. The gutter
+   holds group labels rather than tick values, so it's wide enough for a harvest title. */
+.gbar {
+  --gbar-gutter: 96px;
+  --gbar-group-gap: 10px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
+.gbar-plot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.gbar-ylabels {
+  flex: 0 0 var(--gbar-gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gbar-group-gap);
+  padding-right: 8px;
+}
+
+.gbar-ylabel {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  color: var(--color-muted);
+}
+
+/* The truncation lives on the text, not on the flex box that centres it. */
+.gbar-ylabel-text {
+  min-width: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gbar-ylabel.hovered {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+.gbar-gutter-spacer {
+  flex: 0 0 var(--gbar-gutter);
+}
+
+.gbar-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Vertical gridlines, one per value tick. */
+.gbar-grid {
+  position: absolute;
+  inset: 0;
+}
+
+.gbar-grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--color-border);
+}
+
+.gbar-groups {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gbar-group-gap); /* space between harvest-record groups */
+}
+
+.gbar-group {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px; /* 2px surface gap between adjacent series bars */
+}
+
+.gbar-col {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  cursor: default;
+}
+
+.gbar-col.clickable {
+  cursor: pointer;
+}
+
+.gbar-col.clickable:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.gbar-bar {
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+  transition: opacity 0.12s ease;
+}
+
+.gbar-tooltip {
+  position: absolute;
+  transform: translate(8px, -50%);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 20px var(--color-shadow-strong);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Past the midpoint the tooltip would run off the plot, so it hangs back off the bar's end. */
+.gbar-tooltip.flipped {
+  transform: translate(calc(-100% - 8px), -50%);
+}
+
+.gbar-tooltip-label {
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+}
+
+.gbar-tooltip-series {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--color-dark);
+}
+
+.gbar-tooltip-swatch,
+.gbar-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.gbar-tooltip-value {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.gbar-xaxis {
+  display: flex;
+  gap: 0;
+}
+
+/* Tick labels sit centred on their gridline, so the first and last hang half outside the track. */
+.gbar-xticks {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 1em;
+}
+
+.gbar-xtick {
+  position: absolute;
+  font-size: 0.6875rem;
+  line-height: 1;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.gbar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  padding-left: var(--gbar-gutter);
+}
+
+.gbar-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-dark);
+}

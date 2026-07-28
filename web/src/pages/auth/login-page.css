@@ -1,0 +1,230 @@
+/* Mirrors the mobile login screen: farmland photo under a soft scrim, a floating
+   logo badge with the app name over the photo, and a rounded card with the form. */
+.auth-screen {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 56px 20px 24px;
+}
+
+.auth-bg {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+/* Weighted towards the top, where the white app name sits over the bright sky; the
+   landscape itself stays clear further down. */
+.auth-scrim {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(31, 42, 36, 0.5) 0%,
+    rgba(31, 42, 36, 0.28) 40%,
+    rgba(31, 42, 36, 0.18) 100%
+  );
+  z-index: -1;
+}
+
+.auth-topbar {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+}
+
+.auth-content {
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.auth-logo-badge {
+  width: 88px;
+  height: 88px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.18);
+}
+
+.auth-logo-badge img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+/* Name and tagline sit on the photo, so they stay light in both themes. */
+.auth-app-name {
+  margin: 0;
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.auth-tagline {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.auth-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 28px;
+  padding: 16px 20px 20px;
+  box-shadow: 0 10px 24px var(--color-shadow-strong);
+}
+
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+.auth-tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding-bottom: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.auth-tab.active {
+  color: var(--color-dark);
+  border-bottom-color: var(--color-dark);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-input {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.auth-input:focus-within {
+  outline: 2px solid var(--color-green);
+  outline-offset: -1px;
+}
+
+.auth-input-icon {
+  display: flex;
+  color: var(--color-muted);
+  margin-right: 10px;
+}
+
+.auth-input input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: none;
+  font-size: 0.9375rem;
+  color: var(--color-dark);
+}
+
+.auth-input input::placeholder {
+  color: var(--color-muted);
+}
+
+.auth-forgot {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.auth-forgot:hover {
+  color: var(--color-dark);
+}
+
+.auth-submit {
+  height: 52px;
+  margin-top: 8px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.auth-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.auth-divider-text {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.auth-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 52px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: none;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.auth-google:hover {
+  background: var(--color-surface-sunken);
+}
+
+.auth-google:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Host for the official Google Identity Services button (rendered into this div). */
+.auth-google-slot {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}

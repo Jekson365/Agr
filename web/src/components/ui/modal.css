@@ -1,0 +1,92 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--color-surface);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 20px 40px var(--color-shadow-strong);
+}
+
+.modal-title {
+  margin: 0 0 16px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.modal-body-text {
+  margin: -8px 0 20px;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal-actions .btn {
+  height: 42px;
+  padding: 0 18px;
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+}
+
+/* Wider variant for forms with enough fields that a single 440px column runs too tall. */
+.modal-card.wide {
+  max-width: 720px;
+}
+
+/* Near-fullscreen variant for editors that need real canvas space — the positioning editor's
+   toolbar + side panel + drawing surface don't fit a centered form card. */
+.modal-card.full {
+  width: 99vw;
+  max-width: 2200px;
+  height: 92vh;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Two-column field layout inside a wide modal. Fields that own a full row — pickers, notes,
+   error banners — opt out with .field-full. */
+.modal-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 16px;
+}
+
+.modal-form-grid .field-full {
+  grid-column: 1 / -1;
+}
+
+/* The chip rows already carry their own bottom margin; inside the grid the gap handles it. */
+.modal-form-grid .kind-row {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .modal-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

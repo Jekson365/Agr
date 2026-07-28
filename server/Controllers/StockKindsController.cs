@@ -25,6 +25,22 @@ public class StockKindsController(IStockKindRepository stockKindRepository) : Co
             return BadRequest();
         }
 
+        if (await stockKindRepository.ExistsByNameAsync(name))
+        {
+            return Conflict("A stock type with this name already exists.");
+        }
+
         return Ok(await stockKindRepository.AddAsync(name));
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        return await stockKindRepository.DeleteAsync(id) switch
+        {
+            DeleteStockKindResult.Deleted => NoContent(),
+            DeleteStockKindResult.InUse => Conflict("This stock type is still used by existing stock or seeds."),
+            _ => NotFound(),
+        };
     }
 }

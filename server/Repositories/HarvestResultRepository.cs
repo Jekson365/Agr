@@ -105,6 +105,15 @@ public class HarvestResultRepository(
         {
             await stockRepository.AdjustAmountRawAsync(stockId, result.Amount);
 
+            // Retargeted from a fruit good to a plant one: the tree's amount was already put back
+            // by ReverseRawAsync, but its movement row lives in the other table and the update
+            // below can't reach it. Left behind it would keep inflating every balance derived from
+            // the movement ledger (/farm/balance, the stock report) with yield that moved away.
+            if (updateExistingMovement)
+            {
+                await treeStockMovementRepository.DeleteForHarvestResultAsync(result.Id);
+            }
+
             var updated = updateExistingMovement
                 && await stockMovementRepository.UpdateForHarvestResultAsync(result.Id, stockId, result.Amount);
             if (!updated)
@@ -121,6 +130,13 @@ public class HarvestResultRepository(
         else if (result.TreeStockId is int treeStockId)
         {
             await treeStockRepository.AdjustAmountRawAsync(treeStockId, result.Amount);
+
+            // The mirror of the case above: retargeted from a plant good to a fruit one, the plant
+            // movement row is now stale and unreachable from this table's update.
+            if (updateExistingMovement)
+            {
+                await stockMovementRepository.DeleteForHarvestResultAsync(result.Id);
+            }
 
             var updated = updateExistingMovement
                 && await treeStockMovementRepository.UpdateForHarvestResultAsync(result.Id, treeStockId, result.Amount);

@@ -111,6 +111,10 @@ namespace Server.Migrations.Master
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DbName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
@@ -118,6 +122,15 @@ namespace Server.Migrations.Master
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateOnly?>("LastScanDate")
+                        .HasColumnType("date");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("double precision");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -131,9 +144,19 @@ namespace Server.Migrations.Master
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Plan")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("ScanCount")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("StorageUsedBytes")
+                        .HasColumnType("bigint");
 
                     b.Property<string>("Surname")
                         .IsRequired()

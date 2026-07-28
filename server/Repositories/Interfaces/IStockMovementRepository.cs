@@ -5,7 +5,15 @@ namespace Server.Repositories.Interfaces;
 public interface IStockMovementRepository
 {
     Task<IEnumerable<StockMovement>> GetByStockAsync(int stockId);
+    Task<StockMovement?> GetByIdAsync(int id);
     Task<StockMovement> AddAsync(StockMovement movement);
+
+    /// <summary>
+    /// Removes a single movement by id. The caller is responsible for reversing its effect on
+    /// the stock's amount (see <see cref="IStockRepository.AdjustAmountRawAsync"/>) so the
+    /// remaining history still explains the balance.
+    /// </summary>
+    Task<bool> DeleteAsync(int id);
 
     /// <summary>
     /// Updates the movement linked to <paramref name="harvestItemId"/> in place (rather than

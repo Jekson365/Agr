@@ -2,19 +2,20 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { StockFeedRow } from '@/components/farm/livestock/feed';
 import { StockHistoryView } from '@/components/farm/livestock/history';
 import { MedicalRecordsView } from '@/components/farm/livestock/medical-records';
+import { AnimalProductionView } from '@/components/farm/livestock/production-view';
 import { styles } from '@/components/farm/shared/styles';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 
-type Tab = 'weight' | 'medical';
+type Tab = 'weight' | 'production' | 'medical';
 
 export default function StockHistoryScreen() {
   const { t } = useLanguage();
@@ -22,6 +23,16 @@ export default function StockHistoryScreen() {
   const stockId = Number(params.stockId);
   const livestockId = Number(params.livestockId);
   const [tab, setTab] = useState<Tab>('weight');
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // These child views fetch their own data on mount; there's no load() to call here, so a
+  // refresh remounts them via `key` and briefly shows the pull-to-refresh spinner.
+  function onRefresh() {
+    setRefreshing(true);
+    setRefreshKey((key) => key + 1);
+    setTimeout(() => setRefreshing(false), 400);
+  }
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
@@ -47,6 +58,12 @@ export default function StockHistoryScreen() {
           </Text>
           {tab === 'weight' && <View style={styles.tabIndicator} />}
         </Pressable>
+        <Pressable style={styles.tabItem} onPress={() => setTab('production')}>
+          <Text style={[styles.tabLabel, tab === 'production' && styles.tabLabelActive]}>
+            {t('history.productionTab')}
+          </Text>
+          {tab === 'production' && <View style={styles.tabIndicator} />}
+        </Pressable>
         <Pressable style={styles.tabItem} onPress={() => setTab('medical')}>
           <Text style={[styles.tabLabel, tab === 'medical' && styles.tabLabelActive]}>
             {t('history.medicalTab')}
@@ -55,7 +72,9 @@ export default function StockHistoryScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
         {params.image ? (
           <Image
             source={{ uri: resolveAssetUrl(params.image) }}
@@ -70,11 +89,13 @@ export default function StockHistoryScreen() {
 
         {tab === 'weight' ? (
           <>
-            {livestockId ? <StockFeedRow livestockId={livestockId} /> : null}
-            <StockHistoryView stockId={stockId} />
+            {livestockId ? <StockFeedRow key={refreshKey} livestockId={livestockId} /> : null}
+            <StockHistoryView key={refreshKey} stockId={stockId} />
           </>
+        ) : tab === 'production' ? (
+          <AnimalProductionView key={refreshKey} target="animal" animalId={stockId} />
         ) : (
-          <MedicalRecordsView stockId={stockId} />
+          <MedicalRecordsView key={refreshKey} stockId={stockId} />
         )}
       </ScrollView>
     </SafeAreaView>

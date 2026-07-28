@@ -1,6 +1,10 @@
 import { apiFetch } from '@/services/api-client';
 import type { AnimalProduction, AnimalProductionInput } from '@/types/animal-production';
 
+export function getAllAnimalProductions() {
+  return apiFetch<AnimalProduction[]>('/api/animalproductions');
+}
+
 export function getAnimalProductions(animalId: number) {
   return apiFetch<AnimalProduction[]>(`/api/animalproductions?animalId=${animalId}`);
 }

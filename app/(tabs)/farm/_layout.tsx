@@ -15,6 +15,7 @@ export default function FarmLayout() {
       <Stack.Screen name="stock-history/[stockId]" />
       <Stack.Screen name="tree-stock-history/[treeStockId]" />
       <Stack.Screen name="land/[id]" />
+      <Stack.Screen name="upgrade" />
     </Stack>
   );
 }

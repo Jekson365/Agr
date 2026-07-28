@@ -1,0 +1,49 @@
+.history-columns {
+  display: flex;
+  align-items: stretch;
+  gap: 24px;
+  flex: 1;
+  min-height: 0;
+}
+
+.history-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 16px;
+  background: var(--color-surface);
+}
+
+.history-column-title {
+  flex: 0 0 auto;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-align: left;
+  margin: 0 0 12px;
+}
+
+.history-column .empty-state,
+.history-column .state-box {
+  flex: 0 0 auto;
+  padding: 0;
+  text-align: left;
+  align-items: flex-start;
+}
+
+.history-column .record-list,
+.history-column .add-button,
+.history-column .photo-grid {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: none;
+}
+
+.history-column .record-card {
+  width: 100%;
+}

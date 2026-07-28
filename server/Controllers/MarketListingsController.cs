@@ -69,7 +69,18 @@ public class MarketListingsController(
         listing.CreatedAt = existing.CreatedAt;
 
         var updated = await marketListingRepository.UpdateAsync(listing);
-        return updated ? NoContent() : NotFound();
+        if (!updated)
+        {
+            return NotFound();
+        }
+
+        var removedImagePaths = existing.ImagePaths.Except(listing.ImagePaths);
+        foreach (var imagePath in removedImagePaths)
+        {
+            await fileStorageService.DeleteImageAsync(imagePath);
+        }
+
+        return NoContent();
     }
 
     [HttpDelete("{id:int}")]
@@ -86,12 +97,22 @@ public class MarketListingsController(
         }
 
         var deleted = await marketListingRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        foreach (var imagePath in existing.ImagePaths)
+        {
+            await fileStorageService.DeleteImageAsync(imagePath);
+        }
+
+        return NoContent();
     }
 
     [HttpPost("upload-image")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(10_000_000)]
+    [RequestSizeLimit(25_000_000)]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
         if (file is null || file.Length == 0)

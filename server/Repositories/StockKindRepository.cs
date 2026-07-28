@@ -12,6 +12,11 @@ public class StockKindRepository(AppDbContext context) : IStockKindRepository
         return await context.StockKinds.AsNoTracking().OrderBy(k => k.Id).ToListAsync();
     }
 
+    public async Task<bool> ExistsByNameAsync(string name)
+    {
+        return await context.StockKinds.AnyAsync(k => k.Name.ToLower() == name.ToLower());
+    }
+
     public async Task<StockKind> AddAsync(string name)
     {
         var existing = await context.StockKinds.FirstOrDefaultAsync(k => k.Name.ToLower() == name.ToLower());
@@ -24,5 +29,28 @@ public class StockKindRepository(AppDbContext context) : IStockKindRepository
         context.StockKinds.Add(kind);
         await context.SaveChangesAsync();
         return kind;
+    }
+
+    public async Task<DeleteStockKindResult> DeleteAsync(int id)
+    {
+        var existing = await context.StockKinds.FindAsync(id);
+        if (existing is null)
+        {
+            return DeleteStockKindResult.NotFound;
+        }
+
+        // Stock and seed both reference the crop by name (seed shares this catalog); deleting one
+        // still in use would leave rows with a type no picker can show. Report it as a conflict
+        // the client can explain.
+        var inUse = await context.Stocks.AnyAsync(s => s.Type.ToLower() == existing.Name.ToLower())
+            || await context.Seeds.AnyAsync(s => s.Type.ToLower() == existing.Name.ToLower());
+        if (inUse)
+        {
+            return DeleteStockKindResult.InUse;
+        }
+
+        context.StockKinds.Remove(existing);
+        await context.SaveChangesAsync();
+        return DeleteStockKindResult.Deleted;
     }
 }

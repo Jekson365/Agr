@@ -16,7 +16,7 @@ import {
 import { PRODUCTION_TYPE_LABEL_KEY, UNIT_LABEL_KEY } from '@/components/farm/livestock/production';
 import { styles } from '@/components/farm/shared/styles';
 import { DateField } from '@/components/ui/date-field';
-import { toIsoDate } from '@/components/ui/date-utils';
+import { formatLocalizedIsoDate, toIsoDate, type DateLanguage } from '@/components/ui/date-utils';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import {
@@ -68,7 +68,7 @@ function makeEmptyForm(animalCount: number) {
  * an "add new record" button.
  */
 export function AnimalProductionView(props: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const isGroup = props.target === 'livestock';
   const ownerId = isGroup ? props.livestockId : props.animalId;
   const defaultAnimalCount = isGroup ? props.animalCount : 1;
@@ -221,7 +221,7 @@ export function AnimalProductionView(props: Props) {
             <View key={record.id} style={[styles.historyRow, styles.historyRowUp, recordStyles.row]}>
               <View style={styles.cardInfo}>
                 <View style={recordStyles.header}>
-                  <Text style={styles.historyRowDate}>{formatDate(record.collectionDate)}</Text>
+                  <Text style={styles.historyRowDate}>{formatDate(record.collectionDate, language)}</Text>
                   <Text style={styles.historyRowWeight}>{typeLabel(typeById.get(record.productionTypeId))}</Text>
                 </View>
 
@@ -270,7 +270,7 @@ export function AnimalProductionView(props: Props) {
       {error ? <Text style={styles.errorText}>{t('production.loadError')}</Text> : null}
 
       <Pressable style={styles.addButton} onPress={openAdd}>
-        <Ionicons name="add" size={18} color={Brand.dark} />
+        <Ionicons name="add" size={18} color="#FFFFFF" />
         <Text style={styles.addButtonLabel}>{t('production.addRecord')}</Text>
       </Pressable>
 
@@ -442,10 +442,8 @@ function parseFloatOrNull(value: string): number | null {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString();
+function formatDate(iso: string, language: DateLanguage): string {
+  return formatLocalizedIsoDate(iso, language);
 }
 
 const recordStyles = StyleSheet.create({

@@ -17,4 +17,8 @@ public class TreeStock
 
     /// <summary>The land plot these trees are planted on, if assigned yet.</summary>
     public int? LandPlotId { get; set; }
+
+    /// <summary>The <see cref="TreeProduct"/> these trees yield, chosen from the catalog when the
+    /// row is added. Null until one is assigned.</summary>
+    public int? TreeProductId { get; set; }
 }

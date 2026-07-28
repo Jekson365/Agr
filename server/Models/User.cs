@@ -9,6 +9,14 @@ public class User
     public UserRole Role { get; set; } = UserRole.Member;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// The Postgres database holding this user's own data (<c>farm_user_{Id}</c>). Recorded rather
+    /// than only derived, so the mapping is visible in the master database and a user could later
+    /// be moved to a differently-named database without the name having to follow their id.
+    /// Assigned by <see cref="Repositories.UserRepository.AddAsync"/> once the id exists.
+    /// </summary>
+    public string DbName { get; set; } = string.Empty;
+
     // Private/profile information — set via ProfileController-style endpoints on AuthController,
     // never at registration, so all default to empty/null.
     public string Surname { get; set; } = string.Empty;
@@ -17,4 +25,20 @@ public class User
     public string City { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }
     public string ImagePath { get; set; } = string.Empty;
+
+    /// <summary>Precise farm location the user pinned on the map, if any.</summary>
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+
+    /// <summary>Image-upload storage tier; caps <see cref="StorageUsedBytes"/> (see <see cref="StoragePlanLimits"/>).</summary>
+    public StoragePlan Plan { get; set; } = StoragePlan.Free;
+
+    /// <summary>Running total of bytes used by this user's uploaded images, updated by <see cref="Services.FileStorageService"/>.</summary>
+    public long StorageUsedBytes { get; set; }
+
+    /// <summary>Number of AI plant scans used on <see cref="LastScanDate"/>; resets when the date rolls over.</summary>
+    public int ScanCount { get; set; }
+
+    /// <summary>The date <see cref="ScanCount"/> was last reset/incremented on, or null if never scanned.</summary>
+    public DateOnly? LastScanDate { get; set; }
 }

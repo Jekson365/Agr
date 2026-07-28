@@ -25,6 +25,22 @@ public class FruitKindsController(IFruitKindRepository fruitKindRepository) : Co
             return BadRequest();
         }
 
+        if (await fruitKindRepository.ExistsByNameAsync(name))
+        {
+            return Conflict("A fruit type with this name already exists.");
+        }
+
         return Ok(await fruitKindRepository.AddAsync(name));
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        return await fruitKindRepository.DeleteAsync(id) switch
+        {
+            DeleteFruitKindResult.Deleted => NoContent(),
+            DeleteFruitKindResult.InUse => Conflict("This fruit type is still used by existing tree stock."),
+            _ => NotFound(),
+        };
     }
 }

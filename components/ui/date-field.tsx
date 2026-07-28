@@ -2,8 +2,9 @@ import DateTimePicker, { type DateTimePickerEvent } from '@react-native-communit
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { parseIsoDate, toIsoDate } from '@/components/ui/date-utils';
+import { formatLocalizedDate, parseIsoDate, toIsoDate } from '@/components/ui/date-utils';
 import { Brand } from '@/constants/theme';
+import { useLanguage } from '@/contexts/language-context';
 
 type Props = {
   /** Selected date as a `YYYY-MM-DD` string, or null when unset. */
@@ -18,6 +19,7 @@ type Props = {
  * (a browser `<input type="date">`) instead — Metro resolves the platform variant automatically.
  */
 export function DateField({ value, onChange, placeholder, maximumDate }: Props) {
+  const { language } = useLanguage();
   const [show, setShow] = useState(false);
   const selected = parseIsoDate(value);
 
@@ -32,7 +34,7 @@ export function DateField({ value, onChange, placeholder, maximumDate }: Props) 
     <>
       <Pressable style={styles.field} onPress={() => setShow(true)}>
         <Text style={[styles.text, { color: selected ? Brand.dark : Brand.muted }]}>
-          {selected ? selected.toLocaleDateString() : placeholder}
+          {selected ? formatLocalizedDate(selected, language) : placeholder}
         </Text>
       </Pressable>
       {show && (

@@ -14,6 +14,12 @@ type AuthContextValue = {
   signUp: (request: RegisterRequest) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (request: UpdateProfileRequest) => Promise<void>;
+  /** Re-fetches the current user (e.g. to pick up storage usage after uploads made elsewhere). */
+  refreshUser: () => Promise<void>;
+  /** True for one render right after signIn/signUp (not after a restored session) — drives the
+   * post-login greeting popup. Call acknowledgeSignIn() once consumed so it doesn't fire again. */
+  justSignedIn: boolean;
+  acknowledgeSignIn: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -21,6 +27,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [justSignedIn, setJustSignedIn] = useState(false);
 
   // Restore a persisted session on startup.
   useEffect(() => {
@@ -47,12 +54,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthToken(session.token);
         await saveSession(session);
         setUser(session.user);
+        setJustSignedIn(true);
       },
       signUp: async (request) => {
         const session = await authService.register(request);
         setAuthToken(session.token);
         await saveSession(session);
         setUser(session.user);
+        setJustSignedIn(true);
       },
       signOut: async () => {
         setUser(null);
@@ -67,8 +76,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         setUser(updated);
       },
+      refreshUser: async () => {
+        if (!getAuthToken()) return;
+        const current = await authService.getCurrentUser();
+        const token = getAuthToken();
+        if (token) {
+          await saveSession({ token, user: current });
+        }
+        setUser(current);
+      },
+      justSignedIn,
+      acknowledgeSignIn: () => setJustSignedIn(false),
     }),
-    [isLoading, user]
+    [isLoading, user, justSignedIn]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

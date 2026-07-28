@@ -10,11 +10,17 @@ public class HarvestRepository(
     IStockRepository stockRepository,
     IStockMovementRepository stockMovementRepository,
     ITreeStockRepository treeStockRepository,
-    ITreeStockMovementRepository treeStockMovementRepository) : IHarvestRepository
+    ITreeStockMovementRepository treeStockMovementRepository,
+    ISeedRepository seedRepository) : IHarvestRepository
 {
-    public async Task<IEnumerable<Harvest>> GetAllAsync()
+    public async Task<IEnumerable<Harvest>> GetAllAsync(HarvestKind? kind = null)
     {
-        return await context.Harvests.AsNoTracking().OrderByDescending(h => h.Date).ToListAsync();
+        var query = context.Harvests.AsNoTracking().AsQueryable();
+        if (kind is not null)
+        {
+            query = query.Where(h => h.Kind == kind);
+        }
+        return await query.OrderByDescending(h => h.Date).ToListAsync();
     }
 
     public async Task<Harvest?> GetByIdAsync(int id)
@@ -42,7 +48,14 @@ public class HarvestRepository(
         existing.Title = harvest.Title;
         existing.Date = harvest.Date;
         existing.Status = harvest.Status;
+        existing.ExpectedHarvestDate = harvest.ExpectedHarvestDate;
+        existing.FarmId = harvest.FarmId;
         existing.LandPlotId = harvest.LandPlotId;
+        existing.EquipmentCost = harvest.EquipmentCost;
+        existing.WorkersCost = harvest.WorkersCost;
+        existing.FuelCost = harvest.FuelCost;
+        existing.OtherCost = harvest.OtherCost;
+        existing.Revenue = harvest.Revenue;
 
         await context.SaveChangesAsync();
 
@@ -68,9 +81,28 @@ public class HarvestRepository(
             return false;
         }
 
+        // Deleting the harvest cascades away its results, seed usage and the movement rows that
+        // explain them — but not the balances those movements moved. Undo them first, or the
+        // stock keeps yield it never had and the seed stays down by an amount nothing records.
+        if (existing.Status == HarvestStatus.Harvested)
+        {
+            await ReverseStockAsync(id);
+        }
+        await ReturnSeedsAsync(id);
+
         context.Harvests.Remove(existing);
         await context.SaveChangesAsync();
         return true;
+    }
+
+    /// <summary>Gives back the seed this harvest recorded as sown.</summary>
+    private async Task ReturnSeedsAsync(int harvestId)
+    {
+        var usage = await context.HarvestSeeds.AsNoTracking().Where(s => s.HarvestId == harvestId).ToListAsync();
+        foreach (var row in usage)
+        {
+            await seedRepository.AdjustAmountRawAsync(row.SeedId, row.Amount);
+        }
     }
 
     private async Task ApplyStockAsync(int harvestId)

@@ -1,0 +1,281 @@
+.status-badge {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-top: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.status-badge-planting {
+  background: var(--color-green-muted);
+  border-color: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.status-badge-harvested {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.harvest-info-block {
+  margin-bottom: 20px;
+}
+
+/* Top row: harvest details in one cell, chemical history in the next. */
+.harvest-top-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+  align-items: stretch;
+}
+
+.harvest-top-cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  padding: 16px;
+}
+
+/* Inside a cell the info block owns no outer margin — the cell provides the spacing. */
+.harvest-top-cell .harvest-info-block {
+  margin-bottom: 0;
+}
+
+@media (max-width: 860px) {
+  .harvest-top-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.harvest-info-block .field {
+  margin-top: 12px;
+}
+
+.harvest-section-label {
+  margin-top: 20px;
+}
+
+.harvest-expenses-button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 18px;
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.expenses-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.expenses-total-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.expenses-total-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.expenses-net-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.expenses-net-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.expenses-net-value.negative {
+  color: var(--color-danger);
+}
+
+.harvest-net-positive {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.harvest-net-negative {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+/* Expected pick date (harvest.expectedHarvestDate) */
+.harvest-overdue-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--color-danger-bg);
+  border: 1px solid var(--color-danger-border);
+  color: var(--color-danger);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.harvest-due-hint {
+  margin-left: 8px;
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+/* Normalized economics: cost per unit, yield per area, net per area */
+.harvest-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin: 14px 0 4px;
+}
+
+.harvest-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+.harvest-kpi-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.harvest-kpi-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.harvest-kpi-value.positive {
+  color: var(--color-green);
+}
+
+.harvest-kpi-value.negative {
+  color: var(--color-danger);
+}
+
+/* Planned vs actual comparison */
+.harvest-comparison {
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.harvest-comparison-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.8125rem;
+}
+
+.harvest-comparison-row:first-child {
+  border-top: none;
+}
+
+.harvest-comparison-row.header {
+  background: var(--color-green-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.harvest-comparison-good {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: var(--color-dark);
+}
+
+.harvest-comparison-good img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.harvest-comparison-num {
+  text-align: right;
+  color: var(--color-dark);
+  white-space: nowrap;
+}
+
+.harvest-comparison-num.variance-up {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.harvest-comparison-num.variance-down {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.harvest-comparison-tag {
+  padding: 1px 7px;
+  border-radius: 9px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.harvest-comparison-tag.missing {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+@media (max-width: 700px) {
+  .harvest-comparison-row {
+    grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Seeds used, planned items and final results are short one-line rows, so their cards run their
+   icons at a third of the standard .list-card size (144/96) instead of the full artwork. */
+.harvest-compact-icons .list-card-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+}
+
+.harvest-compact-icons .list-card-icon-wrap img {
+  width: 32px;
+  height: 32px;
+}

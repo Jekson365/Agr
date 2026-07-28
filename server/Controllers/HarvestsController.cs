@@ -11,9 +11,9 @@ namespace Server.Controllers;
 public class HarvestsController(IHarvestRepository harvestRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Harvest>>> GetAll()
+    public async Task<ActionResult<IEnumerable<Harvest>>> GetAll([FromQuery] HarvestKind? kind)
     {
-        return Ok(await harvestRepository.GetAllAsync());
+        return Ok(await harvestRepository.GetAllAsync(kind));
     }
 
     [HttpGet("{id:int}")]

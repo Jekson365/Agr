@@ -80,8 +80,28 @@ public class StockRepository(AppDbContext context, IStockMovementRepository stoc
         await context.SaveChangesAsync();
     }
 
-    private Task LogMovementAsync(int stockId, decimal delta, StockMovementSource source)
+    public async Task<Stock?> AdjustAmountAsync(int stockId, decimal delta, StockMovementSource source, int? marketListingId = null)
     {
-        return stockMovementRepository.AddAsync(new StockMovement { StockId = stockId, Delta = delta, Source = source });
+        var existing = await context.Stocks.FindAsync(stockId);
+        if (existing is null)
+        {
+            return null;
+        }
+
+        existing.Amount += delta;
+        await context.SaveChangesAsync();
+
+        if (delta != 0)
+        {
+            await LogMovementAsync(stockId, delta, source, marketListingId);
+        }
+
+        return existing;
+    }
+
+    private Task LogMovementAsync(int stockId, decimal delta, StockMovementSource source, int? marketListingId = null)
+    {
+        return stockMovementRepository.AddAsync(
+            new StockMovement { StockId = stockId, Delta = delta, Source = source, MarketListingId = marketListingId });
     }
 }

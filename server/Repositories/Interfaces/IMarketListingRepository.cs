@@ -14,5 +14,10 @@ public interface IMarketListingRepository
     Task<MarketListingDto?> GetByIdAsync(int id);
     Task<MarketListingDto> AddAsync(MarketListing listing);
     Task<bool> UpdateAsync(MarketListing listing);
+
+    /// <summary>Puts a listing back the way it was before a sale was recorded against it: the
+    /// quantity is returned and the listing goes active again, whether the sale had completed it
+    /// or just reduced what was left.</summary>
+    Task<bool> RestoreAfterSaleAsync(int id, decimal quantity);
     Task<bool> DeleteAsync(int id);
 }

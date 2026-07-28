@@ -1,0 +1,65 @@
+import appleIcon from '@/assets/trees/apple.png';
+import bananaIcon from '@/assets/trees/banana.png';
+import emptyIcon from '@/assets/trees/empty.png';
+import orangeIcon from '@/assets/trees/orange.png';
+
+// Built-in fruit kinds get dedicated artwork and a translated label; any other kind (a custom
+// type a user added via the Tree Stock form) falls back to a generic empty-tree icon and its raw
+// name — see fruitKindImage/fruitTypeLabel below.
+
+export const FRUIT_KIND_IMAGE: Record<string, string> = {
+  Apple: appleIcon,
+  Orange: orangeIcon,
+  Banana: bananaIcon,
+};
+
+export const FRUIT_TYPE_LABEL_KEY: Record<string, string> = {
+  Apple: 'farm.fruitApple',
+  Orange: 'farm.fruitOrange',
+  Banana: 'farm.fruitBanana',
+};
+
+/** The unit every new fruit entry is created with — an orchard is counted in trees. */
+export const TREE_STOCK_DEFAULT_UNIT = 'Plant';
+
+/** Units a fruit/tree good can be measured in, trees first — what a plan against an orchard may
+ * be written in. Mirrors TREE_STOCK_UNIT_LABEL_KEY below. */
+export const TREE_STOCK_UNIT_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: 'Plant', labelKey: 'farm.unitPlant' },
+  { value: 'Kilogram', labelKey: 'farm.unitKg' },
+  { value: 'Box', labelKey: 'farm.unitBox' },
+];
+
+// Kilogram and Box only appear on rows created before fruit was counted in trees; they stay
+// here so those rows still render with the unit they were entered under.
+export const TREE_STOCK_UNIT_LABEL_KEY: Record<string, string> = {
+  Kilogram: 'farm.unitKg',
+  Box: 'farm.unitBox',
+  Plant: 'farm.unitPlant',
+};
+
+/** A fruit type's display label: its translation if it's a known built-in, otherwise its raw
+ * (user-entered) name. */
+export function fruitTypeLabel(type: string, t: (key: string) => string): string {
+  const key = FRUIT_TYPE_LABEL_KEY[type];
+  return key ? t(key) : type;
+}
+
+/** A fruit type's icon: its dedicated artwork if it's a known built-in, otherwise a generic
+ * empty-tree default — custom types added through the app don't have artwork of their own. */
+export function fruitKindImage(type: string): string {
+  return FRUIT_KIND_IMAGE[type] ?? emptyIcon;
+}
+
+/** Units a tree's produce is measured in — weight, boxes, or counted pieces. */
+export const TREE_PRODUCT_UNIT_OPTIONS: { value: string; labelKey: string }[] = [
+  { value: 'Kilogram', labelKey: 'farm.unitKg' },
+  { value: 'Box', labelKey: 'farm.unitBox' },
+  { value: 'Quantity', labelKey: 'farm.unitQuantity' },
+];
+
+export const TREE_PRODUCT_UNIT_LABEL_KEY: Record<string, string> = {
+  Kilogram: 'farm.unitKg',
+  Box: 'farm.unitBox',
+  Quantity: 'farm.unitQuantity',
+};

@@ -22,6 +22,7 @@ type LanguageContextValue = {
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 function resolve(dict: Dictionary, key: string): unknown {
+  if (typeof key !== 'string') return undefined;
   return key.split('.').reduce<unknown>((acc, part) => {
     if (acc && typeof acc === 'object') {
       return (acc as Dictionary)[part];
@@ -42,7 +43,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       toggleLanguage: () => setLanguage((prev) => (prev === 'ka' ? 'en' : 'ka')),
       t: (key, params) => {
         const value = resolve(dict, key);
-        if (typeof value !== 'string') return key;
+        if (typeof value !== 'string') return typeof key === 'string' ? key : '';
         if (!params) return value;
         return value.replace(/\{(\w+)\}/g, (_, token) => String(params[token] ?? ''));
       },

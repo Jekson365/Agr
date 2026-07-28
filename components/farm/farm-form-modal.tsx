@@ -189,7 +189,7 @@ export function FarmFormModal({
                 placeholderTextColor={Brand.muted}
                 keyboardType="number-pad"
               />
-
+{/* 
               <Text style={styles.fieldLabel}>{t('farm.farmland')}</Text>
               {farms.length === 0 ? (
                 <Text style={styles.emptyHint}>{t('farm.noFarmland')}</Text>
@@ -206,7 +206,7 @@ export function FarmFormModal({
                     </Pressable>
                   ))}
                 </View>
-              )}
+              )} */}
             </>
           ) : (
             <>
@@ -249,7 +249,7 @@ export function FarmFormModal({
             </>
           )}
 
-          {formError && <Text style={styles.errorText}>{t('farm.saveError')}</Text>}
+          {formError && <Text style={styles.errorText}>{formError}</Text>}
 
           <View style={styles.formActions}>
             <Pressable style={styles.formCancelButton} onPress={onClose}>

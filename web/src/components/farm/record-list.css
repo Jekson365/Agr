@@ -1,0 +1,300 @@
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 640px;
+  margin-bottom: 20px;
+}
+
+.record-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+.record-card-up {
+  background: var(--color-green-muted);
+}
+
+.record-card-down {
+  background: var(--color-danger-bg);
+}
+
+.record-card-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.record-card-main.clickable {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.record-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.record-card-date {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.record-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.record-card-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.record-card-value-up {
+  color: var(--color-green);
+}
+
+.record-card-value-down {
+  color: var(--color-danger-strong);
+}
+
+.record-card-line {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+}
+
+.record-card-delete {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
+.record-card-delete:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.record-summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.record-summary-label {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  margin-bottom: 2px;
+}
+
+.record-summary-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+/* ---- Production records: one line each, aligned like a report table ----
+   Own classes rather than the shared .record-card-*, so medical records and weight
+   history keep their card layout. */
+.production-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.production-table {
+  /* Header and rows share one track list, so every column lines up down the page. */
+  --production-cols: minmax(120px, 1.1fr) minmax(120px, 1fr) minmax(90px, 0.9fr) minmax(80px, 0.8fr)
+    minmax(90px, 0.9fr) minmax(90px, 0.9fr) minmax(120px, 1.4fr) 62px;
+  min-width: 852px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+/* A seed's ledger reuses the production row styling with three columns of its own. */
+.seed-history-table {
+  --production-cols: minmax(120px, 1fr) minmax(120px, 1fr) minmax(100px, 0.8fr);
+  min-width: 380px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.production-table.group {
+  --production-cols: minmax(120px, 1.1fr) minmax(120px, 1fr) minmax(90px, 0.9fr) minmax(60px, 0.5fr)
+    minmax(80px, 0.8fr) minmax(90px, 0.9fr) minmax(90px, 0.9fr) minmax(120px, 1.4fr) 62px;
+  min-width: 932px;
+}
+
+.production-row {
+  display: grid;
+  grid-template-columns: var(--production-cols);
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border-top: 1px solid var(--color-border);
+  min-height: 44px;
+}
+
+.production-row:first-child {
+  border-top: none;
+}
+
+.production-row:not(.production-row-head):hover {
+  background: var(--color-green-muted);
+}
+
+/* A record added on one specific animal, merged into its group's production table. */
+.production-row.single {
+  background: var(--color-green-muted);
+}
+
+/* A marketplace sale merged into the production table — read-only, negative quantity. */
+.production-row.sale {
+  background: var(--color-surface-sunken);
+}
+
+/* Ledger coloring on the quantity column: collections add (green), sales deduct (red). */
+.production-row-cell.income-delta {
+  color: var(--color-green);
+}
+
+.production-row-cell.sale-delta {
+  color: var(--color-danger);
+}
+
+.production-row-animal {
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+/* Row above the production table: the individual-records toggle and the filter button. */
+.production-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.production-toolbar .filter-toggle {
+  margin-left: auto;
+}
+
+.production-row-head {
+  background: var(--color-green-muted);
+  min-height: 36px;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.production-row-head .num {
+  text-align: right;
+}
+
+.production-row-cell {
+  min-width: 0;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.production-row-cell.muted {
+  color: var(--color-muted);
+}
+
+.production-row-cell.num {
+  text-align: right;
+}
+
+.production-row-cell.strong {
+  font-weight: 700;
+}
+
+.production-row-cell.value {
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+/* The type cell doubles as the row's edit affordance. */
+.production-row-cell.type {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-align: left;
+  cursor: pointer;
+}
+
+.production-row-cell.type:hover {
+  color: var(--color-green);
+  text-decoration: underline;
+}
+
+.production-row-unit {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+/* Edit + delete share the last column; the pair is right-aligned so rows with only one
+   button (marketplace sales) still line their button up with the rest. */
+.production-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.production-row-edit,
+.production-row-delete {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.production-row-edit:hover {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.production-row-delete:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}

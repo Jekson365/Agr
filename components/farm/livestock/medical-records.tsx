@@ -15,7 +15,7 @@ import {
 
 import { styles } from '@/components/farm/shared/styles';
 import { DateField } from '@/components/ui/date-field';
-import { toIsoDate } from '@/components/ui/date-utils';
+import { formatLocalizedIsoDate, toIsoDate, type DateLanguage } from '@/components/ui/date-utils';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import {
@@ -57,7 +57,7 @@ const EMPTY_FORM = {
  * vitals, and follow-up details, plus an "add new record" button.
  */
 export function MedicalRecordsView({ stockId }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const [records, setRecords] = useState<MedicalRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -166,7 +166,7 @@ export function MedicalRecordsView({ stockId }: Props) {
           <View key={record.id} style={[styles.historyRow, styles.historyRowUp, recordStyles.row]}>
             <View style={styles.cardInfo}>
               <View style={recordStyles.header}>
-                <Text style={styles.historyRowDate}>{formatDate(record.visitDate)}</Text>
+                <Text style={styles.historyRowDate}>{formatDate(record.visitDate, language)}</Text>
                 <Text style={styles.historyRowWeight}>{record.recordType}</Text>
               </View>
 
@@ -221,7 +221,7 @@ export function MedicalRecordsView({ stockId }: Props) {
               ) : null}
               {record.followUpDate ? (
                 <Text style={recordStyles.line}>
-                  {t('medicalRecord.followUpDate')}: {formatDate(record.followUpDate)}
+                  {t('medicalRecord.followUpDate')}: {formatDate(record.followUpDate, language)}
                 </Text>
               ) : null}
               {record.cost != null || record.outcome ? (
@@ -247,7 +247,7 @@ export function MedicalRecordsView({ stockId }: Props) {
       {error ? <Text style={styles.errorText}>{t('medicalRecord.loadError')}</Text> : null}
 
       <Pressable style={styles.addButton} onPress={openAdd}>
-        <Ionicons name="add" size={18} color={Brand.dark} />
+        <Ionicons name="add" size={18} color="#FFFFFF" />
         <Text style={styles.addButtonLabel}>{t('medicalRecord.addRecord')}</Text>
       </Pressable>
 
@@ -500,10 +500,8 @@ function parseFloatOrNull(value: string): number | null {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
-function formatDate(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleDateString();
+function formatDate(iso: string, language: DateLanguage): string {
+  return formatLocalizedIsoDate(iso, language);
 }
 
 const recordStyles = StyleSheet.create({

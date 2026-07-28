@@ -1,0 +1,43 @@
+.image-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.image-field-preview {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.image-field-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--color-green-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.image-field-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-green);
+  padding-right: 8px;
+}
+
+.image-field-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}

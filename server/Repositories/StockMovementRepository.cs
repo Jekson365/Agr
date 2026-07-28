@@ -16,11 +16,29 @@ public class StockMovementRepository(AppDbContext context) : IStockMovementRepos
             .ToListAsync();
     }
 
+    public async Task<StockMovement?> GetByIdAsync(int id)
+    {
+        return await context.StockMovements.FindAsync(id);
+    }
+
     public async Task<StockMovement> AddAsync(StockMovement movement)
     {
         context.StockMovements.Add(movement);
         await context.SaveChangesAsync();
         return movement;
+    }
+
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var existing = await context.StockMovements.FindAsync(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        context.StockMovements.Remove(existing);
+        await context.SaveChangesAsync();
+        return true;
     }
 
     public async Task<bool> UpdateForHarvestItemAsync(int harvestItemId, int stockId, decimal delta)

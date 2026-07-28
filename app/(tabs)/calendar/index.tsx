@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,13 +15,25 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { toIsoDate } from '@/components/ui/date-utils';
+import { styles as sharedStyles } from '@/components/farm/shared/styles';
+import { isOverdue } from '@/components/harvest/harvest-analysis';
+import { HARVEST_STATUS_BADGE_STYLE, HARVEST_STATUS_BADGE_TEXT_STYLE, HARVEST_STATUS_LABEL_KEY } from '@/components/harvest/status';
+import { formatLocalizedDate, formatTime, toIsoDate } from '@/components/ui/date-utils';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { TimeField } from '@/components/ui/time-field';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { createCalendarEvent, deleteCalendarEvent, getCalendarEvents } from '@/services/calendar-service';
+import { getHarvests } from '@/services/harvest-service';
 import type { CalendarEvent } from '@/types/calendar';
+import type { Harvest } from '@/types/harvest';
+
+// Distinct from Brand.green (used for manual events) so a harvest-marked day is visually
+// distinguishable at a glance.
+const HARVEST_DOT_COLOR = '#D97706';
+const HARVEST_TINT_COLOR = '#FBEBD5';
+// An overdue harvest takes the danger colour in place of the normal harvest amber.
+const OVERDUE_COLOR = '#DC2626';
 
 const MONTH_NAMES: Record<'en' | 'ka', string[]> = {
   en: [
@@ -63,14 +77,6 @@ function currentHhMm(): string {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
-/** Formats a `HH:mm` or `HH:mm:ss` time string for display (e.g. "9:30 AM"). */
-function formatEventTime(time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, 0, 0);
-  return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-}
-
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
@@ -99,8 +105,10 @@ export default function CalendarScreen() {
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(today);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [harvests, setHarvests] = useState<Harvest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
   const [eventInput, setEventInput] = useState('');
   const [eventTime, setEventTime] = useState(currentHhMm);
   const [saving, setSaving] = useState(false);
@@ -113,22 +121,52 @@ export default function CalendarScreen() {
 
   const selectedKey = toIsoDate(selected);
   const selectedEvents = events.filter((e) => e.date === selectedKey);
+
+  // A harvest lands on the calendar twice when the two differ: on its record date, and on the
+  // date it's expected to be picked. `expected` distinguishes which occurrence a row is.
+  const occurrences = useMemo<{ harvest: Harvest; date: string; expected: boolean }[]>(
+    () =>
+      harvests.flatMap((harvest) => {
+        const rows = [{ harvest, date: harvest.date, expected: false }];
+        if (harvest.expectedHarvestDate && harvest.expectedHarvestDate !== harvest.date) {
+          rows.push({ harvest, date: harvest.expectedHarvestDate, expected: true });
+        }
+        return rows;
+      }),
+    [harvests]
+  );
+
+  const selectedHarvests = occurrences.filter((o) => o.date === selectedKey);
   const eventDates = useMemo(() => new Set(events.map((e) => e.date)), [events]);
+  const harvestDates = useMemo(() => new Set(occurrences.map((o) => o.date)), [occurrences]);
+  // Days carrying an overdue harvest get the danger marker instead of the normal harvest one.
+  const overdueDates = useMemo(
+    () => new Set(occurrences.filter((o) => isOverdue(o.harvest)).map((o) => o.date)),
+    [occurrences]
+  );
 
   useEffect(() => {
     load();
   }, []);
 
-  async function load() {
-    setLoading(true);
+  async function load(opts?: { silent?: boolean }) {
+    if (!opts?.silent) setLoading(true);
     setError(null);
     try {
-      setEvents(await getCalendarEvents());
+      const [eventList, harvestList] = await Promise.all([getCalendarEvents(), getHarvests()]);
+      setEvents(eventList);
+      setHarvests(harvestList);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
+      setRefreshing(false);
     }
+  }
+
+  function onRefresh() {
+    setRefreshing(true);
+    load({ silent: true });
   }
 
   function goPrevMonth() {
@@ -183,7 +221,10 @@ export default function CalendarScreen() {
       </View>
 
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Brand.dark} />}>
           <View style={styles.monthNav}>
             <Pressable hitSlop={8} onPress={goPrevMonth} accessibilityRole="button" accessibilityLabel="Previous month">
               <Ionicons name="chevron-back" size={22} color={Brand.dark} />
@@ -212,11 +253,15 @@ export default function CalendarScreen() {
                   const isToday = isSameDay(date, today);
                   const isSelected = isSameDay(date, selected);
                   const hasEvent = eventDates.has(toIsoDate(date));
+                  const hasHarvest = harvestDates.has(toIsoDate(date));
+                  const hasOverdue = overdueDates.has(toIsoDate(date));
+                  const isMarked = hasEvent || hasHarvest;
                   return (
                     <Pressable key={date.toISOString()} style={styles.dayCell} onPress={() => selectDate(date)}>
                       <View
                         style={[
                           styles.dayCircle,
+                          isMarked && !isSelected && (hasEvent ? styles.dayCircleMarkedEvent : styles.dayCircleMarkedHarvest),
                           isToday && !isSelected && styles.dayCircleToday,
                           isSelected && styles.dayCircleSelected,
                         ]}>
@@ -229,8 +274,20 @@ export default function CalendarScreen() {
                           {date.getDate()}
                         </Text>
                       </View>
-                      {hasEvent && (
-                        <View style={[styles.eventDot, isSelected && styles.eventDotSelected]} />
+                      {(hasEvent || hasHarvest) && (
+                        <View style={styles.dotsRow}>
+                          {hasEvent && <View style={[styles.eventDot, isSelected && styles.eventDotSelected]} />}
+                          {hasHarvest && (
+                            <View
+                              style={[
+                                styles.harvestDot,
+                                hasOverdue && styles.overdueDot,
+                                isSelected && styles.harvestDotSelected,
+                                isSelected && hasOverdue && styles.overdueDotSelected,
+                              ]}
+                            />
+                          )}
+                        </View>
                       )}
                     </Pressable>
                   );
@@ -241,7 +298,7 @@ export default function CalendarScreen() {
 
           <View style={styles.eventsSection}>
             <Text style={styles.eventsSectionTitle}>
-              {selected.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
+              {formatLocalizedDate(selected, language, { weekday: true, year: false })}
             </Text>
 
             {loading ? (
@@ -251,12 +308,42 @@ export default function CalendarScreen() {
             ) : error ? (
               <View style={styles.eventsStateBox}>
                 <Text style={styles.eventsErrorText}>{strings.loadError}</Text>
-                <Pressable style={styles.eventsRetryButton} onPress={load}>
+                <Pressable style={styles.eventsRetryButton} onPress={() => load()}>
                   <Text style={styles.eventsRetryButtonLabel}>{t('common.retry')}</Text>
                 </Pressable>
               </View>
             ) : (
               <>
+                {selectedHarvests.length > 0 && (
+                  <View style={styles.harvestsList}>
+                    {selectedHarvests.map(({ harvest: item, expected }) => (
+                      <Pressable
+                        key={`${item.id}-${expected ? 'expected' : 'record'}`}
+                        style={styles.harvestRow}
+                        onPress={() => router.push({ pathname: '/harvest/detail/[id]', params: { id: item.id } })}>
+                        <View style={styles.harvestRowLeft}>
+                          <Ionicons name="leaf-outline" size={16} color={HARVEST_DOT_COLOR} />
+                          <Text style={styles.harvestRowText} numberOfLines={1}>
+                            {item.title}
+                          </Text>
+                          {expected ? (
+                            <View style={[styles.harvestTag, isOverdue(item) && styles.harvestTagOverdue]}>
+                              <Text style={[styles.harvestTagText, isOverdue(item) && styles.harvestTagTextOverdue]}>
+                                {isOverdue(item) ? t('harvest.overdue') : t('harvest.expectedTag')}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
+                        <View style={[sharedStyles.statusBadge, HARVEST_STATUS_BADGE_STYLE[item.status]]}>
+                          <Text style={[sharedStyles.statusBadgeText, HARVEST_STATUS_BADGE_TEXT_STYLE[item.status]]}>
+                            {t(HARVEST_STATUS_LABEL_KEY[item.status])}
+                          </Text>
+                        </View>
+                      </Pressable>
+                    ))}
+                  </View>
+                )}
+
                 <TextInput
                   style={styles.eventInput}
                   value={eventInput}
@@ -290,7 +377,7 @@ export default function CalendarScreen() {
                   selectedEvents.map((item) => (
                     <View key={item.id} style={styles.eventRow}>
                       <View style={styles.eventRowLeft}>
-                        <Text style={styles.eventRowTime}>{formatEventTime(item.time)}</Text>
+                        <Text style={styles.eventRowTime}>{formatTime(item.time)}</Text>
                         <Text style={styles.eventRowText}>{item.title}</Text>
                       </View>
                       <Pressable
@@ -386,6 +473,12 @@ const styles = StyleSheet.create({
   dayCircleSelected: {
     backgroundColor: Brand.green,
   },
+  dayCircleMarkedEvent: {
+    backgroundColor: Brand.greenMuted,
+  },
+  dayCircleMarkedHarvest: {
+    backgroundColor: HARVEST_TINT_COLOR,
+  },
   dayLabel: {
     fontSize: 14,
     color: Brand.dark,
@@ -397,23 +490,102 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '700',
   },
-  eventDot: {
+  dotsRow: {
     position: 'absolute',
-    bottom: 1,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    bottom: 2,
+    flexDirection: 'row',
+    gap: 4,
+  },
+  eventDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
     backgroundColor: Brand.green,
     shadowColor: Brand.green,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.7,
+    shadowRadius: 3,
+    elevation: 3,
   },
   eventDotSelected: {
     backgroundColor: '#FFFFFF',
+    borderColor: Brand.green,
     shadowColor: '#000000',
     shadowOpacity: 0.25,
+  },
+  overdueDot: {
+    backgroundColor: OVERDUE_COLOR,
+    shadowColor: OVERDUE_COLOR,
+  },
+  overdueDotSelected: {
+    backgroundColor: '#FFFFFF',
+    borderColor: OVERDUE_COLOR,
+    shadowColor: '#000000',
+    shadowOpacity: 0.25,
+  },
+  harvestTag: {
+    paddingHorizontal: 7,
+    paddingVertical: 1,
+    borderRadius: 9,
+    backgroundColor: Brand.greenMuted,
+  },
+  harvestTagOverdue: {
+    backgroundColor: '#FEF2F2',
+  },
+  harvestTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Brand.green,
+  },
+  harvestTagTextOverdue: {
+    color: OVERDUE_COLOR,
+  },
+  harvestDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    backgroundColor: HARVEST_DOT_COLOR,
+    shadowColor: HARVEST_DOT_COLOR,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.7,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  harvestDotSelected: {
+    backgroundColor: '#FFFFFF',
+    borderColor: HARVEST_DOT_COLOR,
+    shadowColor: '#000000',
+    shadowOpacity: 0.25,
+  },
+  harvestsList: {
+    marginBottom: 14,
+  },
+  harvestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: Brand.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  harvestRowLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 10,
+  },
+  harvestRowText: {
+    flex: 1,
+    fontSize: 14,
+    color: Brand.dark,
   },
   eventsSection: {
     paddingHorizontal: 20,

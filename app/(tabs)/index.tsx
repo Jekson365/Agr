@@ -1,21 +1,37 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View, type ImageSourcePropType } from 'react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  type ImageSourcePropType,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { formatTime, toIsoDate } from '@/components/ui/date-utils';
+import { GreetingPopup } from '@/components/ui/greeting-popup';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { NotificationsSheet } from '@/components/ui/notifications-sheet';
 import { Brand } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { useNotifications } from '@/contexts/notifications-context';
+import { resolveAssetUrl } from '@/services/api-client';
+import { getCalendarEvents } from '@/services/calendar-service';
 import { getCurrentWeather } from '@/services/weather-service';
+import type { CalendarEvent } from '@/types/calendar';
 import type { CurrentWeather } from '@/types/weather';
 
 type QuickAccessItem = {
   key: string;
   labelKey: string;
-  icon: ImageSourcePropType;
+  icon?: ImageSourcePropType;
+  ionicon?: keyof typeof Ionicons.glyphMap;
   href: Parameters<typeof router.push>[0];
 };
 
@@ -26,18 +42,24 @@ const QUICK_ACCESS: QuickAccessItem[] = [
     labelKey: 'dashboard.harvest',
     icon: require('@/assets/icons/harvest.png'),
     href: '/harvest',
+},
+  {
+    key: 'scanner',
+    labelKey: 'dashboard.aiPlantScanner',
+    icon: require('@/assets/icons/camera.png'),
+    href: '/scanner',
   },
-  // {
-  //   key: 'scanner',
-  //   labelKey: 'dashboard.aiPlantScanner',
-  //   icon: require('@/assets/icons/camera.png'),
-  //   href: '/scanner',
-  // },
   {
     key: 'marketplace',
     labelKey: 'dashboard.marketplace',
     icon: require('@/assets/icons/market.png'),
     href: '/market',
+  },
+  {
+    key: 'report',
+    labelKey: 'dashboard.report',
+    icon: require('@/assets/icons/report.png'),
+    href: '/report',
   },
   // {
   //   key: 'workers',
@@ -74,12 +96,35 @@ function weatherIconName(weather: CurrentWeather | null): keyof typeof Ionicons.
   return weather.isDay ? 'sunny-outline' : 'moon-outline';
 }
 
+function initialsFor(name: string | undefined): string {
+  return (name ?? '')
+    .split(' ')
+    .map((part) => part.charAt(0))
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
 export default function DashboardScreen() {
   const { t } = useLanguage();
+  const { user, justSignedIn, acknowledgeSignIn } = useAuth();
   const { notifications, unreadCount, markAllRead } = useNotifications();
   const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const [greetingVisible, setGreetingVisible] = useState(false);
+
+  useEffect(() => {
+    if (justSignedIn) {
+      setGreetingVisible(true);
+      acknowledgeSignIn();
+    }
+  }, [justSignedIn, acknowledgeSignIn]);
   const [weather, setWeather] = useState<CurrentWeather | null>(null);
   const [weatherFailed, setWeatherFailed] = useState(false);
+
+  const [todaysEvents, setTodaysEvents] = useState<CalendarEvent[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -95,6 +140,31 @@ export default function DashboardScreen() {
     };
   }, []);
 
+  // Re-fetch whenever the dashboard regains focus, so an event added/removed from the Calendar
+  // screen is reflected here without needing a manual refresh.
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+      setEventsLoading(true);
+      setEventsError(false);
+      getCalendarEvents()
+        .then((all) => {
+          if (cancelled) return;
+          const todayKey = toIsoDate(new Date());
+          setTodaysEvents(all.filter((e) => e.date === todayKey).sort((a, b) => a.time.localeCompare(b.time)));
+        })
+        .catch(() => {
+          if (!cancelled) setEventsError(true);
+        })
+        .finally(() => {
+          if (!cancelled) setEventsLoading(false);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }, [])
+  );
+
   function openNotifications() {
     setNotificationsVisible(true);
     markAllRead();
@@ -104,10 +174,18 @@ export default function DashboardScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Pressable hitSlop={8}>
-            <Ionicons name="menu-outline" size={26} color={Brand.dark} />
+          <Pressable style={styles.userChip} onPress={() => router.push('/profile')}>
+            <View style={styles.userAvatar}>
+              {user?.imagePath ? (
+                <Image source={{ uri: resolveAssetUrl(user.imagePath) }} style={styles.userAvatarImage} resizeMode="cover" />
+              ) : (
+                <Text style={styles.userAvatarText}>{initialsFor(user?.name)}</Text>
+              )}
+            </View>
+            <Text style={styles.userName} numberOfLines={1}>
+              {user?.name}
+            </Text>
           </Pressable>
-          <Text style={styles.greeting}>{t('dashboard.greeting')}</Text>
           <View style={styles.headerActions}>
             <LanguageToggle />
             <Pressable hitSlop={8} onPress={openNotifications} accessibilityRole="button" accessibilityLabel="Notifications">
@@ -125,7 +203,11 @@ export default function DashboardScreen() {
               style={styles.quickAccessItem}
               onPress={() => router.push(item.href)}>
               <View style={styles.quickAccessIcon}>
-                <Image source={item.icon} style={styles.quickAccessImage} resizeMode="contain" />
+                {item.icon ? (
+                  <Image source={item.icon} style={styles.quickAccessImage} resizeMode="contain" />
+                ) : item.ionicon ? (
+                  <Ionicons name={item.ionicon} size={40} color={Brand.green} />
+                ) : null}
               </View>
               <Text style={styles.quickAccessLabel} numberOfLines={2}>
                 {t(item.labelKey)}
@@ -134,7 +216,34 @@ export default function DashboardScreen() {
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>{t('dashboard.myOverview')}</Text>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionTitle}>{t('dashboard.todaysEvents')}</Text>
+          <Pressable onPress={() => router.push('/calendar')} hitSlop={8}>
+            <Text style={styles.seeAllLabel}>{t('dashboard.seeAll')}</Text>
+          </Pressable>
+        </View>
+        {eventsLoading ? (
+          <View style={styles.eventsStateBox}>
+            <ActivityIndicator color={Brand.dark} />
+          </View>
+        ) : eventsError ? (
+          <Text style={styles.eventsEmptyText}>{t('dashboard.eventsLoadError')}</Text>
+        ) : todaysEvents.length === 0 ? (
+          <Text style={styles.eventsEmptyText}>{t('dashboard.noEventsToday')}</Text>
+        ) : (
+          <View style={styles.eventsList}>
+            {todaysEvents.map((item) => (
+              <Pressable key={item.id} style={styles.eventRow} onPress={() => router.push('/calendar')}>
+                <Text style={styles.eventRowTime}>{formatTime(item.time)}</Text>
+                <Text style={styles.eventRowTitle} numberOfLines={1}>
+                  {item.title}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
+
+        {/* <Text style={styles.sectionTitle}>{t('dashboard.myOverview')}</Text>
         <View style={styles.overviewRow}>
           {OVERVIEW.map((item) => (
             <View key={item.key} style={styles.overviewCard}>
@@ -142,7 +251,7 @@ export default function DashboardScreen() {
               <Text style={styles.overviewLabel}>{t(item.labelKey)}</Text>
             </View>
           ))}
-        </View>
+        </View> */}
 
         <Text style={styles.sectionTitle}>{t('dashboard.weather')}</Text>
         <View style={styles.weatherCard}>
@@ -153,7 +262,7 @@ export default function DashboardScreen() {
             {weather ? (
               <>
                 <Text style={styles.weatherTemp}>{Math.round(weather.tempC)}°C</Text>
-                <Text style={styles.weatherLocation}>{weather.location}</Text>
+                {/* <Text style={styles.weatherLocation}>{weather.location}</Text> */}
                 <Text style={styles.weatherCondition}>{weather.condition}</Text>
               </>
             ) : (
@@ -170,6 +279,8 @@ export default function DashboardScreen() {
         notifications={notifications}
         onClose={() => setNotificationsVisible(false)}
       />
+
+      <GreetingPopup visible={greetingVisible} onClose={() => setGreetingVisible(false)} />
     </SafeAreaView>
   );
 }
@@ -190,10 +301,35 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 24,
   },
-  greeting: {
+  userChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
+  },
+  userAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Brand.greenMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  userAvatarImage: {
+    width: '100%',
+    height: '100%',
+  },
+  userAvatarText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Brand.green,
+  },
+  userName: {
     fontSize: 17,
     fontWeight: '600',
     color: Brand.dark,
+    flexShrink: 1,
   },
   headerActions: {
     flexDirection: 'row',
@@ -216,6 +352,50 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Brand.dark,
     marginBottom: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  seeAllLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Brand.green,
+    marginBottom: 12,
+  },
+  eventsStateBox: {
+    paddingVertical: 12,
+    marginBottom: 16,
+  },
+  eventsEmptyText: {
+    fontSize: 13,
+    color: Brand.muted,
+    marginBottom: 16,
+  },
+  eventsList: {
+    marginBottom: 16,
+  },
+  eventRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderColor: Brand.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  eventRowTime: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Brand.green,
+  },
+  eventRowTitle: {
+    flex: 1,
+    fontSize: 14,
+    color: Brand.dark,
   },
   quickAccessGrid: {
     flexDirection: 'row',

@@ -15,25 +15,18 @@ import {
   View,
 } from 'react-native';
 
-import { LIVESTOCK_KIND_OPTIONS } from '@/components/farm/livestock/livestock';
-import { KindPicker, type KindOption } from '@/components/farm/shared/kind-picker';
 import { styles } from '@/components/farm/shared/styles';
-import { stockTypeLabel } from '@/components/farm/stock/stock';
-import { fruitTypeLabel } from '@/components/farm/tree-stock/tree-stock';
-import { LISTING_CATEGORY_OPTIONS, LISTING_TYPE_OPTIONS } from '@/components/market/market-listing';
+import { LISTING_TYPE_OPTIONS } from '@/components/market/market-listing';
+import { SelectField } from '@/components/ui/select-field';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
-import { createFruitKind, getFruitKinds } from '@/services/fruit-kind-service';
 import {
   createMarketListing,
   updateMarketListing,
   uploadMarketListingImage,
 } from '@/services/market-listing-service';
-import { createStockKind, getStockKinds } from '@/services/stock-kind-service';
-import type { FruitKind } from '@/types/fruit-kind';
-import type { ListingCategory, ListingType, MarketListing } from '@/types/market-listing';
-import type { StockKind } from '@/types/stock-kind';
+import type { ListingType, MarketListing } from '@/types/market-listing';
 
 type Props = {
   visible: boolean;
@@ -46,8 +39,6 @@ export function ListingFormModal({ visible, editingListing, onClose, onSaved }: 
   const { t } = useLanguage();
 
   const [listingType, setListingType] = useState<ListingType>('Sale');
-  const [category, setCategory] = useState<ListingCategory>('Stock');
-  const [itemType, setItemType] = useState('');
   const [titleInput, setTitleInput] = useState('');
   const [descriptionInput, setDescriptionInput] = useState('');
   const [priceInput, setPriceInput] = useState('');
@@ -57,21 +48,15 @@ export function ListingFormModal({ visible, editingListing, onClose, onSaved }: 
   const [newImageUris, setNewImageUris] = useState<string[]>([]);
   const [existingImagePaths, setExistingImagePaths] = useState<string[]>([]);
 
-  const [stockKinds, setStockKinds] = useState<StockKind[]>([]);
-  const [fruitKinds, setFruitKinds] = useState<FruitKind[]>([]);
-  const [kindsLoading, setKindsLoading] = useState(true);
-
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const isEditing = editingListing != null;
 
-  // Initialize the fields, and load which stock/fruit kinds exist to pick from, whenever opened.
+  // Initialize the fields whenever opened.
   useEffect(() => {
     if (!visible) return;
     setListingType(editingListing?.type ?? 'Sale');
-    setCategory(editingListing?.category ?? 'Stock');
-    setItemType(editingListing?.itemType ?? '');
     setTitleInput(editingListing?.title ?? '');
     setDescriptionInput(editingListing?.description ?? '');
     setPriceInput(editingListing ? String(editingListing.price) : '');
@@ -81,48 +66,8 @@ export function ListingFormModal({ visible, editingListing, onClose, onSaved }: 
     setNewImageUris([]);
     setExistingImagePaths(editingListing?.imagePaths ?? []);
     setFormError(null);
-    loadKinds();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, editingListing]);
-
-  async function loadKinds() {
-    setKindsLoading(true);
-    try {
-      const [stocks, fruits] = await Promise.all([getStockKinds(), getFruitKinds()]);
-      setStockKinds(stocks);
-      setFruitKinds(fruits);
-    } catch {
-      setStockKinds([]);
-      setFruitKinds([]);
-    } finally {
-      setKindsLoading(false);
-    }
-  }
-
-  async function handleAddStockKind(name: string): Promise<KindOption | null> {
-    try {
-      const created = await createStockKind({ name });
-      setStockKinds((prev) => (prev.some((k) => k.name === created.name) ? prev : [...prev, created]));
-      return { value: created.name, label: stockTypeLabel(created.name, t) };
-    } catch {
-      return null;
-    }
-  }
-
-  async function handleAddFruitKind(name: string): Promise<KindOption | null> {
-    try {
-      const created = await createFruitKind({ name });
-      setFruitKinds((prev) => (prev.some((k) => k.name === created.name) ? prev : [...prev, created]));
-      return { value: created.name, label: fruitTypeLabel(created.name, t) };
-    } catch {
-      return null;
-    }
-  }
-
-  function handleSelectCategory(next: ListingCategory) {
-    setCategory(next);
-    setItemType('');
-  }
 
   async function pickImages() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -150,12 +95,11 @@ export function ListingFormModal({ visible, editingListing, onClose, onSaved }: 
     setNewImageUris((prev) => prev.filter((u) => u !== uri));
   }
 
-  const needsItemType = category === 'Stock' || category === 'TreeStock' || category === 'Livestock';
   const trimmedTitle = titleInput.trim();
   const price = Math.max(0, parseFloat(priceInput) || 0);
   const quantity = quantityInput.trim() === '' ? null : Math.max(0, parseFloat(quantityInput) || 0);
 
-  const canSubmit = price > 0 && (needsItemType ? itemType.trim() !== '' : trimmedTitle !== '') && !saving;
+  const canSubmit = price > 0 && trimmedTitle !== '' && !saving;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -167,8 +111,8 @@ export function ListingFormModal({ visible, editingListing, onClose, onSaved }: 
       const imagePaths = [...existingImagePaths, ...uploadedPaths];
       const payload = {
         type: listingType,
-        category,
-        itemType,
+        category: editingListing?.category ?? 'Other',
+        itemType: editingListing?.itemType ?? '',
         title: trimmedTitle,
         description: descriptionInput.trim() || null,
         price,
@@ -203,85 +147,18 @@ export function ListingFormModal({ visible, editingListing, onClose, onSaved }: 
 
           <ScrollView style={styles.formScrollArea}>
             <Text style={styles.fieldLabel}>{t('market.listingTypeLabel')}</Text>
-            <View style={styles.kindRow}>
-              {LISTING_TYPE_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  style={[styles.kindChip, listingType === opt.value && styles.kindChipActive]}
-                  onPress={() => setListingType(opt.value)}>
-                  <Text style={[styles.kindChipLabel, listingType === opt.value && styles.kindChipLabelActive]}>
-                    {t(opt.labelKey)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            <Text style={styles.fieldLabel}>{t('market.categoryLabel')}</Text>
-            <View style={styles.kindRow}>
-              {LISTING_CATEGORY_OPTIONS.map((opt) => (
-                <Pressable
-                  key={opt.value}
-                  style={[styles.kindChip, category === opt.value && styles.kindChipActive]}
-                  onPress={() => handleSelectCategory(opt.value)}>
-                  <Text style={[styles.kindChipLabel, category === opt.value && styles.kindChipLabelActive]}>
-                    {t(opt.labelKey)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {category === 'Stock' && (
-              <>
-                <Text style={styles.fieldLabel}>{t('market.itemType')}</Text>
-                <KindPicker
-                  options={stockKinds.map((k) => ({ value: k.name, label: stockTypeLabel(k.name, t) }))}
-                  selected={itemType}
-                  onSelect={setItemType}
-                  onAddNew={handleAddStockKind}
-                  addPlaceholder={t('farm.newStockTypePlaceholder')}
-                  loading={kindsLoading}
-                />
-              </>
-            )}
-
-            {category === 'TreeStock' && (
-              <>
-                <Text style={styles.fieldLabel}>{t('market.itemType')}</Text>
-                <KindPicker
-                  options={fruitKinds.map((k) => ({ value: k.name, label: fruitTypeLabel(k.name, t) }))}
-                  selected={itemType}
-                  onSelect={setItemType}
-                  onAddNew={handleAddFruitKind}
-                  addPlaceholder={t('treeStock.newFruitTypePlaceholder')}
-                  loading={kindsLoading}
-                />
-              </>
-            )}
-
-            {category === 'Livestock' && (
-              <>
-                <Text style={styles.fieldLabel}>{t('market.itemType')}</Text>
-                <View style={styles.kindRow}>
-                  {LIVESTOCK_KIND_OPTIONS.map((opt) => (
-                    <Pressable
-                      key={opt.value}
-                      style={[styles.kindChip, itemType === opt.value && styles.kindChipActive]}
-                      onPress={() => setItemType(opt.value)}>
-                      <Text style={[styles.kindChipLabel, itemType === opt.value && styles.kindChipLabelActive]}>
-                        {t(opt.labelKey)}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </>
-            )}
+            <SelectField
+              options={LISTING_TYPE_OPTIONS.map((opt) => ({ value: opt.value, label: t(opt.labelKey) }))}
+              selected={listingType}
+              onSelect={setListingType}
+            />
 
             <Text style={styles.fieldLabel}>{t('market.titleLabel')}</Text>
             <TextInput
               style={styles.input}
               value={titleInput}
               onChangeText={setTitleInput}
-              placeholder={needsItemType ? t('market.titlePlaceholderOptional') : t('market.titlePlaceholder')}
+              placeholder={t('market.titlePlaceholder')}
               placeholderTextColor={Brand.muted}
             />
 
