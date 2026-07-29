@@ -15,4 +15,9 @@ public interface IHarvestProductRepository
     Task<HarvestProduct> AddAsync(HarvestProduct harvestProduct);
     Task<bool> UpdateAsync(HarvestProduct harvestProduct);
     Task<bool> DeleteAsync(int id);
+
+    /// <summary>Brings every produce row of a harvest in line with its status: the movements that
+    /// put the fruit on its product's balance exist only while the harvest is Harvested. Call it
+    /// after the status changes, so moving back off Harvested takes the produce away again.</summary>
+    Task SyncMovementsForHarvestAsync(int harvestId);
 }

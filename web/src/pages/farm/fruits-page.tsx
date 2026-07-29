@@ -7,9 +7,10 @@ import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form-modal';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
-import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
+import { fruitKindImage, fruitTypeLabel, treeStockLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
+import { getUsedTreeStockIds } from '@/services/land-plot-service';
 import { deleteTreeStock, getTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 
@@ -24,6 +25,8 @@ export function FruitsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TreeStock | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+  /** Which fruits are planted on a plot — deleting one of those takes its plot with it. */
+  const [plantedIds, setPlantedIds] = useState<Set<number>>(new Set());
   /** Non-null while the packet list is up; holds the cap message that raised it. */
   const [packetsMessage, setPacketsMessage] = useState<string | null>(null);
 
@@ -35,7 +38,9 @@ export function FruitsPage() {
     setLoading(true);
     setError(null);
     try {
-      setItems(await getTreeStock());
+      const [list, planted] = await Promise.all([getTreeStock(), getUsedTreeStockIds()]);
+      setItems(list);
+      setPlantedIds(new Set(planted));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -89,6 +94,11 @@ export function FruitsPage() {
     setItems((prev) => (isNew ? [...prev, item] : prev.map((i) => (i.id === item.id ? item : i))));
   }
 
+  /** What else goes with the fruit: the product it yields always, its plot when it has one. */
+  function deleteBody(id: number): string {
+    return t(plantedIds.has(id) ? 'treeStock.deletePlanted' : 'treeStock.deleteProduct');
+  }
+
   return (
     <div>
       <Link to="/farm" className="back-link">
@@ -117,7 +127,7 @@ export function FruitsPage() {
           {items.map((item) => {
             const typeLabel = fruitTypeLabel(item.type, t);
             const unitLabel = t(TREE_STOCK_UNIT_LABEL_KEY[item.unit]);
-            const title = item.name.trim() || typeLabel;
+            const title = treeStockLabel(item, t);
             return (
               <div key={item.id} className="list-card">
                 <Link to={`/farm/fruits/${item.id}`} className="list-card-body">
@@ -145,6 +155,7 @@ export function FruitsPage() {
       <TreeStockFormModal
         open={formOpen}
         editingStock={editingItem}
+        existingItems={items}
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
         onLimitReached={handleLimitReached}
@@ -159,6 +170,7 @@ export function FruitsPage() {
       <ConfirmDeleteModal
         open={!!confirmDelete}
         name={confirmDelete?.name ?? ''}
+        body={confirmDelete ? deleteBody(confirmDelete.id) : undefined}
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteItem}
       />

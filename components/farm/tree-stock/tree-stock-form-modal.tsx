@@ -16,6 +16,7 @@ import { styles } from '@/components/farm/shared/styles';
 import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_OPTIONS } from '@/components/farm/tree-stock/tree-stock';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
+import { ApiError } from '@/services/api-client';
 import { createFruitKind, getFruitKinds } from '@/services/fruit-kind-service';
 import { createTreeStock, updateTreeStock } from '@/services/tree-stock-service';
 import type { FruitKind } from '@/types/fruit-kind';
@@ -24,11 +25,13 @@ import type { FruitType, TreeStock, TreeStockUnit } from '@/types/tree-stock';
 type Props = {
   visible: boolean;
   editingStock: TreeStock | null;
+  /** The rows that already exist, so a duplicate name is caught before saving. */
+  existingItems: TreeStock[];
   onClose: () => void;
   onSaved: (stock: TreeStock, isNew: boolean) => void;
 };
 
-export function TreeStockFormModal({ visible, editingStock, onClose, onSaved }: Props) {
+export function TreeStockFormModal({ visible, editingStock, existingItems, onClose, onSaved }: Props) {
   const { t } = useLanguage();
 
   const [kinds, setKinds] = useState<FruitKind[]>([]);
@@ -86,10 +89,23 @@ export function TreeStockFormModal({ visible, editingStock, onClose, onSaved }: 
   async function handleSubmit() {
     if (!canSubmit) return;
 
+    const trimmedName = nameInput.trim();
+    // The label is what tells two stocks of the same fruit apart, so it can't be shared. A blank
+    // one isn't a label — those rows show their fruit's name instead, and any number may exist.
+    const nameTaken =
+      trimmedName !== '' &&
+      existingItems.some(
+        (item) => item.id !== editingStock?.id && item.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+    if (nameTaken) {
+      setFormError(t('treeStock.nameDuplicate'));
+      return;
+    }
+
     setSaving(true);
     setFormError(null);
     try {
-      const name = nameInput.trim();
+      const name = trimmedName;
       if (isEditing) {
         const updated: TreeStock = { ...editingStock, type: fruitType, name, amount, unit };
         await updateTreeStock(updated.id, updated);
@@ -100,6 +116,11 @@ export function TreeStockFormModal({ visible, editingStock, onClose, onSaved }: 
       }
       onClose();
     } catch (err) {
+      // The server rejects a name another row already uses (e.g. added from another session).
+      if (err instanceof ApiError && err.status === 409) {
+        setFormError(t('treeStock.nameDuplicate'));
+        return;
+      }
       setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);

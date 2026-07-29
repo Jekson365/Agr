@@ -51,6 +51,12 @@ export function fruitKindImage(type: string): string {
   return FRUIT_KIND_IMAGE[type] ?? emptyIcon;
 }
 
+/** How a fruit entry is named wherever it's listed: its own label ("Gala Apples") when it was
+ * given one, else the fruit it is. */
+export function treeStockLabel(stock: { type: string; name: string }, t: (key: string) => string): string {
+  return stock.name.trim() || fruitTypeLabel(stock.type, t);
+}
+
 /** Units a tree's produce is measured in — weight, boxes, or counted pieces. */
 export const TREE_PRODUCT_UNIT_OPTIONS: { value: string; labelKey: string }[] = [
   { value: 'Kilogram', labelKey: 'farm.unitKg' },

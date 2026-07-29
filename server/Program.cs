@@ -72,6 +72,7 @@ builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 builder.Services.AddScoped<IStockFeedRepository, StockFeedRepository>();
 builder.Services.AddScoped<ITreeStockRepository, TreeStockRepository>();
 builder.Services.AddScoped<ITreeStockMovementRepository, TreeStockMovementRepository>();
+builder.Services.AddScoped<IHarvestStockSync, HarvestStockSync>();
 builder.Services.AddScoped<IHarvestRepository, HarvestRepository>();
 builder.Services.AddScoped<IHarvestItemRepository, HarvestItemRepository>();
 builder.Services.AddScoped<IHarvestResultRepository, HarvestResultRepository>();

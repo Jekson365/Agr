@@ -16,7 +16,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createFruitKind, deleteFruitKind, getFruitKinds } from '@/services/fruit-kind-service';
 import { getTreeProducts } from '@/services/tree-product-service';
-import { createTreeStock, updateTreeStock } from '@/services/tree-stock-service';
+import { createTreeStock, getTreeStock, updateTreeStock } from '@/services/tree-stock-service';
 import type { FruitKind } from '@/types/fruit-kind';
 import type { TreeProduct } from '@/types/tree-product';
 import type { FruitType, TreeStock, TreeStockUnit } from '@/types/tree-stock';
@@ -24,13 +24,23 @@ import type { FruitType, TreeStock, TreeStockUnit } from '@/types/tree-stock';
 type Props = {
   open: boolean;
   editingStock: TreeStock | null;
+  /** The rows that already exist, so a name or a product another row holds is caught before
+   *  saving — and, for the product, kept out of the picker in the first place. */
+  existingItems: TreeStock[];
   onClose: () => void;
   onSaved: (stock: TreeStock, isNew: boolean) => void;
   /** Called instead of showing an inline error when the plan cap is what refused the write. */
   onLimitReached?: (message: string) => void;
 };
 
-export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLimitReached }: Props) {
+export function TreeStockFormModal({
+  open,
+  editingStock,
+  existingItems,
+  onClose,
+  onSaved,
+  onLimitReached,
+}: Props) {
   const { t } = useLanguage();
 
   const [kinds, setKinds] = useState<FruitKind[]>([]);
@@ -48,6 +58,8 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
   const [products, setProducts] = useState<TreeProduct[]>([]);
   const [productId, setProductId] = useState<number | null>(null);
   const [productModalOpen, setProductModalOpen] = useState(false);
+  /** The products the other rows already yield — one orchard per product, so these aren't on offer. */
+  const [takenProducts, setTakenProducts] = useState<Set<number>>(new Set());
 
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -62,8 +74,10 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
     setUnit(editingStock?.unit ?? TREE_STOCK_DEFAULT_UNIT);
     setFormError(null);
     setKindError(null);
+    const taken = productsOfOtherRows(existingItems, editingStock);
+    setTakenProducts(taken);
     loadKinds(editingStock?.type ?? null);
-    loadProducts(editingStock?.treeProductId ?? null);
+    loadProducts(editingStock?.treeProductId ?? null, taken);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingStock]);
 
@@ -82,12 +96,12 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
     }
   }
 
-  async function loadProducts(preset: number | null) {
+  async function loadProducts(preset: number | null, taken: Set<number>) {
     try {
       const list = await getTreeProducts();
       setProducts(list);
-      // A product is required, so default to the assigned one, else the first in the catalog.
-      setProductId(preset ?? list[0]?.id ?? null);
+      // A product is required, so default to the assigned one, else the first one still free.
+      setProductId(preset ?? list.find((product) => !taken.has(product.id))?.id ?? null);
     } catch {
       setProducts([]);
       setProductId(preset);
@@ -156,10 +170,30 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
   async function handleSubmit() {
     if (!canSubmit) return;
 
+    const trimmedName = nameInput.trim();
+    // The label is what tells two stocks of the same fruit apart, so it can't be shared. A blank
+    // one isn't a label — those rows show their fruit's name instead, and any number may exist.
+    const nameTaken =
+      trimmedName !== '' &&
+      existingItems.some(
+        (item) => item.id !== editingStock?.id && item.name.trim().toLowerCase() === trimmedName.toLowerCase()
+      );
+    if (nameTaken) {
+      setFormError(t('treeStock.nameDuplicate'));
+      return;
+    }
+
+    // The picker leaves out products another row yields, so this only catches one that was taken
+    // while the form sat open.
+    if (productId != null && takenProducts.has(productId)) {
+      setFormError(t('treeProduct.taken'));
+      return;
+    }
+
     setSaving(true);
     setFormError(null);
     try {
-      const name = nameInput.trim();
+      const name = trimmedName;
       if (isEditing) {
         const updated: TreeStock = { ...editingStock, type: fruitType, name, amount, unit, treeProductId: productId };
         await updateTreeStock(updated.id, updated);
@@ -174,15 +208,43 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
         onLimitReached(err.message);
         return;
       }
+      // The server rejects a name or a product another row already holds (e.g. one added from
+      // another session, which this form couldn't have known about).
+      if (err instanceof ApiError && err.status === 409) {
+        setFormError(await conflictMessage());
+        return;
+      }
       setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);
     }
   }
 
+  /**
+   * Which of the two rules the server refused on. Reads the rows back rather than guessing: a 409
+   * means this form's picture of them was out of date, so the fresh list also re-hides a product
+   * that was claimed meanwhile.
+   */
+  async function conflictMessage(): Promise<string> {
+    try {
+      const rows = await getTreeStock();
+      const taken = productsOfOtherRows(rows, editingStock);
+      setTakenProducts(taken);
+      if (productId != null && taken.has(productId)) {
+        setProductId(null);
+        return t('treeProduct.taken');
+      }
+    } catch {
+      // Couldn't look: the name is the other way a save is refused, so say that.
+    }
+    return t('treeStock.nameDuplicate');
+  }
+
   function productLabel(product: TreeProduct): string {
     return `${product.name} (${t(TREE_PRODUCT_UNIT_LABEL_KEY[product.unit] ?? 'farm.unitKg')})`;
   }
+
+  const freeProducts = products.filter((product) => !takenProducts.has(product.id));
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -229,12 +291,13 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
           <span className="limit-hint">{t(TREE_STOCK_UNIT_LABEL_KEY[unit] ?? 'farm.unitPlant')}</span>
         </div>
 
-        {/* Which catalog product these trees yield — required. Managed on the Products tab; a
-            new one can be added inline with the + when the catalog has nothing to pick. */}
+        {/* Which catalog product these trees yield — required, and one product to an orchard, so
+            the ones other fruit already yield aren't offered. Managed on the Products tab; a new
+            one can be added inline with the + when there's nothing left to pick. */}
         <div className="field">
           <label>{t('treeProduct.producesLabel')}</label>
           <div className="kind-row">
-            {products.map((product) => (
+            {freeProducts.map((product) => (
               <button
                 key={product.id}
                 type="button"
@@ -248,7 +311,11 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
               +
             </button>
           </div>
-          {products.length === 0 && <span className="limit-hint">{t('treeProduct.requiredHint')}</span>}
+          {freeProducts.length === 0 && (
+            <span className="limit-hint">
+              {t(products.length === 0 ? 'treeProduct.requiredHint' : 'treeProduct.allTaken')}
+            </span>
+          )}
         </div>
 
         {formError && <div className="error-banner">{formError}</div>}
@@ -278,4 +345,12 @@ export function TreeStockFormModal({ open, editingStock, onClose, onSaved, onLim
       />
     </Modal>
   );
+}
+
+/** The products already spoken for by rows other than the one being edited. */
+function productsOfOtherRows(rows: TreeStock[], editing: TreeStock | null): Set<number> {
+  const ids = rows
+    .filter((row) => row.id !== editing?.id && row.treeProductId != null)
+    .map((row) => row.treeProductId as number);
+  return new Set(ids);
 }

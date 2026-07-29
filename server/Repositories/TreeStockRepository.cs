@@ -17,6 +17,18 @@ public class TreeStockRepository(AppDbContext context, ITreeStockMovementReposit
         return await context.TreeStocks.FindAsync(id);
     }
 
+    public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
+    {
+        return await context.TreeStocks
+            .AnyAsync(s => s.Name.ToLower() == name.ToLower() && (excludeId == null || s.Id != excludeId));
+    }
+
+    public async Task<bool> ExistsByTreeProductAsync(int treeProductId, int? excludeId = null)
+    {
+        return await context.TreeStocks
+            .AnyAsync(s => s.TreeProductId == treeProductId && (excludeId == null || s.Id != excludeId));
+    }
+
     public async Task<TreeStock> AddAsync(TreeStock stock)
     {
         context.TreeStocks.Add(stock);

@@ -29,4 +29,8 @@ export type TreeProductMovement = {
   delta: number;
   source: TreeProductMovementSource;
   createdAt: string;
+  /** The date of the harvest behind this movement, `YYYY-MM-DD`. What the history is dated by:
+   *  `createdAt` is only when the row was written. Absent on manual and market adjustments, and
+   *  on the movement a POST hands back — neither of which comes from a harvest. */
+  harvestDate?: string | null;
 };

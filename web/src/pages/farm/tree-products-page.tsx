@@ -73,7 +73,7 @@ export function TreeProductsPage() {
       await deleteTreeProduct(id);
       setProducts((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
-      // The server refuses while a harvest still records produce against it.
+      // The server refuses while a fruit tree still yields it, or a harvest still records it.
       setError(
         err instanceof ApiError && err.status === 409
           ? t('treeProduct.deleteInUse')

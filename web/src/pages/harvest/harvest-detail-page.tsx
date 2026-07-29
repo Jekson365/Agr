@@ -18,6 +18,7 @@ import {
   isApplyingTransition,
   isDestructiveTransition,
   isOverdue,
+  stockMovingRows,
   type YieldRow,
 } from '@/config/harvest-analysis';
 import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/config/harvest-status';
@@ -150,7 +151,9 @@ export function HarvestDetailPage() {
     setStatusError(null);
     try {
       await updateHarvest(harvest.id, updated);
-      setHarvest(updated);
+      // Crossing the Harvested line rewrites what this harvest puts into stock, so reload rather
+      // than patching the status in — the results and the goods they moved are the server's now.
+      await load();
     } catch {
       setStatusError(t('farm.saveError'));
     } finally {
@@ -377,19 +380,22 @@ export function HarvestDetailPage() {
   // A status change that writes or reverses stock says so with real numbers, rather than the
   // generic "this will update the status" — reversing is the one move that silently rewrites
   // data outside this harvest.
-  const recordedCount = results.length;
+  // One entry per good that the change is actually about to write into — or take back out of —
+  // stock: its recorded result where there is one, its plan where there isn't. Counting the
+  // results alone would have promised nothing for a harvest whose yield is still only planned.
+  const movingCount = stockMovingRows(yieldRows, (row) => rawUnitFor(row.stockId, row.treeStockId)).length;
   const statusChangeBody = (() => {
     if (!harvest || pendingStatus == null) return t('harvest.statusConfirmBody');
 
     if (isApplyingTransition(harvest.status, pendingStatus)) {
-      return recordedCount === 0
+      return movingCount === 0
         ? t('harvest.statusConfirmBodyToHarvestedEmpty')
-        : t('harvest.statusConfirmBodyToHarvestedCount', { count: recordedCount });
+        : t('harvest.statusConfirmBodyToHarvestedCount', { count: movingCount });
     }
     if (isDestructiveTransition(harvest.status, pendingStatus)) {
-      return recordedCount === 0
+      return movingCount === 0
         ? t('harvest.statusConfirmBodyFromHarvested')
-        : t('harvest.statusConfirmBodyFromHarvestedCount', { count: recordedCount });
+        : t('harvest.statusConfirmBodyFromHarvestedCount', { count: movingCount });
     }
     return t('harvest.statusConfirmBody');
   })();
@@ -700,6 +706,10 @@ export function HarvestDetailPage() {
             <label>{t('harvest.plannedTitle')}</label>
           </div>
 
+          {/* The plan is what this harvest is taken to have yielded until a result says otherwise,
+              so it is what moves stock — worth saying where the amounts are entered. */}
+          {items.length > 0 && <p className="limit-hint">{t('harvestItem.movesStock')}</p>}
+
           {items.length === 0 ? (
             <p className="empty-state">
               {harvest?.status === 'Planning' ? t('harvestItem.plantingOnly') : t('harvestItem.empty')}
@@ -787,6 +797,7 @@ export function HarvestDetailPage() {
         open={treeFormOpen}
         harvestId={harvestId}
         editingTree={editingHarvestTree}
+        existingTrees={harvestTrees}
         onClose={() => setTreeFormOpen(false)}
         onSaved={handleTreeSaved}
       />

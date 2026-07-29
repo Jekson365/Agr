@@ -7,10 +7,8 @@ namespace Server.Repositories;
 
 public class HarvestRepository(
     AppDbContext context,
-    IStockRepository stockRepository,
-    IStockMovementRepository stockMovementRepository,
-    ITreeStockRepository treeStockRepository,
-    ITreeStockMovementRepository treeStockMovementRepository,
+    IHarvestStockSync harvestStockSync,
+    IHarvestProductRepository harvestProductRepository,
     ISeedRepository seedRepository) : IHarvestRepository
 {
     public async Task<IEnumerable<Harvest>> GetAllAsync(HarvestKind? kind = null)
@@ -43,8 +41,6 @@ public class HarvestRepository(
             return false;
         }
 
-        var previousStatus = existing.Status;
-
         existing.Title = harvest.Title;
         existing.Date = harvest.Date;
         existing.Status = harvest.Status;
@@ -59,16 +55,15 @@ public class HarvestRepository(
 
         await context.SaveChangesAsync();
 
-        // Stock is only ever adjusted for a harvest's recorded results once, at the moment it
-        // becomes Harvested; moving off Harvested again reverses that same contribution.
-        if (previousStatus != HarvestStatus.Harvested && harvest.Status == HarvestStatus.Harvested)
-        {
-            await ApplyStockAsync(harvest.Id);
-        }
-        else if (previousStatus == HarvestStatus.Harvested && harvest.Status != HarvestStatus.Harvested)
-        {
-            await ReverseStockAsync(harvest.Id);
-        }
+        // A harvest's yield is on the books only while it is Harvested, so the status is what
+        // decides whether it counts — crossing that line either way rewrites what it contributes.
+        // Both syncs compare against what is already recorded, so an edit that leaves the status
+        // alone costs a comparison and changes nothing.
+        await harvestStockSync.SyncAsync(harvest.Id);
+
+        // A fruit harvest's yield accrues on its tree product's ledger instead of on stock, but
+        // under the same rule.
+        await harvestProductRepository.SyncMovementsForHarvestAsync(harvest.Id);
 
         return true;
     }
@@ -81,13 +76,10 @@ public class HarvestRepository(
             return false;
         }
 
-        // Deleting the harvest cascades away its results, seed usage and the movement rows that
-        // explain them — but not the balances those movements moved. Undo them first, or the
+        // Deleting the harvest cascades away its plan, results, seed usage and the movement rows
+        // that explain them — but not the balances those movements moved. Undo them first, or the
         // stock keeps yield it never had and the seed stays down by an amount nothing records.
-        if (existing.Status == HarvestStatus.Harvested)
-        {
-            await ReverseStockAsync(id);
-        }
+        await harvestStockSync.ClearAsync(id);
         await ReturnSeedsAsync(id);
 
         context.Harvests.Remove(existing);
@@ -105,51 +97,4 @@ public class HarvestRepository(
         }
     }
 
-    private async Task ApplyStockAsync(int harvestId)
-    {
-        var results = await context.HarvestResults.AsNoTracking().Where(r => r.HarvestId == harvestId).ToListAsync();
-        foreach (var result in results)
-        {
-            if (result.StockId is int stockId)
-            {
-                await stockRepository.AdjustAmountRawAsync(stockId, result.Amount);
-                await stockMovementRepository.AddAsync(new StockMovement
-                {
-                    StockId = stockId,
-                    HarvestResultId = result.Id,
-                    Delta = result.Amount,
-                    Source = StockMovementSource.Harvest,
-                });
-            }
-            else if (result.TreeStockId is int treeStockId)
-            {
-                await treeStockRepository.AdjustAmountRawAsync(treeStockId, result.Amount);
-                await treeStockMovementRepository.AddAsync(new TreeStockMovement
-                {
-                    TreeStockId = treeStockId,
-                    HarvestResultId = result.Id,
-                    Delta = result.Amount,
-                    Source = StockMovementSource.Harvest,
-                });
-            }
-        }
-    }
-
-    private async Task ReverseStockAsync(int harvestId)
-    {
-        var results = await context.HarvestResults.AsNoTracking().Where(r => r.HarvestId == harvestId).ToListAsync();
-        foreach (var result in results)
-        {
-            if (result.StockId is int stockId)
-            {
-                await stockRepository.AdjustAmountRawAsync(stockId, -result.Amount);
-                await stockMovementRepository.DeleteForHarvestResultAsync(result.Id);
-            }
-            else if (result.TreeStockId is int treeStockId)
-            {
-                await treeStockRepository.AdjustAmountRawAsync(treeStockId, -result.Amount);
-                await treeStockMovementRepository.DeleteForHarvestResultAsync(result.Id);
-            }
-        }
-    }
 }

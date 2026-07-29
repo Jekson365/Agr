@@ -225,6 +225,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(t => t.LandPlotId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // A plot grows one of the farm's tree stock entries. Deleting the stock leaves the plot
+        // standing — it keeps its crop name and its area — so the reference just falls away.
+        modelBuilder.Entity<LandPlot>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(p => p.TreeStockId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         // Each tree stock movement belongs to a tree stock; deleting the tree stock removes its
         // movement log.
         modelBuilder.Entity<TreeStockMovement>()

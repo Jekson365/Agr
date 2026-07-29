@@ -9,14 +9,17 @@ import { ConfirmDeleteModal } from '@/components/farm/shared/confirm-delete-moda
 import { LandPlotFormModal } from '@/components/farm/land/land-plot-form-modal';
 import { cropImage, cropLabel } from '@/components/farm/land/crop';
 import { styles } from '@/components/farm/shared/styles';
+import { treeStockLabel } from '@/components/farm/tree-stock/tree-stock';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { getFarm } from '@/services/farm-service';
 import { deleteLandPlot, getLandPlots } from '@/services/land-plot-service';
+import { getTreeStock } from '@/services/tree-stock-service';
 import type { Farm } from '@/types/farm';
 import type { LandPlot } from '@/types/land-plot';
+import type { TreeStock } from '@/types/tree-stock';
 
 const LAND_IMAGE = require('@/assets/properties/land.png');
 
@@ -27,6 +30,8 @@ export default function LandDetailScreen() {
 
   const [farm, setFarm] = useState<Farm | null>(null);
   const [plots, setPlots] = useState<LandPlot[]>([]);
+  /** The farm's fruit entries, so each plot can be named after the one it grows. */
+  const [fruits, setFruits] = useState<TreeStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,9 +49,10 @@ export default function LandDetailScreen() {
     if (!opts?.silent) setLoading(true);
     setError(null);
     try {
-      const [item, list] = await Promise.all([getFarm(farmId), getLandPlots(farmId)]);
+      const [item, list, stock] = await Promise.all([getFarm(farmId), getLandPlots(farmId), getTreeStock()]);
       setFarm(item);
       setPlots(list);
+      setFruits(stock);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -72,6 +78,18 @@ export default function LandDetailScreen() {
 
   function handleSaved(plot: LandPlot, isNew: boolean) {
     setPlots((prev) => (isNew ? [...prev, plot] : prev.map((p) => (p.id === plot.id ? plot : p))));
+    // The form offers fruits added since this screen loaded, which aren't in the list yet — fetch
+    // them so the plot shows the name of the one it grows rather than falling back to its kind.
+    if (plot.treeStockId != null && !fruits.some((fruit) => fruit.id === plot.treeStockId)) {
+      getTreeStock().then(setFruits).catch(() => {});
+    }
+  }
+
+  /** A plot goes by the fruit entry planted on it — two plots of apples are "Gala" and "Fuji", not
+   *  "Apple" twice. Plots from before they named an entry fall back to the crop they recorded. */
+  function plotLabel(plot: LandPlot): string {
+    const fruit = fruits.find((item) => item.id === plot.treeStockId);
+    return fruit ? treeStockLabel(fruit, t) : cropLabel(plot.crop, t);
   }
 
   async function confirmDeletePlot() {
@@ -154,7 +172,7 @@ export default function LandDetailScreen() {
                     />
                   </View>
                   <View style={styles.detailInfo}>
-                    <Text style={styles.detailCode}>{cropLabel(plot.crop, t)}</Text>
+                    <Text style={styles.detailCode}>{plotLabel(plot)}</Text>
                     <Text style={styles.detailAge}>
                       {plot.area} {t('farm.areaUnit')}
                     </Text>
@@ -169,7 +187,7 @@ export default function LandDetailScreen() {
                     </Pressable>
                     <Pressable
                       hitSlop={8}
-                      onPress={() => setConfirmDelete({ id: plot.id, crop: plot.crop })}
+                      onPress={() => setConfirmDelete({ id: plot.id, crop: plotLabel(plot) })}
                       accessibilityRole="button"
                       accessibilityLabel={t('common.delete')}>
                       <Ionicons name="trash-outline" size={20} color={Brand.muted} />

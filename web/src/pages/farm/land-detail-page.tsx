@@ -7,12 +7,15 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LandPlotFormModal } from '@/components/farm/land/land-plot-form-modal';
 import { cropImage, cropLabel } from '@/config/crop';
+import { treeStockLabel } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { getFarm } from '@/services/farm-service';
 import { deleteLandPlot, getLandPlots } from '@/services/land-plot-service';
+import { getTreeStock } from '@/services/tree-stock-service';
 import type { Farm } from '@/types/farm';
 import type { LandPlot } from '@/types/land-plot';
+import type { TreeStock } from '@/types/tree-stock';
 import './land-detail-page.css';
 
 export function LandDetailPage() {
@@ -22,6 +25,8 @@ export function LandDetailPage() {
 
   const [farm, setFarm] = useState<Farm | null>(null);
   const [plots, setPlots] = useState<LandPlot[]>([]);
+  /** The farm's fruit entries, so each plot can be named after the one it grows. */
+  const [fruits, setFruits] = useState<TreeStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,9 +44,10 @@ export function LandDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [item, list] = await Promise.all([getFarm(farmId), getLandPlots(farmId)]);
+      const [item, list, stock] = await Promise.all([getFarm(farmId), getLandPlots(farmId), getTreeStock()]);
       setFarm(item);
       setPlots(list);
+      setFruits(stock);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -61,6 +67,11 @@ export function LandDetailPage() {
 
   function handleSaved(plot: LandPlot, isNew: boolean) {
     setPlots((prev) => (isNew ? [...prev, plot] : prev.map((p) => (p.id === plot.id ? plot : p))));
+    // The form offers fruits added since this page loaded, which aren't in the list yet — fetch
+    // them so the plot shows the name of the one it grows rather than falling back to its kind.
+    if (plot.treeStockId != null && !fruits.some((fruit) => fruit.id === plot.treeStockId)) {
+      getTreeStock().then(setFruits).catch(() => {});
+    }
   }
 
   async function confirmDeletePlot() {
@@ -79,6 +90,13 @@ export function LandDetailPage() {
   // How much of the land is accounted for by plots — the farm's own area is the ceiling.
   const allocatedArea = plots.reduce((sum, plot) => sum + plot.area, 0);
   const remainingArea = farm ? farm.area - allocatedArea : 0;
+
+  /** A plot goes by the fruit entry planted on it — two plots of apples are "Gala" and "Fuji", not
+   *  "Apple" twice. Plots from before they named an entry fall back to the crop they recorded. */
+  function plotLabel(plot: LandPlot): string {
+    const fruit = fruits.find((item) => item.id === plot.treeStockId);
+    return fruit ? treeStockLabel(fruit, t) : cropLabel(plot.crop, t);
+  }
 
   return (
     <div>
@@ -152,7 +170,7 @@ export function LandDetailPage() {
                       <img src={cropImage(plot.crop)} alt="" />
                     </span>
                     <span className="list-card-info">
-                      <span className="list-card-title">{cropLabel(plot.crop, t)}</span>
+                      <span className="list-card-title">{plotLabel(plot)}</span>
                       <br />
                       <span className="list-card-subtitle">
                         {plot.area} {t('farm.areaUnit')}
@@ -161,7 +179,7 @@ export function LandDetailPage() {
                   </button>
                   <CardMenu
                     onEdit={() => openEdit(plot)}
-                    onDelete={() => setConfirmDelete({ id: plot.id, crop: cropLabel(plot.crop, t) })}
+                    onDelete={() => setConfirmDelete({ id: plot.id, crop: plotLabel(plot) })}
                   />
                 </div>
               ))}

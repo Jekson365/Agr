@@ -11,7 +11,7 @@ namespace Server.Controllers;
 public class TreeProductMovementsController(ITreeProductMovementRepository treeProductMovementRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TreeProductMovement>>> Get([FromQuery] int? treeProductId)
+    public async Task<ActionResult<IEnumerable<TreeProductMovementDto>>> Get([FromQuery] int? treeProductId)
     {
         return Ok(await treeProductMovementRepository.GetAsync(treeProductId));
     }

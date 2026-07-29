@@ -105,10 +105,14 @@ public partial class ReportRepository
             return overview;
         }
 
-        // Fruit yield is recorded against the trees picked; a crop's against its results.
+        // Fruit yield is recorded against the trees picked; a crop's against its results, falling
+        // back to what it planned for any good it never recorded one for — see CropYield.
         var results = category == ReportCategory.Fruit
             ? []
             : await context.HarvestResults.AsNoTracking().Where(r => harvestIds.Contains(r.HarvestId)).ToListAsync();
+        var items = category == ReportCategory.Fruit
+            ? []
+            : await context.HarvestItems.AsNoTracking().Where(i => harvestIds.Contains(i.HarvestId)).ToListAsync();
         var trees = category == ReportCategory.Fruit
             ? await context.HarvestTrees.AsNoTracking().Where(tr => harvestIds.Contains(tr.HarvestId)).ToListAsync()
             : [];
@@ -117,38 +121,50 @@ public partial class ReportRepository
         var treeStocks = await context.TreeStocks.AsNoTracking().ToDictionaryAsync(s => s.Id, s => s);
         var treeProducts = await context.TreeProducts.AsNoTracking().ToDictionaryAsync(p => p.Id, p => p);
 
+        // What each crop harvest counts as having yielded, settled once and read by both the series
+        // list and the per-harvest groups below, so the picker and the bars can't disagree.
+        var yieldByHarvest = harvests.ToDictionary(
+            harvest => harvest.Id,
+            harvest => category == ReportCategory.Fruit
+                ? []
+                : CropYield(
+                    [.. items.Where(i => i.HarvestId == harvest.Id)],
+                    [.. results.Where(r => r.HarvestId == harvest.Id)],
+                    stocks,
+                    treeStocks));
+        var treesByHarvest = trees.GroupBy(tr => tr.HarvestId).ToDictionary(g => g.Key, g => g.ToList());
+
         // The series list covers every harvest of this kind, not just the ones in the period —
         // narrowing the dates shouldn't empty the picker.
         var seenSeries = new HashSet<string>();
-        if (category == ReportCategory.Fruit)
+        foreach (var harvest in harvests)
         {
-            foreach (var tree in trees)
+            if (category == ReportCategory.Fruit)
             {
-                var key = $"t{tree.TreeStockId}";
-                if (!seenSeries.Add(key))
+                foreach (var tree in treesByHarvest.GetValueOrDefault(harvest.Id) ?? [])
                 {
-                    continue;
+                    var key = $"t{tree.TreeStockId}";
+                    if (!seenSeries.Add(key))
+                    {
+                        continue;
+                    }
+                    overview.Series.Add(TreeSeries(key, tree.TreeStockId, treeStocks, treeProducts));
                 }
-                overview.Series.Add(TreeSeries(key, tree.TreeStockId, treeStocks, treeProducts));
+                continue;
             }
-        }
-        else
-        {
-            foreach (var result in results)
+
+            foreach (var yield in yieldByHarvest.GetValueOrDefault(harvest.Id) ?? [])
             {
-                var key = SeriesKey(result.StockId, result.TreeStockId);
+                var key = SeriesKey(yield.StockId, yield.TreeStockId);
                 if (key is null || !seenSeries.Add(key))
                 {
                     continue;
                 }
-                overview.Series.Add(result.StockId is int stockId
+                overview.Series.Add(yield.StockId is int stockId
                     ? StockSeries(key, stockId, stocks)
-                    : TreeSeries(key, result.TreeStockId!.Value, treeStocks, treeProducts));
+                    : TreeSeries(key, yield.TreeStockId!.Value, treeStocks, treeProducts));
             }
         }
-
-        var resultsByHarvest = results.GroupBy(r => r.HarvestId).ToDictionary(g => g.Key, g => g.ToList());
-        var treesByHarvest = trees.GroupBy(tr => tr.HarvestId).ToDictionary(g => g.Key, g => g.ToList());
 
         foreach (var harvest in harvests.Where(h => period.Contains(h.Date)).OrderBy(h => h.Date).ThenBy(h => h.Id))
         {
@@ -166,14 +182,14 @@ public partial class ReportRepository
             }
             else
             {
-                foreach (var result in resultsByHarvest.GetValueOrDefault(harvest.Id) ?? [])
+                foreach (var yield in yieldByHarvest.GetValueOrDefault(harvest.Id) ?? [])
                 {
-                    var key = SeriesKey(result.StockId, result.TreeStockId);
+                    var key = SeriesKey(yield.StockId, yield.TreeStockId);
                     if (key is null)
                     {
                         continue;
                     }
-                    values[key] = values.GetValueOrDefault(key) + result.Amount;
+                    values[key] = values.GetValueOrDefault(key) + yield.Amount;
                 }
             }
 
@@ -276,6 +292,64 @@ public partial class ReportRepository
 
     private static string? SeriesKey(int? stockId, int? treeStockId) =>
         stockId is int s ? $"s{s}" : treeStockId is int t ? $"t{t}" : null;
+
+    /// <summary>One good a harvest counts as having yielded, and how much of it.</summary>
+    private readonly record struct HarvestYield(int? StockId, int? TreeStockId, decimal Amount);
+
+    /// <summary>
+    /// What a crop harvest is taken to have yielded, good by good: its recorded
+    /// <see cref="HarvestResult"/> where there is one, its planned <see cref="HarvestItem"/> where
+    /// there isn't. The same rule HarvestStockSync follows when it puts the yield into stock, so
+    /// the report and the stock ledger can never tell different stories about one harvest — before
+    /// this, a harvest whose yield was only ever planned reported nothing at all.
+    /// </summary>
+    private static List<HarvestYield> CropYield(
+        List<HarvestItem> items,
+        List<HarvestResult> results,
+        Dictionary<int, Stock> stocks,
+        Dictionary<int, TreeStock> treeStocks)
+    {
+        var yields = results
+            .Select(result => new HarvestYield(result.StockId, result.TreeStockId, result.Amount))
+            .ToList();
+        var recorded = results.Select(result => SeriesKey(result.StockId, result.TreeStockId)).OfType<string>().ToHashSet();
+
+        foreach (var item in items)
+        {
+            // A good with a result is settled: the plan was only its forecast, and counting both
+            // would double it.
+            if (item.Amount <= 0
+                || SeriesKey(item.StockId, item.TreeStockId) is not { } key
+                || recorded.Contains(key)
+                || !PlanUnitMatches(item, stocks, treeStocks))
+            {
+                continue;
+            }
+
+            yields.Add(new HarvestYield(item.StockId, item.TreeStockId, item.Amount));
+        }
+
+        return yields;
+    }
+
+    /// <summary>Whether a plan is written in the unit its good is stocked in. One that isn't (boxes
+    /// against kilograms) is not a number that can be totalled against that good, so it stays a
+    /// plan here exactly as it does in stock.</summary>
+    private static bool PlanUnitMatches(HarvestItem item, Dictionary<int, Stock> stocks, Dictionary<int, TreeStock> treeStocks)
+    {
+        // Saved without one, the plan is in the good's own unit by definition — see HarvestItem.Unit.
+        if (string.IsNullOrWhiteSpace(item.Unit))
+        {
+            return true;
+        }
+
+        var unit = item.StockId is int stockId
+            ? stocks.GetValueOrDefault(stockId)?.Unit.ToString()
+            : item.TreeStockId is int treeStockId
+                ? treeStocks.GetValueOrDefault(treeStockId)?.Unit.ToString()
+                : null;
+        return unit is not null && string.Equals(unit, item.Unit.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
 
     private static ReportSeries StockSeries(string key, int stockId, Dictionary<int, Stock> stocks)
     {

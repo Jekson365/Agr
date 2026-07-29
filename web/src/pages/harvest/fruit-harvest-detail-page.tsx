@@ -279,6 +279,7 @@ export function FruitHarvestDetailPage() {
         open={treeFormOpen}
         harvestId={harvestId}
         editingTree={editingTree}
+        existingTrees={trees}
         onClose={() => setTreeFormOpen(false)}
         onSaved={(tree, isNew) =>
           setTrees((prev) => (isNew ? [...prev, tree] : prev.map((h) => (h.id === tree.id ? tree : h))))

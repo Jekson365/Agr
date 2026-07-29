@@ -10,7 +10,8 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class TreeProductsController(
     ITreeProductRepository treeProductRepository,
-    IHarvestProductRepository harvestProductRepository) : ControllerBase
+    IHarvestProductRepository harvestProductRepository,
+    ITreeStockRepository treeStockRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TreeProduct>>> GetAll()
@@ -56,6 +57,13 @@ public class TreeProductsController(
         if (await harvestProductRepository.ExistsForProductAsync(id))
         {
             return Conflict("A harvest still records produce for this product.");
+        }
+
+        // Trees have to declare what they yield, so the one yielding this can't be left producing
+        // nothing — point it at another product (or remove it) before the product itself goes.
+        if (await treeStockRepository.ExistsByTreeProductAsync(id))
+        {
+            return Conflict("A fruit tree still produces this.");
         }
 
         var deleted = await treeProductRepository.DeleteAsync(id);

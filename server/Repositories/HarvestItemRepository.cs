@@ -5,7 +5,10 @@ using Server.Repositories.Interfaces;
 
 namespace Server.Repositories;
 
-public class HarvestItemRepository(AppDbContext context) : IHarvestItemRepository
+/// <summary>A planned item is what the harvest is expected to yield, and — until a result for the
+/// same good says otherwise — what it is taken to have yielded once it is Harvested. So editing
+/// the plan can move stock, which <see cref="IHarvestStockSync"/> works out.</summary>
+public class HarvestItemRepository(AppDbContext context, IHarvestStockSync harvestStockSync) : IHarvestItemRepository
 {
     public async Task<IEnumerable<HarvestItem>> GetByHarvestAsync(int harvestId)
     {
@@ -21,6 +24,8 @@ public class HarvestItemRepository(AppDbContext context) : IHarvestItemRepositor
         item.Unit = await ResolveUnitAsync(item);
         context.HarvestItems.Add(item);
         await context.SaveChangesAsync();
+
+        await harvestStockSync.SyncAsync(item.HarvestId);
         return item;
     }
 
@@ -66,6 +71,8 @@ public class HarvestItemRepository(AppDbContext context) : IHarvestItemRepositor
         // HarvestId is fixed once created.
 
         await context.SaveChangesAsync();
+
+        await harvestStockSync.SyncAsync(existing.HarvestId);
         return true;
     }
 
@@ -76,6 +83,10 @@ public class HarvestItemRepository(AppDbContext context) : IHarvestItemRepositor
         {
             return false;
         }
+
+        // Removing the row cascades its movement away without giving back the amount that movement
+        // added, so the row is taken off the books first — while it is still here to be found.
+        await harvestStockSync.SyncAsync(existing.HarvestId, excludeItemId: id);
 
         context.HarvestItems.Remove(existing);
         await context.SaveChangesAsync();

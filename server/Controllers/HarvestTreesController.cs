@@ -10,6 +10,12 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class HarvestTreesController(IHarvestTreeRepository harvestTreeRepository) : ControllerBase
 {
+    /// <summary>
+    /// An orchard is picked once per harvest: how many of its trees were picked is one number, so
+    /// a second row for the same orchard would be a second answer. Change the first row instead.
+    /// </summary>
+    private const string AlreadyPickedMessage = "This harvest already records those trees as picked.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HarvestTree>>> GetByHarvest([FromQuery] int harvestId)
     {
@@ -22,6 +28,11 @@ public class HarvestTreesController(IHarvestTreeRepository harvestTreeRepository
         if (harvestTree.Amount <= 0)
         {
             return BadRequest("Amount must be positive.");
+        }
+
+        if (await harvestTreeRepository.ExistsForHarvestAsync(harvestTree.HarvestId, harvestTree.TreeStockId))
+        {
+            return Conflict(AlreadyPickedMessage);
         }
 
         return Ok(await harvestTreeRepository.AddAsync(harvestTree));
@@ -37,6 +48,19 @@ public class HarvestTreesController(IHarvestTreeRepository harvestTreeRepository
         if (harvestTree.Amount <= 0)
         {
             return BadRequest("Amount must be positive.");
+        }
+
+        var existing = await harvestTreeRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        // The harvest a row belongs to is fixed once created, so that's the harvest the orchard
+        // has to be unpicked in — not whatever harvest the request happens to name.
+        if (await harvestTreeRepository.ExistsForHarvestAsync(existing.HarvestId, harvestTree.TreeStockId, id))
+        {
+            return Conflict(AlreadyPickedMessage);
         }
 
         var updated = await harvestTreeRepository.UpdateAsync(harvestTree);

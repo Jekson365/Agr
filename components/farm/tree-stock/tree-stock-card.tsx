@@ -2,7 +2,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image, Pressable, Text, View } from 'react-native';
 
 import { styles } from '@/components/farm/shared/styles';
-import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/components/farm/tree-stock/tree-stock';
+import {
+  fruitKindImage,
+  fruitTypeLabel,
+  treeStockLabel,
+  TREE_STOCK_UNIT_LABEL_KEY,
+} from '@/components/farm/tree-stock/tree-stock';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
 import type { TreeStock } from '@/types/tree-stock';
@@ -17,7 +22,7 @@ export function TreeStockCard({ item, onMenu, onPress }: Props) {
   const { t } = useLanguage();
   const typeLabel = fruitTypeLabel(item.type, t);
   const unitLabel = t(TREE_STOCK_UNIT_LABEL_KEY[item.unit]);
-  const title = item.name.trim() || typeLabel;
+  const title = treeStockLabel(item, t);
 
   return (
     <View style={styles.livestockCard}>

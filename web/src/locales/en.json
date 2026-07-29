@@ -370,7 +370,9 @@
   "landPlot": {
     "add": "Add Plot",
     "edit": "Edit Plot",
-    "noCrops": "No cultures yet. Add some in the Stock or Fruits tab first.",
+    "noCrops": "No fruits yet. Add some in the Fruits tab first.",
+    "allCropsUsed": "Every fruit already has a plot on this land.",
+    "fruitTaken": "This land already has a plot of those trees.",
     "empty": "No plots yet. Add one below.",
     "loadError": "Couldn't load plots.",
     "deleteConfirmTitle": "Delete {name}?",
@@ -384,11 +386,14 @@
     "namePlaceholder": "e.g. Gala Apples",
     "empty": "No tree stock yet. Add one below.",
     "loadError": "Couldn't load tree stock.",
+    "deletePlanted": "The land plots growing this fruit, and what it produces, are removed with it. This can't be undone.",
+    "deleteProduct": "What this fruit produces is removed from Products with it. This can't be undone.",
     "landLabel": "Land",
     "plotLabel": "Land plot",
     "noLandPlot": "Not assigned",
     "noFarms": "No land yet. Add one in the Land tab first.",
-    "newFruitTypePlaceholder": "New fruit name"
+    "newFruitTypePlaceholder": "New fruit name",
+    "nameDuplicate": "A tree stock with this name already exists."
   },
   "treeStockHistory": {
     "title": "Tree stock history",
@@ -459,9 +464,9 @@
     "kpiNetPerArea": "Net per {unit}",
     "kpiMixedUnits": "Mixed units",
     "kpiMixedUnitsHint": "This harvest mixes measurement units, so per-unit figures aren't shown.",
-    "statusConfirmBodyToHarvestedCount": "This will add {count} recorded result(s) to your stock.",
-    "statusConfirmBodyToHarvestedEmpty": "No results have been recorded yet, so nothing will be added to your stock.",
-    "statusConfirmBodyFromHarvestedCount": "This will reverse {count} recorded result(s) back out of your stock."
+    "statusConfirmBodyToHarvestedCount": "This will add {count} item(s) to your stock.",
+    "statusConfirmBodyToHarvestedEmpty": "Nothing is planned or recorded yet, so nothing will be added to your stock.",
+    "statusConfirmBodyFromHarvestedCount": "This will reverse {count} item(s) back out of your stock."
   },
   "harvestItem": {
     "add": "Add Item",
@@ -470,6 +475,7 @@
     "loadError": "Couldn't load harvest items.",
     "noStock": "No stock items yet. Add some in the Stock tab first.",
     "plantingOnly": "Planned items are added once planting starts.",
+    "movesStock": "These amounts are added to your stock once the harvest is marked Harvested, and taken back out if it returns to Planting or Planning. Recording a result for a good replaces its planned amount.",
     "sowFirst": "Record the seed you sowed first — a plan can only cover what's actually in the ground."
   },
   "harvestResult": {
@@ -801,7 +807,9 @@
     "amountHarvested": "Harvested amount",
     "available": "Orchard holds {amount} {unit}",
     "empty": "No orchard recorded as picked for this harvest yet.",
-    "noTrees": "No fruit trees yet. Add some under Fruits first."
+    "noTrees": "No fruit trees yet. Add some under Fruits first.",
+    "allPicked": "Every orchard is already recorded as picked for this harvest.",
+    "alreadyPicked": "This harvest already records those trees as picked. Edit that row instead."
   },
   "harvestChemical": {
     "title": "Chemical history",
@@ -827,8 +835,10 @@
     "empty": "No tree products yet. Add one when you add a fruit tree.",
     "loadError": "Couldn't load products.",
     "name": "Product name",
-    "deleteInUse": "A harvest still records produce for this product. Remove it there first.",
+    "deleteInUse": "This product is still in use — by the fruit that produces it, or by a harvest that records it. Change that first.",
     "requiredHint": "Add a product first — trees must declare what they produce.",
+    "allTaken": "Every product is already produced by another fruit. Add a new one with +.",
+    "taken": "Another fruit already produces that product.",
     "colBalance": "Balance",
     "noHistory": "No history yet.",
     "adjust": "Adjust balance",

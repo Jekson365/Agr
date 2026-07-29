@@ -21,6 +21,39 @@ public class LandPlotRepository(AppDbContext context) : ILandPlotRepository
         return await context.LandPlots.FindAsync(id);
     }
 
+    public async Task<bool> ExistsByTreeStockAsync(int farmId, int treeStockId, int? excludeId = null)
+    {
+        return await context.LandPlots
+            .AnyAsync(p => p.FarmId == farmId
+                && p.TreeStockId == treeStockId
+                && (excludeId == null || p.Id != excludeId));
+    }
+
+    public async Task<IEnumerable<int>> GetUsedTreeStockIdsAsync(int? farmId = null)
+    {
+        return await context.LandPlots
+            .Where(p => p.TreeStockId != null && (farmId == null || p.FarmId == farmId))
+            .Select(p => p.TreeStockId!.Value)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<int> DeleteByTreeStockAsync(int treeStockId)
+    {
+        var plots = await context.LandPlots
+            .Where(p => p.TreeStockId == treeStockId)
+            .ToListAsync();
+
+        if (plots.Count == 0)
+        {
+            return 0;
+        }
+
+        context.LandPlots.RemoveRange(plots);
+        await context.SaveChangesAsync();
+        return plots.Count;
+    }
+
     public async Task<LandPlot> AddAsync(LandPlot plot)
     {
         context.LandPlots.Add(plot);
@@ -38,6 +71,7 @@ public class LandPlotRepository(AppDbContext context) : ILandPlotRepository
 
         existing.Area = plot.Area;
         existing.Crop = plot.Crop;
+        existing.TreeStockId = plot.TreeStockId;
         // FarmId is fixed once created.
 
         await context.SaveChangesAsync();

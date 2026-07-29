@@ -39,3 +39,9 @@ export function fruitTypeLabel(type: string, t: (key: string) => string): string
 export function fruitKindImage(type: string): number {
   return FRUIT_KIND_IMAGE[type] ?? DEFAULT_FRUIT_ICON;
 }
+
+/** How a fruit entry is named wherever it's listed: its own label ("Gala Apples") when it was
+ * given one, else the fruit it is. */
+export function treeStockLabel(stock: { type: string; name: string }, t: (key: string) => string): string {
+  return stock.name.trim() || fruitTypeLabel(stock.type, t);
+}

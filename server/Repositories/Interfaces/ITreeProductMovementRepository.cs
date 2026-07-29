@@ -5,8 +5,9 @@ namespace Server.Repositories.Interfaces;
 public interface ITreeProductMovementRepository
 {
     /// <summary>Movements for one product, or every product's when omitted (the Products page
-    /// sums them per product for the balance).</summary>
-    Task<IEnumerable<TreeProductMovement>> GetAsync(int? treeProductId = null);
+    /// sums them per product for the balance), each dated by the harvest behind it where there
+    /// is one — see <see cref="TreeProductMovementDto"/>.</summary>
+    Task<IEnumerable<TreeProductMovementDto>> GetAsync(int? treeProductId = null);
 
     /// <summary>What's currently on hand for a product: the sum of its movements.</summary>
     Task<decimal> GetBalanceAsync(int treeProductId);

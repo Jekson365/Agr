@@ -332,7 +332,9 @@
   "landPlot": {
     "add": "Add Plot",
     "edit": "Edit Plot",
-    "noCrops": "No cultures yet. Add some in the Stock or Fruits tab first.",
+    "noCrops": "No fruits yet. Add some in the Fruits tab first.",
+    "allCropsUsed": "Every fruit already has a plot on this land.",
+    "fruitTaken": "This land already has a plot of those trees.",
     "empty": "No plots yet. Add one below.",
     "loadError": "Couldn't load plots.",
     "deleteConfirmTitle": "Delete {name}?",
@@ -346,11 +348,14 @@
     "namePlaceholder": "e.g. Gala Apples",
     "empty": "No tree stock yet. Add one below.",
     "loadError": "Couldn't load tree stock.",
+    "deletePlanted": "The land plots growing this fruit, and what it produces, are removed with it. This can't be undone.",
+    "deleteProduct": "What this fruit produces is removed from Products with it. This can't be undone.",
     "landLabel": "Land",
     "plotLabel": "Land plot",
     "noLandPlot": "Not assigned",
     "noFarms": "No land yet. Add one in the Land tab first.",
-    "newFruitTypePlaceholder": "New fruit name"
+    "newFruitTypePlaceholder": "New fruit name",
+    "nameDuplicate": "A tree stock with this name already exists."
   },
   "treeStockHistory": {
     "title": "Tree stock history",

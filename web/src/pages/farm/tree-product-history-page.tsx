@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/record-list.css';
 import { Modal } from '@/components/ui/modal';
-import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
+import { formatLocalizedIsoDate, formatLocalizedIsoDay } from '@/components/ui/date-utils';
 import { TREE_PRODUCT_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import {
@@ -129,7 +129,13 @@ export function TreeProductHistoryPage() {
                 </div>
                 {movements.map((movement) => (
                   <div key={movement.id} className="production-row">
-                    <span className="production-row-cell muted">{formatLocalizedIsoDate(movement.createdAt, language)}</span>
+                    {/* Harvest rows are dated by their harvest (a plain day, so read as one);
+                        manual and market ones by when they were recorded. */}
+                    <span className="production-row-cell muted">
+                      {movement.harvestDate
+                        ? formatLocalizedIsoDay(movement.harvestDate, language)
+                        : formatLocalizedIsoDate(movement.createdAt, language)}
+                    </span>
                     <span className="production-row-cell">
                       {t(
                         movement.source === 'Harvest'

@@ -13,14 +13,15 @@ import {
   View,
 } from 'react-native';
 
-import { cropImage, cropLabel } from '@/components/farm/land/crop';
 import { styles } from '@/components/farm/shared/styles';
+import { fruitKindImage, treeStockLabel } from '@/components/farm/tree-stock/tree-stock';
 import { Brand } from '@/constants/theme';
 import { useLanguage } from '@/contexts/language-context';
-import { createLandPlot, updateLandPlot } from '@/services/land-plot-service';
-import { getStock } from '@/services/stock-service';
+import { ApiError } from '@/services/api-client';
+import { createLandPlot, getUsedTreeStockIds, updateLandPlot } from '@/services/land-plot-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import type { LandPlot } from '@/types/land-plot';
+import type { TreeStock } from '@/types/tree-stock';
 
 type Props = {
   visible: boolean;
@@ -30,85 +31,80 @@ type Props = {
   onSaved: (plot: LandPlot, isNew: boolean) => void;
 };
 
-// One selectable row in the crop picker. Ordinarily one per stock or tree stock item (so items
-// that share a type but have different custom names show up separately) — see loadCrops for the
-// one case where a row doesn't back onto a real item.
-type CropOption = {
-  key: string;
-  type: string;
-  name: string;
-};
-
 export function LandPlotFormModal({ visible, farmId, editingPlot, onClose, onSaved }: Props) {
   const { t } = useLanguage();
 
-  const [options, setOptions] = useState<CropOption[]>([]);
-  const [cropsLoading, setCropsLoading] = useState(true);
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  /** The fruit entries on offer — the Fruits tab's own rows, minus the planted ones. */
+  const [options, setOptions] = useState<TreeStock[]>([]);
+  /** Whether the Fruits tab held anything before the planted ones were filtered out — the two
+   *  empty states ("none exist yet" and "all of them are planted") need different advice. */
+  const [hadAnyFruit, setHadAnyFruit] = useState(false);
+  const [fruitsLoading, setFruitsLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [areaInput, setAreaInput] = useState('');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const isEditing = editingPlot != null;
+  const selected = options.find((option) => option.id === selectedId) ?? null;
 
-  // Initialize the fields, and load which stock/tree stock items currently exist, whenever opened.
+  // Initialize the fields, and load which fruits are free to plant, whenever opened.
   useEffect(() => {
     if (!visible) return;
     setAreaInput(editingPlot ? String(editingPlot.area) : '');
     setFormError(null);
     setPickerOpen(false);
-    loadCrops();
+    loadFruits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, editingPlot]);
 
-  async function loadCrops() {
-    setCropsLoading(true);
+  async function loadFruits() {
+    setFruitsLoading(true);
     try {
-      const [stocks, treeStocks] = await Promise.all([getStock(), getTreeStock()]);
-      const opts: CropOption[] = [
-        ...stocks.map((s) => ({ key: `stock:${s.id}`, type: s.type, name: s.name })),
-        ...treeStocks.map((s) => ({ key: `tree:${s.id}`, type: s.type, name: s.name })),
-      ];
+      const [fruits, used] = await Promise.all([getTreeStock(), getUsedTreeStockIds(farmId)]);
+      setHadAnyFruit(fruits.length > 0);
 
-      // Always keep the plot's own crop type selectable — labeled generically — even if every
-      // stock/tree stock item of that type was since removed from its tab.
-      const editingCrop = editingPlot?.crop;
-      if (editingCrop && !opts.some((o) => o.type === editingCrop)) {
-        opts.push({ key: `type:${editingCrop}`, type: editingCrop, name: '' });
-      }
+      // A fruit gets one plot per piece of land, so anything this land already grows is off the
+      // table — other land may still grow it. The plot being edited doesn't count against itself.
+      const taken = new Set(used.filter((id) => id !== editingPlot?.treeStockId));
+      const free = fruits.filter((fruit) => !taken.has(fruit.id));
 
-      setOptions(opts);
-      const matching = editingCrop ? opts.find((o) => o.type === editingCrop) : undefined;
-      setSelectedKey(matching ? matching.key : (opts[0]?.key ?? null));
+      setOptions(free);
+      setSelectedId(pickInitial(free, editingPlot));
     } catch {
       setOptions([]);
-      setSelectedKey(null);
+      setSelectedId(null);
     } finally {
-      setCropsLoading(false);
+      setFruitsLoading(false);
     }
   }
 
-  const selectedOption = options.find((o) => o.key === selectedKey) ?? null;
   const area = Math.max(0, parseFloat(areaInput) || 0);
-  const canSubmit = area > 0 && selectedOption != null && !saving;
+  const canSubmit = area > 0 && selected != null && !saving;
 
   async function handleSubmit() {
-    if (!canSubmit || selectedOption == null) return;
+    if (!canSubmit || selected == null) return;
 
     setSaving(true);
     setFormError(null);
     try {
+      // The crop is the fruit's own type; the server re-reads it from the entry either way.
       if (isEditing) {
-        const updated: LandPlot = { ...editingPlot, area, crop: selectedOption.type };
+        const updated: LandPlot = { ...editingPlot, area, crop: selected.type, treeStockId: selected.id };
         await updateLandPlot(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createLandPlot({ farmId, area, crop: selectedOption.type });
+        const created = await createLandPlot({ farmId, area, crop: selected.type, treeStockId: selected.id });
         onSaved(created, true);
       }
       onClose();
     } catch (err) {
+      // The server refuses a fruit that was planted meanwhile (e.g. from another session).
+      if (err instanceof ApiError && err.status === 409) {
+        setFormError(t('landPlot.fruitTaken'));
+        return;
+      }
       setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);
@@ -123,10 +119,10 @@ export function LandPlotFormModal({ visible, farmId, editingPlot, onClose, onSav
           <Text style={styles.formTitle}>{isEditing ? t('landPlot.edit') : t('landPlot.add')}</Text>
 
           <Text style={styles.fieldLabel}>{t('farm.crop')}</Text>
-          {cropsLoading ? (
+          {fruitsLoading ? (
             <ActivityIndicator color={Brand.dark} style={{ marginBottom: 14 }} />
           ) : options.length === 0 ? (
-            <Text style={styles.emptyHint}>{t('landPlot.noCrops')}</Text>
+            <Text style={styles.emptyHint}>{t(hadAnyFruit ? 'landPlot.allCropsUsed' : 'landPlot.noCrops')}</Text>
           ) : (
             <>
               <Pressable
@@ -134,16 +130,10 @@ export function LandPlotFormModal({ visible, farmId, editingPlot, onClose, onSav
                 onPress={() => setPickerOpen((prev) => !prev)}
                 accessibilityRole="button"
                 accessibilityLabel={t('farm.crop')}>
-                {selectedOption ? (
+                {selected ? (
                   <>
-                    <Image
-                      source={cropImage(selectedOption.type)}
-                      style={styles.selectFieldIcon}
-                      resizeMode="contain"
-                    />
-                    <Text style={styles.selectFieldText}>
-                      {selectedOption.name.trim() || cropLabel(selectedOption.type, t)}
-                    </Text>
+                    <Image source={fruitKindImage(selected.type)} style={styles.selectFieldIcon} resizeMode="contain" />
+                    <Text style={styles.selectFieldText}>{treeStockLabel(selected, t)}</Text>
                   </>
                 ) : (
                   <Text style={[styles.selectFieldText, styles.selectFieldPlaceholder]}>
@@ -155,23 +145,17 @@ export function LandPlotFormModal({ visible, farmId, editingPlot, onClose, onSav
 
               {pickerOpen && (
                 <View style={styles.selectOptionsList}>
-                  {options.map((option) => (
+                  {options.map((fruit) => (
                     <Pressable
-                      key={option.key}
-                      style={[styles.selectOption, selectedKey === option.key && styles.selectOptionActive]}
+                      key={fruit.id}
+                      style={[styles.selectOption, selectedId === fruit.id && styles.selectOptionActive]}
                       onPress={() => {
-                        setSelectedKey(option.key);
+                        setSelectedId(fruit.id);
                         setPickerOpen(false);
                       }}>
-                      <Image
-                        source={cropImage(option.type)}
-                        style={styles.selectFieldIcon}
-                        resizeMode="contain"
-                      />
-                      <Text style={styles.selectOptionLabel}>
-                        {option.name.trim() || cropLabel(option.type, t)}
-                      </Text>
-                      {selectedKey === option.key && <Ionicons name="checkmark" size={18} color={Brand.green} />}
+                      <Image source={fruitKindImage(fruit.type)} style={styles.selectFieldIcon} resizeMode="contain" />
+                      <Text style={styles.selectOptionLabel}>{treeStockLabel(fruit, t)}</Text>
+                      {selectedId === fruit.id && <Ionicons name="checkmark" size={18} color={Brand.green} />}
                     </Pressable>
                   ))}
                 </View>
@@ -210,4 +194,19 @@ export function LandPlotFormModal({ visible, farmId, editingPlot, onClose, onSav
       </KeyboardAvoidingView>
     </Modal>
   );
+}
+
+/**
+ * Which fruit the form opens on: the plot's own, or — for a plot from before plots named a fruit
+ * — one of the same kind as the crop it recorded, so editing it doesn't quietly replant it.
+ */
+function pickInitial(options: TreeStock[], editingPlot: LandPlot | null): number | null {
+  if (!editingPlot) return options[0]?.id ?? null;
+
+  const own = options.find((option) => option.id === editingPlot.treeStockId);
+  if (own) return own.id;
+
+  const crop = editingPlot.crop.trim().toLowerCase();
+  const sameKind = options.find((option) => option.type.trim().toLowerCase() === crop);
+  return sameKind?.id ?? null;
 }

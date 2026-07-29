@@ -6,11 +6,13 @@ import { useLanguage } from '@/contexts/language-context';
 type Props = {
   visible: boolean;
   name: string;
+  /** Overrides the default "cannot be undone" body — e.g. to explain a side effect. */
+  body?: string;
   onCancel: () => void;
   onConfirm: () => void;
 };
 
-export function ConfirmDeleteModal({ visible, name, onCancel, onConfirm }: Props) {
+export function ConfirmDeleteModal({ visible, name, body, onCancel, onConfirm }: Props) {
   const { t } = useLanguage();
 
   return (
@@ -18,7 +20,7 @@ export function ConfirmDeleteModal({ visible, name, onCancel, onConfirm }: Props
       <View style={styles.confirmOverlay}>
         <View style={styles.confirmCard}>
           <Text style={styles.confirmTitle}>{t('farm.deleteConfirmTitle', { name })}</Text>
-          <Text style={styles.confirmBody}>{t('farm.deleteConfirmBody')}</Text>
+          <Text style={styles.confirmBody}>{body ?? t('farm.deleteConfirmBody')}</Text>
           <View style={styles.formActions}>
             <Pressable style={styles.formCancelButton} onPress={onCancel}>
               <Text style={styles.formCancelLabel}>{t('common.cancel')}</Text>

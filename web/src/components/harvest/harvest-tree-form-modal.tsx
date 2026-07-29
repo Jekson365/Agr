@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { fruitKindImage, fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
+import { ApiError } from '@/services/api-client';
 import { createHarvestTree, updateHarvestTree } from '@/services/harvest-tree-service';
 import { getTreeProducts } from '@/services/tree-product-service';
 import { getTreeStock } from '@/services/tree-stock-service';
@@ -14,16 +15,21 @@ type Props = {
   open: boolean;
   harvestId: number;
   editingTree: HarvestTree | null;
+  /** What this harvest already records as picked, so those orchards stay out of the picker. */
+  existingTrees: HarvestTree[];
   onClose: () => void;
   onSaved: (harvestTree: HarvestTree, isNew: boolean) => void;
 };
 
 /** Records how many trees of an orchard were picked. The orchard's own count is untouched —
  * the fruit that came off them is recorded as a result, by weight, against plant stock. */
-export function HarvestTreeFormModal({ open, harvestId, editingTree, onClose, onSaved }: Props) {
+export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTrees, onClose, onSaved }: Props) {
   const { t } = useLanguage();
 
+  /** The orchards still free to record — the farm's fruit, minus what this harvest already picked. */
   const [treeStocks, setTreeStocks] = useState<TreeStock[]>([]);
+  /** Whether the farm holds any fruit at all — "none exist" and "all picked already" differ. */
+  const [hadAnyTrees, setHadAnyTrees] = useState(false);
   const [treeProducts, setTreeProducts] = useState<TreeProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -47,9 +53,18 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, onClose, on
     setLoading(true);
     try {
       const [list, productList] = await Promise.all([getTreeStock(), getTreeProducts()]);
-      setTreeStocks(list);
+      setHadAnyTrees(list.length > 0);
       setTreeProducts(productList);
-      setSelectedId(editingTree?.treeStockId ?? list[0]?.id ?? null);
+
+      // An orchard is picked once per harvest, so the ones already recorded are off the list. The
+      // row being edited doesn't count against itself — its own orchard has to stay pickable.
+      const picked = new Set(
+        existingTrees.filter((tree) => tree.id !== editingTree?.id).map((tree) => tree.treeStockId)
+      );
+      const free = list.filter((stock) => !picked.has(stock.id));
+
+      setTreeStocks(free);
+      setSelectedId(editingTree?.treeStockId ?? free[0]?.id ?? null);
     } catch {
       setTreeStocks([]);
       setTreeProducts([]);
@@ -91,8 +106,11 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, onClose, on
         onSaved(created, true);
       }
       onClose();
-    } catch {
-      setFormError(t('farm.saveError'));
+    } catch (err) {
+      // The server refuses an orchard this harvest picked meanwhile (e.g. from another session).
+      setFormError(
+        err instanceof ApiError && err.status === 409 ? t('harvestTree.alreadyPicked') : t('farm.saveError')
+      );
     } finally {
       setSaving(false);
     }
@@ -108,7 +126,7 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, onClose, on
           {loading ? (
             <span className="limit-hint">…</span>
           ) : treeStocks.length === 0 ? (
-            <p className="limit-hint">{t('harvestTree.noTrees')}</p>
+            <p className="limit-hint">{t(hadAnyTrees ? 'harvestTree.allPicked' : 'harvestTree.noTrees')}</p>
           ) : (
             <div className="kind-row">
               {treeStocks.map((treeStock) => (

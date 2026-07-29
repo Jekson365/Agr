@@ -5,6 +5,15 @@ namespace Server.Repositories.Interfaces;
 public interface IHarvestTreeRepository
 {
     Task<IEnumerable<HarvestTree>> GetByHarvestAsync(int harvestId);
+    Task<HarvestTree?> GetByIdAsync(int id);
+
+    /// <summary>
+    /// Whether this harvest already records those trees as picked. One row per orchard: how many
+    /// of it were picked is one number, not several. Pass the row being edited as
+    /// <paramref name="excludeId"/> so it doesn't clash with itself.
+    /// </summary>
+    Task<bool> ExistsForHarvestAsync(int harvestId, int treeStockId, int? excludeId = null);
+
     Task<HarvestTree> AddAsync(HarvestTree harvestTree);
     Task<bool> UpdateAsync(HarvestTree harvestTree);
     Task<bool> DeleteAsync(int id);

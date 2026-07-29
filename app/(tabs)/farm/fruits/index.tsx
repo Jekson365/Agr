@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActionSheet } from '@/components/farm/shared/action-sheet';
 import { ConfirmDeleteModal } from '@/components/farm/shared/confirm-delete-modal';
 import { styles } from '@/components/farm/shared/styles';
-import { fruitTypeLabel } from '@/components/farm/tree-stock/tree-stock';
+import { treeStockLabel } from '@/components/farm/tree-stock/tree-stock';
 import { TreeStockCard } from '@/components/farm/tree-stock/tree-stock-card';
 import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form-modal';
 import { LanguageToggle } from '@/components/ui/language-toggle';
@@ -15,6 +15,7 @@ import { Brand } from '@/constants/theme';
 import { isAtLimit, isOverLimit } from '@/constants/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
+import { getUsedTreeStockIds } from '@/services/land-plot-service';
 import { deleteTreeStock, getTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 
@@ -31,6 +32,8 @@ export default function FruitsScreen() {
   const [formVisible, setFormVisible] = useState(false);
   const [editingStock, setEditingStock] = useState<TreeStock | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+  /** Which fruits are planted on a plot — deleting one of those takes its plot with it. */
+  const [plantedIds, setPlantedIds] = useState<Set<number>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -42,7 +45,9 @@ export default function FruitsScreen() {
     if (!opts?.silent) setLoading(true);
     setError(null);
     try {
-      setTreeStock(await getTreeStock());
+      const [list, planted] = await Promise.all([getTreeStock(), getUsedTreeStockIds()]);
+      setTreeStock(list);
+      setPlantedIds(new Set(planted));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -83,7 +88,7 @@ export default function FruitsScreen() {
     setActionSheetId(null);
     const item = treeStock.find((i) => i.id === id);
     if (!item) return;
-    setConfirmDelete({ id, name: item.name.trim() || fruitTypeLabel(item.type, t) });
+    setConfirmDelete({ id, name: treeStockLabel(item, t) });
   }
 
   async function confirmDeleteItem() {
@@ -101,6 +106,11 @@ export default function FruitsScreen() {
 
   function handleSaved(item: TreeStock, isNew: boolean) {
     setTreeStock((prev) => (isNew ? [...prev, item] : prev.map((i) => (i.id === item.id ? item : i))));
+  }
+
+  /** What else goes with the fruit: the product it yields always, its plot when it has one. */
+  function deleteBody(id: number): string {
+    return t(plantedIds.has(id) ? 'treeStock.deletePlanted' : 'treeStock.deleteProduct');
   }
 
   return (
@@ -147,7 +157,7 @@ export default function FruitsScreen() {
               onPress={() =>
                 router.push({
                   pathname: '/farm/tree-stock-history/[treeStockId]',
-                  params: { treeStockId: item.id, label: item.name.trim() || fruitTypeLabel(item.type, t) },
+                  params: { treeStockId: item.id, label: treeStockLabel(item, t) },
                 })
               }
             />
@@ -170,6 +180,7 @@ export default function FruitsScreen() {
       <TreeStockFormModal
         visible={formVisible}
         editingStock={editingStock}
+        existingItems={treeStock}
         onClose={() => setFormVisible(false)}
         onSaved={handleSaved}
       />
@@ -177,6 +188,7 @@ export default function FruitsScreen() {
       <ConfirmDeleteModal
         visible={!!confirmDelete}
         name={confirmDelete?.name ?? ''}
+        body={confirmDelete ? deleteBody(confirmDelete.id) : undefined}
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteItem}
       />

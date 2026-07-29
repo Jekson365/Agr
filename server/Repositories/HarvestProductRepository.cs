@@ -5,8 +5,9 @@ using Server.Repositories.Interfaces;
 
 namespace Server.Repositories;
 
-/// <summary>Plain CRUD: fruit produce accrues on its own product, so there's no other balance to
-/// keep in step the way plant stock needs when a crop result is recorded.</summary>
+/// <summary>Fruit produce accrues on its own product rather than into plant stock, so the only
+/// balance to keep in step is that product's movement ledger — and, as with a crop result, it only
+/// counts while the harvest it came from is Harvested.</summary>
 public class HarvestProductRepository(
     AppDbContext context,
     ITreeProductMovementRepository treeProductMovementRepository) : IHarvestProductRepository
@@ -31,15 +32,7 @@ public class HarvestProductRepository(
         context.HarvestProducts.Add(harvestProduct);
         await context.SaveChangesAsync();
 
-        // Harvested produce adds to the product's balance, tracked as a Harvest movement.
-        await treeProductMovementRepository.AddAsync(new TreeProductMovement
-        {
-            TreeProductId = harvestProduct.TreeProductId,
-            HarvestProductId = harvestProduct.Id,
-            Delta = harvestProduct.Amount,
-            Source = TreeProductMovementSource.Harvest,
-        });
-
+        await SyncMovementAsync(harvestProduct, await IsHarvestedAsync(harvestProduct.HarvestId));
         return harvestProduct;
     }
 
@@ -56,18 +49,7 @@ public class HarvestProductRepository(
 
         await context.SaveChangesAsync();
 
-        // One movement per row, edited in place, so the history doesn't grow an entry per edit.
-        var updated = await treeProductMovementRepository.UpdateForHarvestProductAsync(harvestProduct.Id, harvestProduct.Amount);
-        if (!updated)
-        {
-            await treeProductMovementRepository.AddAsync(new TreeProductMovement
-            {
-                TreeProductId = harvestProduct.TreeProductId,
-                HarvestProductId = harvestProduct.Id,
-                Delta = harvestProduct.Amount,
-                Source = TreeProductMovementSource.Harvest,
-            });
-        }
+        await SyncMovementAsync(existing, await IsHarvestedAsync(existing.HarvestId));
         return true;
     }
 
@@ -84,5 +66,52 @@ public class HarvestProductRepository(
 
         await treeProductMovementRepository.DeleteForHarvestProductAsync(id);
         return true;
+    }
+
+    public async Task SyncMovementsForHarvestAsync(int harvestId)
+    {
+        var harvested = await IsHarvestedAsync(harvestId);
+        var rows = await context.HarvestProducts.AsNoTracking().Where(p => p.HarvestId == harvestId).ToListAsync();
+        foreach (var row in rows)
+        {
+            await SyncMovementAsync(row, harvested);
+        }
+    }
+
+    private async Task<bool> IsHarvestedAsync(int harvestId)
+    {
+        var status = await context.Harvests
+            .AsNoTracking()
+            .Where(h => h.Id == harvestId)
+            .Select(h => (HarvestStatus?)h.Status)
+            .FirstOrDefaultAsync();
+        return status == HarvestStatus.Harvested;
+    }
+
+    /// <summary>
+    /// Keeps a produce row's movement in step with what the row now says. The fruit only counts
+    /// towards the product's balance once the harvest is Harvested — until then (and again after
+    /// it's moved back off Harvested) the row is a plan, so it carries no movement at all.
+    /// </summary>
+    private async Task SyncMovementAsync(HarvestProduct harvestProduct, bool harvested)
+    {
+        if (!harvested)
+        {
+            await treeProductMovementRepository.DeleteForHarvestProductAsync(harvestProduct.Id);
+            return;
+        }
+
+        // One movement per row, edited in place, so the history doesn't grow an entry per edit.
+        var updated = await treeProductMovementRepository.UpdateForHarvestProductAsync(harvestProduct.Id, harvestProduct.Amount);
+        if (!updated)
+        {
+            await treeProductMovementRepository.AddAsync(new TreeProductMovement
+            {
+                TreeProductId = harvestProduct.TreeProductId,
+                HarvestProductId = harvestProduct.Id,
+                Delta = harvestProduct.Amount,
+                Source = TreeProductMovementSource.Harvest,
+            });
+        }
     }
 }

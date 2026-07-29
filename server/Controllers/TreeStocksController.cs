@@ -12,6 +12,9 @@ namespace Server.Controllers;
 public class TreeStocksController(
     ITreeStockRepository treeStockRepository,
     IHarvestTreeRepository harvestTreeRepository,
+    IHarvestProductRepository harvestProductRepository,
+    ITreeProductRepository treeProductRepository,
+    ILandPlotRepository landPlotRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     [HttpGet]
@@ -30,6 +33,14 @@ public class TreeStocksController(
     [HttpPost]
     public async Task<ActionResult<TreeStock>> Create(TreeStock stock)
     {
+        stock.Name = stock.Name.Trim();
+
+        var invalid = await ValidateAsync(stock);
+        if (invalid is not null)
+        {
+            return Conflict(invalid);
+        }
+
         try
         {
             var currentCount = (await treeStockRepository.GetAllAsync()).Count();
@@ -52,6 +63,14 @@ public class TreeStocksController(
             return BadRequest();
         }
 
+        stock.Name = stock.Name.Trim();
+
+        var invalid = await ValidateAsync(stock, id);
+        if (invalid is not null)
+        {
+            return Conflict(invalid);
+        }
+
         try
         {
             var currentCount = (await treeStockRepository.GetAllAsync()).Count();
@@ -64,6 +83,32 @@ public class TreeStocksController(
 
         var updated = await treeStockRepository.UpdateAsync(stock);
         return updated ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// The two ways a row can clash with the ones already recorded — its label and the produce it
+    /// yields. Returns the problem, or null when the row is free to save.
+    /// </summary>
+    private async Task<string?> ValidateAsync(TreeStock stock, int? excludeId = null)
+    {
+        // The custom label is what tells apart two stocks of the same fruit, so it can't be shared —
+        // two "Gala Apples" rows would be indistinguishable everywhere they're listed. A blank name
+        // is not a label at all: those rows fall back to their fruit's own name, so any number of
+        // them may coexist.
+        if (stock.Name.Length > 0 && await treeStockRepository.ExistsByNameAsync(stock.Name, excludeId))
+        {
+            return "A tree stock with this name already exists.";
+        }
+
+        // A product comes off one orchard: the row that yields it is that orchard, so no second row
+        // may claim the same product.
+        if (stock.TreeProductId is int productId
+            && await treeStockRepository.ExistsByTreeProductAsync(productId, excludeId))
+        {
+            return "Another fruit already produces that product.";
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -84,8 +129,35 @@ public class TreeStocksController(
             return Conflict("A harvest still records this orchard as picked.");
         }
 
+        // Read the row before it goes: what it yields is only knowable from the stock itself.
+        var stock = await treeStockRepository.GetByIdAsync(id);
+        if (stock is null)
+        {
+            return NotFound();
+        }
+
+        // A plot is a plot *of* these trees — with them gone there is nothing growing there, so it
+        // goes too rather than staying behind as an empty patch of land. Before the stock itself,
+        // since removing that first would clear the reference the plot is found by.
+        await landPlotRepository.DeleteByTreeStockAsync(id);
+
         var deleted = await treeStockRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        // What it produced goes with it, ledger and all (the movements cascade): a product comes
+        // off one orchard, so with the trees gone nothing can ever yield it again and it would
+        // sit on the Products page as an entry nothing fills. Produce a harvest already recorded
+        // is the exception — that history outlives the trees, and the Restrict FK refuses anyway
+        // — so the product stays behind to keep it readable.
+        if (stock.TreeProductId is int productId && !await harvestProductRepository.ExistsForProductAsync(productId))
+        {
+            await treeProductRepository.DeleteAsync(productId);
+        }
+
+        return NoContent();
     }
 
     /// <summary>Records a marketplace sale: deducts the sold quantity and logs a movement

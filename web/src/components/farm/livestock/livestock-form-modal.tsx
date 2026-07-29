@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import { KindPicker, type KindOption } from '@/components/farm/kind-picker';
+import { Modal } from '@/components/ui/modal';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { isPlanLimitError } from '@/config/plan-benefits';
-import { Modal } from '@/components/ui/modal';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createLivestockKind, deleteLivestockKind, getLivestockKinds } from '@/services/livestock-kind-service';
