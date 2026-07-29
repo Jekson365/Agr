@@ -22,7 +22,7 @@ import { TreeProductsPage } from '@/pages/farm/tree-products-page';
 import { StockHistoryPage } from '@/pages/farm/stock-history-page';
 import { StockPage } from '@/pages/farm/stock-page';
 import { TreeStockHistoryPage } from '@/pages/farm/tree-stock-history-page';
-import { FruitHarvestDetailPage } from '@/pages/harvest/fruit-harvest-detail-page';
+import { FruitHarvestDetailPage } from '@/pages/harvest/fruit-harvest/fruit-harvest-detail-page';
 import { HarvestDetailPage } from '@/pages/harvest/harvest-detail-page';
 import { HarvestPage } from '@/pages/harvest/harvest-page';
 import { LandingPage } from '@/pages/landing-page';
