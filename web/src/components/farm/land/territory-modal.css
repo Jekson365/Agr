@@ -1,0 +1,105 @@
+.territory-editor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.territory-editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.territory-editor-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.territory-editor-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.territory-editor-hint {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+/* How much has been marked so far, kept next to the buttons that change it. */
+.territory-editor-readout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.territory-editor-area {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.territory-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.territory-editor-btn {
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.territory-editor-btn:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+}
+
+.territory-editor-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.territory-editor-actions .btn {
+  height: 38px;
+  padding: 0 18px;
+}
+
+/* The map takes everything the toolbar leaves. */
+.territory-editor-map {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 20px 20px;
+}
+
+.territory-editor-map .territory-map {
+  border-radius: 12px;
+}
+
+@media (max-width: 720px) {
+  .territory-editor-toolbar {
+    gap: 10px;
+  }
+
+  .territory-editor-heading {
+    flex-basis: 100%;
+  }
+}

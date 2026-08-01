@@ -32,6 +32,7 @@ import { FruitHarvestDetailPage } from '@/pages/harvest/fruit-harvest/fruit-harv
 import { HarvestDetailPage } from '@/pages/harvest/harvest-detail-page';
 import { HarvestPage } from '@/pages/harvest/harvest-page';
 import { LandingPage } from '@/pages/landing-page';
+import { MapPage } from '@/pages/map-page';
 import { MarketDetailPage } from '@/pages/market/market-detail-page';
 import { MarketPage } from '@/pages/market/market-page';
 import { NotFoundPage } from '@/pages/not-found-page';
@@ -110,6 +111,8 @@ function App() {
             <Route path="/farm/greenhouse/harvest/:id" element={<GreenhouseHarvestDetailPage />} />
           </Route>
 
+          {/* Every outlined field on one map — the user's own land and their neighbourhood's. */}
+          <Route path="/map" element={<MapPage />} />
           <Route path="/farm/balance" element={<BalancePage />} />
           <Route path="/farm/equipment" element={<EquipmentPage />} />
           {/* <Route path="/scanner" element={<PlaceholderPage titleKey="dashboard.aiPlantScanner" />} /> */}

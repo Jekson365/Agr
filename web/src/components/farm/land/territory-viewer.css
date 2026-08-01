@@ -1,0 +1,63 @@
+.territory-viewer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
+}
+
+.territory-viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.territory-viewer-heading {
+  min-width: 0;
+  flex: 1;
+}
+
+.territory-viewer-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.territory-viewer-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.territory-viewer-area {
+  flex-shrink: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.territory-viewer-close {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 18px;
+}
+
+/* The map takes everything the header leaves. */
+.territory-viewer-map {
+  flex: 1;
+  min-height: 0;
+  padding: 14px 20px 20px;
+}
+
+.territory-viewer-map .territory-map {
+  border-radius: 12px;
+}

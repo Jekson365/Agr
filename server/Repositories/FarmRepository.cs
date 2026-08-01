@@ -36,6 +36,14 @@ public class FarmRepository(AppDbContext context) : IFarmRepository
         existing.ImagePath = farm.ImagePath;
         existing.Area = farm.Area;
         existing.Location = farm.Location;
+        // A client that doesn't know about the territory leaves Boundary out of its payload, which
+        // arrives here as null. Writing that through would erase the outline drawn on the web on
+        // the next edit from such a client, so null means "leave it as it is" — clearing the
+        // territory is sent as an empty array.
+        if (farm.Boundary is not null)
+        {
+            existing.Boundary = farm.Boundary;
+        }
 
         await context.SaveChangesAsync();
         return true;

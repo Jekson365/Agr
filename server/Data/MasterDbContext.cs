@@ -11,6 +11,7 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<MarketListing> MarketListings => Set<MarketListing>();
+    public DbSet<Neighbour> Neighbours => Set<Neighbour>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,34 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .HasOne<User>()
             .WithMany()
             .HasForeignKey(l => l.SellerId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Neighbour>()
+            .Property(n => n.Status)
+            .HasConversion<string>();
+
+        // One row per ordered pair. It doesn't stop A→B and B→A both existing — that is a genuine
+        // race between two people asking each other at once, which the repository resolves by
+        // accepting rather than by refusing the insert.
+        modelBuilder.Entity<Neighbour>()
+            .HasIndex(n => new { n.RequesterId, n.AddresseeId })
+            .IsUnique();
+
+        // Looking up "everyone linked to me" hits either column, so both are worth indexing.
+        modelBuilder.Entity<Neighbour>()
+            .HasIndex(n => n.AddresseeId);
+
+        // A deleted account takes its links with it, from whichever side it held them.
+        modelBuilder.Entity<Neighbour>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(n => n.RequesterId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Neighbour>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(n => n.AddresseeId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

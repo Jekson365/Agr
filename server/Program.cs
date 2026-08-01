@@ -84,6 +84,8 @@ builder.Services.AddScoped<ICalendarEventRepository, CalendarEventRepository>();
 builder.Services.AddScoped<IPlantScanHistoryRepository, PlantScanHistoryRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IMarketListingRepository, MarketListingRepository>();
+builder.Services.AddScoped<INeighbourRepository, NeighbourRepository>();
+builder.Services.AddScoped<INeighbourTerritoryService, NeighbourTerritoryService>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();

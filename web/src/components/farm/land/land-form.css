@@ -1,0 +1,39 @@
+/* Three times the standard 440px form card. The land form earns the room: it is the one that marks
+   out a territory, and the map preview is worth seeing while the rest is filled in. */
+.land-form-modal .modal-card {
+  max-width: 1320px;
+}
+
+/* All that width across one column would leave 1300px-wide text inputs, so the fields sit three
+   abreast: name, area and location on one row, then the territory beside the photo. */
+.land-form-modal .modal-form-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* A field worth two of the three columns — the territory, whose preview is a map. */
+.land-form-modal .field-wide {
+  grid-column: span 2;
+}
+
+/* With the room to show it, the preview is worth more than a strip. */
+.land-form-modal .territory-field-preview {
+  height: 220px;
+}
+
+/* Narrower than the card wants to be, the columns fold rather than crush. These have to restate
+   the base rules: the selectors above are more specific than the shared grid's own breakpoints. */
+@media (max-width: 1000px) {
+  .land-form-modal .modal-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .land-form-modal .modal-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .land-form-modal .field-wide {
+    grid-column: span 1;
+  }
+}

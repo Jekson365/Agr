@@ -2,6 +2,7 @@ import calendarIcon from '@/assets/icons/calendar.png';
 import farmIcon from '@/assets/icons/farm.png';
 import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
+import mapIcon from '@/assets/icons/map.png';
 import marketIcon from '@/assets/icons/market.png';
 import reportIcon from '@/assets/icons/report.png';
 import animalsIcon from '@/assets/properties/animals.png';
@@ -96,6 +97,8 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
       { to: '/farm/greenhouse/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
     ],
   },
+  // Every outlined field on one map — the user's own and their neighbourhood's.
+  { to: '/map', labelKey: 'map.title', icon: mapIcon },
   // { to: '/scanner', labelKey: 'dashboard.aiPlantScanner', icon: cameraIcon },
   { to: '/market', labelKey: 'dashboard.marketplace', icon: marketIcon, requiresConfig: MARKETPLACE_CONFIG },
   {

@@ -20,6 +20,76 @@
   max-width: 420px;
 }
 
+/* The marked territory, taking the rest of the row to the right of the photo and the figures. */
+.land-detail-territory {
+  min-width: 320px;
+  flex: 1.4;
+  align-self: stretch;
+}
+
+.land-detail-territory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.land-detail-territory-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.land-detail-territory-area {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.land-detail-territory-map {
+  position: relative;
+  height: 600px;
+}
+
+/* Covers the whole map: clicking anywhere on it opens the full-screen view, and nothing reaches
+   Leaflet underneath, so the picture in the page stays put. */
+.land-detail-territory-open {
+  position: absolute;
+  inset: 0;
+  /* Only has to beat the map beside it — the map keeps its own stacking context, so nothing
+     inside it reaches up here. */
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  cursor: zoom-in;
+  transition: background 120ms ease-out;
+}
+
+.land-detail-territory-open:hover,
+.land-detail-territory-open:focus-visible {
+  background: var(--color-overlay);
+}
+
+.land-detail-territory-open-hint {
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px var(--color-shadow-strong);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
 /* How much of the land the plots account for. */
 .land-detail-allocation {
   margin-top: 14px;
@@ -67,5 +137,16 @@
   .land-detail-image {
     width: 100%;
     max-width: 100%;
+  }
+
+  /* Stacked, the map goes full width — but capped against the viewport, so a phone doesn't have
+     to scroll through a screen and a half of map to reach the plots below it. */
+  .land-detail-territory {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .land-detail-territory-map {
+    height: min(720px, 70vh);
   }
 }

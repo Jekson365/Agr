@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import landPlaceholder from '@/assets/properties/land.png';
@@ -6,12 +6,23 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LandPlotFormModal } from '@/components/farm/land/land-plot-form-modal';
+import { TerritoryMap } from '@/components/farm/land/territory-map';
+import { TerritoryViewerModal } from '@/components/farm/land/territory-viewer-modal';
 import { cropImage, cropLabel } from '@/config/crop';
 import { treeStockLabel } from '@/config/fruit-kinds';
+import {
+  formatArea,
+  parseTerritory,
+  territoryAreaHectares,
+  toOtherTerritories,
+  toOwnTerritories,
+  type OtherTerritory,
+} from '@/config/territory';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
-import { getFarm } from '@/services/farm-service';
+import { getFarm, getFarms } from '@/services/farm-service';
 import { deleteLandPlot, getLandPlots } from '@/services/land-plot-service';
+import { getNeighbourTerritories } from '@/services/neighbour-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import type { Farm } from '@/types/farm';
 import type { LandPlot } from '@/types/land-plot';
@@ -34,10 +45,31 @@ export function LandDetailPage() {
   const [editingPlot, setEditingPlot] = useState<LandPlot | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; crop: string } | null>(null);
 
+  /** Every other outline around this land: the owner's own other fields, and the neighbourhood. */
+  const [otherTerritories, setOtherTerritories] = useState<OtherTerritory[]>([]);
+  const [mapFullScreen, setMapFullScreen] = useState(false);
+
   useEffect(() => {
     if (!farmId) return;
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [farmId]);
+
+  // Kept apart from the page's own load: a neighbour whose data can't be read is context missing
+  // from the map, not a reason to show this land as failed.
+  useEffect(() => {
+    if (!farmId) return;
+    let cancelled = false;
+    Promise.all([getFarms(), getNeighbourTerritories()])
+      .then(([farms, others]) => {
+        if (!cancelled) setOtherTerritories([...toOwnTerritories(farms, farmId), ...toOtherTerritories(others)]);
+      })
+      .catch(() => {
+        // Best effort — the land's own territory draws either way.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [farmId]);
 
   async function load() {
@@ -90,6 +122,11 @@ export function LandDetailPage() {
   // How much of the land is accounted for by plots — the farm's own area is the ceiling.
   const allocatedArea = plots.reduce((sum, plot) => sum + plot.area, 0);
   const remainingArea = farm ? farm.area - allocatedArea : 0;
+
+  // Held steady across renders: the map redraws whenever the outline it is given changes, and a
+  // fresh array on every render would have it redrawing for nothing.
+  const territory = useMemo(() => parseTerritory(farm?.boundary), [farm?.boundary]);
+  const territoryArea = territoryAreaHectares(territory);
 
   /** A plot goes by the fruit entry planted on it — two plots of apples are "Gala" and "Fuji", not
    *  "Apple" twice. Plots from before they named an entry fall back to the crop they recorded. */
@@ -156,6 +193,34 @@ export function LandDetailPage() {
                   </span>
                 </div>
               </div>
+
+              {/* The territory marked out on the map, for land that has one. */}
+              {territory.length > 0 && (
+                <div className="land-detail-territory">
+                  <div className="land-detail-territory-header">
+                    <span className="land-detail-territory-title">{t('landTerritory.label')}</span>
+                    {territoryArea > 0 && (
+                      <span className="land-detail-territory-area">
+                        ≈ {formatArea(territoryArea)} {t('farm.areaUnit')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="land-detail-territory-map">
+                    <TerritoryMap points={territory} others={otherTerritories} label={farm.name} />
+                    {/* The map in the page is a picture of the land; panning and zooming it
+                        happens full screen. The overlay takes every gesture so a drag meant for
+                        the big map can't quietly shift this one instead. */}
+                    <button
+                      type="button"
+                      className="land-detail-territory-open"
+                      onClick={() => setMapFullScreen(true)}
+                      aria-label={t('landTerritory.openFullScreen')}
+                    >
+                      <span className="land-detail-territory-open-hint">{t('landTerritory.fullScreen')}</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -187,6 +252,14 @@ export function LandDetailPage() {
           )}
         </>
       )}
+
+      <TerritoryViewerModal
+        open={mapFullScreen}
+        title={farm?.name ?? t('farm.land')}
+        points={territory}
+        others={otherTerritories}
+        onClose={() => setMapFullScreen(false)}
+      />
 
       <LandPlotFormModal
         open={formOpen}

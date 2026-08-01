@@ -1,0 +1,321 @@
+/* The topbar button, sized to sit level with the language and theme toggles beside it. */
+.neighbours-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: 1px solid var(--color-border);
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  cursor: pointer;
+}
+
+/* How many requests are waiting on an answer. */
+.neighbours-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+.neighbours-scrim {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay);
+  z-index: 90;
+}
+
+/* The drawer itself — full height down the right-hand edge, under any modal that opens over it. */
+.neighbours-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 91;
+  width: 380px;
+  max-width: 100vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  box-shadow: -8px 0 24px var(--color-shadow-strong);
+  animation: neighbours-slide-in 180ms ease-out;
+}
+
+@keyframes neighbours-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+/* Sliding in is decoration; anyone who has asked for less motion just gets the panel. */
+@media (prefers-reduced-motion: reduce) {
+  .neighbours-panel {
+    animation: none;
+  }
+}
+
+.neighbours-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 12px;
+}
+
+.neighbours-panel-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.neighbours-close {
+  border: 0;
+  background: none;
+  padding: 4px;
+  font-size: 1rem;
+  line-height: 1;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.neighbours-close:hover {
+  color: var(--color-dark);
+}
+
+.neighbours-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.neighbours-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: none;
+  padding: 10px 10px 12px;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+.neighbours-tab.active {
+  color: var(--color-green);
+  border-bottom-color: var(--color-green);
+}
+
+.neighbours-tab-count {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+/* The count of requests waiting on the user, which is worth noticing. */
+.neighbours-tab-count.alert {
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+}
+
+.neighbours-panel-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+}
+
+.neighbours-section-title {
+  margin: 18px 0 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.neighbours-section-title:first-child {
+  margin-top: 0;
+}
+
+.neighbours-search {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 14px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--color-dark);
+}
+
+.neighbours-search:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: -1px;
+}
+
+.neighbours-empty {
+  margin: 8px 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+/* The panel carries its own waiting state rather than borrowing .state-box from the farm pages'
+   stylesheet — it renders on every route, including ones that never load that file. */
+.neighbours-loading {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.neighbours-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.neighbour-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.neighbour-row:last-child {
+  border-bottom: 0;
+}
+
+.neighbour-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.neighbour-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.neighbour-identity {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.neighbour-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.neighbour-detail,
+.neighbour-distance,
+.neighbour-phone {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.neighbour-distance {
+  color: var(--color-green);
+  font-weight: 600;
+}
+
+.neighbour-phone {
+  color: var(--color-green);
+  text-decoration: none;
+}
+
+.neighbour-phone:hover {
+  text-decoration: underline;
+}
+
+.neighbour-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.neighbour-action {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.neighbour-action:hover:not(:disabled) {
+  background: var(--color-surface-sunken);
+}
+
+.neighbour-action.primary {
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.neighbour-action.danger {
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+.neighbour-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 480px) {
+  .neighbours-panel {
+    width: 100vw;
+  }
+}

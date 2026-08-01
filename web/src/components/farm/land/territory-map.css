@@ -1,0 +1,226 @@
+/* The map fills whatever box it is given — the form's editor makes it tall, the detail page's
+   card keeps it short — so the height lives with the caller, not here. */
+.territory-map {
+  position: relative;
+  height: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-green-muted);
+  /* Leaflet stacks its panes and controls up to z-index 1000, and the controls above sit higher
+     still. Without a stacking context of its own here, all of that competes with the rest of the
+     page — and wins against any modal, which would leave the map's chrome floating in front of a
+     dialog opened over it. This keeps every one of those numbers inside the map. */
+  isolation: isolate;
+}
+
+.territory-map-canvas {
+  position: absolute;
+  inset: 0;
+}
+
+/* Leaflet's own zoom buttons sit top-left, so these take the opposite corner. Above the map
+   panes and Leaflet's own controls (z-index 400–1000). */
+.territory-map-controls {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1001;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.territory-layer-switch {
+  display: flex;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.territory-layer-btn {
+  border: 0;
+  background: transparent;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.territory-layer-btn.active {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.territory-locate-btn {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: 0 2px 8px var(--color-shadow);
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.territory-locate-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* The outline itself. These win over the stroke/fill attributes Leaflet writes onto the path,
+   which is what keeps the territory in the app's green in both themes. */
+.territory-shape {
+  stroke: var(--color-green);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  fill: var(--color-green);
+  fill-opacity: 0.22;
+}
+
+/* Land other than the one in hand. All of it is context — dashed, never solid, so the outline
+   being marked out or looked at stays the one thing on the map that reads as solid. */
+.territory-shape.context {
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  fill-opacity: 0.12;
+}
+
+/* The user's own other fields: their own green, so their holding reads as one thing. */
+.territory-shape.context.own {
+  stroke: var(--color-green);
+  fill: var(--color-green);
+}
+
+/* A neighbour's land, in a colour of its own so it is never mistaken for the user's. */
+.territory-shape.context.neighbour {
+  stroke: var(--color-amber);
+  fill: var(--color-amber);
+}
+
+/* Any other farmer's. Carries as much weight as a neighbour's — everything on this map is within
+   10km, so it is all land the user might actually run into — and is told apart by its own blue and
+   a finer dash rather than by being faded out. */
+.territory-shape.context.other {
+  stroke: var(--color-map-other);
+  stroke-width: 3;
+  stroke-dasharray: 4 3;
+  fill: var(--color-map-other);
+  fill-opacity: 0.2;
+}
+
+/* The pin marking a piece of land, carrying its owner's initial. Its size is in screen pixels, not
+   map units, so it holds still while the field under it shrinks — zoom out far enough that the
+   outline is a speck and this is what remains to say the land is there. */
+/* The width and height come from Leaflet, which needs them to centre the pin on the land; only the
+   look of it lives here. */
+.territory-owner-pin {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  /* Not halved with the rest — a 2px ring round a 48px circle stops reading as a ring at all. */
+  border: 3px solid var(--color-on-overlay);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-on-accent);
+}
+
+/* The land this map is about. */
+.territory-owner-pin.main {
+  background: var(--color-green);
+  font-size: 1.5rem;
+}
+
+.territory-owner-pin.own {
+  background: var(--color-green);
+  opacity: 0.85;
+}
+
+.territory-owner-pin.neighbour {
+  background: var(--color-amber);
+}
+
+.territory-owner-pin.other {
+  background: var(--color-map-other);
+}
+
+/* The one picked out on a map that answers clicks: solid, and heavier than the rest. */
+.territory-shape.context.selected {
+  stroke-width: 5;
+  stroke-dasharray: none;
+  fill-opacity: 0.32;
+}
+
+/* Whose land it is, sitting on the middle of their outline. */
+.territory-other-label {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  color: var(--color-on-overlay);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  /* Readable over both bright imagery and dark fields, without a box to clutter the map. */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Every name stays at every zoom. Only land within 10km is on the map at all, so there is never
+   the crowd that once made hiding the far ones worthwhile. */
+
+/* Leaflet draws a little arrow on every tooltip; a centred label has nothing to point at. */
+.territory-other-label::before {
+  display: none;
+}
+
+/* A corner of the territory: drag to move it, right-click to remove it. */
+.territory-handle {
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--color-green);
+  background: var(--color-surface);
+  box-shadow: 0 1px 4px var(--color-shadow-strong);
+  cursor: grab;
+}
+
+.territory-handle:active {
+  cursor: grabbing;
+}
+
+/* Sits between two corners, and becomes one when clicked — faint until pointed at, so a finished
+   boundary reads as its own corners rather than twice as many dots. */
+.territory-handle.midpoint {
+  border-style: dashed;
+  opacity: 0.55;
+  cursor: copy;
+}
+
+.territory-handle.midpoint:hover {
+  opacity: 1;
+}
+
+/* Leaflet ships light-only chrome; in dark mode its controls would be white cards on a dark
+   page. Re-point them at the app's own surface tokens. */
+:root[data-theme='dark'] .territory-map .leaflet-bar a,
+:root[data-theme='dark'] .territory-map .leaflet-control-attribution {
+  background: var(--color-surface);
+  color: var(--color-dark);
+}
+
+:root[data-theme='dark'] .territory-map .leaflet-bar a:hover {
+  background: var(--color-surface-sunken);
+}
+
+:root[data-theme='dark'] .territory-map .leaflet-control-attribution a {
+  color: var(--color-green);
+}

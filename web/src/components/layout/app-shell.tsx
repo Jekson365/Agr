@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 
+import { NeighboursButton } from '@/components/neighbours/neighbours-button';
 import { FontSizeToggle } from '@/components/ui/font-size-toggle';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { PageHelp } from '@/components/ui/page-help';
@@ -16,6 +17,7 @@ export function AppShell() {
           <FontSizeToggle />
           <ThemeToggle />
           <LanguageToggle />
+          <NeighboursButton />
         </header>
         <main className="app-content">
           <Outlet />

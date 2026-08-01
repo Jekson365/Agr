@@ -1,0 +1,240 @@
+/* Two columns filling the content area: the map takes three quarters, the farmer behind whichever
+   outline was clicked takes the rest. Neither scrolls the page — each looks after its own. */
+.map-page {
+  display: grid;
+  grid-template-columns: 75% 25%;
+  height: 100%;
+  min-height: 0;
+  gap: 16px;
+}
+
+.map-page-map {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+.map-page-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-green-muted);
+  color: var(--color-muted);
+}
+
+.map-page-panel {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 4px 16px;
+}
+
+.map-page-title {
+  margin: 0 0 14px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.map-page-empty {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.map-page-avatar {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.map-page-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.map-page-farmer-name {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.map-page-detail {
+  margin: 0 0 2px;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.map-page-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.map-page-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.map-page-action {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.map-page-action.primary {
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.map-page-action.danger {
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+.map-page-action:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.map-page-section {
+  margin: 20px 0 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.map-page-holdings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Each field the farmer has outlined; picking one moves the map's highlight to it. */
+.map-page-holding {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.map-page-holding:hover {
+  background: var(--color-surface-sunken);
+}
+
+.map-page-holding.selected {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.map-page-holding-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.map-page-holding-area {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-green);
+}
+
+/* What is growing on the field that was clicked. */
+.map-page-crops {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-page-crop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.map-page-crop:last-child {
+  border-bottom: 0;
+}
+
+.map-page-crop-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.map-page-crop-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.map-page-crop-area {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* Too narrow for a side panel to be worth a quarter of it: the map takes the width and the
+   farmer's details sit under it. */
+@media (max-width: 900px) {
+  .map-page {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 60% auto;
+    height: auto;
+  }
+
+  .map-page-map {
+    height: 60vh;
+  }
+}
