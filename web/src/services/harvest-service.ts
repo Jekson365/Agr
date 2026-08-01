@@ -6,6 +6,12 @@ export function getHarvests(kind?: HarvestKind) {
   return apiFetch<Harvest[]>(`/api/harvests${kind ? `?kind=${kind}` : ''}`);
 }
 
+/** The plant stocks some harvest records — planned or picked. A harvest is written in the good's
+ *  own terms, so those rows have their kind and unit settled. */
+export function getRecordedStockIds() {
+  return apiFetch<number[]>('/api/harvests/recorded-stocks');
+}
+
 export function getHarvest(id: number) {
   return apiFetch<Harvest>(`/api/harvests/${id}`);
 }

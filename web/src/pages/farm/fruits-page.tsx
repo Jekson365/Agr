@@ -5,7 +5,7 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
-import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form-modal';
+import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form/tree-stock-form-modal';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { fruitKindImage, fruitTypeLabel, treeStockLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useAuth } from '@/contexts/auth-context';

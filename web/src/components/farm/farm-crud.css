@@ -120,6 +120,13 @@
   color: var(--color-muted);
 }
 
+/* A field whose value is settled and only shown back — e.g. the fruit an existing orchard is of. */
+.field-fixed-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Icon-based list card: Livestock, Stock, Fruits */
 .list-card-grid {
   display: flex;

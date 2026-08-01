@@ -72,7 +72,7 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         children: [
           { to: '/farm/fruits', labelKey: 'fruits.trees', icon: fruitsIcon },
           { to: '/farm/fruits/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
-          { to: '/farm/fruits/products', labelKey: 'treeProduct.title', icon: fruitsIcon },
+          // { to: '/farm/fruits/products', labelKey: 'treeProduct.title', icon: fruitsIcon },
         ],
       },
       { to: '/farm/livestock', labelKey: 'farm.livestock', icon: animalsIcon, requiresConfig: LIVESTOCK_CONFIG },

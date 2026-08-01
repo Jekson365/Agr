@@ -126,9 +126,11 @@
 
 .production-table {
   /* Header and rows share one track list, so every column lines up down the page. */
+  /* The last track holds the two action buttons and the padding that sets them off from the
+     cells sliding underneath — see .production-row-actions. */
   --production-cols: minmax(120px, 1.1fr) minmax(120px, 1fr) minmax(90px, 0.9fr) minmax(80px, 0.8fr)
-    minmax(90px, 0.9fr) minmax(90px, 0.9fr) minmax(120px, 1.4fr) 62px;
-  min-width: 852px;
+    minmax(90px, 0.9fr) minmax(90px, 0.9fr) minmax(120px, 1.4fr) 72px;
+  min-width: 862px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
   overflow: hidden;
@@ -147,8 +149,8 @@
 
 .production-table.group {
   --production-cols: minmax(120px, 1.1fr) minmax(120px, 1fr) minmax(90px, 0.9fr) minmax(60px, 0.5fr)
-    minmax(80px, 0.8fr) minmax(90px, 0.9fr) minmax(90px, 0.9fr) minmax(120px, 1.4fr) 62px;
-  min-width: 932px;
+    minmax(80px, 0.8fr) minmax(90px, 0.9fr) minmax(90px, 0.9fr) minmax(120px, 1.4fr) 72px;
+  min-width: 942px;
 }
 
 .production-row {
@@ -159,6 +161,9 @@
   padding: 0 14px;
   border-top: 1px solid var(--color-border);
   min-height: 44px;
+  /* Named rather than inherited from the table, so the actions column can sit on top of the
+     scrolling row and still match whatever this row's own background is. */
+  background: var(--color-surface);
 }
 
 .production-row:first-child {
@@ -270,11 +275,29 @@
 }
 
 /* Edit + delete share the last column; the pair is right-aligned so rows with only one
-   button (marketplace sales) still line their button up with the rest. */
+   button (marketplace sales) still line their button up with the rest.
+
+   The table is wider than the column it sits in on the animal page, so the pair rides along at
+   the right edge instead of scrolling out of reach — a row's buttons are the one part of it you
+   can't get at by reading further across. It carries the row's own background (so the cells
+   sliding under it don't show through) and a soft edge to show it is floating. */
 .production-row-actions {
   display: flex;
   justify-content: flex-end;
   gap: 4px;
+  position: sticky;
+  right: 0;
+  background: inherit;
+  padding-left: 10px;
+  box-shadow: -10px 0 10px -10px rgb(0 0 0 / 25%);
+}
+
+/* Nothing to pin in the header's last cell, but it keeps the same backdrop so the column reads
+   as one strip from the head down. */
+.production-table .production-row-head > span:last-child {
+  position: sticky;
+  right: 0;
+  background: inherit;
 }
 
 .production-row-edit,

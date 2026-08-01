@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { AnimalProductionView } from '@/components/farm/livestock/animal-production-view';
+import { AnimalProductionView } from '@/components/farm/livestock/animal-production/animal-production-view';
 import '@/components/farm/farm-crud.css';
 import { useLanguage } from '@/contexts/language-context';
 import { getLivestockItem } from '@/services/livestock-service';

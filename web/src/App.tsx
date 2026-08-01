@@ -5,22 +5,28 @@ import { LoginPage } from '@/pages/auth/login-page';
 import { CalendarPage } from '@/pages/calendar-page';
 import { DashboardPage } from '@/pages/dashboard-page';
 import { AnimalHistoryPage } from '@/pages/farm/animal-history-page';
-import { BalancePage } from '@/pages/farm/balance-page';
+// import { BalancePage } from '@/pages/farm/balance-page';
 import { EquipmentPage } from '@/pages/farm/equipment-page';
 import { FarmPage } from '@/pages/farm/farm-page';
 import { FruitsPage } from '@/pages/farm/fruits-page';
+import { GreenhouseDetailPage } from '@/pages/farm/greenhouse-detail-page';
+// import { GreenhouseHarvestDetailPage } from '@/pages/farm/greenhouse-harvest-detail-page';
+import { GreenhouseHarvestPage } from '@/pages/farm/greenhouse-harvest-page';
+import { GreenhousePage } from '@/pages/farm/greenhouse-page';
+import { GreenhouseSeedsPage } from '@/pages/farm/greenhouse-seeds-page';
+import { GreenhouseStockPage } from '@/pages/farm/greenhouse-stock-page';
 import { LandDetailPage } from '@/pages/farm/land-detail-page';
 import { LandPage } from '@/pages/farm/land-page';
-import { LivestockBalancePage } from '@/pages/farm/livestock-balance-page';
+// import { LivestockBalancePage } from '@/pages/farm/livestock-balance-page';
 import { LivestockDetailPage } from '@/pages/farm/livestock-detail-page';
 import { LivestockPage } from '@/pages/farm/livestock-page';
 import { LivestockProductionPage } from '@/pages/farm/livestock-production-page';
 import { SeedHistoryPage } from '@/pages/farm/seed-history-page';
 import { SeedsPage } from '@/pages/farm/seeds-page';
-import { TreeProductHistoryPage } from '@/pages/farm/tree-product-history-page';
-import { TreeProductsPage } from '@/pages/farm/tree-products-page';
 import { StockHistoryPage } from '@/pages/farm/stock-history-page';
 import { StockPage } from '@/pages/farm/stock-page';
+import { TreeProductHistoryPage } from '@/pages/farm/tree-product-history-page';
+import { TreeProductsPage } from '@/pages/farm/tree-products-page';
 import { TreeStockHistoryPage } from '@/pages/farm/tree-stock-history-page';
 import { FruitHarvestDetailPage } from '@/pages/harvest/fruit-harvest/fruit-harvest-detail-page';
 import { HarvestDetailPage } from '@/pages/harvest/harvest-detail-page';
@@ -28,12 +34,6 @@ import { HarvestPage } from '@/pages/harvest/harvest-page';
 import { LandingPage } from '@/pages/landing-page';
 import { MarketDetailPage } from '@/pages/market/market-detail-page';
 import { MarketPage } from '@/pages/market/market-page';
-import { GreenhouseDetailPage } from '@/pages/farm/greenhouse-detail-page';
-import { GreenhouseHarvestDetailPage } from '@/pages/farm/greenhouse-harvest-detail-page';
-import { GreenhouseHarvestPage } from '@/pages/farm/greenhouse-harvest-page';
-import { GreenhousePage } from '@/pages/farm/greenhouse-page';
-import { GreenhouseSeedsPage } from '@/pages/farm/greenhouse-seeds-page';
-import { GreenhouseStockPage } from '@/pages/farm/greenhouse-stock-page';
 import { NotFoundPage } from '@/pages/not-found-page';
 import { ProfilePage } from '@/pages/profile-page';
 import { ReportHarvestPage } from '@/pages/report-harvest-page';
@@ -51,6 +51,8 @@ import {
   LIVESTOCK_CONFIG,
   MARKETPLACE_CONFIG,
 } from '@/types/configuration';
+import { BalancePage } from './pages/farm/balance/balance-page';
+import { GreenhouseHarvestDetailPage } from './pages/farm/greenhouse-harvest/greenhouse-harvest-detail-page';
 
 function App() {
   return (
@@ -73,7 +75,7 @@ function App() {
               alone would leave the paths reachable by URL, bookmark or an old link. */}
           <Route element={<ConfigRoute name={LIVESTOCK_CONFIG} />}>
             <Route path="/farm/livestock" element={<LivestockPage />} />
-            <Route path="/farm/livestock/balance" element={<LivestockBalancePage />} />
+            {/* <Route path="/farm/livestock/balance" element={<LivestockBalancePage />} /> */}
             <Route path="/farm/livestock/:id" element={<LivestockDetailPage />} />
             <Route path="/farm/livestock/:livestockId/production" element={<LivestockProductionPage />} />
             <Route path="/farm/livestock/:livestockId/animal/:stockId" element={<AnimalHistoryPage />} />

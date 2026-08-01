@@ -134,6 +134,7 @@ export function GreenhouseStockPage() {
         open={formOpen}
         editingStock={editingItem}
         greenhouses={greenhouses}
+        existingItems={stock}
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
       />

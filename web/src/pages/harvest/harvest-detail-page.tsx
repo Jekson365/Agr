@@ -343,6 +343,10 @@ export function HarvestDetailPage() {
   // is actually in the ground, so the planned items belong to Planting. Existing rows stay visible
   // in every status — a harvest moved back to Planning shouldn't appear to have lost its plan.
   const canPlan = harvest?.status === 'Planting';
+  // What to sow is settled while the harvest is still being planned, so seed is only recorded in
+  // Planning. Existing rows stay visible in every status — the record of what went into the ground
+  // shouldn't disappear once the crop is growing.
+  const canSow = harvest?.status === 'Planning';
 
   /** The crop kinds actually sown for this harvest — the only things a plan can cover. Seed and
    * plant stock share the StockKind catalog, so a seed's type matches its produce's type. */
@@ -381,9 +385,9 @@ export function HarvestDetailPage() {
   // generic "this will update the status" — reversing is the one move that silently rewrites
   // data outside this harvest.
   // One entry per good that the change is actually about to write into — or take back out of —
-  // stock: its recorded result where there is one, its plan where there isn't. Counting the
-  // results alone would have promised nothing for a harvest whose yield is still only planned.
-  const movingCount = stockMovingRows(yieldRows, (row) => rawUnitFor(row.stockId, row.treeStockId)).length;
+  // stock, which is the goods with a recorded result. A harvest that only planned moves nothing,
+  // and the count says so.
+  const movingCount = stockMovingRows(yieldRows).length;
   const statusChangeBody = (() => {
     if (!harvest || pendingStatus == null) return t('harvest.statusConfirmBody');
 
@@ -664,12 +668,12 @@ export function HarvestDetailPage() {
           </div>
 
           {harvestSeeds.length === 0 ? (
-            <p className="empty-state">{t('harvestSeed.empty')}</p>
+            <p className="empty-state">{canSow ? t('harvestSeed.empty') : t('harvestSeed.planningOnly')}</p>
           ) : (
             <div className="list-card-grid harvest-compact-icons">
               {harvestSeeds.map((harvestSeed) => {
                 const info = seedInfoFor(harvestSeed.seedId);
-                const canEdit = harvest?.status !== 'Harvested';
+                const canEdit = canSow;
                 return (
                   <div key={harvestSeed.id} className="list-card">
                     <div className="list-card-body">
@@ -694,7 +698,7 @@ export function HarvestDetailPage() {
             </div>
           )}
 
-          {harvest?.status !== 'Harvested' && (
+          {canSow && (
             <button type="button" className="add-button" onClick={openAddSeed}>
               + {t('harvestSeed.add')}
             </button>

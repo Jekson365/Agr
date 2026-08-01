@@ -5,6 +5,12 @@ export function getHarvestTrees(harvestId: number) {
   return apiFetch<HarvestTree[]>(`/api/harvesttrees?harvestId=${harvestId}`);
 }
 
+/** The fruit entries some harvest already records as picked — those have produce on the books, so
+ *  the product they yield is settled. */
+export function getPickedTreeStockIds() {
+  return apiFetch<number[]>('/api/harvesttrees/picked-tree-stocks');
+}
+
 export function createHarvestTree(harvestTree: HarvestTreeInput) {
   return apiFetch<HarvestTree>('/api/harvesttrees', {
     method: 'POST',

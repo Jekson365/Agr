@@ -28,6 +28,9 @@ export function LivestockPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Livestock | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
+  /** A refused delete. Kept apart from `error`, which stands for "the list didn't load" and
+   *  replaces the list with a retry — no use for a group that is simply not deletable. */
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   /** Non-null while the packet list is up; holds the cap message that raised it. */
   const [packetsMessage, setPacketsMessage] = useState<string | null>(null);
 
@@ -81,13 +84,14 @@ export function LivestockPage() {
   async function confirmDeleteItem() {
     if (!confirmDelete) return;
     const { id } = confirmDelete;
+    setDeleteError(null);
     try {
       await deleteLivestock(id);
       setLivestock((prev) => prev.filter((i) => i.id !== id));
     } catch (err) {
-      // The server refuses while production records still hang off the group — deleting it
-      // would take that history with it.
-      setError(
+      // The server refuses while production records still hang off the group — its own, or any
+      // recorded on one of its animals. Deleting it would take that history with it.
+      setDeleteError(
         err instanceof ApiError && err.status === 409
           ? t('farm.deleteHasProduction')
           : err instanceof Error
@@ -121,6 +125,8 @@ export function LivestockPage() {
           </button>
         </div>
       </div>
+
+      {deleteError && <div className="error-banner">{deleteError}</div>}
 
       {loading ? (
         <div className="state-box">…</div>

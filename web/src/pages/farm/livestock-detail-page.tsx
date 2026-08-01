@@ -28,6 +28,9 @@ export function LivestockDetailPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingDetail, setEditingDetail] = useState<LivestockDetail | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; code: string } | null>(null);
+  /** A refused delete. Kept apart from `error`, which stands for "the list didn't load" and
+   *  replaces the list with a retry — no use for an animal that is simply not deletable. */
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!livestockId) return;
@@ -69,12 +72,14 @@ export function LivestockDetailPage() {
   async function confirmDeleteDetail() {
     if (!confirmDelete) return;
     const { id } = confirmDelete;
+    setDeleteError(null);
     try {
       await deleteLivestockDetail(id);
       setDetails((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
-      // The server refuses while the animal still has production records.
-      setError(
+      // The server refuses while the animal still has production records — deleting it would take
+      // that history with it.
+      setDeleteError(
         err instanceof ApiError && err.status === 409
           ? t('farm.deleteHasProduction')
           : err instanceof Error
@@ -106,6 +111,8 @@ export function LivestockDetailPage() {
           <StockFeedRow livestockId={livestockId} />
         </>
       )}
+
+      {deleteError && <div className="error-banner">{deleteError}</div>}
 
       {loading ? (
         <div className="state-box">…</div>

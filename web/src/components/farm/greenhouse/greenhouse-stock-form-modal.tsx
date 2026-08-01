@@ -19,11 +19,20 @@ type Props = {
   editingStock: GreenhouseStock | null;
   /** The greenhouses to hold it in — one must be picked. */
   greenhouses: Greenhouse[];
+  /** The rows that already exist, so a name another one carries is caught before saving. */
+  existingItems: GreenhouseStock[];
   onClose: () => void;
   onSaved: (stock: GreenhouseStock, isNew: boolean) => void;
 };
 
-export function GreenhouseStockFormModal({ open, editingStock, greenhouses, onClose, onSaved }: Props) {
+export function GreenhouseStockFormModal({
+  open,
+  editingStock,
+  greenhouses,
+  existingItems,
+  onClose,
+  onSaved,
+}: Props) {
   const { t } = useLanguage();
 
   const [kinds, setKinds] = useState<StockKind[]>([]);
@@ -102,8 +111,26 @@ export function GreenhouseStockFormModal({ open, editingStock, greenhouses, onCl
   const seedAmount = Math.max(0, parseFloat(seedAmountInput) || 0);
   const canSubmit = stockType.trim() !== '' && greenhouseId != null && !saving;
 
+  /**
+   * Whether another row already carries this label — in any greenhouse, since the page lists them
+   * all together. A blank name isn't a label: those rows show their crop's name instead, and any
+   * number of them may exist.
+   */
+  function isNameTaken(name: string): boolean {
+    const trimmed = name.trim().toLowerCase();
+    if (trimmed === '') {
+      return false;
+    }
+    return existingItems.some((item) => item.id !== editingStock?.id && item.name.trim().toLowerCase() === trimmed);
+  }
+
   async function handleSubmit() {
     if (!canSubmit || greenhouseId == null) return;
+
+    if (isNameTaken(nameInput)) {
+      setFormError(t('greenhouse.stockNameDuplicate'));
+      return;
+    }
 
     setSaving(true);
     setFormError(null);
@@ -130,6 +157,12 @@ export function GreenhouseStockFormModal({ open, editingStock, greenhouses, onCl
       onSaved(stock, true);
       onClose();
     } catch (err) {
+      // The server rejects a name another row already carries — one added from another session,
+      // say, which the check above couldn't have known about.
+      if (err instanceof ApiError && err.status === 409) {
+        setFormError(t('greenhouse.stockNameDuplicate'));
+        return;
+      }
       setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);

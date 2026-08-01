@@ -63,6 +63,78 @@ const QUARTER_OPTIONS: { value: Quarter; labelKey: string }[] = [
 /** Categorical series colours — validated for light & dark and CVD. */
 const SERIES_COLORS = ['#16a34a', '#2563eb', '#d97706', '#7c3aed', '#dc2626', '#0891b2', '#db2777', '#65a30d'];
 
+const FILTERS_KEY = 'farm.report.filters';
+
+/** Shared empty selection, so "nothing picked yet" keeps a stable identity between renders. */
+const NO_SERIES_KEYS: string[] = [];
+
+/** The filter as the user last left it. */
+type StoredFilters = {
+  category: Category;
+  filtersOpen: boolean;
+  periodMode: PeriodMode;
+  year: number;
+  quarter: Quarter;
+  customFrom: string | null;
+  customTo: string | null;
+  /** The picked series per category — their key spaces don't overlap, so each is kept apart. */
+  seriesKeys: Record<string, string[]>;
+};
+
+function defaultFilters(): StoredFilters {
+  const now = new Date();
+  return {
+    category: 'crop',
+    filtersOpen: false,
+    periodMode: 'all',
+    year: now.getFullYear(),
+    quarter: (Math.floor(now.getMonth() / 3) + 1) as Quarter,
+    customFrom: null,
+    customTo: null,
+    seriesKeys: {},
+  };
+}
+
+/** The stored value when it is still one of the choices on offer, the default otherwise. */
+function oneOf<T>(value: unknown, allowed: readonly T[], fallback: T): T {
+  return allowed.includes(value as T) ? (value as T) : fallback;
+}
+
+function isSeriesKeyMap(value: unknown): value is Record<string, string[]> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Object.values(value).every((keys) => Array.isArray(keys) && keys.every((key) => typeof key === 'string'))
+  );
+}
+
+/**
+ * The filter left behind by the last visit, checked field by field so a stale or hand-edited entry
+ * costs at most the one field it broke. Read synchronously during the first render, so the page
+ * makes its one request with that filter already applied rather than fetching everything first.
+ */
+function readStoredFilters(): StoredFilters {
+  const defaults = defaultFilters();
+  try {
+    const raw = localStorage.getItem(FILTERS_KEY);
+    if (!raw) return defaults;
+    const saved = JSON.parse(raw) as Record<string, unknown>;
+    return {
+      category: oneOf(saved.category, CATEGORY_OPTIONS.map((o) => o.value), defaults.category),
+      filtersOpen: typeof saved.filtersOpen === 'boolean' ? saved.filtersOpen : defaults.filtersOpen,
+      periodMode: oneOf(saved.periodMode, PERIOD_OPTIONS.map((o) => o.value), defaults.periodMode),
+      year: typeof saved.year === 'number' && Number.isInteger(saved.year) ? saved.year : defaults.year,
+      quarter: oneOf(saved.quarter, QUARTER_OPTIONS.map((o) => o.value), defaults.quarter),
+      customFrom: typeof saved.customFrom === 'string' ? saved.customFrom : null,
+      customTo: typeof saved.customTo === 'string' ? saved.customTo : null,
+      seriesKeys: isSeriesKeyMap(saved.seriesKeys) ? saved.seriesKeys : defaults.seriesKeys,
+    };
+  } catch {
+    // A half-written or hand-edited value shouldn't cost the user their report.
+    return defaults;
+  }
+}
+
 /** "2026-03-05" -> "05.03" for compact x-axis labels. */
 function shortIsoDay(iso: string): string {
   const [, month, day] = iso.slice(0, 10).split('-');
@@ -72,9 +144,12 @@ function shortIsoDay(iso: string): string {
 export function ReportPage() {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
-  const { isOn } = useConfiguration();
+  const { isOn, loaded: configLoaded, loadError: configLoadError } = useConfiguration();
 
-  const [category, setCategory] = useState<Category>('crop');
+  /** Read once, on mount — every filter below starts from it. */
+  const [initialFilters] = useState(readStoredFilters);
+
+  const [category, setCategory] = useState<Category>(initialFilters.category);
 
   // The two chart panels, totalled server-side for the current category and period.
   const [overview, setOverview] = useState<ReportOverview | null>(null);
@@ -93,15 +168,17 @@ export function ReportPage() {
   /** Bumped by Retry to re-run the overview fetch when nothing about the filter has changed. */
   const [reloadToken, setReloadToken] = useState(0);
 
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [periodMode, setPeriodMode] = useState<PeriodMode>('all');
-  const [year, setYear] = useState(() => new Date().getFullYear());
-  const [quarter, setQuarter] = useState<Quarter>(() => (Math.floor(new Date().getMonth() / 3) + 1) as Quarter);
-  const [customFrom, setCustomFrom] = useState<string | null>(null);
-  const [customTo, setCustomTo] = useState<string | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(initialFilters.filtersOpen);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>(initialFilters.periodMode);
+  const [year, setYear] = useState(initialFilters.year);
+  const [quarter, setQuarter] = useState<Quarter>(initialFilters.quarter);
+  const [customFrom, setCustomFrom] = useState<string | null>(initialFilters.customFrom);
+  const [customTo, setCustomTo] = useState<string | null>(initialFilters.customTo);
 
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
-  const [selectedSeriesKeys, setSelectedSeriesKeys] = useState<string[]>([]);
+  const [seriesKeysByCategory, setSeriesKeysByCategory] = useState<Record<string, string[]>>(
+    () => initialFilters.seriesKeys
+  );
   const [selectedSeriesKey, setSelectedSeriesKey] = useState<string | null>(null);
   const seriesInitRef = useRef(false);
   const dayDetailsRef = useRef<HTMLElement>(null);
@@ -113,6 +190,37 @@ export function ReportPage() {
     () => ({ mode: periodMode, year, quarter, from: customFrom, to: customTo }),
     [periodMode, year, quarter, customFrom, customTo]
   );
+
+  /** The series picked for the category on screen; the others stay remembered in the map. */
+  const selectedSeriesKeys = seriesKeysByCategory[category] ?? NO_SERIES_KEYS;
+
+  function setSelectedSeriesKeys(keys: string[]) {
+    setSeriesKeysByCategory((prev) => ({ ...prev, [category]: keys }));
+  }
+
+  // Write the filter back on every change, so a refresh — or the next visit — opens the report on
+  // the same view rather than back at every category, all time.
+  useEffect(() => {
+    const filters: StoredFilters = {
+      category,
+      filtersOpen,
+      periodMode,
+      year,
+      quarter,
+      customFrom,
+      customTo,
+      seriesKeys: seriesKeysByCategory,
+    };
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
+  }, [category, filtersOpen, periodMode, year, quarter, customFrom, customTo, seriesKeysByCategory]);
+
+  // A tenant can switch greenhouse off between visits, and the restored category would then have
+  // no chip of its own to leave by. Wait for the settings — while they're still loading every name
+  // reads as off — and don't act on a failed request, which reads the same way.
+  useEffect(() => {
+    if (!configLoaded || configLoadError) return;
+    if (category === 'greenhouse' && !isOn(GREENHOUSE_CONFIG)) setCategory('crop');
+  }, [category, configLoaded, configLoadError, isOn]);
 
   // Cells 1 and 2. The server does the aggregation, so a period change is a request rather than a
   // re-sum of every record held in memory.
@@ -138,10 +246,10 @@ export function ReportPage() {
     };
   }, [category, period, reloadToken]);
 
-  // Switching category resets the per-domain selections (their key spaces don't overlap).
+  // Switching category drops the open drill-downs (their key spaces don't overlap) and hands the
+  // series picker back to the effect below, which settles it against the incoming options.
   useEffect(() => {
     seriesInitRef.current = false;
-    setSelectedSeriesKeys([]);
     setSelectedSeriesKey(null);
     setSelectedDay(null);
   }, [category]);
@@ -247,12 +355,18 @@ export function ReportPage() {
     return SERIES_COLORS[(idx < 0 ? 0 : idx) % SERIES_COLORS.length];
   };
 
-  // Preselect the first series once options load, so the chart isn't empty on arrival.
+  // Settle the picker once the options for this category load: keep the series remembered from
+  // before as far as they still exist, and otherwise fall back to the first one so the chart isn't
+  // empty on arrival. `category` is deliberately not a dependency — the options only change when a
+  // fetch lands, by which point it is already the category those options belong to.
   useEffect(() => {
-    if (!seriesInitRef.current && seriesOptions.length > 0) {
-      seriesInitRef.current = true;
-      setSelectedSeriesKeys([seriesOptions[0].key]);
-    }
+    if (seriesInitRef.current || seriesOptions.length === 0) return;
+    seriesInitRef.current = true;
+    setSeriesKeysByCategory((prev) => {
+      const kept = (prev[category] ?? []).filter((key) => seriesOptions.some((o) => o.key === key));
+      return { ...prev, [category]: kept.length > 0 ? kept : [seriesOptions[0].key] };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seriesOptions]);
 
   const chartSeries: BarSeries[] = seriesOptions

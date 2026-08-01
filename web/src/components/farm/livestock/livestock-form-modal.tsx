@@ -5,13 +5,16 @@ import { KindPicker, type KindOption } from '@/components/farm/kind-picker';
 import { Modal } from '@/components/ui/modal';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { isPlanLimitError } from '@/config/plan-benefits';
+import { PRODUCTION_TYPE_LABEL_KEY } from '@/config/production';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createLivestockKind, deleteLivestockKind, getLivestockKinds } from '@/services/livestock-kind-service';
-import { createLivestock, updateLivestock } from '@/services/livestock-service';
+import { createLivestock, getLivestockItem, updateLivestock } from '@/services/livestock-service';
+import { createProductionType, deleteProductionType, getProductionTypes } from '@/services/production-type-service';
 import type { Farm } from '@/types/farm';
 import type { AnimalType, Livestock } from '@/types/livestock';
 import type { LivestockKind } from '@/types/livestock-kind';
+import type { ProductionType } from '@/types/production-type';
 
 type Props = {
   open: boolean;
@@ -40,9 +43,20 @@ export function LivestockFormModal({
   const [kindsLoading, setKindsLoading] = useState(true);
   const [kindError, setKindError] = useState<string | null>(null);
   const [confirmDeleteKind, setConfirmDeleteKind] = useState<{ id: number; label: string } | null>(null);
+  const [confirmDeleteProduces, setConfirmDeleteProduces] = useState<{ id: number; label: string } | null>(null);
   const [nameInput, setNameInput] = useState('');
   const [countInput, setCountInput] = useState('');
   const [livestockType, setLivestockType] = useState<AnimalType>('');
+  const [productionTypes, setProductionTypes] = useState<ProductionType[]>([]);
+  const [productionTypesLoading, setProductionTypesLoading] = useState(true);
+  const [productionTypeId, setProductionTypeId] = useState<number | null>(null);
+  /**
+   * What the group produces is chosen once. The records it has collected are counted under it, so
+   * a group that already carries one shows it back rather than offering to move its history to
+   * another output — a group that has yet to declare one still chooses here.
+   */
+  const [producesLocked, setProducesLocked] = useState(false);
+  const [productionTypeError, setProductionTypeError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -54,10 +68,14 @@ export function LivestockFormModal({
     if (!open) return;
     setFormError(null);
     setKindError(null);
+    setProductionTypeError(null);
     setNameInput(editingItem?.name ?? '');
     setCountInput(editingItem ? String(editingItem.count) : '');
     setLivestockType(editingItem?.type ?? '');
+    setProductionTypeId(editingItem?.productionTypeId ?? null);
+    setProducesLocked(editingItem?.productionTypeId != null);
     loadKinds(editingItem?.type ?? null);
+    loadProductionTypes(editingItem?.productionTypeId ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingItem]);
 
@@ -74,6 +92,88 @@ export function LivestockFormModal({
     } finally {
       setKindsLoading(false);
     }
+  }
+
+  async function loadProductionTypes(preset: number | null) {
+    setProductionTypesLoading(true);
+    try {
+      const list = await getProductionTypes();
+      setProductionTypes(list);
+      // A group has to say what it produces, so default to the first output on offer.
+      setProductionTypeId(preset ?? list[0]?.id ?? null);
+    } catch {
+      setProductionTypes([]);
+      setProductionTypeId(preset);
+    } finally {
+      setProductionTypesLoading(false);
+    }
+  }
+
+  /** A new output, added from here — this is where a group's produce is chosen, so it is also
+   *  where one the catalog is missing gets added. */
+  async function handleAddProductionType(name: string): Promise<KindOption | null> {
+    setProductionTypeError(null);
+
+    // Built-in types are stored under an English key ("Milk") and shown translated, so either
+    // spelling of an existing one would come back as a second identical entry in the picker.
+    const candidate = name.trim().toLowerCase();
+    const isDuplicate = productionTypes.some((productionType) => {
+      const label = productionTypeLabel(productionType);
+      return productionType.name.toLowerCase() === candidate || label.toLowerCase() === candidate;
+    });
+    if (isDuplicate) {
+      setProductionTypeError(t('production.typeDuplicate'));
+      return null;
+    }
+
+    try {
+      const created = await createProductionType(name);
+      setProductionTypes((prev) => (prev.some((pt) => pt.id === created.id) ? prev : [...prev, created]));
+      return { value: String(created.id), label: productionTypeLabel(created) };
+    } catch (err) {
+      // The server rejects names that already exist (e.g. added from another session).
+      setProductionTypeError(
+        err instanceof ApiError && err.status === 409 ? t('production.typeDuplicate') : t('production.typeSaveError')
+      );
+      return null;
+    }
+  }
+
+  /** Removing an output from the catalog. The server refuses while records — or a group declaring
+   *  it — still reference it, so only one nothing points at actually goes. */
+  async function confirmDeleteProducesNow() {
+    if (!confirmDeleteProduces) return;
+    const { id } = confirmDeleteProduces;
+
+    setProductionTypeError(null);
+    try {
+      await deleteProductionType(id);
+      const next = productionTypes.filter((productionType) => productionType.id !== id);
+      setProductionTypes(next);
+      // Don't leave the form pointing at an output that no longer exists.
+      if (productionTypeId === id) {
+        setProductionTypeId(next[0]?.id ?? null);
+      }
+    } catch (err) {
+      setProductionTypeError(
+        err instanceof ApiError && err.status === 409 ? t('production.typeInUse') : t('production.typeDeleteError')
+      );
+    } finally {
+      setConfirmDeleteProduces(null);
+    }
+  }
+
+  /** Built-in outputs are stored under an English key and shown translated; a user-added one shows
+   *  the name it was created with. */
+  function productionTypeLabel(productionType: ProductionType): string {
+    return t(PRODUCTION_TYPE_LABEL_KEY[productionType.name] ?? productionType.name);
+  }
+
+  /** The declared output, shown back once it is settled. A dash while the catalog is still on its
+   *  way, or if it no longer holds the one this group was given. */
+  function declaredProduceLabel(): string {
+    const declared = productionTypes.find((productionType) => productionType.id === productionTypeId);
+    return declared ? productionTypeLabel(declared) : '—';
   }
 
   async function handleAddKind(name: string): Promise<KindOption | null> {
@@ -127,7 +227,9 @@ export function LivestockFormModal({
 
   async function handleSubmit() {
     const trimmedName = nameInput.trim();
-    if (!trimmedName || farmId == null || !livestockType) return;
+    // A new group says what it produces up front; an older one that never did may still be edited
+    // without declaring it, so it isn't stranded by a rule that came after it.
+    if (!trimmedName || farmId == null || !livestockType || (!isEditing && productionTypeId == null)) return;
 
     // Groups are identified by name across the app (production, balances, reports), so two
     // groups sharing one would be indistinguishable. The server enforces this too.
@@ -144,11 +246,20 @@ export function LivestockFormModal({
     try {
       const count = Math.max(0, parseInt(countInput, 10) || 0);
       if (isEditing) {
-        const updated: Livestock = { id: editingItem!.id, type: livestockType, count, name: trimmedName, farmId };
+        const updated: Livestock = {
+          id: editingItem!.id,
+          // Settled at creation — the field above only shows it back.
+          type: editingItem!.type,
+          count,
+          name: trimmedName,
+          farmId,
+          // A group that already declared its output keeps it — the field only shows it back.
+          productionTypeId: producesLocked ? editingItem!.productionTypeId : productionTypeId,
+        };
         await updateLivestock(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createLivestock({ type: livestockType, count, name: trimmedName, farmId });
+        const created = await createLivestock({ type: livestockType, count, name: trimmedName, farmId, productionTypeId });
         onSaved(created, true);
       }
       onClose();
@@ -157,15 +268,35 @@ export function LivestockFormModal({
         onLimitReached(err.message);
         return;
       }
-      // The server rejects a name another group already uses (e.g. added from another session).
       if (err instanceof ApiError && err.status === 409) {
-        setFormError(t('farm.nameDuplicate'));
+        setFormError(await conflictMessage());
       } else {
         setFormError(err instanceof Error ? err.message : t('farm.saveError'));
       }
     } finally {
       setSaving(false);
     }
+  }
+
+  /**
+   * Which rule the server refused on. The name is the usual one, but a group that declared what it
+   * produces meanwhile — while this form still showed the choice as open — is the other; reads the
+   * group back rather than guessing, and shows its declaration where that is what happened.
+   */
+  async function conflictMessage(): Promise<string> {
+    if (isEditing && !producesLocked) {
+      try {
+        const current = await getLivestockItem(editingItem!.id);
+        if (current.productionTypeId != null) {
+          setProductionTypeId(current.productionTypeId);
+          setProducesLocked(true);
+          return t('production.producesFixed');
+        }
+      } catch {
+        // Couldn't look: the name is the other way a save is refused, so say that.
+      }
+    }
+    return t('farm.nameDuplicate');
   }
 
   return (
@@ -178,26 +309,76 @@ export function LivestockFormModal({
           <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder={t('farm.namePlaceholderLivestock')} />
         </div>
 
+        {/* What the group is made of is settled when it is created: its animals and its whole
+            production history were recorded as that kind, so an existing group shows its type back
+            rather than offering to restate all of it as another animal. */}
         <div className="field">
           <label>{t('farm.type')}</label>
-          <KindPicker
-            options={kinds.map((k) => ({
-              value: k.name,
-              label: livestockTypeLabel(k.name, t),
-              icon: livestockImage(k.name),
-            }))}
-            selected={livestockType}
-            onSelect={setLivestockType}
-            onAddNew={handleAddKind}
-            addPlaceholder={t('farm.newLivestockTypePlaceholder')}
-            loading={kindsLoading}
-            onRemove={(value) => {
-              const kind = kinds.find((k) => k.name === value);
-              if (kind) setConfirmDeleteKind({ id: kind.id, label: livestockTypeLabel(kind.name, t) });
-            }}
-            removeLabel={t('common.delete')}
-          />
-          {kindError && <div className="error-banner">{kindError}</div>}
+          {isEditing ? (
+            <>
+              <span className="limit-hint field-fixed-value">
+                <img src={livestockImage(livestockType)} className="kind-chip-icon" alt="" />
+                {livestockTypeLabel(livestockType, t)}
+              </span>
+              <span className="limit-hint">{t('farm.typeFixed')}</span>
+            </>
+          ) : (
+            <>
+              <KindPicker
+                options={kinds.map((k) => ({
+                  value: k.name,
+                  label: livestockTypeLabel(k.name, t),
+                  icon: livestockImage(k.name),
+                }))}
+                selected={livestockType}
+                onSelect={setLivestockType}
+                onAddNew={handleAddKind}
+                addPlaceholder={t('farm.newLivestockTypePlaceholder')}
+                loading={kindsLoading}
+                onRemove={(value) => {
+                  const kind = kinds.find((k) => k.name === value);
+                  if (kind) setConfirmDeleteKind({ id: kind.id, label: livestockTypeLabel(kind.name, t) });
+                }}
+                removeLabel={t('common.delete')}
+              />
+              {kindError && <div className="error-banner">{kindError}</div>}
+            </>
+          )}
+        </div>
+
+        {/* What the group produces — every record it collects is counted under this, which is why
+            it is settled here rather than chosen again on each batch. */}
+        <div className="field">
+          <label>{t('production.producesLabel')}</label>
+          {producesLocked ? (
+            <>
+              <span className="limit-hint field-fixed-value">{declaredProduceLabel()}</span>
+              <span className="limit-hint">{t('production.producesFixed')}</span>
+            </>
+          ) : (
+            <>
+              <KindPicker
+                options={productionTypes.map((productionType) => ({
+                  value: String(productionType.id),
+                  label: productionTypeLabel(productionType),
+                }))}
+                selected={productionTypeId != null ? String(productionTypeId) : ''}
+                onSelect={(value) => setProductionTypeId(Number(value))}
+                onAddNew={handleAddProductionType}
+                addPlaceholder={t('production.typePlaceholder')}
+                loading={productionTypesLoading}
+                onRemove={(value) => {
+                  const productionType = productionTypes.find((pt) => String(pt.id) === value);
+                  if (productionType) {
+                    setConfirmDeleteProduces({ id: productionType.id, label: productionTypeLabel(productionType) });
+                  }
+                }}
+                removeLabel={t('common.delete')}
+              />
+              <span className="limit-hint">{t('production.producesHint')}</span>
+            </>
+          )}
+          {productionTypeError && <div className="error-banner">{productionTypeError}</div>}
         </div>
 
         <div className="field">
@@ -219,7 +400,12 @@ export function LivestockFormModal({
         <button type="button" className="btn btn-secondary" onClick={onClose}>
           {t('common.cancel')}
         </button>
-        <button type="button" className="btn" onClick={handleSubmit} disabled={saving || noFarmAvailable || !livestockType}>
+        <button
+          type="button"
+          className="btn"
+          onClick={handleSubmit}
+          disabled={saving || noFarmAvailable || !livestockType || (!isEditing && productionTypeId == null)}
+        >
           {isEditing ? t('common.save') : t('common.add')}
         </button>
       </div>
@@ -229,6 +415,13 @@ export function LivestockFormModal({
         name={confirmDeleteKind?.label ?? ''}
         onCancel={() => setConfirmDeleteKind(null)}
         onConfirm={confirmDeleteKindNow}
+      />
+
+      <ConfirmDeleteModal
+        open={!!confirmDeleteProduces}
+        name={confirmDeleteProduces?.label ?? ''}
+        onCancel={() => setConfirmDeleteProduces(null)}
+        onConfirm={confirmDeleteProducesNow}
       />
     </Modal>
   );

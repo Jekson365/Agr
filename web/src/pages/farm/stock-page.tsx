@@ -5,7 +5,7 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
-import { StockFormModal } from '@/components/farm/stock/stock-form-modal';
+import { StockFormModal } from '@/components/farm/stock/stock-form/stock-form-modal';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useAuth } from '@/contexts/auth-context';

@@ -8,6 +8,10 @@ export type Livestock = {
   count: number;
   name: string;
   farmId: number;
+  /** What the group produces — the type every one of its production records is collected under.
+   *  Chosen when the group is added and settled from then on. Null only for a group recorded
+   *  before the choice moved here that has collected nothing. */
+  productionTypeId: number | null;
 };
 
 export type LivestockInput = Omit<Livestock, 'id'>;

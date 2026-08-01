@@ -25,3 +25,45 @@
 .animal-history-wide-column {
   flex: 2 1 0%;
 }
+
+/* A folded column keeps only its heading, so it shrinks to that and gives the space to the one
+   still open instead of standing as a tall empty box. */
+.history-column.folded {
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+/* The heading doubles as the fold. `display: contents` on the body keeps everything inside it a
+   direct child of the column, so opening and closing changes nothing about the layout. */
+.history-column-fold {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  /* Only the family: the size, weight and colour are the heading's own, from
+     .history-column-title, which this carries as well. */
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Nothing under the heading to be spaced away from once it is folded. */
+.history-column.folded .history-column-fold {
+  margin-bottom: 0;
+}
+
+.history-column-chevron {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.history-column-body {
+  display: contents;
+}
+
+.history-column-body.folded {
+  display: none;
+}

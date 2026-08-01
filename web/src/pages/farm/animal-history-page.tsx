@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/history-columns.css';
 import { AnimalProductionTotals } from '@/components/farm/livestock/animal-production-totals';
-import { AnimalProductionView } from '@/components/farm/livestock/animal-production-view';
-import { MedicalRecordsView } from '@/components/farm/livestock/medical-records-view';
+import { AnimalProductionView } from '@/components/farm/livestock/animal-production/animal-production-view';
+import { MedicalRecordsView } from '@/components/farm/livestock/medical-records/medical-records-view';
 import { StockFeedRow } from '@/components/farm/livestock/stock-feed-row';
 import { StockHistoryView } from '@/components/farm/livestock/stock-history-view';
 import './animal-history-page.css';
@@ -13,6 +13,32 @@ import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { getLivestockDetailItem } from '@/services/livestock-detail-service';
 import type { LivestockDetail } from '@/types/livestock-detail';
+
+/**
+ * One of the wide columns, with its heading as the fold. The body is hidden rather than unmounted,
+ * so what it holds — filters, a half-typed form, records already fetched — is still there on the
+ * way back, and folding costs nothing to undo.
+ */
+function FoldableColumn({ title, children }: { title: string; children: ReactNode }) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className={open ? 'history-column animal-history-wide-column' : 'history-column animal-history-wide-column folded'}>
+      <button
+        type="button"
+        className="history-column-title history-column-fold"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-expanded={open}
+      >
+        {title}
+        <span className="history-column-chevron" aria-hidden="true">
+          {open ? '▾' : '▸'}
+        </span>
+      </button>
+      <div className={open ? 'history-column-body' : 'history-column-body folded'}>{children}</div>
+    </div>
+  );
+}
 
 export function AnimalHistoryPage() {
   const { t } = useLanguage();
@@ -83,14 +109,13 @@ export function AnimalHistoryPage() {
               </div>
             </div>
 
-            <div className="history-column animal-history-wide-column">
-              <h2 className="history-column-title">{t('history.productionTab')}</h2>
-              <AnimalProductionView target="animal" animalId={stockId} />
-            </div>
-            <div className="history-column animal-history-wide-column">
-              <h2 className="history-column-title">{t('history.medicalTab')}</h2>
+            {/* The two long grids fold away, so either one can have the page to itself. */}
+            <FoldableColumn title={t('history.productionTab')}>
+              <AnimalProductionView target="animal" animalId={stockId} livestockId={livestockId} />
+            </FoldableColumn>
+            <FoldableColumn title={t('history.medicalTab')}>
               <MedicalRecordsView stockId={stockId} />
-            </div>
+            </FoldableColumn>
           </div>
 
           <AnimalProductionTotals animalId={stockId} />

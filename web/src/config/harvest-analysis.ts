@@ -104,14 +104,12 @@ export function buildYieldRows(items: PlannedRow[], results: ActualRow[]): Yield
 
 /**
  * The goods a harvest puts into stock while it is Harvested — what the status change is actually
- * about to write or reverse. Mirrors HarvestStockSync on the server: each good counts once, as its
- * recorded result where there is one and as its plan where there isn't, and a plan written in a
- * different unit than the good is stocked in isn't a number that can be added to its balance.
+ * about to write or reverse. Mirrors HarvestStockSync on the server: only a recorded result moves
+ * stock. What a good was planned to yield is a forecast and never reaches a balance, so a harvest
+ * that recorded nothing moves nothing however much it planned.
  */
-export function stockMovingRows(rows: YieldRow[], unitFor: (row: YieldRow) => string | null): YieldRow[] {
-  return rows.filter(
-    (row) => row.actual > 0 || (row.planned > 0 && (row.plannedUnit == null || row.plannedUnit === unitFor(row)))
-  );
+export function stockMovingRows(rows: YieldRow[]): YieldRow[] {
+  return rows.filter((row) => row.actual > 0);
 }
 
 export type HarvestEconomics = {
