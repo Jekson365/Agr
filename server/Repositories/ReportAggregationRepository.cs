@@ -105,14 +105,11 @@ public partial class ReportRepository
             return overview;
         }
 
-        // Fruit yield is recorded against the trees picked; a crop's against its results, falling
-        // back to what it planned for any good it never recorded one for — see CropYield.
+        // Fruit yield is recorded against the trees picked; a crop's against its results. What was
+        // only planned counts for neither — see CropYield.
         var results = category == ReportCategory.Fruit
             ? []
             : await context.HarvestResults.AsNoTracking().Where(r => harvestIds.Contains(r.HarvestId)).ToListAsync();
-        var items = category == ReportCategory.Fruit
-            ? []
-            : await context.HarvestItems.AsNoTracking().Where(i => harvestIds.Contains(i.HarvestId)).ToListAsync();
         var trees = category == ReportCategory.Fruit
             ? await context.HarvestTrees.AsNoTracking().Where(tr => harvestIds.Contains(tr.HarvestId)).ToListAsync()
             : [];
@@ -127,11 +124,7 @@ public partial class ReportRepository
             harvest => harvest.Id,
             harvest => category == ReportCategory.Fruit
                 ? []
-                : CropYield(
-                    [.. items.Where(i => i.HarvestId == harvest.Id)],
-                    [.. results.Where(r => r.HarvestId == harvest.Id)],
-                    stocks,
-                    treeStocks));
+                : CropYield([.. results.Where(r => r.HarvestId == harvest.Id)]));
         var treesByHarvest = trees.GroupBy(tr => tr.HarvestId).ToDictionary(g => g.Key, g => g.ToList());
 
         // The series list covers every harvest of this kind, not just the ones in the period —
@@ -298,57 +291,14 @@ public partial class ReportRepository
 
     /// <summary>
     /// What a crop harvest is taken to have yielded, good by good: its recorded
-    /// <see cref="HarvestResult"/> where there is one, its planned <see cref="HarvestItem"/> where
-    /// there isn't. The same rule HarvestStockSync follows when it puts the yield into stock, so
-    /// the report and the stock ledger can never tell different stories about one harvest — before
-    /// this, a harvest whose yield was only ever planned reported nothing at all.
+    /// <see cref="HarvestResult"/> rows, and nothing else. A planned <see cref="HarvestItem"/> is a
+    /// forecast, not a yield — the same rule HarvestStockSync follows when it puts the yield into
+    /// stock, so the report and the stock ledger can never tell different stories about one
+    /// harvest. A harvest that recorded no result reports no yield, however much it planned.
     /// </summary>
-    private static List<HarvestYield> CropYield(
-        List<HarvestItem> items,
-        List<HarvestResult> results,
-        Dictionary<int, Stock> stocks,
-        Dictionary<int, TreeStock> treeStocks)
+    private static List<HarvestYield> CropYield(List<HarvestResult> results)
     {
-        var yields = results
-            .Select(result => new HarvestYield(result.StockId, result.TreeStockId, result.Amount))
-            .ToList();
-        var recorded = results.Select(result => SeriesKey(result.StockId, result.TreeStockId)).OfType<string>().ToHashSet();
-
-        foreach (var item in items)
-        {
-            // A good with a result is settled: the plan was only its forecast, and counting both
-            // would double it.
-            if (item.Amount <= 0
-                || SeriesKey(item.StockId, item.TreeStockId) is not { } key
-                || recorded.Contains(key)
-                || !PlanUnitMatches(item, stocks, treeStocks))
-            {
-                continue;
-            }
-
-            yields.Add(new HarvestYield(item.StockId, item.TreeStockId, item.Amount));
-        }
-
-        return yields;
-    }
-
-    /// <summary>Whether a plan is written in the unit its good is stocked in. One that isn't (boxes
-    /// against kilograms) is not a number that can be totalled against that good, so it stays a
-    /// plan here exactly as it does in stock.</summary>
-    private static bool PlanUnitMatches(HarvestItem item, Dictionary<int, Stock> stocks, Dictionary<int, TreeStock> treeStocks)
-    {
-        // Saved without one, the plan is in the good's own unit by definition — see HarvestItem.Unit.
-        if (string.IsNullOrWhiteSpace(item.Unit))
-        {
-            return true;
-        }
-
-        var unit = item.StockId is int stockId
-            ? stocks.GetValueOrDefault(stockId)?.Unit.ToString()
-            : item.TreeStockId is int treeStockId
-                ? treeStocks.GetValueOrDefault(treeStockId)?.Unit.ToString()
-                : null;
-        return unit is not null && string.Equals(unit, item.Unit.Trim(), StringComparison.OrdinalIgnoreCase);
+        return [.. results.Select(result => new HarvestYield(result.StockId, result.TreeStockId, result.Amount))];
     }
 
     private static ReportSeries StockSeries(string key, int stockId, Dictionary<int, Stock> stocks)

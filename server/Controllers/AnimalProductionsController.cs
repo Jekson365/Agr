@@ -8,8 +8,18 @@ namespace Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class AnimalProductionsController(IAnimalProductionRepository animalProductionRepository) : ControllerBase
+public class AnimalProductionsController(
+    IAnimalProductionRepository animalProductionRepository,
+    ILivestockRepository livestockRepository,
+    ILivestockDetailRepository livestockDetailRepository) : ControllerBase
 {
+    /// <summary>
+    /// A batch is collected under what its group produces — that is declared once on the group
+    /// (see <see cref="Livestock.ProductionTypeId"/>), not chosen again per record.
+    /// </summary>
+    private const string ProduceMismatchMessage = "A record is collected under what its group produces.";
+
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AnimalProduction>>> Get([FromQuery] int? animalId, [FromQuery] int? livestockId)
     {
@@ -35,6 +45,11 @@ public class AnimalProductionsController(IAnimalProductionRepository animalProdu
             return BadRequest("Provide exactly one of animalId or livestockId.");
         }
 
+        if (await DeclaredProductionTypeAsync(production) is int declared && production.ProductionTypeId != declared)
+        {
+            return Conflict(ProduceMismatchMessage);
+        }
+
         // The server owns the audit timestamp; CollectionDate is client-supplied.
         production.CreatedAt = DateTime.UtcNow;
 
@@ -54,12 +69,46 @@ public class AnimalProductionsController(IAnimalProductionRepository animalProdu
             return BadRequest();
         }
 
+        var existing = await animalProductionRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        // Only a change of type is judged, and against the owner the row actually has: a record
+        // collected under something else before its group declared an output keeps that type, so
+        // editing its quantity doesn't turn into a fight over what it was collected as.
+        if (production.ProductionTypeId != existing.ProductionTypeId
+            && await DeclaredProductionTypeAsync(existing) is int declared
+            && production.ProductionTypeId != declared)
+        {
+            return Conflict(ProduceMismatchMessage);
+        }
+
         // The client sends a plain date (Kind=Unspecified), but Npgsql requires Kind=Utc for
         // "timestamp with time zone" columns.
         production.CollectionDate = DateTime.SpecifyKind(production.CollectionDate, DateTimeKind.Utc);
 
         var updated = await animalProductionRepository.UpdateAsync(production);
         return updated ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// What the group behind this record produces, or null when it hasn't declared one — a group
+    /// recorded before the choice moved onto the group, which is free to keep collecting whatever
+    /// its records name until it does. A single animal answers to its own group.
+    /// </summary>
+    private async Task<int?> DeclaredProductionTypeAsync(AnimalProduction production)
+    {
+        var livestockId = production.LivestockId;
+        if (livestockId is null && production.AnimalId is int animalId)
+        {
+            livestockId = (await livestockDetailRepository.GetByIdAsync(animalId))?.LivestockId;
+        }
+
+        return livestockId is int groupId
+            ? (await livestockRepository.GetByIdAsync(groupId))?.ProductionTypeId
+            : null;
     }
 
     [HttpDelete("{id:int}")]

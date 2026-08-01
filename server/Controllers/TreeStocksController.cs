@@ -17,6 +17,8 @@ public class TreeStocksController(
     ILandPlotRepository landPlotRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
+    private const string ProduceHarvestedMessage = "A harvest already records this fruit as picked, so what it produces can no longer change.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TreeStock>>> GetAll()
     {
@@ -64,6 +66,21 @@ public class TreeStocksController(
         }
 
         stock.Name = stock.Name.Trim();
+
+        var existing = await treeStockRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        // What a picked harvest yielded is booked against the orchard's product, so pointing the
+        // orchard at another one would move produce nobody harvested onto that product's ledger and
+        // leave the old one holding an amount nothing yields. Once picked, the product is settled.
+        if (existing.TreeProductId != stock.TreeProductId
+            && await harvestTreeRepository.ExistsForTreeStockAsync(id))
+        {
+            return Conflict(ProduceHarvestedMessage);
+        }
 
         var invalid = await ValidateAsync(stock, id);
         if (invalid is not null)

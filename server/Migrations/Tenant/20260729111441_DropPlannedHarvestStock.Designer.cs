@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Data;
@@ -12,9 +13,11 @@ using Server.Data;
 namespace Server.Migrations.Tenant
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260729111441_DropPlannedHarvestStock")]
+    partial class DropPlannedHarvestStock
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -886,9 +889,6 @@ namespace Server.Migrations.Tenant
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("ProductionTypeId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
@@ -896,8 +896,6 @@ namespace Server.Migrations.Tenant
                     b.HasKey("Id");
 
                     b.HasIndex("FarmId");
-
-                    b.HasIndex("ProductionTypeId");
 
                     b.ToTable("Livestock");
                 });
@@ -1992,11 +1990,6 @@ namespace Server.Migrations.Tenant
                         .HasForeignKey("FarmId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Server.Models.ProductionType", null)
-                        .WithMany()
-                        .HasForeignKey("ProductionTypeId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Server.Models.LivestockDetail", b =>

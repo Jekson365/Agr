@@ -13,9 +13,10 @@ public class HarvestStockSync(
     ITreeStockRepository treeStockRepository,
     ITreeStockMovementRepository treeStockMovementRepository) : IHarvestStockSync
 {
-    /// <summary>Which of the harvest's rows a movement answers to — the recorded result, or the
-    /// planned item standing in for one. What links a wanted contribution to the movement already
-    /// carrying it, so an edit rewrites that row instead of logging a second one.</summary>
+    /// <summary>Which of the harvest's rows a movement answers to. What links a wanted contribution
+    /// to the movement already carrying it, so an edit rewrites that row instead of logging a second
+    /// one. Only a result is ever wanted now, but a movement an item wrote before that still keys
+    /// back to its item — which is how the reconcile finds it to reverse it.</summary>
     private readonly record struct RowKey(bool IsResult, int RowId);
 
     /// <summary>A contribution a row should be making: which ledger it lands in (plant stock or
@@ -25,30 +26,29 @@ public class HarvestStockSync(
     /// <summary>A movement already on the books for one of those rows.</summary>
     private readonly record struct Carried(bool IsTree, int GoodId, int MovementId, decimal Delta);
 
-    public Task SyncAsync(int harvestId, int? excludeItemId = null, int? excludeResultId = null)
+    public Task SyncAsync(int harvestId, int? excludeResultId = null)
     {
-        return ReconcileAsync(harvestId, clear: false, excludeItemId, excludeResultId);
+        return ReconcileAsync(harvestId, clear: false, excludeResultId);
     }
 
     public Task ClearAsync(int harvestId)
     {
-        return ReconcileAsync(harvestId, clear: true, null, null);
+        return ReconcileAsync(harvestId, clear: true, null);
     }
 
     /// <summary>
     /// Works out what the harvest should be contributing, compares it against what it already is,
     /// and moves only the difference. Doing it as a comparison rather than an apply/undo pair is
-    /// what lets a plan and a result trade places for the same good without either being counted
-    /// twice or dropped — and makes calling it twice harmless.
+    /// what keeps one movement per row as amounts change — and makes calling it twice harmless.
+    /// The planned items are still read: they carry no yield of their own, but movements one of
+    /// them wrote under the old rule are found through them and reversed.
     /// </summary>
-    private async Task ReconcileAsync(int harvestId, bool clear, int? excludeItemId, int? excludeResultId)
+    private async Task ReconcileAsync(int harvestId, bool clear, int? excludeResultId)
     {
         var items = await context.HarvestItems.AsNoTracking().Where(i => i.HarvestId == harvestId).ToListAsync();
         var results = await context.HarvestResults.AsNoTracking().Where(r => r.HarvestId == harvestId).ToListAsync();
 
-        var wanted = clear
-            ? []
-            : await DesiredAsync(harvestId, items, results, excludeItemId, excludeResultId);
+        var wanted = clear ? [] : await DesiredAsync(harvestId, results, excludeResultId);
         var carried = await CarriedAsync(items, results);
 
         foreach (var (key, have) in carried)
@@ -80,12 +80,10 @@ public class HarvestStockSync(
     }
 
     /// <summary>What the harvest should be contributing as it now stands: nothing at all unless it
-    /// is Harvested, and then one contribution per good — see <see cref="IHarvestStockSync"/>.</summary>
+    /// is Harvested, and then its recorded results — see <see cref="IHarvestStockSync"/>.</summary>
     private async Task<Dictionary<RowKey, Contribution>> DesiredAsync(
         int harvestId,
-        List<HarvestItem> items,
         List<HarvestResult> results,
-        int? excludeItemId,
         int? excludeResultId)
     {
         var wanted = new Dictionary<RowKey, Contribution>();
@@ -100,7 +98,6 @@ public class HarvestStockSync(
             return wanted;
         }
 
-        var recorded = new HashSet<(bool IsTree, int GoodId)>();
         foreach (var result in results)
         {
             if (result.Id == excludeResultId || GoodOf(result.StockId, result.TreeStockId) is not { } good)
@@ -109,37 +106,11 @@ public class HarvestStockSync(
             }
 
             wanted[new RowKey(true, result.Id)] = new Contribution(good.IsTree, good.GoodId, result.Amount);
-            recorded.Add(good);
         }
 
-        var units = await GoodUnitsAsync(items);
-        foreach (var item in items)
-        {
-            if (item.Id == excludeItemId || item.Amount <= 0 || GoodOf(item.StockId, item.TreeStockId) is not { } good)
-            {
-                continue;
-            }
-
-            // The plan is only a forecast, so it stops counting for a good the moment that good
-            // has a result: what was actually picked is the better answer, and counting both would
-            // double it.
-            if (recorded.Contains(good))
-            {
-                continue;
-            }
-
-            // A plan written in a different unit than the good is stocked in (boxes against
-            // kilograms) is not a number that can be added to its balance, so it stays a plan
-            // until a result says what was picked. The same rule the yield comparison follows
-            // before it will show a variance.
-            if (!UnitMatches(item, units))
-            {
-                continue;
-            }
-
-            wanted[new RowKey(false, item.Id)] = new Contribution(good.IsTree, good.GoodId, item.Amount);
-        }
-
+        // Planned items are deliberately absent: a plan is a forecast, and stock only counts what
+        // was actually picked. Anything a plan wrote before that rule is reversed by the pass in
+        // ReconcileAsync, which finds the movement carried but no longer wanted.
         return wanted;
     }
 
@@ -190,51 +161,8 @@ public class HarvestStockSync(
         await DeleteMovementAsync(entry);
     }
 
-    /// <summary>The unit each good a plan targets is stocked in, for the unit check above.</summary>
-    private async Task<Dictionary<(bool IsTree, int GoodId), string>> GoodUnitsAsync(List<HarvestItem> items)
-    {
-        var units = new Dictionary<(bool IsTree, int GoodId), string>();
-
-        var stockIds = items.Where(i => i.StockId is not null).Select(i => i.StockId!.Value).Distinct().ToList();
-        var stockUnits = await context.Stocks
-            .AsNoTracking()
-            .Where(s => stockIds.Contains(s.Id))
-            .Select(s => new { s.Id, s.Unit })
-            .ToListAsync();
-        foreach (var row in stockUnits)
-        {
-            units[(false, row.Id)] = row.Unit.ToString();
-        }
-
-        var treeStockIds = items.Where(i => i.TreeStockId is not null).Select(i => i.TreeStockId!.Value).Distinct().ToList();
-        var treeStockUnits = await context.TreeStocks
-            .AsNoTracking()
-            .Where(s => treeStockIds.Contains(s.Id))
-            .Select(s => new { s.Id, s.Unit })
-            .ToListAsync();
-        foreach (var row in treeStockUnits)
-        {
-            units[(true, row.Id)] = row.Unit.ToString();
-        }
-
-        return units;
-    }
-
-    private static bool UnitMatches(HarvestItem item, Dictionary<(bool IsTree, int GoodId), string> units)
-    {
-        // Saved without one, the plan is in the good's own unit by definition — see HarvestItem.Unit.
-        if (string.IsNullOrWhiteSpace(item.Unit))
-        {
-            return true;
-        }
-
-        return GoodOf(item.StockId, item.TreeStockId) is { } good
-            && units.TryGetValue(good, out var unit)
-            && string.Equals(unit, item.Unit.Trim(), StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>Which good a plan or result row names. Null when it names neither, which the
-    /// controllers refuse but older rows could still hold.</summary>
+    /// <summary>Which good a result row names. Null when it names neither, which the controllers
+    /// refuse but older rows could still hold.</summary>
     private static (bool IsTree, int GoodId)? GoodOf(int? stockId, int? treeStockId)
     {
         if (stockId is int id)

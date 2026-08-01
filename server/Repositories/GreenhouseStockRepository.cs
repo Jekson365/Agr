@@ -65,6 +65,12 @@ public class GreenhouseStockRepository(AppDbContext context) : IGreenhouseStockR
         return await context.GreenhouseStocks.AnyAsync(s => s.GreenhouseId == greenhouseId);
     }
 
+    public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
+    {
+        return await context.GreenhouseStocks
+            .AnyAsync(s => s.Name.ToLower() == name.ToLower() && (excludeId == null || s.Id != excludeId));
+    }
+
     public async Task AdjustAmountRawAsync(int stockId, decimal delta)
     {
         var existing = await context.GreenhouseStocks.FindAsync(stockId);

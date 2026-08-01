@@ -21,4 +21,8 @@ public interface IHarvestTreeRepository
     /// <summary>Whether a harvest still records this orchard as picked — its rows cascade with
     /// the tree stock, so deleting one would rewrite what those harvests say.</summary>
     Task<bool> ExistsForTreeStockAsync(int treeStockId);
+
+    /// <summary>The orchards some harvest records as picked, so a form can tell at a glance which
+    /// ones have produce already on the books and settle their product.</summary>
+    Task<IEnumerable<int>> GetPickedTreeStockIdsAsync();
 }

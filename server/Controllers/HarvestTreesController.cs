@@ -22,6 +22,17 @@ public class HarvestTreesController(IHarvestTreeRepository harvestTreeRepository
         return Ok(await harvestTreeRepository.GetByHarvestAsync(harvestId));
     }
 
+    /// <summary>
+    /// The orchards some harvest records as picked, across every harvest. What those pickings
+    /// yielded is booked against the orchard's product, so this is what tells the fruit form which
+    /// rows may no longer change what they produce.
+    /// </summary>
+    [HttpGet("picked-tree-stocks")]
+    public async Task<ActionResult<IEnumerable<int>>> GetPickedTreeStocks()
+    {
+        return Ok(await harvestTreeRepository.GetPickedTreeStockIdsAsync());
+    }
+
     [HttpPost]
     public async Task<ActionResult<HarvestTree>> Create(HarvestTree harvestTree)
     {

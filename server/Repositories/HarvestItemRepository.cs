@@ -5,9 +5,9 @@ using Server.Repositories.Interfaces;
 
 namespace Server.Repositories;
 
-/// <summary>A planned item is what the harvest is expected to yield, and — until a result for the
-/// same good says otherwise — what it is taken to have yielded once it is Harvested. So editing
-/// the plan can move stock, which <see cref="IHarvestStockSync"/> works out.</summary>
+/// <summary>A planned item is what the harvest is expected to yield. It never moves stock itself —
+/// only a recorded result does, see <see cref="IHarvestStockSync"/> — but the sync is still called
+/// after an edit, to take off anything the plan had put on the books under the older rule.</summary>
 public class HarvestItemRepository(AppDbContext context, IHarvestStockSync harvestStockSync) : IHarvestItemRepository
 {
     public async Task<IEnumerable<HarvestItem>> GetByHarvestAsync(int harvestId)
@@ -84,9 +84,10 @@ public class HarvestItemRepository(AppDbContext context, IHarvestStockSync harve
             return false;
         }
 
-        // Removing the row cascades its movement away without giving back the amount that movement
-        // added, so the row is taken off the books first — while it is still here to be found.
-        await harvestStockSync.SyncAsync(existing.HarvestId, excludeItemId: id);
+        // Removing the row cascades any movement it still carries away without giving back the
+        // amount that movement added, so the row is taken off the books first — while it is still
+        // here to be found.
+        await harvestStockSync.SyncAsync(existing.HarvestId);
 
         context.HarvestItems.Remove(existing);
         await context.SaveChangesAsync();

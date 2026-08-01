@@ -112,18 +112,14 @@ public partial class ReportRepository
                         .Where(s => s.HarvestId == harvest.Id)
                         .Select(s => GoodFromSeed(s.SeedId, s.Amount, seedRows))
                         .OfType<ReportGood>()],
-                // A crop's yield is its results, falling back to what it planned for any good it
-                // never recorded one for — the same CropYield rule the chart and stock both use.
+                // A crop's yield is its recorded results and nothing else — the same CropYield rule
+                // the chart and stock both use. What it only planned stays above, under Planned.
                 Harvested = isFruit
                     ? [.. trees
                         .Where(tr => tr.HarvestId == harvest.Id && tr.HarvestedAmount > 0)
                         .Select(tr => GoodFromTreeProduce(tr.TreeStockId, tr.HarvestedAmount, treeStocks, treeProducts))
                         .OfType<ReportGood>()]
-                    : [.. CropYield(
-                            [.. items.Where(i => i.HarvestId == harvest.Id)],
-                            [.. results.Where(r => r.HarvestId == harvest.Id)],
-                            stocks,
-                            treeStocks)
+                    : [.. CropYield([.. results.Where(r => r.HarvestId == harvest.Id)])
                         .Select(yield => GoodFromTarget(yield.StockId, yield.TreeStockId, yield.Amount, string.Empty, stocks, treeStocks))
                         .OfType<ReportGood>()],
             });

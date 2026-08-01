@@ -15,6 +15,8 @@ public class GreenhouseStocksController(
     IGreenhouseRepository greenhouseRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
+    private const string NameTakenMessage = "Greenhouse stock with this name already exists.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GreenhouseStock>>> GetAll([FromQuery] int? greenhouseId)
     {
@@ -50,6 +52,12 @@ public class GreenhouseStocksController(
             return BadRequest("Unknown unit.");
         }
 
+        var name = request.Name.Trim();
+        if (await NameTakenAsync(name))
+        {
+            return Conflict(NameTakenMessage);
+        }
+
         var limited = await EnsureUnderGreenhouseStockLimitAsync();
         if (limited is not null)
         {
@@ -57,7 +65,6 @@ public class GreenhouseStocksController(
         }
 
         var type = request.Type.Trim();
-        var name = request.Name.Trim();
 
         var stock = await greenhouseStockRepository.AddAsync(new GreenhouseStock
         {
@@ -102,8 +109,26 @@ public class GreenhouseStocksController(
 
         stock.Type = stock.Type.Trim();
         stock.Name = stock.Name.Trim();
+
+        if (await NameTakenAsync(stock.Name, id))
+        {
+            return Conflict(NameTakenMessage);
+        }
+
         var updated = await greenhouseStockRepository.UpdateAsync(stock);
         return updated ? NoContent() : NotFound();
+    }
+
+    /// <summary>
+    /// Whether another row already carries this label. The label is what tells apart goods of the
+    /// same crop, so two identical ones would be indistinguishable everywhere they're listed —
+    /// which greenhouse each sits in doesn't enter into it, since the page lists them all together.
+    /// A blank name is not a label at all: those rows show their crop's name instead, so any number
+    /// of them may coexist.
+    /// </summary>
+    private async Task<bool> NameTakenAsync(string name, int? excludeId = null)
+    {
+        return name.Length > 0 && await greenhouseStockRepository.ExistsByNameAsync(name, excludeId);
     }
 
     [HttpDelete("{id:int}")]

@@ -33,6 +33,11 @@ public class AnimalProductionRepository(AppDbContext context) : IAnimalProductio
             .ToListAsync();
     }
 
+    public async Task<AnimalProduction?> GetByIdAsync(int id)
+    {
+        return await context.AnimalProductions.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<bool> ExistsForLivestockAsync(int livestockId)
     {
         var animalIds = context.LivestockDetails

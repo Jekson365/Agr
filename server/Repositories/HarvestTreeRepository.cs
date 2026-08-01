@@ -95,6 +95,15 @@ public class HarvestTreeRepository(
         return await context.HarvestTrees.AnyAsync(h => h.TreeStockId == treeStockId);
     }
 
+    public async Task<IEnumerable<int>> GetPickedTreeStockIdsAsync()
+    {
+        return await context.HarvestTrees
+            .AsNoTracking()
+            .Select(h => h.TreeStockId)
+            .Distinct()
+            .ToListAsync();
+    }
+
     /// <summary>
     /// Puts <paramref name="harvestedAmount"/> of the orchard's produce on the harvest's books —
     /// one produce row per harvest and product, so it's written in place rather than added to.

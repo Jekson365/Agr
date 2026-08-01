@@ -15,6 +15,13 @@ public interface IGreenhouseStockRepository
     Task<bool> ExistsForGreenhouseAsync(int greenhouseId);
 
     /// <summary>
+    /// Whether another row already carries this label, in any greenhouse. Case-insensitive, since
+    /// two spellings of one name read as the same label. Pass the row being edited as
+    /// <paramref name="excludeId"/> so it doesn't clash with itself.
+    /// </summary>
+    Task<bool> ExistsByNameAsync(string name, int? excludeId = null);
+
+    /// <summary>
     /// Adds <paramref name="delta"/> to the amount of the stock row identified by
     /// <paramref name="stockId"/> (a no-op if it no longer exists). Used by greenhouse harvest
     /// results to apply/reverse yield — see <see cref="GreenhouseHarvestResult"/>.

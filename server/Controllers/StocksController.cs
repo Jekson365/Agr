@@ -12,8 +12,11 @@ namespace Server.Controllers;
 public class StocksController(
     IStockRepository stockRepository,
     ISeedRepository seedRepository,
+    IHarvestRepository harvestRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
+    private const string HarvestRecordedMessage = "A harvest already records this stock, so its type and unit can no longer change.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Stock>>> GetAll()
     {
@@ -117,6 +120,23 @@ public class StocksController(
         if (invalid is not null)
         {
             return BadRequest(invalid);
+        }
+
+        var existing = await stockRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        // A harvest records this good by kind and counts its yield in this unit — its plan rows fall
+        // back to it, and its results are what moved the balance. Renaming the kind would rewrite
+        // what those harvests say was collected, and reading their amounts in another unit would
+        // change how much. Once recorded, both are settled; the amount and label stay editable.
+        var kindOrUnitChanged = existing.Unit != stock.Unit
+            || !string.Equals(existing.Type.Trim(), stock.Type.Trim(), StringComparison.Ordinal);
+        if (kindOrUnitChanged && await harvestRepository.RecordsStockAsync(id))
+        {
+            return Conflict(HarvestRecordedMessage);
         }
 
         try

@@ -159,6 +159,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(l => l.FarmId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // What the group produces. ProductionType is reference data, so the FK restricts deletion —
+        // the same rule the production records themselves are held to.
+        modelBuilder.Entity<Livestock>()
+            .HasOne<ProductionType>()
+            .WithMany()
+            .HasForeignKey(l => l.ProductionTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Each detail (individual animal) belongs to a livestock group; deleting the group
         // removes its details.
         modelBuilder.Entity<LivestockDetail>()

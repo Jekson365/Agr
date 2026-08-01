@@ -44,11 +44,13 @@ public class ProductionTypeRepository(AppDbContext context) : IProductionTypeRep
             return DeleteProductionTypeResult.NotFound;
         }
 
-        // The FKs to ProductionType (from production records and movements) are Restrict, so
-        // deleting one that is still referenced would throw at the database. Check first and
-        // report it as a conflict the client can explain, rather than surfacing a 500.
+        // The FKs to ProductionType (from production records, movements, and the livestock groups
+        // that declare it as what they produce) are Restrict, so deleting one that is still
+        // referenced would throw at the database. Check first and report it as a conflict the
+        // client can explain, rather than surfacing a 500.
         var inUse = await context.AnimalProductions.AnyAsync(p => p.ProductionTypeId == id)
-            || await context.ProductionMovements.AnyAsync(m => m.ProductionTypeId == id);
+            || await context.ProductionMovements.AnyAsync(m => m.ProductionTypeId == id)
+            || await context.Livestock.AnyAsync(l => l.ProductionTypeId == id);
         if (inUse)
         {
             return DeleteProductionTypeResult.InUse;

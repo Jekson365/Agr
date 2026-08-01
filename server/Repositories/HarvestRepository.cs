@@ -87,6 +87,28 @@ public class HarvestRepository(
         return true;
     }
 
+    public async Task<bool> RecordsStockAsync(int stockId)
+    {
+        return await context.HarvestItems.AnyAsync(i => i.StockId == stockId)
+            || await context.HarvestResults.AnyAsync(r => r.StockId == stockId);
+    }
+
+    public async Task<IEnumerable<int>> GetRecordedStockIdsAsync()
+    {
+        var planned = context.HarvestItems
+            .AsNoTracking()
+            .Where(i => i.StockId != null)
+            .Select(i => i.StockId!.Value);
+
+        var picked = context.HarvestResults
+            .AsNoTracking()
+            .Where(r => r.StockId != null)
+            .Select(r => r.StockId!.Value);
+
+        // Union is a distinct set, so a stock both planned and picked is named once.
+        return await planned.Union(picked).ToListAsync();
+    }
+
     /// <summary>Gives back the seed this harvest recorded as sown.</summary>
     private async Task ReturnSeedsAsync(int harvestId)
     {

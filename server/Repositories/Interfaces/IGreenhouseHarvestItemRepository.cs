@@ -31,6 +31,14 @@ public interface IGreenhouseHarvestSeedRepository
 public interface IGreenhouseHarvestResultRepository
 {
     Task<IEnumerable<GreenhouseHarvestResult>> GetByHarvestAsync(int greenhouseHarvestId);
+    Task<GreenhouseHarvestResult?> GetByIdAsync(int id);
+
+    /// <summary>
+    /// Whether this harvest already records a result for that stock. One row per good: how much of
+    /// it the harvest yielded is one number, not several. Pass the row being edited as
+    /// <paramref name="excludeId"/> so it doesn't clash with itself.
+    /// </summary>
+    Task<bool> ExistsForHarvestAsync(int greenhouseHarvestId, int greenhouseStockId, int? excludeId = null);
 
     /// <summary>Creation always contributes to stock — only allowed while Harvested (enforced by
     /// the controller).</summary>

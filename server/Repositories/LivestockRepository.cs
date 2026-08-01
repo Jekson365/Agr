@@ -42,6 +42,9 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         existing.Type = livestock.Type;
         existing.Count = livestock.Count;
         existing.FarmId = livestock.FarmId;
+        // Only ever the first declaration or the value it already has — the controller refuses
+        // anything else, so what arrives here is what the group produces either way.
+        existing.ProductionTypeId = livestock.ProductionTypeId;
 
         await context.SaveChangesAsync();
         return true;

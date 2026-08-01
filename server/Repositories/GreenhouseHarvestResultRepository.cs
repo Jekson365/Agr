@@ -17,6 +17,19 @@ public class GreenhouseHarvestResultRepository(AppDbContext context, IGreenhouse
             .ToListAsync();
     }
 
+    public async Task<GreenhouseHarvestResult?> GetByIdAsync(int id)
+    {
+        return await context.GreenhouseHarvestResults.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+    }
+
+    public async Task<bool> ExistsForHarvestAsync(int greenhouseHarvestId, int greenhouseStockId, int? excludeId = null)
+    {
+        return await context.GreenhouseHarvestResults
+            .AnyAsync(r => r.GreenhouseHarvestId == greenhouseHarvestId
+                && r.GreenhouseStockId == greenhouseStockId
+                && (excludeId == null || r.Id != excludeId));
+    }
+
     public async Task<GreenhouseHarvestResult> AddAsync(GreenhouseHarvestResult result)
     {
         context.GreenhouseHarvestResults.Add(result);

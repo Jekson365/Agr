@@ -16,6 +16,17 @@ public class HarvestsController(IHarvestRepository harvestRepository) : Controll
         return Ok(await harvestRepository.GetAllAsync(kind));
     }
 
+    /// <summary>
+    /// The plant stocks some harvest records — planned or picked, across every harvest. A harvest
+    /// is written in the good's own terms, so this is what tells the stock form which rows may no
+    /// longer change their kind or their unit.
+    /// </summary>
+    [HttpGet("recorded-stocks")]
+    public async Task<ActionResult<IEnumerable<int>>> GetRecordedStocks()
+    {
+        return Ok(await harvestRepository.GetRecordedStockIdsAsync());
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Harvest>> GetById(int id)
     {

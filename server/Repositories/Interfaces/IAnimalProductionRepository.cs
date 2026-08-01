@@ -7,6 +7,7 @@ public interface IAnimalProductionRepository
     Task<IEnumerable<AnimalProduction>> GetAllAsync();
     Task<IEnumerable<AnimalProduction>> GetByAnimalAsync(int animalId);
     Task<IEnumerable<AnimalProduction>> GetByLivestockAsync(int livestockId);
+    Task<AnimalProduction?> GetByIdAsync(int id);
 
     /// <summary>Whether any production is recorded against a group — either on the group itself
     /// or on one of its animals. Both are cascade-deleted with the group, so this guards against

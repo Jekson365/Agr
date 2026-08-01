@@ -13,6 +13,13 @@ public class GreenhouseHarvestResultsController(
     IGreenhouseHarvestRepository greenhouseHarvestRepository,
     IGreenhouseStockRepository greenhouseStockRepository) : ControllerBase
 {
+    /// <summary>
+    /// A good is recorded once per harvest: how much of it came off is one number, so a second row
+    /// for the same stock would be a second answer — and both would be added to its balance. Change
+    /// the first row instead.
+    /// </summary>
+    private const string AlreadyRecordedMessage = "This harvest already records a result for that stock.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GreenhouseHarvestResult>>> GetByHarvest([FromQuery] int greenhouseHarvestId)
     {
@@ -26,6 +33,11 @@ public class GreenhouseHarvestResultsController(
         if (invalid is not null)
         {
             return BadRequest(invalid);
+        }
+
+        if (await greenhouseHarvestResultRepository.ExistsForHarvestAsync(result.GreenhouseHarvestId, result.GreenhouseStockId))
+        {
+            return Conflict(AlreadyRecordedMessage);
         }
 
         var created = await greenhouseHarvestResultRepository.AddAsync(result);
@@ -44,6 +56,19 @@ public class GreenhouseHarvestResultsController(
         if (invalid is not null)
         {
             return BadRequest(invalid);
+        }
+
+        var existing = await greenhouseHarvestResultRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        // The harvest a row belongs to is fixed once created, so that's the harvest the good has to
+        // be unrecorded in — not whatever harvest the request happens to name.
+        if (await greenhouseHarvestResultRepository.ExistsForHarvestAsync(existing.GreenhouseHarvestId, result.GreenhouseStockId, id))
+        {
+            return Conflict(AlreadyRecordedMessage);
         }
 
         var updated = await greenhouseHarvestResultRepository.UpdateAsync(result);

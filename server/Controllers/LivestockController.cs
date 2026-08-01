@@ -14,6 +14,15 @@ public class LivestockController(
     IAnimalProductionRepository animalProductionRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
+    private const string ProduceSettledMessage = "What this group produces is already set and can no longer change.";
+
+    /// <summary>
+    /// What a group is made of is settled when it is created: its animals, its production history
+    /// and everything reported off them were recorded as that kind, so changing it would restate
+    /// all of it as another animal. A different kind is a different group.
+    /// </summary>
+    private const string TypeSettledMessage = "A livestock group keeps the type it was created with.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Livestock>>> GetAll()
     {
@@ -60,6 +69,31 @@ public class LivestockController(
         if (await livestockRepository.ExistsByNameAsync(livestock.Name.Trim(), id))
         {
             return Conflict("A livestock group with this name already exists.");
+        }
+
+        var existing = await livestockRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        if (!string.Equals(existing.Type.Trim(), livestock.Type.Trim(), StringComparison.Ordinal))
+        {
+            return Conflict(TypeSettledMessage);
+        }
+
+        // The records the group has collected are counted under what it produces, so pointing it
+        // at another output would recount them as something they were never collected as. A group
+        // that has not declared one yet may still do so — that is the choice being made, not
+        // changed. A request that omits the field entirely leaves the declaration standing rather
+        // than clearing it, so a client that predates it can still edit the count or the name.
+        if (existing.ProductionTypeId is int settled)
+        {
+            if (livestock.ProductionTypeId is int requested && requested != settled)
+            {
+                return Conflict(ProduceSettledMessage);
+            }
+            livestock.ProductionTypeId = settled;
         }
 
         try
