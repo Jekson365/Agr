@@ -17,7 +17,6 @@ import type { GreenhouseStock } from '@/types/greenhouse-stock';
 type Props = {
   open: boolean;
   greenhouseHarvestId: number;
-  greenhouseId: number;
   editingResult: GreenhouseHarvestResult | null;
   /** The harvest's planned items — only used to list those targets first, since they're the
    * likely picks. Anything in stock can be recorded, planned or not. */
@@ -32,7 +31,6 @@ type Props = {
 export function GreenhouseHarvestResultFormModal({
   open,
   greenhouseHarvestId,
-  greenhouseId,
   editingResult,
   plannedItems,
   existingResults,
@@ -90,7 +88,8 @@ export function GreenhouseHarvestResultFormModal({
   async function loadTargets(recorded: Set<number> = recordedStockIds()) {
     setTargetsLoading(true);
     try {
-      const stockList = await getGreenhouseStock(greenhouseId);
+      // Every greenhouse good, not just this harvest's greenhouse — see the note on the plan form.
+      const stockList = await getGreenhouseStock();
 
       // A good the harvest already has a result for is off the list — its yield is that one row,
       // and a second would both contradict it and be added to the same balance again. The row

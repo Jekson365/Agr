@@ -12,7 +12,6 @@ import type { GreenhouseStock } from '@/types/greenhouse-stock';
 type Props = {
   open: boolean;
   greenhouseHarvestId: number;
-  greenhouseId: number;
   editingItem: GreenhouseHarvestItem | null;
   /** Crop kinds sown for this harvest (StockKind names, from the seeds used). Only goods of these
    * kinds can be planned — you can't expect a yield from something that was never put in. */
@@ -24,7 +23,6 @@ type Props = {
 export function GreenhouseHarvestItemFormModal({
   open,
   greenhouseHarvestId,
-  greenhouseId,
   editingItem,
   sownTypes,
   onClose,
@@ -54,7 +52,9 @@ export function GreenhouseHarvestItemFormModal({
   async function loadTargets() {
     setTargetsLoading(true);
     try {
-      const stockList = await getGreenhouseStock(greenhouseId);
+      // Every greenhouse good, not just this harvest's greenhouse: the greenhouse a good is
+      // recorded under is where it is kept, and a plan may name any of them.
+      const stockList = await getGreenhouseStock();
 
       // A plan can only cover what was actually sown. An existing row's own good stays on the
       // list either way, so editing one recorded before its seed was removed isn't stranded.

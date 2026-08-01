@@ -568,3 +568,13 @@
   border-color: var(--color-border);
   color: var(--color-muted);
 }
+
+/* The stock and livestock forms, at twice the standard 440px: both are mostly chip rows — crops
+   and units on one, animal kinds and what the group produces on the other — which read as rows
+   rather than a wrapped pile with the width to spread into. The width lives on a descendant
+   selector so it beats `.modal-card` whatever order the bundler writes them in, and the card is
+   still `width: 100%` under the cap, so a narrow screen is unaffected. */
+.stock-form-modal .modal-card,
+.livestock-form-modal .modal-card {
+  max-width: 880px;
+}

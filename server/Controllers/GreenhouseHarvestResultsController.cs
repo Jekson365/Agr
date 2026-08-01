@@ -105,11 +105,9 @@ public class GreenhouseHarvestResultsController(
         {
             return "That greenhouse stock does not exist.";
         }
-        if (stock.GreenhouseId != harvest.GreenhouseId)
-        {
-            return "That stock does not belong to this harvest's greenhouse.";
-        }
 
+        // Recorded under one greenhouse, usable from any — see the matching note on the planned
+        // items. The yield lands on that good's own balance either way.
         return null;
     }
 }

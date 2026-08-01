@@ -75,11 +75,9 @@ public class GreenhouseHarvestSeedsController(
         {
             return "That greenhouse seed does not exist.";
         }
-        if (seed.GreenhouseId != harvest.GreenhouseId)
-        {
-            return "That seed does not belong to this harvest's greenhouse.";
-        }
 
+        // The greenhouse a seed is recorded under says where it is kept, not who may sow it: seed
+        // added anywhere is seed the farm holds, so any greenhouse's harvest can draw on it.
         return null;
     }
 }

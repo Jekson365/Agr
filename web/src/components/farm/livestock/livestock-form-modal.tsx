@@ -20,11 +20,9 @@ type Props = {
   open: boolean;
   editingItem: Livestock | null;
   farms: Farm[];
-  /** The groups that already exist, so a duplicate name is caught before saving. */
   existingItems: Livestock[];
   onClose: () => void;
   onSaved: (item: Livestock, isNew: boolean) => void;
-  /** Called instead of showing an inline error when the plan cap is what refused the write. */
   onLimitReached?: (message: string) => void;
 };
 
@@ -300,7 +298,7 @@ export function LivestockFormModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} className="livestock-form-modal">
       <h2 className="form-title">{isEditing ? t('farm.editLivestock') : t('farm.addLivestock')}</h2>
 
       <div className="form-fields">

@@ -12,7 +12,6 @@ import type { GreenhouseSeed } from '@/types/greenhouse-stock';
 type Props = {
   open: boolean;
   greenhouseHarvestId: number;
-  greenhouseId: number;
   editingSeed: GreenhouseHarvestSeed | null;
   onClose: () => void;
   onSaved: (harvestSeed: GreenhouseHarvestSeed, isNew: boolean) => void;
@@ -23,7 +22,6 @@ type Props = {
 export function GreenhouseHarvestSeedFormModal({
   open,
   greenhouseHarvestId,
-  greenhouseId,
   editingSeed,
   onClose,
   onSaved,
@@ -50,7 +48,9 @@ export function GreenhouseHarvestSeedFormModal({
   async function loadSeeds() {
     setSeedsLoading(true);
     try {
-      const list = await getGreenhouseSeeds(greenhouseId);
+      // Every greenhouse seed, not just this harvest's greenhouse: the greenhouse a seed is
+      // recorded under is where it is kept, and any harvest may sow from it.
+      const list = await getGreenhouseSeeds();
       setSeeds(list);
       setSelectedId(editingSeed?.greenhouseSeedId ?? list[0]?.id ?? null);
     } catch {

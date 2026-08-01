@@ -1,3 +1,4 @@
+import type { GreenhouseHarvestResult } from '@/types/greenhouse-harvest-result';
 import type { HarvestStatus } from '@/types/harvest';
 
 /**
@@ -22,3 +23,19 @@ export type GreenhouseHarvest = {
 };
 
 export type GreenhouseHarvestInput = Omit<GreenhouseHarvest, 'id'>;
+
+/** A harvest with the yield it recorded — how the greenhouse page lists one, in a single call
+ *  rather than a results request per row. */
+export type GreenhouseHarvestSummary = {
+  harvest: GreenhouseHarvest;
+  results: GreenhouseHarvestResult[];
+};
+
+/** What the greenhouse page's filter panel narrows its list by. Applied by the server, before the
+ *  cap, so they search the whole history rather than the rows already on screen. */
+export type GreenhouseHarvestFilters = {
+  status: HarvestStatus | null;
+  /** ISO dates (YYYY-MM-DD), inclusive; null for an open end. */
+  from: string | null;
+  to: string | null;
+};

@@ -126,7 +126,7 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} className="stock-form-modal">
       <h2 className="form-title">{isEditing ? t('farm.editStock') : t('farm.addStock')}</h2>
 
       <div className="form-fields">

@@ -17,7 +17,8 @@ import type { StockKind } from '@/types/stock-kind';
 type Props = {
   open: boolean;
   editingStock: GreenhouseStock | null;
-  /** The greenhouses to hold it in — one must be picked. */
+  /** The greenhouses on the farm. Not offered as a choice — a new row is recorded under the first
+   *  of them — but a row has to be recorded under one, so an empty list is worth saying. */
   greenhouses: Greenhouse[];
   /** The rows that already exist, so a name another one carries is caught before saving. */
   existingItems: GreenhouseStock[];
@@ -38,7 +39,6 @@ export function GreenhouseStockFormModal({
   const [kinds, setKinds] = useState<StockKind[]>([]);
   const [kindsLoading, setKindsLoading] = useState(true);
   const [kindError, setKindError] = useState<string | null>(null);
-  const [greenhouseId, setGreenhouseId] = useState<number | null>(null);
   const [stockType, setStockType] = useState<StockType>('');
   const [nameInput, setNameInput] = useState('');
   const [amountInput, setAmountInput] = useState('');
@@ -52,6 +52,12 @@ export function GreenhouseStockFormModal({
   const [seedUnit, setSeedUnit] = useState<SeedUnit>('Kilogram');
 
   const isEditing = editingStock != null;
+  /**
+   * Which greenhouse the row is recorded under. Not a choice any more: a good added anywhere is
+   * usable from every greenhouse, so picking one only decided where its card said it was kept.
+   * An existing row keeps the one it has; a new one is recorded under the first greenhouse.
+   */
+  const greenhouseId = editingStock?.greenhouseId ?? greenhouses[0]?.id ?? null;
 
   useEffect(() => {
     if (!open) return;
@@ -59,7 +65,6 @@ export function GreenhouseStockFormModal({
     setNameInput(editingStock?.name ?? '');
     setAmountInput(editingStock ? String(editingStock.amount) : '');
     setUnit(editingStock?.unit ?? 'Kilogram');
-    setGreenhouseId(editingStock?.greenhouseId ?? greenhouses[0]?.id ?? null);
     setFormError(null);
     setKindError(null);
     setSeedAmountInput('');
@@ -174,25 +179,10 @@ export function GreenhouseStockFormModal({
       <h2 className="form-title">{isEditing ? t('farm.editStock') : t('farm.addStock')}</h2>
 
       <div className="form-fields">
-        <div className="field">
-          <label>{t('farm.greenhouse')}</label>
-          {greenhouses.length === 0 ? (
-            <p className="limit-hint">{t('greenhouse.addFirst')}</p>
-          ) : (
-            <div className="kind-row">
-              {greenhouses.map((house) => (
-                <button
-                  key={house.id}
-                  type="button"
-                  className={greenhouseId === house.id ? 'kind-chip active' : 'kind-chip'}
-                  onClick={() => setGreenhouseId(house.id)}
-                >
-                  <span>{house.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Nothing to pick: a good is usable from every greenhouse — see greenhouseId. Only the
+            case of having no greenhouse at all is worth saying, since there is then nothing to
+            record it under. */}
+        {greenhouses.length === 0 && <p className="limit-hint">{t('greenhouse.addFirst')}</p>}
 
         <div className="field">
           <label>{t('farm.type')}</label>

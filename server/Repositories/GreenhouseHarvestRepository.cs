@@ -25,6 +25,55 @@ public class GreenhouseHarvestRepository(
         return await context.GreenhouseHarvests.FindAsync(id);
     }
 
+    public async Task<IEnumerable<GreenhouseHarvestSummary>> GetSummariesAsync(
+        int greenhouseId,
+        HarvestStatus? status,
+        DateOnly? from,
+        DateOnly? to,
+        int limit)
+    {
+        var query = context.GreenhouseHarvests
+            .AsNoTracking()
+            .Where(h => h.GreenhouseId == greenhouseId);
+
+        if (status is HarvestStatus wanted)
+        {
+            query = query.Where(h => h.Status == wanted);
+        }
+        if (from is DateOnly start)
+        {
+            query = query.Where(h => h.Date >= start);
+        }
+        if (to is DateOnly end)
+        {
+            query = query.Where(h => h.Date <= end);
+        }
+
+        var harvests = await query
+            .OrderByDescending(h => h.Date)
+            .ThenByDescending(h => h.Id)
+            .Take(limit)
+            .ToListAsync();
+
+        // One more query for every result on the page, rather than one per harvest.
+        var ids = harvests.Select(h => h.Id).ToList();
+        var results = await context.GreenhouseHarvestResults
+            .AsNoTracking()
+            .Where(r => ids.Contains(r.GreenhouseHarvestId))
+            .OrderBy(r => r.Id)
+            .ToListAsync();
+
+        var byHarvest = results
+            .GroupBy(r => r.GreenhouseHarvestId)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
+        return harvests.Select(harvest => new GreenhouseHarvestSummary
+        {
+            Harvest = harvest,
+            Results = byHarvest.TryGetValue(harvest.Id, out var own) ? own : [],
+        });
+    }
+
     public async Task<GreenhouseHarvest> AddAsync(GreenhouseHarvest harvest)
     {
         context.GreenhouseHarvests.Add(harvest);

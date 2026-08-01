@@ -93,9 +93,11 @@ export function GreenhouseHarvestDetailPage() {
         getGreenhouse(item.greenhouseId),
         getGreenhouseHarvestItems(harvestId),
         getGreenhouseHarvestResults(harvestId),
-        getGreenhouseStock(item.greenhouseId),
+        // Every greenhouse's goods and seed, not just this harvest's: a harvest may name any of
+        // them, and these lists are what its rows are labelled and measured from.
+        getGreenhouseStock(),
         getGreenhouseHarvestSeeds(harvestId),
-        getGreenhouseSeeds(item.greenhouseId),
+        getGreenhouseSeeds(),
       ]);
       setHarvest(item);
       setGreenhouse(greenhouseItem);
@@ -141,7 +143,7 @@ export function GreenhouseHarvestDetailPage() {
   // Seed amounts on hand changed, so reload rather than patching them in by hand.
   function handleSeedSaved(harvestSeed: GreenhouseHarvestSeed, isNew: boolean) {
     setHarvestSeeds((prev) => (isNew ? [...prev, harvestSeed] : prev.map((s) => (s.id === harvestSeed.id ? harvestSeed : s))));
-    if (harvest) getGreenhouseSeeds(harvest.greenhouseId).then(setSeeds).catch(() => {});
+    getGreenhouseSeeds().then(setSeeds).catch(() => {});
   }
 
   async function confirmDeleteSeedAction() {
@@ -150,7 +152,7 @@ export function GreenhouseHarvestDetailPage() {
     try {
       await deleteGreenhouseHarvestSeed(id);
       setHarvestSeeds((prev) => prev.filter((s) => s.id !== id));
-      if (harvest) getGreenhouseSeeds(harvest.greenhouseId).then(setSeeds).catch(() => {});
+      getGreenhouseSeeds().then(setSeeds).catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -398,7 +400,6 @@ export function GreenhouseHarvestDetailPage() {
         <GreenhouseHarvestSeedFormModal
           open={seedFormOpen}
           greenhouseHarvestId={harvestId}
-          greenhouseId={harvest.greenhouseId}
           editingSeed={editingHarvestSeed}
           onClose={() => setSeedFormOpen(false)}
           onSaved={handleSeedSaved}
@@ -417,7 +418,6 @@ export function GreenhouseHarvestDetailPage() {
         <GreenhouseHarvestItemFormModal
           open={itemFormOpen}
           greenhouseHarvestId={harvestId}
-          greenhouseId={harvest.greenhouseId}
           editingItem={editingItem}
           sownTypes={sownTypes}
           onClose={() => setItemFormOpen(false)}
@@ -436,7 +436,6 @@ export function GreenhouseHarvestDetailPage() {
         <GreenhouseHarvestResultFormModal
           open={resultFormOpen}
           greenhouseHarvestId={harvestId}
-          greenhouseId={harvest.greenhouseId}
           editingResult={editingResult}
           plannedItems={items}
           existingResults={results}

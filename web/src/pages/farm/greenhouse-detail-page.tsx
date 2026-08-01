@@ -7,8 +7,12 @@ import '@/components/farm/farm-crud.css';
 import { GreenhousePositioningModal } from '@/components/farm/greenhouse/positioning/greenhouse-positioning-modal';
 import { ChevronDownIcon } from '@/components/icons/nav-icons';
 import { ChevronRightIcon } from '@/components/icons/misc-icons';
+import '@/components/farm/kind-picker.css';
+import '@/components/farm/search-filter.css';
+import '@/components/farm/record-list.css';
 import '@/components/harvest/harvest.css';
 import '@/pages/farm/land-detail-page.css';
+import '@/pages/report-page.css';
 import './greenhouse-detail-page.css';
 import { formatLocalizedIsoDate, formatLocalizedIsoDay } from '@/components/ui/date-utils';
 import { HARVEST_STATUS_BADGE_CLASS, HARVEST_STATUS_LABEL_KEY } from '@/config/harvest-status';
@@ -16,13 +20,18 @@ import { STOCK_UNIT_LABEL_KEY, stockKindImage, stockTypeLabel } from '@/config/s
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { getGreenhouse } from '@/services/greenhouse-service';
-import { getGreenhouseHarvests } from '@/services/greenhouse-harvest-service';
-import { getGreenhouseHarvestResults } from '@/services/greenhouse-harvest-result-service';
+import { getGreenhouseHarvestSummaries } from '@/services/greenhouse-harvest-service';
 import { getGreenhouseStock } from '@/services/greenhouse-stock-service';
 import type { Greenhouse } from '@/types/greenhouse';
-import type { GreenhouseHarvest } from '@/types/greenhouse-harvest';
-import type { GreenhouseHarvestResult } from '@/types/greenhouse-harvest-result';
+import type { GreenhouseHarvestFilters as Filters, GreenhouseHarvestSummary } from '@/types/greenhouse-harvest';
 import type { GreenhouseStock } from '@/types/greenhouse-stock';
+import { GreenhouseHarvestFilters } from './greenhouse-harvest-filters';
+
+/** How many harvests the page shows. The newest ones are what a greenhouse is looked at for; the
+ *  rest are reached by narrowing the filters rather than by scrolling. */
+const HARVEST_LIMIT = 10;
+
+const NO_FILTERS: Filters = { status: null, from: null, to: null };
 
 export function GreenhouseDetailPage() {
   const { t, language } = useLanguage();
@@ -30,40 +39,38 @@ export function GreenhouseDetailPage() {
   const greenhouseId = Number(idParam);
 
   const [greenhouse, setGreenhouse] = useState<Greenhouse | null>(null);
-  const [harvests, setHarvests] = useState<GreenhouseHarvest[]>([]);
+  // The harvests on screen, each already carrying the yield it recorded — one call, rather than a
+  // list followed by a results request per row.
+  const [summaries, setSummaries] = useState<GreenhouseHarvestSummary[]>([]);
   const [stocks, setStocks] = useState<GreenhouseStock[]>([]);
-  // Each harvest's recorded yield, fetched once up front — a greenhouse's own harvest list is
-  // short enough that there's no need to defer it to first-expand, unlike the report page's
-  // per-day breakdowns.
-  const [resultsByHarvest, setResultsByHarvest] = useState<Record<number, GreenhouseHarvestResult[]>>({});
   const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [positioningOpen, setPositioningOpen] = useState(false);
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     if (!greenhouseId) return;
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [greenhouseId]);
+  }, [greenhouseId, filters]);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
-      const [greenhouseItem, harvestList, stockList] = await Promise.all([
+      const [greenhouseItem, summaryList, stockList] = await Promise.all([
         getGreenhouse(greenhouseId),
-        getGreenhouseHarvests(greenhouseId),
-        getGreenhouseStock(greenhouseId),
+        getGreenhouseHarvestSummaries(greenhouseId, filters, HARVEST_LIMIT),
+        // Every greenhouse's goods, not just this one's: a harvest here may have been recorded
+        // against a good kept elsewhere, and this list is only what names those rows. Scoped, such
+        // a row found nothing to name itself with and showed a bare amount.
+        getGreenhouseStock(),
       ]);
       setGreenhouse(greenhouseItem);
-      setHarvests(harvestList);
+      setSummaries(summaryList);
       setStocks(stockList);
-
-      const entries = await Promise.all(
-        harvestList.map(async (h) => [h.id, await getGreenhouseHarvestResults(h.id)] as const)
-      );
-      setResultsByHarvest(Object.fromEntries(entries));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -78,6 +85,8 @@ export function GreenhouseDetailPage() {
       return next;
     });
   }
+
+  const isFiltered = filters.status != null || filters.from != null || filters.to != null;
 
   function stockInfo(stockId: number): { label: string; unitLabel: string; icon: string } | null {
     const stock = stocks.find((s) => s.id === stockId);
@@ -149,13 +158,23 @@ export function GreenhouseDetailPage() {
               <label>{t('greenhouse.harvestTitle')}</label>
             </div>
 
-            {harvests.length === 0 ? (
-              <p className="empty-state">{t('greenhouse.harvestEmpty')}</p>
+            <GreenhouseHarvestFilters
+              open={filtersOpen}
+              onToggleOpen={() => setFiltersOpen((prev) => !prev)}
+              filters={filters}
+              onChange={setFilters}
+            />
+
+            {summaries.length === 0 ? (
+              <p className="empty-state">
+                {/* A filtered list that came back empty is a different thing to say than a
+                    greenhouse that has never been harvested. */}
+                {isFiltered ? t('greenhouse.harvestNoMatches') : t('greenhouse.harvestEmpty')}
+              </p>
             ) : (
               <div className="greenhouse-harvest-rows">
-                {harvests.map((harvest) => {
+                {summaries.map(({ harvest, results }) => {
                   const isOpen = expandedIds.has(harvest.id);
-                  const results = resultsByHarvest[harvest.id] ?? [];
                   return (
                     <div key={harvest.id} className="greenhouse-harvest-group">
                       <div className={isOpen ? 'greenhouse-harvest-row open' : 'greenhouse-harvest-row'}>
@@ -213,6 +232,12 @@ export function GreenhouseDetailPage() {
                   );
                 })}
               </div>
+            )}
+
+            {/* Only worth saying when the cap is what ended the list — a shorter one is the whole
+                of what matches. */}
+            {summaries.length === HARVEST_LIMIT && (
+              <p className="limit-hint">{t('greenhouse.harvestLatestHint', { count: HARVEST_LIMIT })}</p>
             )}
           </>
         )

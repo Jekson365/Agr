@@ -8,7 +8,9 @@ import pigIcon from '@/assets/animals/pig.png';
 import rabbitIcon from '@/assets/animals/rabbit.png';
 import sheepIcon from '@/assets/animals/sheep.png';
 import turkeyIcon from '@/assets/animals/turkey.png';
-import defaultLivestockIcon from '@/assets/properties/animals.png';
+// The stand-in that sits alongside the kind artwork, rather than the Livestock area's own icon —
+// a custom kind is one of these animals in a row of them, not a link to the section.
+import defaultLivestockIcon from '@/assets/animals/default.png';
 
 // LivestockKinds are an open catalog (built-in defaults plus custom kinds a user added), so
 // these maps are keyed by the string name the server returns and fall back for unknown names.

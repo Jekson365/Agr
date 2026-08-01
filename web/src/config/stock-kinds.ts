@@ -7,7 +7,9 @@ import potatoIcon from '@/assets/goods/potato.png';
 import pumpkinIcon from '@/assets/goods/pumpkin.png';
 import tomatoIcon from '@/assets/goods/tomato.png';
 import weatIcon from '@/assets/goods/weat.png';
-import defaultStockIcon from '@/assets/properties/plants.png';
+// Same idea as the livestock default: the stand-in that belongs with the goods artwork, not the
+// Stock area's own icon.
+import defaultStockIcon from '@/assets/goods/default.png';
 
 // Built-in stock kinds get dedicated artwork and a translated label; any other kind (a custom
 // type a user added via the Stock form) falls back to a generic icon and its raw name — see

@@ -76,12 +76,10 @@ public class GreenhouseHarvestItemsController(
         {
             return "That greenhouse stock does not exist.";
         }
-        // A plan can only cover stock actually held in the harvest's own greenhouse.
-        if (stock.GreenhouseId != harvest.GreenhouseId)
-        {
-            return "That stock does not belong to this harvest's greenhouse.";
-        }
 
+        // The greenhouse a good is recorded under says where it is kept, not which harvests may
+        // count it: a good added anywhere is a good the farm grows under glass, so any greenhouse's
+        // plan can name it.
         return null;
     }
 }

@@ -882,6 +882,8 @@
     "stockNameDuplicate": "Greenhouse stock with this name already exists.",
     "harvestTitle": "Greenhouse harvests",
     "harvestEmpty": "No greenhouse harvests yet. Add the first one above.",
+    "harvestNoMatches": "No harvests match these filters.",
+    "harvestLatestHint": "Showing the {count} latest harvests — filter to reach older ones.",
     "addHarvest": "Add Harvest",
     "editHarvest": "Edit Harvest",
     "addFirst": "Add a greenhouse first — stock and harvests belong to one.",

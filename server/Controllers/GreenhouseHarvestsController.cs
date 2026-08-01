@@ -18,6 +18,26 @@ public class GreenhouseHarvestsController(
         return Ok(await greenhouseHarvestRepository.GetAllAsync(greenhouseId));
     }
 
+    /// <summary>
+    /// One greenhouse's harvests with the yield each recorded, newest first — what the greenhouse
+    /// page lists, in one call instead of a list plus a results request per row. Capped at
+    /// <paramref name="limit"/> (10 by default), with the filters applied before the cap so they
+    /// search the whole history rather than the ten already on screen.
+    /// </summary>
+    [HttpGet("summaries")]
+    public async Task<ActionResult<IEnumerable<GreenhouseHarvestSummary>>> GetSummaries(
+        [FromQuery] int greenhouseId,
+        [FromQuery] HarvestStatus? status,
+        [FromQuery] DateOnly? from,
+        [FromQuery] DateOnly? to,
+        [FromQuery] int limit = 10)
+    {
+        // A page asking for everything is a page that has stopped paging, so the cap is the
+        // server's to set, not the caller's.
+        var capped = Math.Clamp(limit, 1, 50);
+        return Ok(await greenhouseHarvestRepository.GetSummariesAsync(greenhouseId, status, from, to, capped));
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<GreenhouseHarvest>> GetById(int id)
     {
