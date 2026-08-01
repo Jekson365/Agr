@@ -26,6 +26,25 @@ public interface ILandPlotRepository
     /// </summary>
     Task<int> DeleteByTreeStockAsync(int treeStockId);
 
+    /// <summary>
+    /// Whether a plot of this farmland already grows this stock good. The fruit rule applies here
+    /// unchanged — one plot per stock within a piece of land, other land free to grow it too.
+    /// Pass the plot being edited as <paramref name="excludeId"/> so it doesn't clash with itself.
+    /// </summary>
+    Task<bool> ExistsByStockAsync(int farmId, int stockId, int? excludeId = null);
+
+    /// <summary>
+    /// The stock goods plots have claimed, which the pickers leave out: those sown on
+    /// <paramref name="farmId"/>, or — when it's null — those sown on any land at all.
+    /// </summary>
+    Task<IEnumerable<int>> GetUsedStockIdsAsync(int? farmId = null);
+
+    /// <summary>
+    /// Removes every plot growing this stock good, for when the stock itself is being deleted.
+    /// Returns how many plots went with it.
+    /// </summary>
+    Task<int> DeleteByStockAsync(int stockId);
+
     Task<LandPlot> AddAsync(LandPlot plot);
     Task<bool> UpdateAsync(LandPlot plot);
     Task<bool> DeleteAsync(int id);

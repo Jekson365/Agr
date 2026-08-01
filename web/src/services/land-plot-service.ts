@@ -16,6 +16,13 @@ export function getUsedTreeStockIds(farmId?: number) {
   return apiFetch<number[]>(`/api/landplots/used-tree-stocks${query}`);
 }
 
+/** The stock goods a plot already grows — the `getUsedTreeStockIds` counterpart, scoped the
+ *  same way. */
+export function getUsedStockIds(farmId?: number) {
+  const query = farmId == null ? '' : `?farmId=${farmId}`;
+  return apiFetch<number[]>(`/api/landplots/used-stocks${query}`);
+}
+
 export function createLandPlot(plot: LandPlotInput) {
   return apiFetch<LandPlot>('/api/landplots', {
     method: 'POST',

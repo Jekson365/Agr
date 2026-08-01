@@ -10,6 +10,7 @@ import { TerritoryMap } from '@/components/farm/land/territory-map';
 import { TerritoryViewerModal } from '@/components/farm/land/territory-viewer-modal';
 import { cropImage, cropLabel } from '@/config/crop';
 import { treeStockLabel } from '@/config/fruit-kinds';
+import { stockTypeLabel } from '@/config/stock-kinds';
 import {
   formatArea,
   parseTerritory,
@@ -23,9 +24,11 @@ import { resolveAssetUrl } from '@/services/api-client';
 import { getFarm, getFarms } from '@/services/farm-service';
 import { deleteLandPlot, getLandPlots } from '@/services/land-plot-service';
 import { getNeighbourTerritories } from '@/services/neighbour-service';
+import { getStock } from '@/services/stock-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import type { Farm } from '@/types/farm';
 import type { LandPlot } from '@/types/land-plot';
+import type { Stock } from '@/types/stock';
 import type { TreeStock } from '@/types/tree-stock';
 import './land-detail-page.css';
 
@@ -36,8 +39,9 @@ export function LandDetailPage() {
 
   const [farm, setFarm] = useState<Farm | null>(null);
   const [plots, setPlots] = useState<LandPlot[]>([]);
-  /** The farm's fruit entries, so each plot can be named after the one it grows. */
+  /** The farm's fruit and stock entries, so each plot can be named after the one it grows. */
   const [fruits, setFruits] = useState<TreeStock[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,10 +80,16 @@ export function LandDetailPage() {
     setLoading(true);
     setError(null);
     try {
-      const [item, list, stock] = await Promise.all([getFarm(farmId), getLandPlots(farmId), getTreeStock()]);
+      const [item, list, treeStock, stock] = await Promise.all([
+        getFarm(farmId),
+        getLandPlots(farmId),
+        getTreeStock(),
+        getStock(),
+      ]);
       setFarm(item);
       setPlots(list);
-      setFruits(stock);
+      setFruits(treeStock);
+      setStocks(stock);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -99,10 +109,13 @@ export function LandDetailPage() {
 
   function handleSaved(plot: LandPlot, isNew: boolean) {
     setPlots((prev) => (isNew ? [...prev, plot] : prev.map((p) => (p.id === plot.id ? plot : p))));
-    // The form offers fruits added since this page loaded, which aren't in the list yet — fetch
+    // The form offers entries added since this page loaded, which aren't in the lists yet — fetch
     // them so the plot shows the name of the one it grows rather than falling back to its kind.
     if (plot.treeStockId != null && !fruits.some((fruit) => fruit.id === plot.treeStockId)) {
       getTreeStock().then(setFruits).catch(() => {});
+    }
+    if (plot.stockId != null && !stocks.some((stock) => stock.id === plot.stockId)) {
+      getStock().then(setStocks).catch(() => {});
     }
   }
 
@@ -128,11 +141,17 @@ export function LandDetailPage() {
   const territory = useMemo(() => parseTerritory(farm?.boundary), [farm?.boundary]);
   const territoryArea = territoryAreaHectares(territory);
 
-  /** A plot goes by the fruit entry planted on it — two plots of apples are "Gala" and "Fuji", not
-   *  "Apple" twice. Plots from before they named an entry fall back to the crop they recorded. */
+  /** A plot goes by the entry planted on it — two plots of apples are "Gala" and "Fuji", not
+   *  "Apple" twice, and the same holds for a named stock. Plots from before they named an entry
+   *  fall back to the crop they recorded. */
   function plotLabel(plot: LandPlot): string {
     const fruit = fruits.find((item) => item.id === plot.treeStockId);
-    return fruit ? treeStockLabel(fruit, t) : cropLabel(plot.crop, t);
+    if (fruit) return treeStockLabel(fruit, t);
+
+    const stock = stocks.find((item) => item.id === plot.stockId);
+    if (stock) return stock.name.trim() || stockTypeLabel(stock.type, t);
+
+    return cropLabel(plot.crop, t);
   }
 
   return (

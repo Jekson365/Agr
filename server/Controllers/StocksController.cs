@@ -13,6 +13,7 @@ public class StocksController(
     IStockRepository stockRepository,
     ISeedRepository seedRepository,
     IHarvestRepository harvestRepository,
+    ILandPlotRepository landPlotRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     private const string HarvestRecordedMessage = "A harvest already records this stock, so its type and unit can no longer change.";
@@ -178,6 +179,12 @@ public class StocksController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        // A plot is a plot *of* this stock — with it gone there is nothing growing there, so the
+        // plot goes too rather than staying behind as an empty patch of land. Matches how
+        // deleting a tree stock takes its plots with it. Before the stock itself, since removing
+        // that first would clear the reference the plot is found by.
+        await landPlotRepository.DeleteByStockAsync(id);
+
         var deleted = await stockRepository.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }

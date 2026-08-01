@@ -10,7 +10,8 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class LandPlotsController(
     ILandPlotRepository landPlotRepository,
-    ITreeStockRepository treeStockRepository) : ControllerBase
+    ITreeStockRepository treeStockRepository,
+    IStockRepository stockRepository) : ControllerBase
 {
     /// <summary>
     /// A plot is "this much of the land, growing that", so a fruit gets one plot per farmland —
@@ -18,6 +19,9 @@ public class LandPlotsController(
     /// free to grow the same fruit on a plot of its own.
     /// </summary>
     private const string TreeStockTakenMessage = "This land already has a plot of those trees.";
+
+    /// <summary>The same rule as <see cref="TreeStockTakenMessage"/>, for a stock good.</summary>
+    private const string StockTakenMessage = "This land already has a plot of that stock.";
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LandPlot>>> GetByFarm([FromQuery] int farmId)
@@ -36,6 +40,16 @@ public class LandPlotsController(
         return Ok(await landPlotRepository.GetUsedTreeStockIdsAsync(farmId));
     }
 
+    /// <summary>
+    /// The stock goods already sown, so the plot form can offer only the rest — the
+    /// <see cref="GetUsedTreeStocks"/> counterpart, scoped the same way.
+    /// </summary>
+    [HttpGet("used-stocks")]
+    public async Task<ActionResult<IEnumerable<int>>> GetUsedStocks([FromQuery] int? farmId)
+    {
+        return Ok(await landPlotRepository.GetUsedStockIdsAsync(farmId));
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<LandPlot>> GetById(int id)
     {
@@ -46,7 +60,7 @@ public class LandPlotsController(
     [HttpPost]
     public async Task<ActionResult<LandPlot>> Create(LandPlot plot)
     {
-        var problem = await SettleTreeStockAsync(plot, plot.FarmId);
+        var problem = await SettleCropAsync(plot, plot.FarmId);
         if (problem is not null)
         {
             return problem;
@@ -71,8 +85,8 @@ public class LandPlotsController(
         }
 
         // The land a plot sits on is fixed once created, so the row's own farm is the land the
-        // fruit has to be free on — not whatever farm the request happens to name.
-        var problem = await SettleTreeStockAsync(plot, existing.FarmId, id);
+        // fruit or stock has to be free on — not whatever farm the request happens to name.
+        var problem = await SettleCropAsync(plot, existing.FarmId, id);
         if (problem is not null)
         {
             return problem;
@@ -90,32 +104,56 @@ public class LandPlotsController(
     }
 
     /// <summary>
-    /// Checks the fruit the plot names and takes its crop from it, so the name shown on the plot
-    /// can't drift from the stock it stands for. Returns the response to send back instead of
-    /// saving, or null when the plot is good to save. Plots naming no stock — recorded before the
-    /// two were paired — are left as they are.
+    /// Checks the fruit or stock good the plot names and takes its crop from it, so the name shown
+    /// on the plot can't drift from the entry it stands for. Returns the response to send back
+    /// instead of saving, or null when the plot is good to save. Plots naming neither — recorded
+    /// before a plot named what grew on it — are left as they are.
     /// </summary>
-    private async Task<ActionResult?> SettleTreeStockAsync(LandPlot plot, int farmId, int? excludeId = null)
+    private async Task<ActionResult?> SettleCropAsync(LandPlot plot, int farmId, int? excludeId = null)
     {
         plot.Crop = plot.Crop.Trim();
 
-        if (plot.TreeStockId is not int treeStockId)
+        // One plot grows one thing: the area it records answers for that entry alone, and a plot
+        // claiming both would owe two answers. The clients only ever send one.
+        if (plot.TreeStockId is not null && plot.StockId is not null)
         {
+            return BadRequest("A plot grows either a fruit or a stock, not both.");
+        }
+
+        if (plot.TreeStockId is int treeStockId)
+        {
+            var treeStock = await treeStockRepository.GetByIdAsync(treeStockId);
+            if (treeStock is null)
+            {
+                return BadRequest("That fruit no longer exists.");
+            }
+
+            if (await landPlotRepository.ExistsByTreeStockAsync(farmId, treeStockId, excludeId))
+            {
+                return Conflict(TreeStockTakenMessage);
+            }
+
+            plot.Crop = treeStock.Type.Trim();
             return null;
         }
 
-        var stock = await treeStockRepository.GetByIdAsync(treeStockId);
-        if (stock is null)
+        if (plot.StockId is int stockId)
         {
-            return BadRequest("That fruit no longer exists.");
+            var stock = await stockRepository.GetByIdAsync(stockId);
+            if (stock is null)
+            {
+                return BadRequest("That stock no longer exists.");
+            }
+
+            if (await landPlotRepository.ExistsByStockAsync(farmId, stockId, excludeId))
+            {
+                return Conflict(StockTakenMessage);
+            }
+
+            plot.Crop = stock.Type.Trim();
+            return null;
         }
 
-        if (await landPlotRepository.ExistsByTreeStockAsync(farmId, treeStockId, excludeId))
-        {
-            return Conflict(TreeStockTakenMessage);
-        }
-
-        plot.Crop = stock.Type.Trim();
         return null;
     }
 }

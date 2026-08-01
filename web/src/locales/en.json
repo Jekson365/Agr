@@ -376,9 +376,10 @@
   "landPlot": {
     "add": "Add Plot",
     "edit": "Edit Plot",
-    "noCrops": "No fruits yet. Add some in the Fruits tab first.",
-    "allCropsUsed": "Every fruit already has a plot on this land.",
+    "noCrops": "No fruits or stock yet. Add some in the Fruits or Stock tab first.",
+    "allCropsUsed": "Every fruit and stock already has a plot on this land.",
     "fruitTaken": "This land already has a plot of those trees.",
+    "stockTaken": "This land already has a plot of that stock.",
     "empty": "No plots yet. Add one below.",
     "loadError": "Couldn't load plots.",
     "deleteConfirmTitle": "Delete {name}?",
