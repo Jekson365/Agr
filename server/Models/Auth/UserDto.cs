@@ -8,6 +8,13 @@ public class UserDto
     public UserRole Role { get; set; }
     public string Surname { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether an SMS code has proved this number. The profile screen uses it to know that the
+    /// number is the account's way in and cannot be edited there.
+    /// </summary>
+    public bool PhoneVerified { get; set; }
+
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }
@@ -38,6 +45,7 @@ public class UserDto
         Role = user.Role,
         Surname = user.Surname,
         PhoneNumber = user.PhoneNumber,
+        PhoneVerified = user.PhoneVerifiedAt is not null,
         Country = user.Country,
         City = user.City,
         BirthDate = user.BirthDate,

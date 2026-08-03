@@ -1,10 +1,16 @@
+import chickenIcon from '@/assets/animals/chicken.png';
 import cowIcon from '@/assets/animals/cow.png';
+import goatIcon from '@/assets/animals/goat.png';
+import sheepIcon from '@/assets/animals/sheep.png';
+import cabbageIcon from '@/assets/goods/cabbage.png';
+import cucumberIcon from '@/assets/goods/cucumber.png';
 import tomatoIcon from '@/assets/goods/tomato.png';
 import calendarIcon from '@/assets/icons/calendar.png';
 import cameraIcon from '@/assets/icons/camera.png';
 import farmIcon from '@/assets/icons/farm.png';
 import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
+import mapIcon from '@/assets/icons/map.png';
 import marketIcon from '@/assets/icons/market.png';
 import reportIcon from '@/assets/icons/report.png';
 import animalsIcon from '@/assets/properties/animals.png';
@@ -149,6 +155,79 @@ export const REPORT_FEATURES: LandingCard[] = [
   { id: 'greenhouse', icon: greenhouseIcon, points: 0 },
 ];
 
+/** Section 7 — the neighbourhood map. */
+export const MAP_FEATURES: LandingCard[] = [
+  { id: 'draw', icon: landIcon, points: 0 },
+  { id: 'nearby', icon: mapIcon, points: 0 },
+  { id: 'crops', icon: plantsIcon, points: 0 },
+  { id: 'connect', icon: farmIcon, points: 0 },
+];
+
+/** The box the mocked map is drawn in. The panel holds the same ratio, so a pin placed in these
+ *  coordinates lands on the same patch of ground at every screen size. */
+export const MAP_VIEWBOX = { width: 320, height: 240 };
+
+/** One outline on the mocked map. `owner` carries the real map's own/neighbour/other colouring, so
+ *  what a visitor learns here is what they will see once they sign in. */
+export type LandingMapField = {
+  id: string;
+  owner: 'own' | 'neighbour' | 'other';
+  /** Drawn picked out — it is the field the card underneath is describing. */
+  selected?: boolean;
+  /** The letter its owner's pin carries, as the app builds it from their name. */
+  initial: string;
+  /** Whose it is, in the `landing.map` translation group; the user's own reuses the app's wording. */
+  nameKey: string;
+  /** Corners, in `MAP_VIEWBOX` coordinates. */
+  points: string;
+  /** The middle of the outline, where the pin and the name sit. */
+  pin: { x: number; y: number };
+};
+
+/* The card sits across the bottom of the panel, so every outline is kept to the top two thirds —
+   below that a pin would be behind it. */
+export const MAP_FIELDS: LandingMapField[] = [
+  {
+    id: 'own',
+    owner: 'own',
+    initial: 'T',
+    nameKey: 'map.you',
+    points: '34,44 108,32 126,84 56,98',
+    pin: { x: 80, y: 64 },
+  },
+  {
+    id: 'neighbour',
+    owner: 'neighbour',
+    initial: 'N',
+    nameKey: 'landing.map.farmerNeighbour',
+    points: '176,40 258,30 276,80 196,96',
+    pin: { x: 226, y: 61 },
+  },
+  {
+    id: 'selected',
+    owner: 'other',
+    selected: true,
+    initial: 'L',
+    nameKey: 'landing.map.farmerSelected',
+    points: '198,112 286,102 300,152 214,166',
+    pin: { x: 249, y: 132 },
+  },
+  {
+    id: 'other',
+    owner: 'other',
+    initial: 'G',
+    nameKey: 'landing.map.farmerOther',
+    points: '40,118 116,108 130,152 52,162',
+    pin: { x: 84, y: 134 },
+  },
+];
+
+/** What the picked field is growing, as the map's panel lists it — name and area in hectares. */
+export const MAP_SAMPLE_CROPS = [
+  { id: 'tomato', nameKey: 'landing.harvest.sampleTomato', icon: tomatoIcon, area: 0.8 },
+  { id: 'cucumber', nameKey: 'landing.harvest.sampleCucumber', icon: cucumberIcon, area: 0.4 },
+];
+
 /** The revenue-by-category donut in the reporting section (shares add up to 100). */
 export const REPORT_SHARES = [
   { id: 'crop', share: 44, color: 'var(--color-green)' },
@@ -174,3 +253,22 @@ export const PREVIEW_ICONS = {
 
 /** Bar heights (percentages) for the mocked harvest chart in the preview. */
 export const PREVIEW_BARS = [38, 54, 46, 72, 61, 88, 67];
+
+/* The screens behind the preview's sidebar. Each one is a few rows of the kind of record the
+   section actually holds — enough that clicking through says what the app is, without pretending
+   to be the app. */
+
+/** Herds and flocks, as the livestock screen lists them. */
+export const PREVIEW_LIVESTOCK = [
+  { id: 'cow', icon: cowIcon, nameKey: 'farm.cow', count: 24 },
+  { id: 'sheep', icon: sheepIcon, nameKey: 'farm.sheep', count: 62 },
+  { id: 'chicken', icon: chickenIcon, nameKey: 'farm.chicken', count: 140 },
+  { id: 'goat', icon: goatIcon, nameKey: 'farm.goat', count: 18 },
+];
+
+/** What is under cover, and on how many square metres. */
+export const PREVIEW_GREENHOUSE = [
+  { id: 'tomato', icon: tomatoIcon, nameKey: 'landing.harvest.sampleTomato', section: 'A', sqm: 180 },
+  { id: 'cucumber', icon: cucumberIcon, nameKey: 'landing.harvest.sampleCucumber', section: 'B', sqm: 120 },
+  { id: 'cabbage', icon: cabbageIcon, nameKey: 'landing.harvest.sampleCabbage', section: 'C', sqm: 90 },
+];

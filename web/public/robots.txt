@@ -1,0 +1,29 @@
+# მთაბარი / Mtabari
+#
+# Only /main is public. Every other route sits behind ProtectedRoute and redirects a signed-out
+# visitor to /login (see web/src/App.tsx and web/src/routes/protected-route.tsx), so to a crawler
+# they are all the same empty app shell — worth keeping out of the index rather than letting
+# dozens of URLs compete as duplicates.
+#
+# Disallow stops crawling, not indexing: a URL already known can still be listed without its
+# content. The canonical in index.html is what actually consolidates these onto /main.
+
+User-agent: *
+Allow: /main
+
+# The app itself.
+Disallow: /login
+Disallow: /404
+Disallow: /farm
+Disallow: /harvest
+Disallow: /market
+Disallow: /report
+Disallow: /calendar
+Disallow: /profile
+Disallow: /map
+
+# The API answers 401 to anyone signed out, and uploads are users' own photos.
+Disallow: /api
+Disallow: /uploads
+
+Sitemap: https://mtabari.com.ge/sitemap.xml

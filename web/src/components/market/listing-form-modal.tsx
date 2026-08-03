@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import '@/components/farm/image-picker.css';
 import { Modal } from '@/components/ui/modal';
-import { LISTING_TYPE_OPTIONS } from '@/config/market-listing';
+import { LISTING_CATEGORY_LABEL_KEY, LISTING_CATEGORY_OPTIONS, LISTING_TYPE_OPTIONS } from '@/config/market-listing';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { createMarketListing, updateMarketListing, uploadMarketListingImage } from '@/services/market-listing-service';
@@ -38,6 +38,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
   const { t } = useLanguage();
 
   const [listingType, setListingType] = useState<ListingType>('Sale');
+  const [category, setCategory] = useState<ListingCategory>('Other');
   const [titleInput, setTitleInput] = useState('');
   const [descriptionInput, setDescriptionInput] = useState('');
   const [priceInput, setPriceInput] = useState('');
@@ -52,10 +53,19 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
 
   const isEditing = editingListing != null;
 
+  /**
+   * A listing's category travels with its `itemType` — "Stock" means nothing without the stock it
+   * names. An existing listing and a preset both arrive with that pair already settled, so the
+   * category is only open to be chosen on a listing started from scratch here; otherwise it is
+   * shown back rather than offered, so it can't be moved out from under the item it describes.
+   */
+  const categoryFixed = isEditing || preset != null;
+
   // Initialize the fields whenever opened.
   useEffect(() => {
     if (!open) return;
     setListingType(editingListing?.type ?? 'Sale');
+    setCategory(editingListing?.category ?? preset?.category ?? 'Other');
     setTitleInput(editingListing?.title ?? preset?.title ?? '');
     setDescriptionInput(editingListing?.description ?? '');
     setPriceInput(editingListing ? String(editingListing.price) : preset?.price != null ? String(preset.price) : '');
@@ -109,7 +119,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
       const imagePaths = [...existingImagePaths, ...uploadedPaths];
       const payload = {
         type: listingType,
-        category: editingListing?.category ?? preset?.category ?? ('Other' as const),
+        category,
         itemType: editingListing?.itemType ?? preset?.itemType ?? '',
         title: trimmedTitle,
         description: descriptionInput.trim() || null,
@@ -137,10 +147,10 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="wide">
       <h2 className="form-title">{isEditing ? t('market.edit') : t('market.add')}</h2>
 
-      <div className="form-fields">
+      <div className="form-fields modal-form-grid">
         <div className="field">
           <label>{t('market.listingTypeLabel')}</label>
           <div className="kind-row">
@@ -158,11 +168,31 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
         </div>
 
         <div className="field">
+          <label>{t('market.categoryLabel')}</label>
+          {categoryFixed ? (
+            <span className="limit-hint field-fixed-value">{t(LISTING_CATEGORY_LABEL_KEY[category])}</span>
+          ) : (
+            <div className="kind-row">
+              {LISTING_CATEGORY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  className={category === opt.value ? 'kind-chip active' : 'kind-chip'}
+                  onClick={() => setCategory(opt.value)}
+                >
+                  <span>{t(opt.labelKey)}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="field field-full">
           <label>{t('market.titleLabel')}</label>
           <input value={titleInput} onChange={(e) => setTitleInput(e.target.value)} placeholder={t('market.titlePlaceholder')} />
         </div>
 
-        <div className="field">
+        <div className="field field-full">
           <label>{t('market.description')}</label>
           <textarea
             value={descriptionInput}
@@ -172,24 +202,23 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
           />
         </div>
 
-        <div className="field-row">
-          <div className="field">
-            <label>{t('market.price')}</label>
-            <input
-              value={priceInput}
-              onChange={(e) => setPriceInput(e.target.value)}
-              placeholder={t('market.pricePlaceholder')}
-              inputMode="decimal"
-            />
-          </div>
-          <div className="field">
-            <label>{t('market.priceUnit')}</label>
-            <input
-              value={priceUnitInput}
-              onChange={(e) => setPriceUnitInput(e.target.value)}
-              placeholder={t('market.priceUnitPlaceholder')}
-            />
-          </div>
+        <div className="field">
+          <label>{t('market.price')}</label>
+          <input
+            value={priceInput}
+            onChange={(e) => setPriceInput(e.target.value)}
+            placeholder={t('market.pricePlaceholder')}
+            inputMode="decimal"
+          />
+        </div>
+
+        <div className="field">
+          <label>{t('market.priceUnit')}</label>
+          <input
+            value={priceUnitInput}
+            onChange={(e) => setPriceUnitInput(e.target.value)}
+            placeholder={t('market.priceUnitPlaceholder')}
+          />
         </div>
 
         <div className="field">
@@ -216,7 +245,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
           />
         </div>
 
-        <div className="field">
+        <div className="field field-full">
           <label>{t('market.image')}</label>
           <div className="photo-picker-row">
             {existingImagePaths.map((path) => (
@@ -261,8 +290,10 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
           </div>
         </div>
 
-        {overMax && <div className="error-banner">{t('market.overAvailable', { amount: maxQuantity ?? 0 })}</div>}
-        {formError && <div className="error-banner">{formError}</div>}
+        {overMax && (
+          <div className="error-banner field-full">{t('market.overAvailable', { amount: maxQuantity ?? 0 })}</div>
+        )}
+        {formError && <div className="error-banner field-full">{formError}</div>}
       </div>
 
       <div className="modal-actions">

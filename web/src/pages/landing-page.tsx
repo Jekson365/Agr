@@ -8,12 +8,18 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import {
   HARVEST_FEATURES,
   MANAGE_CARDS,
+  MAP_FEATURES,
+  MAP_FIELDS,
+  MAP_SAMPLE_CROPS,
+  MAP_VIEWBOX,
   MARKET_CATEGORIES,
   MARKET_SAMPLES,
   PACKET_ROWS,
   PLAN_PACKETS,
   PREVIEW_BARS,
+  PREVIEW_GREENHOUSE,
   PREVIEW_ICONS,
+  PREVIEW_LIVESTOCK,
   REPORT_FEATURES,
   REPORT_SHARES,
   type LandingPacket,
@@ -193,12 +199,12 @@ function FeatureRow({ icon, title, body }: { icon: string; title: string; body: 
 }
 
 const PREVIEW_NAV = [
-  { icon: PREVIEW_ICONS.farm, labelKey: 'dashboard.myFarm' },
-  { icon: PREVIEW_ICONS.harvest, labelKey: 'dashboard.harvest' },
-  { icon: PREVIEW_ICONS.livestock, labelKey: 'farm.livestock' },
-  { icon: PREVIEW_ICONS.greenhouse, labelKey: 'farm.greenhouse' },
-  { icon: PREVIEW_ICONS.market, labelKey: 'dashboard.marketplace' },
-  { icon: PREVIEW_ICONS.report, labelKey: 'dashboard.report' },
+  { id: 'farm', icon: PREVIEW_ICONS.farm, labelKey: 'dashboard.myFarm' },
+  { id: 'harvest', icon: PREVIEW_ICONS.harvest, labelKey: 'dashboard.harvest' },
+  { id: 'livestock', icon: PREVIEW_ICONS.livestock, labelKey: 'farm.livestock' },
+  { id: 'greenhouse', icon: PREVIEW_ICONS.greenhouse, labelKey: 'farm.greenhouse' },
+  { id: 'market', icon: PREVIEW_ICONS.market, labelKey: 'dashboard.marketplace' },
+  { id: 'report', icon: PREVIEW_ICONS.report, labelKey: 'dashboard.report' },
 ];
 
 const PREVIEW_TILES = [
@@ -210,12 +216,245 @@ const PREVIEW_TILES = [
   { icon: PREVIEW_ICONS.balance, labelKey: 'farm.balance' },
 ];
 
-/** A mocked-up window of the real dashboard: sidebar, greeting, quick access, harvest revenue. */
-function AppPreview() {
+/** Planned against actual for three crops — the comparison the harvest detail page draws. */
+const HARVEST_ROWS = [
+  { labelKey: 'landing.harvest.sampleTomato', planned: 1200, actual: 1340 },
+  { labelKey: 'landing.harvest.sampleCucumber', planned: 800, actual: 742 },
+  { labelKey: 'landing.harvest.sampleCabbage', planned: 400, actual: 455 },
+];
+
+/** One record in a preview screen: what it is on the left, the figure that matters on the right. */
+function PreviewRow({ icon, name, meta, value }: { icon: string; name: string; meta?: string; value: string }) {
+  return (
+    <div className="preview-row">
+      <span className="preview-row-icon">
+        <img src={icon} alt="" loading="lazy" decoding="async" />
+      </span>
+      <span className="preview-row-name">
+        {name}
+        {meta && <span className="preview-row-meta">{meta}</span>}
+      </span>
+      <span className="preview-row-value">{value}</span>
+    </div>
+  );
+}
+
+/** The opening screen: the numbers for the season, the shortcuts, and what the harvests earned. */
+function PreviewFarm() {
   const { t } = useLanguage();
 
   return (
-    <div className="preview" aria-hidden="true">
+    <>
+      <div className="preview-stats">
+        <div className="preview-stat">
+          <span className="preview-stat-label">{t('landing.preview.statYield')}</span>
+          <span className="preview-stat-value">{t('landing.preview.statYieldValue')}</span>
+        </div>
+        <div className="preview-stat">
+          <span className="preview-stat-label">{t('landing.preview.statHarvests')}</span>
+          <span className="preview-stat-value">{t('landing.preview.statHarvestsValue')}</span>
+        </div>
+        <div className="preview-stat">
+          <span className="preview-stat-label">{t('landing.preview.statNet')}</span>
+          <span className="preview-stat-value preview-stat-accent">{t('landing.preview.statNetValue')}</span>
+        </div>
+      </div>
+
+      <p className="preview-label">{t('dashboard.quickAccess')}</p>
+      <div className="preview-tiles">
+        {PREVIEW_TILES.map((tile) => (
+          <div key={tile.labelKey} className="preview-tile">
+            <span className="preview-tile-icon">
+              <img src={tile.icon} alt="" />
+            </span>
+            <span className="preview-tile-label">{t(tile.labelKey)}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="preview-card">
+        <div className="preview-card-head">
+          <span className="preview-card-title">{t('report.harvestRevenueTitle')}</span>
+          <span className="preview-card-sub">{t('landing.preview.chartSubtitle')}</span>
+        </div>
+        <div className="preview-chart">
+          {PREVIEW_BARS.map((height, index) => (
+            <span
+              key={index}
+              className={index === PREVIEW_BARS.length - 2 ? 'preview-bar is-peak' : 'preview-bar'}
+              style={{ height: `${height}%` }}
+            />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/** What was gathered against what was planned, the same comparison the section further down draws. */
+function PreviewHarvest() {
+  const { t } = useLanguage();
+  const max = Math.max(...HARVEST_ROWS.flatMap((row) => [row.planned, row.actual]));
+
+  return (
+    <div className="preview-card">
+      <div className="preview-card-head">
+        <span className="preview-card-title">{t('harvest.comparisonTitle')}</span>
+        <span className="preview-card-sub">{t('landing.preview.chartSubtitle')}</span>
+      </div>
+
+      {HARVEST_ROWS.map((row) => {
+        const variance = Math.round(((row.actual - row.planned) / row.planned) * 100);
+        return (
+          <div key={row.labelKey} className="preview-line">
+            <div className="preview-line-head">
+              <span className="preview-line-name">{t(row.labelKey)}</span>
+              <span className="preview-line-figures">
+                {row.actual.toLocaleString()} / {row.planned.toLocaleString()} {t('farm.unitKg')}
+                <span className={variance < 0 ? 'landing-chip landing-chip-warn' : 'landing-chip'}>
+                  {variance > 0 ? '+' : ''}
+                  {variance}%
+                </span>
+              </span>
+            </div>
+            <span className="preview-track">
+              <span className="preview-track-planned" style={{ width: `${(row.planned / max) * 100}%` }} />
+              <span className="preview-track-actual" style={{ width: `${(row.actual / max) * 100}%` }} />
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Every group and its headcount. */
+function PreviewLivestock() {
+  const { t } = useLanguage();
+
+  return (
+    <div className="preview-card">
+      <div className="preview-card-head">
+        <span className="preview-card-title">{t('landing.preview.livestockTitle')}</span>
+      </div>
+      {PREVIEW_LIVESTOCK.map((group) => (
+        <PreviewRow
+          key={group.id}
+          icon={group.icon}
+          name={t(group.nameKey)}
+          value={`${group.count} ${t('landing.preview.unitHead')}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** What is growing under cover, and where. */
+function PreviewGreenhouse() {
+  const { t } = useLanguage();
+
+  return (
+    <div className="preview-card">
+      <div className="preview-card-head">
+        <span className="preview-card-title">{t('landing.preview.greenhouseTitle')}</span>
+      </div>
+      {PREVIEW_GREENHOUSE.map((bed) => (
+        <PreviewRow
+          key={bed.id}
+          icon={bed.icon}
+          name={t(bed.nameKey)}
+          meta={`${t('landing.preview.section')} ${bed.section}`}
+          value={`${bed.sqm} ${t('landing.preview.unitSqm')}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** The listings this farm has out, priced in the visitor's own currency. */
+function PreviewMarket() {
+  const { t } = useLanguage();
+  const { formatPrice } = useCurrency();
+
+  return (
+    <div className="preview-card">
+      <div className="preview-card-head">
+        <span className="preview-card-title">{t('landing.preview.marketTitle')}</span>
+      </div>
+      {MARKET_SAMPLES.map((sample) => (
+        <PreviewRow
+          key={sample.id}
+          icon={sample.icon}
+          name={t(`landing.market.${sample.id}.title`)}
+          meta={t(`landing.market.${sample.id}.location`)}
+          value={`${formatPrice(sample.price)} / ${t(`landing.market.${sample.id}.unit`)}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** Where the money came from, as the reports screen splits it. */
+function PreviewReport() {
+  const { t } = useLanguage();
+  const labels: Record<string, string> = {
+    crop: t('report.categoryCrop'),
+    fruit: t('report.categoryFruit'),
+    livestock: t('report.categoryLivestock'),
+  };
+
+  let cursor = 0;
+  const stops = REPORT_SHARES.map((slice) => {
+    const from = cursor;
+    cursor += slice.share;
+    return `${slice.color} ${from}% ${cursor}%`;
+  }).join(', ');
+
+  return (
+    <div className="preview-card">
+      <div className="preview-card-head">
+        <span className="preview-card-title">{t('landing.reports.chartTitle')}</span>
+        <span className="preview-card-sub">{t('landing.preview.chartSubtitle')}</span>
+      </div>
+      <div className="preview-split">
+        <div className="preview-donut" style={{ background: `conic-gradient(${stops})` }}>
+          <span className="preview-donut-hole" />
+        </div>
+        <ul className="preview-donut-legend">
+          {REPORT_SHARES.map((slice) => (
+            <li key={slice.id}>
+              <span className="landing-legend-dot" style={{ background: slice.color }} />
+              <span className="preview-donut-legend-label">{labels[slice.id]}</span>
+              <span className="preview-donut-legend-value">{slice.share}%</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+const PREVIEW_SCREENS = {
+  farm: PreviewFarm,
+  harvest: PreviewHarvest,
+  livestock: PreviewLivestock,
+  greenhouse: PreviewGreenhouse,
+  market: PreviewMarket,
+  report: PreviewReport,
+};
+
+/**
+ * A mocked-up window of the real dashboard. Its sidebar works: picking a section swaps the screen
+ * under it, which is as close as a visitor gets to the app before signing up. Everything in it is
+ * invented — the point is the shape of each screen, not the numbers on it.
+ */
+function AppPreview() {
+  const { t } = useLanguage();
+  const [screen, setScreen] = useState(PREVIEW_NAV[0].id);
+  const active = PREVIEW_NAV.find((item) => item.id === screen) ?? PREVIEW_NAV[0];
+
+  return (
+    <div className="preview">
       <div className="preview-chrome">
         <span className="preview-dot" />
         <span className="preview-dot" />
@@ -229,58 +468,41 @@ function AppPreview() {
             <img src={logo} alt="" />
             <span>{t('auth.appName')}</span>
           </div>
-          {PREVIEW_NAV.map((item, index) => (
-            <div key={item.labelKey} className={index === 0 ? 'preview-side-link is-active' : 'preview-side-link'}>
+          {PREVIEW_NAV.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={item.id === screen ? 'preview-side-link is-active' : 'preview-side-link'}
+              aria-pressed={item.id === screen}
+              onClick={() => setScreen(item.id)}
+            >
               <img src={item.icon} alt="" />
               <span>{t(item.labelKey)}</span>
-            </div>
+            </button>
           ))}
         </div>
 
         <div className="preview-main">
-          <p className="preview-greeting">{t('landing.preview.greeting')}</p>
+          {/* The dashboard greets you by name; every other screen is titled by what it holds. */}
+          <p className="preview-greeting">
+            {active.id === 'farm' ? t('landing.preview.greeting') : t(active.labelKey)}
+          </p>
 
-          <div className="preview-stats">
-            <div className="preview-stat">
-              <span className="preview-stat-label">{t('landing.preview.statYield')}</span>
-              <span className="preview-stat-value">{t('landing.preview.statYieldValue')}</span>
-            </div>
-            <div className="preview-stat">
-              <span className="preview-stat-label">{t('landing.preview.statHarvests')}</span>
-              <span className="preview-stat-value">{t('landing.preview.statHarvestsValue')}</span>
-            </div>
-            <div className="preview-stat">
-              <span className="preview-stat-label">{t('landing.preview.statNet')}</span>
-              <span className="preview-stat-value preview-stat-accent">{t('landing.preview.statNetValue')}</span>
-            </div>
-          </div>
-
-          <p className="preview-label">{t('dashboard.quickAccess')}</p>
-          <div className="preview-tiles">
-            {PREVIEW_TILES.map((tile) => (
-              <div key={tile.labelKey} className="preview-tile">
-                <span className="preview-tile-icon">
-                  <img src={tile.icon} alt="" />
-                </span>
-                <span className="preview-tile-label">{t(tile.labelKey)}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="preview-card">
-            <div className="preview-card-head">
-              <span className="preview-card-title">{t('report.harvestRevenueTitle')}</span>
-              <span className="preview-card-sub">{t('landing.preview.chartSubtitle')}</span>
-            </div>
-            <div className="preview-chart">
-              {PREVIEW_BARS.map((height, index) => (
-                <span
-                  key={index}
-                  className={index === PREVIEW_BARS.length - 2 ? 'preview-bar is-peak' : 'preview-bar'}
-                  style={{ height: `${height}%` }}
-                />
-              ))}
-            </div>
+          {/* Every screen is laid out, all in the one grid cell, and all but the chosen one is
+              hidden. The tallest of them is therefore always what the frame is sized to — switching
+              screens cannot resize the hero, whatever the language or the width. */}
+          <div className="preview-screens">
+            {PREVIEW_NAV.map((item) => {
+              const Screen = PREVIEW_SCREENS[item.id as keyof typeof PREVIEW_SCREENS];
+              return (
+                <div
+                  key={item.id}
+                  className={item.id === screen ? 'preview-screen is-shown' : 'preview-screen'}
+                >
+                  <Screen />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -415,13 +637,7 @@ function PacketCard({ packet, index }: { packet: LandingPacket; index: number })
   );
 }
 
-/** Planned against actual for three crops — the comparison the harvest detail page draws. */
-const HARVEST_ROWS = [
-  { labelKey: 'landing.harvest.sampleTomato', planned: 1200, actual: 1340 },
-  { labelKey: 'landing.harvest.sampleCucumber', planned: 800, actual: 742 },
-  { labelKey: 'landing.harvest.sampleCabbage', planned: 400, actual: 455 },
-];
-
+/** The same planned-against-actual comparison as the preview's harvest screen, at section size. */
 function HarvestPanel() {
   const { t } = useLanguage();
   const max = Math.max(...HARVEST_ROWS.flatMap((row) => [row.planned, row.actual]));
@@ -508,6 +724,86 @@ function ReportDonut() {
   );
 }
 
+/**
+ * The neighbourhood map, as the app draws it: your own land in green, a neighbour's in amber, other
+ * farmers' in blue, and the panel that opens on whichever field was picked. Held still — the point
+ * is the colours and what a field tells you, not the panning.
+ */
+function MapPanel() {
+  const { t } = useLanguage();
+  const picked = MAP_FIELDS.find((field) => field.selected);
+
+  return (
+    <div className="landing-map" aria-hidden="true">
+      <img src={farmland} className="landing-map-bg" alt="" loading="lazy" decoding="async" />
+      <span className="landing-map-scrim" />
+
+      <svg
+        className="landing-map-shapes"
+        viewBox={`0 0 ${MAP_VIEWBOX.width} ${MAP_VIEWBOX.height}`}
+        /* The panel holds the same ratio, so the outlines keep their shape and the pins below —
+           placed as percentages of the same box — stay on top of them. */
+        preserveAspectRatio="none"
+      >
+        {MAP_FIELDS.map((field) => (
+          <polygon
+            key={field.id}
+            points={field.points}
+            className={
+              field.selected ? `landing-map-shape is-${field.owner} is-selected` : `landing-map-shape is-${field.owner}`
+            }
+          />
+        ))}
+      </svg>
+
+      {MAP_FIELDS.map((field) => (
+        <span
+          key={field.id}
+          className="landing-map-marker"
+          style={{
+            left: `${(field.pin.x / MAP_VIEWBOX.width) * 100}%`,
+            top: `${(field.pin.y / MAP_VIEWBOX.height) * 100}%`,
+          }}
+        >
+          <span className={`landing-map-pin is-${field.owner}`}>{field.initial}</span>
+          <span className="landing-map-pin-name">{t(field.nameKey)}</span>
+        </span>
+      ))}
+
+      <div className="landing-map-layers">
+        <span className="landing-map-layer is-active">{t('landTerritory.satellite')}</span>
+        <span className="landing-map-layer">{t('landTerritory.street')}</span>
+      </div>
+
+      {picked && (
+        <div className="landing-map-card">
+          <span className="landing-map-avatar">{picked.initial}</span>
+          <span className="landing-map-card-head">
+            <span className="landing-map-card-name">{t(picked.nameKey)}</span>
+            {/* The two things the map knows about a stranger that a name alone does not say. */}
+            <span className="landing-map-card-meta">
+              {t('landing.market.tomato.location')} · {t('neighbours.away', { distance: '1.2 km' })}
+            </span>
+          </span>
+          <span className="landing-map-add">{t('neighbours.add')}</span>
+
+          <span className="landing-map-crops">
+            {MAP_SAMPLE_CROPS.map((crop) => (
+              <span key={crop.id} className="landing-map-crop">
+                <img src={crop.icon} alt="" loading="lazy" decoding="async" />
+                <span className="landing-map-crop-name">{t(crop.nameKey)}</span>
+                <span className="landing-map-crop-area">
+                  {crop.area} {t('farm.areaUnit')}
+                </span>
+              </span>
+            ))}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------- page */
 
 export function LandingPage() {
@@ -528,6 +824,7 @@ export function LandingPage() {
     { href: '#harvest', label: t('dashboard.harvest') },
     { href: '#marketplace', label: t('landing.nav.marketplace'), wide: true },
     { href: '#reports', label: t('landing.nav.reports'), wide: true },
+    { href: '#map', label: t('landing.nav.map'), wide: true },
     // { href: '#mobile', label: t('landing.nav.mobile'), wide: true },
   ];
 
@@ -803,7 +1100,34 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* 7 — Mobile app — commented out until the store listings are live. Restoring it means
+        {/* 7 — The neighbourhood map */}
+        <section id="map" className="landing-section">
+          <div className="landing-container landing-split landing-split-reverse">
+            <div className="landing-split-copy">
+              <SectionHead
+                eyebrow={t('landing.map.eyebrow')}
+                title={t('landing.map.title')}
+                lead={t('landing.map.subtitle')}
+                align="left"
+              />
+              <ul className="landing-feature-list" data-reveal>
+                {MAP_FEATURES.map((feature) => (
+                  <FeatureRow
+                    key={feature.id}
+                    icon={feature.icon}
+                    title={t(`landing.map.${feature.id}.title`)}
+                    body={t(`landing.map.${feature.id}.body`)}
+                  />
+                ))}
+              </ul>
+            </div>
+            <div className="landing-split-visual" data-reveal>
+              <MapPanel />
+            </div>
+          </div>
+        </section>
+
+        {/* 8 — Mobile app — commented out until the store listings are live. Restoring it means
             bringing back PhonePreview, PHONE_TILES, PHONE_TABS, AndroidIcon and AppleIcon above,
             plus the #mobile links in the nav and the footer.
 
@@ -855,7 +1179,7 @@ export function LandingPage() {
 
         */}
 
-        {/* 8 — Final call to action */}
+        {/* 9 — Final call to action */}
         <section className="landing-final">
           <img src={farmland} className="landing-final-bg" alt="" />
           <span className="landing-final-scrim" />
@@ -890,6 +1214,7 @@ export function LandingPage() {
             <a href="#harvest">{t('dashboard.harvest')}</a>
             <a href="#marketplace">{t('landing.nav.marketplace')}</a>
             <a href="#reports">{t('landing.nav.reports')}</a>
+            <a href="#map">{t('landing.nav.map')}</a>
           </div>
 
           <div className="landing-footer-col">

@@ -1,10 +1,54 @@
 <!doctype html>
-<html lang="en">
+<html lang="ka">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/web/src/assets/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Mtabari App</title>
+
+    <!-- The logo doubles as the tab icon and the link-preview image. public/favicon.svg is a
+         leftover from a starter template (purple, not the brand) and is deliberately unused. -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+
+    <title>მთაბარი — ფერმის მართვის სისტემა</title>
+    <meta
+      name="description"
+      content="მთაბარი — ფერმის მართვის ქართული სისტემა: მიწა, პირუტყვი, ბაღი, სათბური, მოსავალი და მარაგი ერთ სივრცეში. აწარმოე აღრიცხვა და გაყიდე მოსავალი ონლაინ."
+    />
+
+    <!-- Every route serves this same file, so one canonical covers the whole app. It points at
+         the marketing page because that is the only page a signed-out visitor can read — the
+         rest redirect to /login and have nothing to index. If the landing page ever moves to the
+         root, this should become https://mtabari.com.ge/ instead. -->
+    <link rel="canonical" href="https://mtabari.com.ge/main" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="მთაბარი" />
+    <meta property="og:locale" content="ka_GE" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:url" content="https://mtabari.com.ge/main" />
+    <meta property="og:title" content="მთაბარი — ფერმის მართვის სისტემა" />
+    <meta
+      property="og:description"
+      content="მართე მთელი ფერმა ერთი ადგილიდან — მიწა, პირუტყვი, ბაღი, სათბური, მოსავალი, მარაგი და გაყიდვები."
+    />
+    <meta property="og:image" content="https://mtabari.com.ge/logo.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="მთაბარი" />
+
+    <!-- "summary" rather than "summary_large_image": the logo is square. A purpose-made 1200x630
+         image would earn the wide card. -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="მთაბარი — ფერმის მართვის სისტემა" />
+    <meta
+      name="twitter:description"
+      content="მართე მთელი ფერმა ერთი ადგილიდან — მიწა, პირუტყვი, ბაღი, სათბური, მოსავალი, მარაგი და გაყიდვები."
+    />
+    <meta name="twitter:image" content="https://mtabari.com.ge/logo.png" />
+
+    <meta name="theme-color" content="#2e7d5b" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#4caf85" media="(prefers-color-scheme: dark)" />
+
     <script>
       // Applied before first paint — the app bundle is a deferred module, so waiting for React
       // to mount would flash a white page at dark-mode users on every load. Kept in sync with

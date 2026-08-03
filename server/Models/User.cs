@@ -18,9 +18,18 @@ public class User
     public string DbName { get; set; } = string.Empty;
 
     // Private/profile information — set via ProfileController-style endpoints on AuthController,
-    // never at registration, so all default to empty/null.
+    // never at registration, so all default to empty/null. The one exception is PhoneNumber, which
+    // an account registered by phone arrives with (see AuthController's phone/register).
     public string Surname { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When an SMS code proved this number belongs to whoever holds the account, or null if nobody
+    /// ever has. It is what separates an identity from a contact detail: only a verified number is
+    /// unique across users and can be signed in with, so a number merely typed into the profile
+    /// screen never becomes a way in.
+    /// </summary>
+    public DateTime? PhoneVerifiedAt { get; set; }
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }

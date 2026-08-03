@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Server.Data;
 using Server.Integrations.OpenAi;
+using Server.Integrations.SmsService;
 using Server.Integrations.WeatherApi;
 using Server.Repositories;
 using Server.Repositories.Interfaces;
@@ -100,6 +101,17 @@ builder.Services.AddHttpClient<IWeatherClient, WeatherApiClient>((sp, client) =>
     client.BaseAddress = new Uri(weatherOptions.BaseUrl);
     client.Timeout = TimeSpan.FromSeconds(10);
 });
+
+// smsservice.ge integration (see server/Integrations/SmsService), behind registering by phone.
+// A typed HttpClient again, so the account details never leave the server.
+builder.Services.Configure<SmsServiceOptions>(builder.Configuration.GetSection(SmsServiceOptions.SectionName));
+builder.Services.AddHttpClient<ISmsSender, SmsServiceClient>((sp, client) =>
+{
+    var smsOptions = sp.GetRequiredService<IOptions<SmsServiceOptions>>().Value;
+    client.BaseAddress = new Uri(smsOptions.BaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(15);
+});
+builder.Services.AddScoped<IPhoneVerificationService, PhoneVerificationService>();
 
 // OpenAI integration (see server/Integrations/OpenAi). Registered as a typed HttpClient so the
 // API key stays server-side and calls are pooled/retried by the factory.

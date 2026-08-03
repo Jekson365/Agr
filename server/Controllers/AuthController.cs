@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Models.Auth;
 using Server.Repositories.Interfaces;
+using Server.Services;
 using Server.Services.Interfaces;
 
 namespace Server.Controllers;
@@ -17,6 +18,7 @@ public class AuthController(
     ICurrentTenant currentTenant,
     IFileStorageService fileStorageService,
     ICoinService coinService,
+    IPhoneVerificationService phoneVerification,
     IConfiguration configuration) : ControllerBase
 {
     [AllowAnonymous]
@@ -71,6 +73,113 @@ public class AuthController(
 
         // Only pays anyone who has never been paid — an account from before the coin system gets
         // its joining bonus on this sign-in, and no one gets it twice.
+        await coinService.GrantWelcomeBonusAsync(user);
+
+        return Ok(BuildResponse(user));
+    }
+
+    /// <summary>
+    /// Texts a one-time code to a number that is about to be registered. Asking again for a number
+    /// that already has an account is refused here rather than after the code has been paid for and
+    /// typed in.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("phone/send-code")]
+    public async Task<IActionResult> SendPhoneCode(SendPhoneCodeRequest request)
+    {
+        if (!PhoneNumbers.TryNormalize(request.PhoneNumber, out var phoneNumber))
+        {
+            return BadRequest("That does not look like a phone number.");
+        }
+
+        if (await userRepository.VerifiedPhoneExistsAsync(phoneNumber))
+        {
+            return Conflict("An account with this phone number already exists.");
+        }
+
+        var result = await phoneVerification.SendAsync(phoneNumber);
+
+        return result.Status switch
+        {
+            SendCodeStatus.Sent => Ok(new
+            {
+                resendAfterSeconds = result.RetryAfterSeconds,
+                expiresInSeconds = result.ExpiresInSeconds,
+            }),
+
+            // 429 both ways: the client shows the wait, and the two are told apart by the number of
+            // seconds rather than by a code of their own.
+            SendCodeStatus.TooSoon or SendCodeStatus.TooMany => StatusCode(
+                StatusCodes.Status429TooManyRequests,
+                new { retryAfterSeconds = result.RetryAfterSeconds }),
+
+            // The account is fine, the provider is not — nothing the visitor can fix by retrying now.
+            _ => StatusCode(StatusCodes.Status502BadGateway, "Could not send the code. Please try again shortly."),
+        };
+    }
+
+    /// <summary>
+    /// Registers against a number proved by the code just texted to it. Everything after the check
+    /// is what <see cref="Register"/> does — same tenant database, same joining bonus.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("phone/register")]
+    public async Task<ActionResult<AuthResponse>> RegisterByPhone(PhoneRegisterRequest request)
+    {
+        if (!PhoneNumbers.TryNormalize(request.PhoneNumber, out var phoneNumber))
+        {
+            return BadRequest("That does not look like a phone number.");
+        }
+
+        if (await userRepository.VerifiedPhoneExistsAsync(phoneNumber))
+        {
+            return Conflict("An account with this phone number already exists.");
+        }
+
+        // Spends the code. It proves the number, and it proves it once — a second registration
+        // needs a second code.
+        if (!await phoneVerification.TryConsumeAsync(phoneNumber, request.Code.Trim()))
+        {
+            return Unauthorized("That code is wrong or has expired.");
+        }
+
+        var user = new User
+        {
+            Name = request.Name.Trim(),
+            // No email: this account is reached by its number. The unique index on Email is
+            // filtered to non-empty values so that every one of these can hold the empty string.
+            Email = string.Empty,
+            PhoneNumber = phoneNumber,
+            PhoneVerifiedAt = DateTime.UtcNow,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
+            Role = UserRole.Owner,
+        };
+        await userRepository.AddAsync(user);
+
+        await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+        await coinService.GrantWelcomeBonusAsync(user);
+
+        return Ok(BuildResponse(user));
+    }
+
+    /// <summary>Signs in with a verified number and the account's password.</summary>
+    [AllowAnonymous]
+    [HttpPost("phone/login")]
+    public async Task<ActionResult<AuthResponse>> LoginByPhone(PhoneLoginRequest request)
+    {
+        // Deliberately the same answer for a number nobody holds, a number that was never verified
+        // and a wrong password — which of the three it was is not a visitor's business.
+        PhoneNumbers.TryNormalize(request.PhoneNumber, out var phoneNumber);
+        var user = await userRepository.GetByVerifiedPhoneAsync(phoneNumber);
+
+        if (user is null
+            || string.IsNullOrEmpty(user.PasswordHash)
+            || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+        {
+            return Unauthorized("Invalid phone number or password.");
+        }
+
+        await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
         await coinService.GrantWelcomeBonusAsync(user);
 
         return Ok(BuildResponse(user));

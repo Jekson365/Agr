@@ -8,6 +8,9 @@ export type User = {
   role: UserRole;
   surname: string;
   phoneNumber: string;
+  /** True once an SMS code proved the number — then it is how the account signs in, and the
+   *  profile screen cannot edit it. */
+  phoneVerified: boolean;
   country: string;
   city: string;
   birthDate: string | null;
@@ -42,6 +45,35 @@ export type LoginRequest = {
 export type RegisterRequest = {
   name: string;
   email: string;
+  password: string;
+};
+
+export type SendPhoneCodeRequest = {
+  phoneNumber: string;
+};
+
+export type SendPhoneCodeResponse = {
+  /** How long before another code may be asked for. */
+  resendAfterSeconds: number;
+  /** How long the code that was just sent stays good for. */
+  expiresInSeconds: number;
+};
+
+/** The 429 body from `send-code`, saying how long the wait is. */
+export type SendPhoneCodeRetry = {
+  retryAfterSeconds: number;
+};
+
+export type PhoneRegisterRequest = {
+  name: string;
+  phoneNumber: string;
+  password: string;
+  /** The six digits from the SMS. */
+  code: string;
+};
+
+export type PhoneLoginRequest = {
+  phoneNumber: string;
   password: string;
 };
 

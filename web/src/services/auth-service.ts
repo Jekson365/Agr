@@ -3,7 +3,11 @@ import type {
   AuthResponse,
   GoogleAuthRequest,
   LoginRequest,
+  PhoneLoginRequest,
+  PhoneRegisterRequest,
   RegisterRequest,
+  SendPhoneCodeRequest,
+  SendPhoneCodeResponse,
   UpdateProfileRequest,
   User,
 } from '@/types/auth';
@@ -17,6 +21,28 @@ export function login(request: LoginRequest) {
 
 export function register(request: RegisterRequest) {
   return apiFetch<AuthResponse>('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+/** Asks for a code to be texted to a number that is about to be registered. */
+export function sendPhoneCode(request: SendPhoneCodeRequest) {
+  return apiFetch<SendPhoneCodeResponse>('/api/auth/phone/send-code', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function registerByPhone(request: PhoneRegisterRequest) {
+  return apiFetch<AuthResponse>('/api/auth/phone/register', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+export function loginByPhone(request: PhoneLoginRequest) {
+  return apiFetch<AuthResponse>('/api/auth/phone/login', {
     method: 'POST',
     body: JSON.stringify(request),
   });

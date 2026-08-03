@@ -3,7 +3,12 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { getAuthToken, setAuthToken } from '@/services/api-client';
 import * as authService from '@/services/auth-service';
 import { clearSession, loadSession, saveSession } from '@/services/token-storage';
-import type { RegisterRequest, UpdateProfileRequest, User } from '@/types/auth';
+import type {
+  PhoneRegisterRequest,
+  RegisterRequest,
+  UpdateProfileRequest,
+  User,
+} from '@/types/auth';
 
 type AuthContextValue = {
   /** True until the persisted session has been read on startup. */
@@ -12,6 +17,9 @@ type AuthContextValue = {
   user: User | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (request: RegisterRequest) => Promise<void>;
+  /** The same two, for an account whose identity is its phone number rather than an email. */
+  signInWithPhone: (phoneNumber: string, password: string) => Promise<void>;
+  signUpWithPhone: (request: PhoneRegisterRequest) => Promise<void>;
   /** Exchanges a Google ID token for a session; registers the account on first sign-in. */
   signInWithGoogle: (idToken: string) => Promise<void>;
   signOut: () => void;
@@ -49,6 +57,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       signUp: async (request) => {
         const session = await authService.register(request);
+        setAuthToken(session.token);
+        saveSession(session);
+        setUser(session.user);
+      },
+      signInWithPhone: async (phoneNumber, password) => {
+        const session = await authService.loginByPhone({ phoneNumber, password });
+        setAuthToken(session.token);
+        saveSession(session);
+        setUser(session.user);
+      },
+      signUpWithPhone: async (request) => {
+        const session = await authService.registerByPhone(request);
         setAuthToken(session.token);
         saveSession(session);
         setUser(session.user);

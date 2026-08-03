@@ -123,12 +123,29 @@
     "continueWithGoogle": "Continue with Google",
     "signingIn": "Signing in…",
     "creatingAccount": "Creating account…",
+    "methodEmail": "Email",
+    "methodPhone": "Phone",
+    "phoneNumber": "Phone number",
+    "sendCode": "Send code",
+    "sendingCode": "Sending code…",
+    "codeSentTo": "We texted a code to {phone}",
+    "codeLabel": "6-digit code",
+    "verifyAndCreate": "Verify & create account",
+    "resendCode": "Send a new code",
+    "resendCodeIn": "Send a new code in {seconds}s",
+    "changeNumber": "Use a different number",
     "errorFillFields": "Please fill in all fields.",
     "errorInvalidEmail": "Please enter a valid email address.",
     "errorPasswordShort": "Password must be at least 6 characters.",
     "errorPasswordMismatch": "Passwords do not match.",
     "errorInvalidCredentials": "Invalid email or password.",
     "errorEmailExists": "An account with this email already exists.",
+    "errorInvalidPhone": "Please enter a valid phone number.",
+    "errorPhoneExists": "An account with this phone number already exists.",
+    "errorInvalidPhoneCredentials": "Invalid phone number or password.",
+    "errorInvalidCode": "That code is wrong or has expired.",
+    "errorTooManyCodes": "Too many codes requested. Try again in {seconds}s.",
+    "errorSmsFailed": "Couldn't send the code just now. Please try again shortly.",
     "errorGoogleSignIn": "Could not sign in with Google. Please try again.",
     "errorGeneric": "Something went wrong. Please try again."
   },
@@ -981,6 +998,7 @@
       "features": "Features",
       "marketplace": "Marketplace",
       "reports": "Reports",
+      "map": "Map",
       "mobile": "Mobile app",
       "login": "Log in",
       "startFree": "Start Free",
@@ -1008,7 +1026,13 @@
       "statNet": "Net",
       "statNetValue": "₾18,240",
       "chartSubtitle": "Last 7 weeks",
-      "phoneToday": "Today"
+      "phoneToday": "Today",
+      "livestockTitle": "Herds & flocks",
+      "greenhouseTitle": "Beds in use",
+      "marketTitle": "Your listings",
+      "section": "Section",
+      "unitHead": "head",
+      "unitSqm": "m²"
     },
     "packets": {
       "eyebrow": "Plans",
@@ -1155,6 +1179,30 @@
         "body": "Cycle results per section, with chemicals and expenses."
       },
       "chartTitle": "Revenue by category"
+    },
+    "map": {
+      "eyebrow": "Map",
+      "title": "Your land, and everyone else's",
+      "subtitle": "Mark your boundaries on satellite imagery and see the farms around you — whose land it is, how far off, and what is growing on it.",
+      "draw": {
+        "title": "Mark out your fields",
+        "body": "Trace a boundary on satellite imagery corner by corner and drag one to correct it — the area comes out of the shape itself."
+      },
+      "nearby": {
+        "title": "See who farms around you",
+        "body": "Every field marked within 10 km on one map, each under its owner's pin: your own land in green, neighbours in amber, everyone else in blue."
+      },
+      "crops": {
+        "title": "Know what grows next door",
+        "body": "Pick a field to see whose it is, how far off, the rest of the land they hold and the crops on that particular patch."
+      },
+      "connect": {
+        "title": "Add a neighbour on the spot",
+        "body": "Send a neighbour request from the field you are looking at — the map recolours the moment it is accepted."
+      },
+      "farmerNeighbour": "Nino K.",
+      "farmerSelected": "Levan T.",
+      "farmerOther": "Giorgi B."
     },
     "mobile": {
       "eyebrow": "Mobile",

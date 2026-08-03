@@ -119,10 +119,80 @@
   border-bottom-color: var(--color-dark);
 }
 
+/* Email or phone. A pill pair rather than a second row of tabs, so it never competes with the
+   login/register tabs above it — those choose what you are doing, this only chooses how. */
+.auth-methods {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+}
+
+.auth-method {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.auth-method:hover {
+  color: var(--color-dark);
+}
+
+.auth-method.active {
+  background: var(--color-surface);
+  color: var(--color-dark);
+  box-shadow: 0 1px 3px var(--color-shadow);
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.auth-code-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+/* Six digits, spaced out and centred — it should read as a code being entered, not a sentence. */
+.auth-code-input {
+  letter-spacing: 0.35em;
+  font-size: 1.125rem !important;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.auth-code-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* These two sit side by side rather than hard right, unlike the "forgot password?" they borrow from. */
+.auth-code-actions .auth-forgot {
+  align-self: auto;
+}
+
+.auth-code-actions .auth-forgot:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 .auth-input {

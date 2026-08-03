@@ -13,6 +13,7 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
     public DbSet<MarketListing> MarketListings => Set<MarketListing>();
     public DbSet<Neighbour> Neighbours => Set<Neighbour>();
     public DbSet<NeighbourCoinAward> NeighbourCoinAwards => Set<NeighbourCoinAward>();
+    public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,10 +27,25 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .Property(u => u.Plan)
             .HasConversion<string>();
 
-        // Email is the login identifier, unique across all users.
+        // Email is a login identifier, unique across all users — but an account registered by phone
+        // has none, and every one of those would otherwise collide on the empty string.
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasFilter("\"Email\" <> ''");
+
+        // The other login identifier. Only a verified number is one: an unverified number is
+        // whatever someone typed into their profile, and two people are free to have typed the
+        // same thing. The filter is also what keeps this index addable to a live database.
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.PhoneNumber)
+            .IsUnique()
+            .HasFilter("\"PhoneVerifiedAt\" IS NOT NULL");
+
+        // Codes are looked up by number, newest first — both to verify one and to count how many
+        // have gone out recently.
+        modelBuilder.Entity<PhoneVerificationCode>()
+            .HasIndex(c => new { c.PhoneNumber, c.CreatedAt });
 
         // Store listing type/category/status as their readable names (e.g. "Rent") instead of integers.
         modelBuilder.Entity<MarketListing>()

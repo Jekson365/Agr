@@ -10,7 +10,25 @@ public class UserRepository(MasterDbContext context) : IUserRepository
 {
     public async Task<User?> GetByEmailAsync(string email)
     {
+        // An account registered by phone has no email at all, and every one of them holds the empty
+        // string — which must never be something a caller can look somebody up by.
+        if (string.IsNullOrEmpty(email))
+        {
+            return null;
+        }
+
         return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    }
+
+    public async Task<User?> GetByVerifiedPhoneAsync(string phoneNumber)
+    {
+        if (string.IsNullOrEmpty(phoneNumber))
+        {
+            return null;
+        }
+
+        return await context.Users
+            .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber && u.PhoneVerifiedAt != null);
     }
 
     public async Task<User?> GetByIdAsync(int id)
@@ -20,7 +38,13 @@ public class UserRepository(MasterDbContext context) : IUserRepository
 
     public async Task<bool> EmailExistsAsync(string email)
     {
-        return await context.Users.AnyAsync(u => u.Email == email);
+        return !string.IsNullOrEmpty(email) && await context.Users.AnyAsync(u => u.Email == email);
+    }
+
+    public async Task<bool> VerifiedPhoneExistsAsync(string phoneNumber)
+    {
+        return !string.IsNullOrEmpty(phoneNumber)
+            && await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber && u.PhoneVerifiedAt != null);
     }
 
     public async Task<User> AddAsync(User user)
@@ -52,7 +76,14 @@ public class UserRepository(MasterDbContext context) : IUserRepository
 
         user.Name = request.Name.Trim();
         user.Surname = request.Surname.Trim();
-        user.PhoneNumber = request.PhoneNumber.Trim();
+
+        // A verified number is what the account signs in with, so the profile screen — which proves
+        // nothing — is not allowed to move it. Changing it has to go back through an SMS code.
+        if (user.PhoneVerifiedAt is null)
+        {
+            user.PhoneNumber = request.PhoneNumber.Trim();
+        }
+
         user.Country = request.Country.Trim();
         user.City = request.City.Trim();
         user.BirthDate = request.BirthDate;

@@ -505,14 +505,32 @@ html:has(.landing-page) {
   object-fit: contain;
 }
 
+/* A real button: the sidebar switches the screen beside it, so it has to be reachable by keyboard
+   and answer a click like any other control. */
 .preview-side-link {
   display: flex;
   align-items: center;
   gap: 9px;
+  width: 100%;
   padding: 7px 8px;
+  border: 0;
   border-radius: 9px;
+  background: transparent;
+  font: inherit;
   font-size: 0.75rem;
+  text-align: left;
   color: var(--color-muted);
+  cursor: pointer;
+}
+
+.preview-side-link:hover {
+  background: var(--color-background);
+  color: var(--color-dark);
+}
+
+.preview-side-link:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 1px;
 }
 
 .preview-side-link img {
@@ -531,6 +549,23 @@ html:has(.landing-page) {
   flex: 1;
   min-width: 0;
   padding: 18px 20px 20px;
+}
+
+/* All six screens share one cell, so the frame is always as tall as the tallest of them and the
+   hero holds still while the sidebar switches between them. */
+.preview-screens {
+  display: grid;
+}
+
+.preview-screen {
+  grid-area: 1 / 1;
+  /* Hidden rather than removed: it still takes its space, and `visibility` keeps it out of the
+     tab order and off the accessibility tree while it does. */
+  visibility: hidden;
+}
+
+.preview-screen.is-shown {
+  visibility: visible;
 }
 
 .preview-greeting {
@@ -655,6 +690,159 @@ html:has(.landing-page) {
 .preview-bar.is-peak {
   background: var(--color-amber);
   opacity: 1;
+}
+
+/* One record on a screen the sidebar switched to — a group, a bed, a listing. */
+.preview-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+}
+
+.preview-row + .preview-row {
+  border-top: 1px solid var(--color-border);
+}
+
+.preview-row-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  background: var(--color-green-muted);
+}
+
+.preview-row-icon img {
+  width: 19px;
+  height: 19px;
+  object-fit: contain;
+}
+
+.preview-row-name {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.preview-row-meta {
+  font-size: 0.625rem;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.preview-row-value {
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A harvest line: what was gathered against what was planned, over the two bars that compare them. */
+.preview-line + .preview-line {
+  margin-top: 12px;
+}
+
+.preview-line-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.preview-line-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.preview-line-figures {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.625rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-track {
+  position: relative;
+  display: block;
+  height: 17px;
+}
+
+.preview-track-planned,
+.preview-track-actual {
+  position: absolute;
+  left: 0;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.preview-track-planned {
+  top: 0;
+  background: var(--color-border);
+}
+
+.preview-track-actual {
+  top: 9px;
+  background: var(--color-green);
+}
+
+/* The reports screen: the split, and what each slice of it is. */
+.preview-split {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.preview-donut {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+}
+
+.preview-donut-hole {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--color-surface);
+}
+
+.preview-donut-legend {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.preview-donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.6875rem;
+}
+
+.preview-donut-legend-label {
+  flex: 1;
+  min-width: 0;
+  color: var(--color-muted);
+}
+
+.preview-donut-legend-value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ---------------------------------------------------------------- packets */
@@ -1268,6 +1456,228 @@ html:has(.landing-page) {
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--color-green);
+}
+
+/* ---------------------------------------------------- neighbourhood map */
+
+/* A still of the map screen. Its ratio matches the box the outlines are drawn in (see MAP_VIEWBOX),
+   which is what lets the pins be placed as plain percentages and still land on their own field. */
+.landing-map {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px var(--color-shadow);
+}
+
+/* Standing in for satellite imagery — the same field photo the hero uses, pushed back far enough
+   that the outlines drawn over it stay the thing being read. */
+.landing-map-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-map-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgb(0 0 0 / 0.15) 0%, rgb(0 0 0 / 0.45) 100%);
+}
+
+.landing-map-shapes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* The outlines carry the app's own map vocabulary: dashed for land that is only context, solid and
+   heavier for the one being looked at. */
+.landing-map-shape {
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  stroke-linejoin: round;
+  fill-opacity: 0.18;
+  vector-effect: non-scaling-stroke;
+}
+
+.landing-map-shape.is-own {
+  stroke: var(--color-green);
+  fill: var(--color-green);
+}
+
+.landing-map-shape.is-neighbour {
+  stroke: var(--color-amber);
+  fill: var(--color-amber);
+}
+
+.landing-map-shape.is-other {
+  stroke: var(--color-map-other);
+  fill: var(--color-map-other);
+  stroke-dasharray: 4 3;
+}
+
+.landing-map-shape.is-selected {
+  stroke-width: 4;
+  stroke-dasharray: none;
+  fill-opacity: 0.32;
+}
+
+/* Pin and name, anchored on the middle of an outline. */
+.landing-map-marker {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.landing-map-pin {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid var(--color-on-overlay);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.55);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-on-accent);
+}
+
+.landing-map-pin.is-own {
+  background: var(--color-green);
+}
+
+.landing-map-pin.is-neighbour {
+  background: var(--color-amber);
+}
+
+.landing-map-pin.is-other {
+  background: var(--color-map-other);
+}
+
+/* No box behind it, the way the app labels land — a shadow is enough to hold it over bright
+   imagery and dark soil alike. */
+.landing-map-pin-name {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--landing-on-photo);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.9);
+}
+
+.landing-map-layers {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.landing-map-layer {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.landing-map-layer.is-active {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+/* The panel the app opens beside the map, floated over it here — on a landing page the two have to
+   be one picture rather than two columns. */
+.landing-map-card {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 10px 26px var(--color-shadow-strong);
+}
+
+.landing-map-avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--color-map-other);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-on-accent);
+}
+
+.landing-map-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.landing-map-card-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.landing-map-card-meta {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.landing-map-add {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--color-green);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-on-accent);
+}
+
+.landing-map-crops {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.landing-map-crop {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+  font-size: 0.75rem;
+}
+
+.landing-map-crop img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.landing-map-crop-area {
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
 }
 
 /* -------------------------------------------------------- mobile & app */
