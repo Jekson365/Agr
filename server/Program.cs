@@ -89,6 +89,7 @@ builder.Services.AddScoped<INeighbourTerritoryService, NeighbourTerritoryService
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
+builder.Services.AddScoped<ICoinService, CoinService>();
 
 // WeatherAPI.com integration (see server/Integrations/WeatherApi). Registered as a typed
 // HttpClient so the API key stays server-side and calls are pooled/retried by the factory.

@@ -16,6 +16,7 @@ public class UserDto
     public double? Longitude { get; set; }
     public StoragePlan Plan { get; set; }
     public long StorageUsedBytes { get; set; }
+    public int Coins { get; set; }
 
     /// <summary>Byte quota for <see cref="Plan"/>, or null when the plan is unlimited.</summary>
     public long? StorageLimitBytes { get; set; }
@@ -45,6 +46,7 @@ public class UserDto
         Longitude = user.Longitude,
         Plan = user.Plan,
         StorageUsedBytes = user.StorageUsedBytes,
+        Coins = user.Coins,
         StorageLimitBytes = StoragePlanLimits.BytesFor(user.Plan),
         MaxLand = PlanLimits.MaxLand(user.Plan),
         MaxLivestockKinds = PlanLimits.MaxLivestockKinds(user.Plan),

@@ -1,0 +1,21 @@
+/* Sized to sit level with the toggles and the neighbours button beside it. */
+.marketplace-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: 1px solid var(--color-border);
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.marketplace-button:hover,
+/* The marketplace is a page rather than a toggle, so the button stays lit while it's open. */
+.marketplace-button.active {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}

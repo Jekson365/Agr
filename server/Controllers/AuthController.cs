@@ -16,6 +16,7 @@ public class AuthController(
     ITenantDatabaseProvisioner tenantDatabaseProvisioner,
     ICurrentTenant currentTenant,
     IFileStorageService fileStorageService,
+    ICoinService coinService,
     IConfiguration configuration) : ControllerBase
 {
     [AllowAnonymous]
@@ -42,6 +43,10 @@ public class AuthController(
         // ...then provision that user's own database (farm_user_{id}) and apply its migrations.
         await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
 
+        // Registering is the first way into the system, so the joining bonus is paid here rather
+        // than waiting for a separate sign-in that never comes.
+        await coinService.GrantWelcomeBonusAsync(user);
+
         return Ok(BuildResponse(user));
     }
 
@@ -63,6 +68,10 @@ public class AuthController(
         // Bring the user's database up to date on every login. This is idempotent — it creates
         // the database if it is somehow missing and applies any migrations added since last time.
         await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+
+        // Only pays anyone who has never been paid — an account from before the coin system gets
+        // its joining bonus on this sign-in, and no one gets it twice.
+        await coinService.GrantWelcomeBonusAsync(user);
 
         return Ok(BuildResponse(user));
     }
@@ -122,6 +131,10 @@ public class AuthController(
             // bring its database up to date, exactly like Login does.
             await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
         }
+
+        // Both branches are a first sign-in as far as the bonus is concerned — it pays once, and
+        // the account that was just created above has never been paid.
+        await coinService.GrantWelcomeBonusAsync(user);
 
         return Ok(BuildResponse(user));
     }

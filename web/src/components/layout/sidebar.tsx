@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 
+import coinIcon from '@/assets/coin.png';
 import logo from '@/assets/logo.png';
 import { ChevronDownIcon, LogoutIcon, ProfileIcon } from '@/components/icons/nav-icons';
 import { isNavItemVisible, QUICK_ACCESS_ITEMS, type NavItem } from '@/config/nav-items';
@@ -169,6 +170,24 @@ export function Sidebar() {
         <span className="sidebar-brand-title">{t('auth.appName')}</span>
       </div>
 
+      {/* Who you are and what you've earned, at the top where both are the first thing seen. */}
+      <div className="sidebar-user">
+        <div className="sidebar-user-avatar">
+          {user?.imagePath ? (
+            <img src={resolveAssetUrl(user.imagePath)} alt="" />
+          ) : (
+            <span>{initialsFor(user?.name)}</span>
+          )}
+        </div>
+        <div className="sidebar-user-identity">
+          <span className="sidebar-user-name">{user?.name}</span>
+          <span className="sidebar-coins" title={t('coins.title')}>
+            <img src={coinIcon} className="sidebar-coin-icon" alt="" />
+            <span className="sidebar-coin-count">{user?.coins ?? 0}</span>
+          </span>
+        </div>
+      </div>
+
       <nav className="sidebar-nav">
         {QUICK_ACCESS_ITEMS.filter((item) => isNavItemVisible(item, user?.plan, isOn)).map((item) => (
           <SidebarNavItem
@@ -186,17 +205,6 @@ export function Sidebar() {
           <ProfileIcon width={24} height={24} />
           <span>{t('profile.title')}</span>
         </NavLink>
-
-        <div className="sidebar-user">
-          <div className="sidebar-user-avatar">
-            {user?.imagePath ? (
-              <img src={resolveAssetUrl(user.imagePath)} alt="" />
-            ) : (
-              <span>{initialsFor(user?.name)}</span>
-            )}
-          </div>
-          <span className="sidebar-user-name">{user?.name}</span>
-        </div>
 
         <button type="button" className="btn btn-secondary sidebar-signout" onClick={signOut}>
           <LogoutIcon width={20} height={20} />

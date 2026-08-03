@@ -16,6 +16,8 @@ export type User = {
   longitude: number | null;
   plan: StoragePlan;
   storageUsedBytes: number;
+  /** Coins earned: 50 for joining, 100 for each new neighbour. */
+  coins: number;
   /** Byte quota for `plan`, or null when unlimited (Premium). */
   storageLimitBytes: number | null;
   /** The rest of what `plan` allows — null counts mean unlimited. */

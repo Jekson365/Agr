@@ -3,7 +3,6 @@ import farmIcon from '@/assets/icons/farm.png';
 import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
 import mapIcon from '@/assets/icons/map.png';
-import marketIcon from '@/assets/icons/market.png';
 import reportIcon from '@/assets/icons/report.png';
 import animalsIcon from '@/assets/properties/animals.png';
 import balanceIcon from '@/assets/properties/balance.png';
@@ -19,7 +18,6 @@ import {
   FRUIT_STOCK_CONFIG,
   GREENHOUSE_CONFIG,
   LIVESTOCK_CONFIG,
-  MARKETPLACE_CONFIG,
 } from '@/types/configuration';
 
 export type NavItem = {
@@ -100,7 +98,7 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
   // Every outlined field on one map — the user's own and their neighbourhood's.
   { to: '/map', labelKey: 'map.title', icon: mapIcon },
   // { to: '/scanner', labelKey: 'dashboard.aiPlantScanner', icon: cameraIcon },
-  { to: '/market', labelKey: 'dashboard.marketplace', icon: marketIcon, requiresConfig: MARKETPLACE_CONFIG },
+  // The marketplace is reached from the topbar button beside the neighbours one, not from here.
   {
     to: '/report',
     labelKey: 'dashboard.report',

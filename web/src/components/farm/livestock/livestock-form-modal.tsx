@@ -23,7 +23,7 @@ type Props = {
   existingItems: Livestock[];
   onClose: () => void;
   onSaved: (item: Livestock, isNew: boolean) => void;
-  onLimitReached?: (message: string) => void;
+  onLimitReached?: (message: string) => void; 
 };
 
 export function LivestockFormModal({

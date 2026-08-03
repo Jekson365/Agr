@@ -139,7 +139,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
       const amount = parseAmount(values.amount);
 
       if (isEditing) {
-        const updated: TreeStock = {
+        const updated: TreeStock = {  
           ...editingStock,
           type: values.type,
           name,

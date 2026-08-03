@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { NeighbourRow } from '@/components/neighbours/neighbour-row';
+import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import {
   acceptNeighbourRequest,
@@ -33,6 +34,7 @@ type Props = {
  *  and who else is out there. */
 export function NeighboursPanel({ open, onClose, onPendingCountChange }: Props) {
   const { t } = useLanguage();
+  const { refreshUser } = useAuth();
 
   const [tab, setTab] = useState<Tab>('neighbours');
   const [neighbours, setNeighbours] = useState<Neighbour[]>([]);
@@ -129,6 +131,11 @@ export function NeighboursPanel({ open, onClose, onPendingCountChange }: Props) 
       const [neighbourList, requestList] = await Promise.all([getNeighbours(), getNeighbourRequests()]);
       setNeighbours(neighbourList);
       setRequests(requestList);
+
+      // A new neighbour pays coins, so the balance in the sidebar has just gone stale. Kept off
+      // the awaited path — the neighbourhood is what this panel is for, and a failed refresh
+      // shouldn't report an error over a number the next page load will correct anyway.
+      refreshUser().catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

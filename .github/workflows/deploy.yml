@@ -1,0 +1,73 @@
+name: Deploy to production
+
+# Every push to main redeploys the server. The build itself happens on the box (dotnet publish +
+# vite build against the freshly fetched main), so this job only has to trigger it and report back:
+# the SSH key it uses is pinned to a single command server-side and can do nothing else.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Deploys queue rather than overlap, and a superseded one still runs -- the server resets to
+# whatever main is at the moment it builds, so cancelling could strand a commit undeployed.
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and restart on the server
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          GIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SSH_HOST}" ] || [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo "::error::Set the SSH_HOST and SSH_PRIVATE_KEY repository secrets first."
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${SSH_PRIVATE_KEY}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Pin the host key when it is available, so a hijacked IP cannot collect the deploy key.
+          if [ -n "${SSH_KNOWN_HOSTS}" ]; then
+            printf '%s\n' "${SSH_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+          else
+            echo "::warning::SSH_KNOWN_HOSTS is not set; trusting the key the host offers now."
+            ssh-keyscan -t ed25519 "${SSH_HOST}" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          chmod 600 ~/.ssh/known_hosts
+
+          # The command is ignored by the server's forced command -- it is passed so the reason for
+          # the deploy shows up in the server's own log next to the build output.
+          ssh -i ~/.ssh/id_ed25519 \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "${SSH_USER:-root}@${SSH_HOST}" \
+            "deploy ${GIT_SHA} (${GITHUB_ACTOR} via ${GITHUB_WORKFLOW} #${GITHUB_RUN_NUMBER})"
+
+      - name: Check the site is serving
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          set -euo pipefail
+          spa=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "http://${SSH_HOST}/")
+          api=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 "http://${SSH_HOST}/api/farms")
+          echo "SPA / -> ${spa}"
+          echo "API /api/farms -> ${api}   (401 is correct: it means auth is being enforced)"
+          # 401 from the API is the healthy answer; anything 5xx means the restart did not take.
+          [ "${spa}" = "200" ] && [ "${api}" = "401" ]

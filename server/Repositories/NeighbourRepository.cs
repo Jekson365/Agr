@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.Models;
 using Server.Repositories.Interfaces;
+using Server.Services.Interfaces;
 
 namespace Server.Repositories;
 
-public class NeighbourRepository(MasterDbContext context) : INeighbourRepository
+public class NeighbourRepository(MasterDbContext context, ICoinService coinService) : INeighbourRepository
 {
     public async Task<IEnumerable<NeighbourDto>> GetNeighboursAsync(int userId)
     {
@@ -104,6 +105,7 @@ public class NeighbourRepository(MasterDbContext context) : INeighbourRepository
             existing.Status = NeighbourStatus.Accepted;
             existing.AcceptedAt = DateTime.UtcNow;
             await context.SaveChangesAsync();
+            await coinService.GrantNeighbourBonusAsync(userId, otherUserId);
         }
         // Anything else — already neighbours, or already asked — is left exactly as it is, so a
         // double click doesn't disturb a settled link.
@@ -131,6 +133,10 @@ public class NeighbourRepository(MasterDbContext context) : INeighbourRepository
             existing.Status = NeighbourStatus.Accepted;
             existing.AcceptedAt = DateTime.UtcNow;
             await context.SaveChangesAsync();
+
+            // Both sides are paid, and only for a pair that has never been paid before — removing
+            // a neighbour and adding them back is the same neighbourhood, not a second one.
+            await coinService.GrantNeighbourBonusAsync(userId, otherUserId);
         }
 
         return await DescribeAsync(userId, other, existing);

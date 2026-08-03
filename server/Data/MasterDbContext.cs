@@ -12,6 +12,7 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
     public DbSet<User> Users => Set<User>();
     public DbSet<MarketListing> MarketListings => Set<MarketListing>();
     public DbSet<Neighbour> Neighbours => Set<Neighbour>();
+    public DbSet<NeighbourCoinAward> NeighbourCoinAwards => Set<NeighbourCoinAward>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,6 +75,25 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .HasOne<User>()
             .WithMany()
             .HasForeignKey(n => n.AddresseeId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // One award per pair, and the index is what enforces "only ever paid once" — two
+        // acceptances landing together are refused here rather than paid twice.
+        modelBuilder.Entity<NeighbourCoinAward>()
+            .HasIndex(a => new { a.UserAId, a.UserBId })
+            .IsUnique();
+
+        // Ids are never reused, so a deleted account can't come back and be paid for again.
+        modelBuilder.Entity<NeighbourCoinAward>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(a => a.UserAId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NeighbourCoinAward>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(a => a.UserBId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

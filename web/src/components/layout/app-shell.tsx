@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { NeighboursButton } from '@/components/neighbours/neighbours-button';
 import { FontSizeToggle } from '@/components/ui/font-size-toggle';
 import { LanguageToggle } from '@/components/ui/language-toggle';
+import { MarketplaceButton } from '@/components/ui/marketplace-button';
 import { PageHelp } from '@/components/ui/page-help';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Sidebar } from '@/components/layout/sidebar';
@@ -17,6 +18,7 @@ export function AppShell() {
           <FontSizeToggle />
           <ThemeToggle />
           <LanguageToggle />
+          <MarketplaceButton />
           <NeighboursButton />
         </header>
         <main className="app-content">

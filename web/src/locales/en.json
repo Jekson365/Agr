@@ -418,6 +418,9 @@
     "emptyIncoming": "No requests waiting on you.",
     "emptyOutgoing": "You haven't asked anyone yet."
   },
+  "coins": {
+    "title": "Coins"
+  },
   "landTerritory": {
     "label": "Territory",
     "mark": "+ Mark territory on map",

@@ -36,6 +36,16 @@ public class User
     /// <summary>Running total of bytes used by this user's uploaded images, updated by <see cref="Services.FileStorageService"/>.</summary>
     public long StorageUsedBytes { get; set; }
 
+    /// <summary>Coins earned so far — see <see cref="Services.CoinService"/> for what pays out.</summary>
+    public int Coins { get; set; }
+
+    /// <summary>
+    /// When the one-off joining bonus was paid, or null if it hasn't been. Stamped rather than
+    /// inferred from <see cref="CreatedAt"/>, so accounts that predate the coin system are paid
+    /// once on their next sign-in and never again.
+    /// </summary>
+    public DateTime? WelcomeBonusGrantedAt { get; set; }
+
     /// <summary>Number of AI plant scans used on <see cref="LastScanDate"/>; resets when the date rolls over.</summary>
     public int ScanCount { get; set; }
 
