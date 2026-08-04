@@ -59,8 +59,9 @@ function App() {
   return (
     <Routes>
       {/* The marketing page is public in both directions: a signed-in visitor can still read it,
-          so it sits outside both guards. */}
-      <Route path="/main" element={<LandingPage />} />
+          so it sits outside both guards. It holds the root because that is the one URL strangers
+          and search engines arrive at — the app itself lives under /main. */}
+      <Route path="/" element={<LandingPage />} />
 
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
@@ -68,7 +69,7 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/main" element={<DashboardPage />} />
           <Route path="/farm" element={<FarmPage />} />
           <Route path="/farm/land" element={<LandPage />} />
           <Route path="/farm/land/:id" element={<LandDetailPage />} />

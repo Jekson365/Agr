@@ -16,16 +16,15 @@
     />
 
     <!-- Every route serves this same file, so one canonical covers the whole app. It points at
-         the marketing page because that is the only page a signed-out visitor can read — the
-         rest redirect to /login and have nothing to index. If the landing page ever moves to the
-         root, this should become https://mtabari.com.ge/ instead. -->
-    <link rel="canonical" href="https://mtabari.com.ge/main" />
+         the root because that is where the marketing page lives and the only page a signed-out
+         visitor can read — every other route redirects to /login and has nothing to index. -->
+    <link rel="canonical" href="https://mtabari.com.ge/" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="მთაბარი" />
     <meta property="og:locale" content="ka_GE" />
     <meta property="og:locale:alternate" content="en_US" />
-    <meta property="og:url" content="https://mtabari.com.ge/main" />
+    <meta property="og:url" content="https://mtabari.com.ge/" />
     <meta property="og:title" content="მთაბარი — ფერმის მართვის სისტემა" />
     <meta
       property="og:description"

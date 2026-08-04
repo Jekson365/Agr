@@ -104,7 +104,9 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>(() =>
     (location.state as { mode?: Mode } | null)?.mode === 'register' ? 'register' : 'login'
   );
-  const [method, setMethod] = useState<Method>('email');
+  // TEMPORARILY DISABLED: nothing switches this while the phone toggle is commented out, so the
+  // setter would be an unused local (noUnusedLocals). Restore as: [method, setMethod].
+  const [method] = useState<Method>('email');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -185,7 +187,7 @@ export function LoginPage() {
   }, []);
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/main" replace />;
   }
 
   /** Back to the details, e.g. after switching tabs or to correct the number. */
@@ -201,11 +203,12 @@ export function LoginPage() {
     resetCodeStep();
   };
 
-  const switchMethod = (next: Method) => {
-    setMethod(next);
-    setError(null);
-    resetCodeStep();
-  };
+  // TEMPORARILY DISABLED with the email/phone toggle below.
+  // const switchMethod = (next: Method) => {
+  //   setMethod(next);
+  //   setError(null);
+  //   resetCodeStep();
+  // };
 
   const validate = (): string | null => {
     const identifier = method === 'email' ? email.trim() : phone.trim();
@@ -383,9 +386,12 @@ export function LoginPage() {
             </button>
           </div>
 
-          {/* Email or phone — the same choice on both tabs, since an account reached one way is
-              reached that way again next time. Hidden while a code is outstanding: switching then
-              would throw away a message that has already been paid for and sent. */}
+          {/* TEMPORARILY DISABLED: the email/phone choice, along with the phone routes it led to
+              (see server/Controllers/AuthController.cs). With the toggle gone `method` stays on its
+              initial 'email' and every phone branch below is unreachable, so they are left in place
+              rather than unpicked. Restore by uncommenting this, `switchMethod`, and the `setMethod`
+              half of the useState above. */}
+          {/*
           {!awaitingCode && (
             <div className="auth-methods">
               <button
@@ -408,6 +414,7 @@ export function LoginPage() {
               </button>
             </div>
           )}
+          */}
 
           <form className="auth-form" onSubmit={handleSubmit}>
             {awaitingCode ? (

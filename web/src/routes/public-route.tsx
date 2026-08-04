@@ -10,5 +10,5 @@ export function PublicOnlyRoute() {
     return null;
   }
 
-  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
+  return isAuthenticated ? <Navigate to="/main" replace /> : <Outlet />;
 }

@@ -22,7 +22,7 @@ import plantsIcon from '@/assets/properties/plants.png';
 import seedIcon from '@/assets/seed.png';
 
 /**
- * Content model for the public landing page (/main). Copy lives in the locale files under
+ * Content model for the public landing page (the site root). Copy lives in the locale files under
  * `landing.*`; only the structure, the icons and the numbers live here, so the page component
  * stays layout-only.
  */
@@ -64,7 +64,7 @@ export type LandingPacket = {
  *
  * TODO(pricing): THE THREE `price` VALUES ARE PLACEHOLDERS. Nothing in this repo prices a plan —
  * StoragePlan carries no amount and there is no billing anywhere — so these numbers were invented
- * purely so the section could render. Replace them with the real figures before /main goes public.
+ * purely so the section could render. Replace them with the real figures before the site goes public.
  */
 export const PLAN_PACKETS: LandingPacket[] = [
   {

@@ -1,17 +1,18 @@
 # მთაბარი / Mtabari
 #
-# Only /main is public. Every other route sits behind ProtectedRoute and redirects a signed-out
-# visitor to /login (see web/src/App.tsx and web/src/routes/protected-route.tsx), so to a crawler
-# they are all the same empty app shell — worth keeping out of the index rather than letting
-# dozens of URLs compete as duplicates.
+# Only the root is public — it serves the marketing page. Every other route sits behind
+# ProtectedRoute and redirects a signed-out visitor to /login (see web/src/App.tsx and
+# web/src/routes/protected-route.tsx), so to a crawler they are all the same empty app shell —
+# worth keeping out of the index rather than letting dozens of URLs compete as duplicates.
 #
 # Disallow stops crawling, not indexing: a URL already known can still be listed without its
-# content. The canonical in index.html is what actually consolidates these onto /main.
+# content. The canonical in index.html is what actually consolidates these onto the root.
 
 User-agent: *
-Allow: /main
+Allow: /$
 
-# The app itself.
+# The app itself. /main is the dashboard, which is behind sign-in.
+Disallow: /main
 Disallow: /login
 Disallow: /404
 Disallow: /farm

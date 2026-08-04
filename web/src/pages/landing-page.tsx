@@ -849,7 +849,7 @@ export function LandingPage() {
             <ThemeToggle />
             <LanguageToggle />
             {isAuthenticated ? (
-              <Link to="/" className="landing-btn landing-btn-primary landing-btn-sm">
+              <Link to="/main" className="landing-btn landing-btn-primary landing-btn-sm">
                 {t('landing.nav.openApp')}
               </Link>
             ) : (

@@ -18,7 +18,8 @@ public class AuthController(
     ICurrentTenant currentTenant,
     IFileStorageService fileStorageService,
     ICoinService coinService,
-    IPhoneVerificationService phoneVerification,
+    // TEMPORARILY DISABLED with the phone routes below — unread while they are commented out.
+    // IPhoneVerificationService phoneVerification,
     IConfiguration configuration) : ControllerBase
 {
     [AllowAnonymous]
@@ -78,6 +79,19 @@ public class AuthController(
         return Ok(BuildResponse(user));
     }
 
+    // ------------------------------------------------------------------------------------------
+    // TEMPORARILY DISABLED: sign-in and registration by phone number.
+    //
+    // The three routes below (phone/send-code, phone/register, phone/login) are commented out
+    // together — they are one flow, and leaving send-code reachable on its own would text codes
+    // that nothing could then redeem. With them gone the API answers 404 for all three, which is
+    // what actually enforces the block; the client's method toggle is hidden to match
+    // (web/src/pages/auth/login-page.tsx).
+    //
+    // Nothing else was removed: the services, DTOs, SMS integration and the PhoneNumber columns
+    // all remain. To restore, delete the /* below and the matching */ after LoginByPhone.
+    // ------------------------------------------------------------------------------------------
+    /*
     /// <summary>
     /// Texts a one-time code to a number that is about to be registered. Asking again for a number
     /// that already has an account is refused here rather than after the code has been paid for and
@@ -184,6 +198,8 @@ public class AuthController(
 
         return Ok(BuildResponse(user));
     }
+    */
+    // ---------------------- end of temporarily disabled phone auth ----------------------------
 
     [AllowAnonymous]
     [HttpPost("google")]

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  One entry, because one page is public. The root is not listed: it redirects a signed-out
-  visitor to /login and has nothing of its own to index.
+  One entry, because one page is public: the marketing page at the root. Every other route sits
+  behind sign-in and has nothing of its own to index.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://mtabari.com.ge/main</loc>
-    <lastmod>2026-08-03</lastmod>
+    <loc>https://mtabari.com.ge/</loc>
+    <lastmod>2026-08-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
