@@ -42,6 +42,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session.user);
     }
     setIsLoading(false);
+
+    // Then take today's sign-in bonus. It has to happen here rather than at sign-in: a token is
+    // good for a week, so someone who opens the app daily signs in about once and would collect a
+    // daily bonus weekly. The server pays only the first call of each day, so starting the app
+    // twice costs nothing. Deliberately off the awaited path — the session is already restored and
+    // a balance that failed to update is not worth holding the app back or showing an error over.
+    if (session) {
+      void authService
+        .claimDailyBonus()
+        .then(({ granted, user: paid }) => {
+          if (!granted) return;
+          setUser(paid);
+          saveSession({ token: session.token, user: paid });
+        })
+        .catch(() => {
+          /* offline, or the token expired — the next start will ask again */
+        });
+    }
   }, []);
 
   const value = useMemo<AuthContextValue>(

@@ -47,8 +47,10 @@ public class AuthController(
         await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
 
         // Registering is the first way into the system, so the joining bonus is paid here rather
-        // than waiting for a separate sign-in that never comes.
+        // than waiting for a separate sign-in that never comes. Signing up is also an arrival, so
+        // day one's daily bonus goes with it.
         await coinService.GrantWelcomeBonusAsync(user);
+        await coinService.GrantDailyBonusAsync(user);
 
         return Ok(BuildResponse(user));
     }
@@ -73,8 +75,10 @@ public class AuthController(
         await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
 
         // Only pays anyone who has never been paid — an account from before the coin system gets
-        // its joining bonus on this sign-in, and no one gets it twice.
+        // its joining bonus on this sign-in, and no one gets it twice. The daily bonus is the
+        // opposite: it is meant to come round again, and pays if today's is still going.
         await coinService.GrantWelcomeBonusAsync(user);
+        await coinService.GrantDailyBonusAsync(user);
 
         return Ok(BuildResponse(user));
     }
@@ -260,6 +264,7 @@ public class AuthController(
         // Both branches are a first sign-in as far as the bonus is concerned — it pays once, and
         // the account that was just created above has never been paid.
         await coinService.GrantWelcomeBonusAsync(user);
+        await coinService.GrantDailyBonusAsync(user);
 
         return Ok(BuildResponse(user));
     }
@@ -270,6 +275,33 @@ public class AuthController(
     {
         var user = await userRepository.GetByIdAsync(currentTenant.UserId);
         return user is null ? Unauthorized() : Ok(UserDto.From(user));
+    }
+
+    /// <summary>
+    /// Takes today's sign-in bonus, if it is still there to take. Its own route rather than part of
+    /// sign-in because a token lasts a week: someone who opens the app every day goes through
+    /// <see cref="Login"/> about once, so hanging the daily bonus off that would pay it weekly. The
+    /// client calls this whenever it starts with a session already in hand, and every call after
+    /// the day's first is a cheap no-op.
+    /// </summary>
+    [Authorize]
+    [HttpPost("daily-bonus")]
+    public async Task<ActionResult<DailyBonusResponse>> ClaimDailyBonus()
+    {
+        var user = await userRepository.GetByIdAsync(currentTenant.UserId);
+        if (user is null)
+        {
+            return Unauthorized();
+        }
+
+        var granted = await coinService.GrantDailyBonusAsync(user);
+
+        return Ok(new DailyBonusResponse
+        {
+            Granted = granted,
+            Amount = granted ? CoinService.DailyBonus : 0,
+            User = UserDto.From(user),
+        });
     }
 
     [Authorize]

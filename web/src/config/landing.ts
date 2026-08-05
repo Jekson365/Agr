@@ -109,7 +109,7 @@ export const PACKET_ROWS: {
   { id: 'livestock', labelKey: 'profile.limitLivestock', kind: 'count' },
   { id: 'stock', labelKey: 'profile.limitStock', kind: 'count' },
   { id: 'fruit', labelKey: 'profile.limitFruit', kind: 'count' },
-  { id: 'scans', labelKey: 'landing.packets.rowScans', kind: 'perDay' },
+  // { id: 'scans', labelKey: 'landing.packets.rowScans', kind: 'perDay' },
   { id: 'storageMb', labelKey: 'plans.storage', kind: 'storage' },
   { id: 'equipment', labelKey: 'profile.limitEquipment', kind: 'boolean' },
 ];

@@ -55,6 +55,13 @@ public class User
     /// </summary>
     public DateTime? WelcomeBonusGrantedAt { get; set; }
 
+    /// <summary>
+    /// The UTC day the daily sign-in bonus was last paid for, or null if it never has been. A date
+    /// rather than a timestamp: the bonus is once per calendar day, so "have they been paid today"
+    /// is the only question ever asked of it. Same shape as <see cref="LastScanDate"/>.
+    /// </summary>
+    public DateOnly? LastDailyBonusOn { get; set; }
+
     /// <summary>Number of AI plant scans used on <see cref="LastScanDate"/>; resets when the date rolls over.</summary>
     public int ScanCount { get; set; }
 

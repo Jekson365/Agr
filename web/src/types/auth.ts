@@ -19,7 +19,7 @@ export type User = {
   longitude: number | null;
   plan: StoragePlan;
   storageUsedBytes: number;
-  /** Coins earned: 50 for joining, 100 for each new neighbour. */
+  /** Coins earned: 50 for joining, 100 for each new neighbour, 10 for each day you sign in. */
   coins: number;
   /** Byte quota for `plan`, or null when unlimited (Premium). */
   storageLimitBytes: number | null;
@@ -50,6 +50,16 @@ export type RegisterRequest = {
 
 export type SendPhoneCodeRequest = {
   phoneNumber: string;
+};
+
+/** The answer to claiming the daily sign-in bonus. */
+export type DailyBonusResponse = {
+  /** True only on the day's first claim; false means today's was already taken. */
+  granted: boolean;
+  /** What was just paid, or 0 when nothing was. */
+  amount: number;
+  /** The user as they now stand, balance included. */
+  user: User;
 };
 
 export type SendPhoneCodeResponse = {

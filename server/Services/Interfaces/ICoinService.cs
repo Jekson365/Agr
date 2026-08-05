@@ -21,4 +21,12 @@ public interface ICoinService
     /// been saved as accepted. True when it paid, false when that pair had already been paid.
     /// </summary>
     Task<bool> GrantNeighbourBonusAsync(int userId, int otherUserId);
+
+    /// <summary>
+    /// Pays the sign-in bonus, once per UTC calendar day and every day thereafter. Unlike the two
+    /// above this one is meant to recur, so it is the caller's cheapest safeguard: call it on every
+    /// arrival and it pays only on the first of the day. True when it paid, false when today's had
+    /// already been taken. The balance on the instance passed in is brought up to date either way.
+    /// </summary>
+    Task<bool> GrantDailyBonusAsync(User user);
 }

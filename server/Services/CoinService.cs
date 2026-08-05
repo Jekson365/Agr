@@ -18,6 +18,9 @@ public class CoinService(MasterDbContext context) : ICoinService
     /// <summary>Paid to both sides the first time a pair become neighbours.</summary>
     public const int NeighbourBonus = 100;
 
+    /// <summary>Paid on the first arrival of each UTC day, every day.</summary>
+    public const int DailyBonus = 10;
+
     public async Task<bool> GrantWelcomeBonusAsync(User user)
     {
         if (user.WelcomeBonusGrantedAt is not null)
@@ -75,6 +78,35 @@ public class CoinService(MasterDbContext context) : ICoinService
             }
             return false;
         }
+    }
+
+    public async Task<bool> GrantDailyBonusAsync(User user)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        // The common case by far — someone opening the app for the second time today — and it costs
+        // nothing to answer from what is already loaded.
+        if (user.LastDailyBonusOn == today)
+        {
+            return false;
+        }
+
+        // One conditional UPDATE rather than read-then-write. This bonus recurs, so unlike the two
+        // above it has no award row to collide on; the day itself is the guard, and putting it in
+        // the WHERE is what stops two arrivals at the same moment — an app opened in two tabs at
+        // once — from each seeing yesterday's date and each paying.
+        var paid = await context.Users
+            .Where(u => u.Id == user.Id)
+            .Where(u => u.LastDailyBonusOn == null || u.LastDailyBonusOn != today)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.Coins, u => u.Coins + DailyBonus)
+                .SetProperty(u => u.LastDailyBonusOn, today));
+
+        // That wrote straight past the change tracker, so the copy the caller is holding — and will
+        // answer the request with — still shows yesterday's balance until it is read again.
+        await context.Entry(user).ReloadAsync();
+
+        return paid > 0;
     }
 
     /// <summary>The two ids, lowest first, so a pair reads the same from either side of it.</summary>

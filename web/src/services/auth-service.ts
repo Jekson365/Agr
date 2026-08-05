@@ -1,6 +1,7 @@
 import { apiFetch, uploadImage } from '@/services/api-client';
 import type {
   AuthResponse,
+  DailyBonusResponse,
   GoogleAuthRequest,
   LoginRequest,
   PhoneLoginRequest,
@@ -24,6 +25,14 @@ export function register(request: RegisterRequest) {
     method: 'POST',
     body: JSON.stringify(request),
   });
+}
+
+/**
+ * Takes today's sign-in bonus if it is still going. Safe to call on every start — the server pays
+ * only the first of each day and answers `granted: false` to the rest.
+ */
+export function claimDailyBonus() {
+  return apiFetch<DailyBonusResponse>('/api/auth/daily-bonus', { method: 'POST' });
 }
 
 /** Asks for a code to be texted to a number that is about to be registered. */
