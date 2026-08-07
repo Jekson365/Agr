@@ -17,6 +17,9 @@
     "expandSection": "Expand {name}",
     "collapseSection": "Collapse {name}"
   },
+  "language": {
+    "label": "Language"
+  },
   "balance": {
     "plantsTitle": "Plants",
     "colPlant": "Plant",
@@ -993,6 +996,11 @@
     }
   },
   "landing": {
+    "seo": {
+      "title": "Mtabari — Farm Management Software",
+      "description": "Mtabari — farm management software for Georgian growers: land, livestock, orchards, greenhouses, harvests and stock in one record. Keep the books, sell online.",
+      "shareDescription": "Run your whole farm from one place — land, livestock, orchards, greenhouses, harvests, stock and sales."
+    },
     "nav": {
       "packets": "Plans",
       "features": "Features",

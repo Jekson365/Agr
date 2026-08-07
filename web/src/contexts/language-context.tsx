@@ -1,15 +1,23 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
+import de from '@/locales/de.json';
 import en from '@/locales/en.json';
 import ka from '@/locales/ka.json';
 
-export type Language = 'en' | 'ka';
+export type Language = 'en' | 'ka' | 'de';
 
 type Dictionary = Record<string, unknown>;
 
-const DICTIONARIES: Record<Language, Dictionary> = { en, ka };
+const DICTIONARIES: Record<Language, Dictionary> = { en, ka, de };
 
-const LANGUAGE_LABELS: Record<Language, string> = { en: 'EN', ka: 'ქა' };
+const LANGUAGE_LABELS: Record<Language, string> = { en: 'EN', ka: 'ქა', de: 'DE' };
+
+/** The picker's options, each named in its own language. */
+export const LANGUAGES: { code: Language; label: string; name: string }[] = [
+  { code: 'ka', label: LANGUAGE_LABELS.ka, name: 'ქართული' },
+  { code: 'en', label: LANGUAGE_LABELS.en, name: 'English' },
+  { code: 'de', label: LANGUAGE_LABELS.de, name: 'Deutsch' },
+];
 
 const STORAGE_KEY = 'farm.language';
 
@@ -17,7 +25,6 @@ type LanguageContextValue = {
   language: Language;
   languageLabel: string;
   setLanguage: (language: Language) => void;
-  toggleLanguage: () => void;
   t: (key: string, params?: Record<string, string | number>) => string;
 };
 
@@ -35,7 +42,7 @@ function resolve(dict: Dictionary, key: string): unknown {
 
 function readStoredLanguage(): Language {
   const stored = localStorage.getItem(STORAGE_KEY);
-  return stored === 'en' || stored === 'ka' ? stored : 'ka';
+  return stored !== null && stored in DICTIONARIES ? (stored as Language) : 'ka';
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
@@ -55,7 +62,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       language,
       languageLabel: LANGUAGE_LABELS[language],
       setLanguage,
-      toggleLanguage: () => setLanguage(language === 'ka' ? 'en' : 'ka'),
       t: (key, params) => {
         const value = resolve(dict, key);
         if (typeof value !== 'string') return typeof key === 'string' ? key : '';

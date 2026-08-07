@@ -1906,7 +1906,8 @@ html:has(.landing-page) {
   color: var(--color-muted);
 }
 
-.landing-footer-col h4 {
+/* Headings, so the outline stays whole — sized here rather than by their level. */
+.landing-footer-col h2 {
   margin: 0 0 12px;
   font-size: 0.875rem;
 }

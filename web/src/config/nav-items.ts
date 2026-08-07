@@ -44,7 +44,10 @@ export type NavItem = {
 /** Mirrors the Quick Access grid on the mobile app's home screen (app/(tabs)/index.tsx), reusing its icon assets. */
 export const QUICK_ACCESS_ITEMS: NavItem[] = [
   {
-    to: '/farm',
+    // Land is where the farm starts, so the group's own row goes straight there rather than to the
+    // /farm hub — whose tiles only repeat the children listed below it. The hub itself stays put:
+    // every area page still links back to it.
+    to: '/farm/land',
     labelKey: 'dashboard.myFarm',
     icon: farmIcon,
     children: [

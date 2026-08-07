@@ -1,4 +1,4 @@
-export type DateLanguage = 'en' | 'ka';
+export type DateLanguage = 'en' | 'ka' | 'de';
 
 const MONTH_NAMES: Record<DateLanguage, string[]> = {
   en: [
@@ -9,18 +9,24 @@ const MONTH_NAMES: Record<DateLanguage, string[]> = {
     'იანვარი', 'თებერვალი', 'მარტი', 'აპრილი', 'მაისი', 'ივნისი',
     'ივლისი', 'აგვისტო', 'სექტემბერი', 'ოქტომბერი', 'ნოემბერი', 'დეკემბერი',
   ],
+  de: [
+    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+  ],
 };
 
 // Sunday-first, matching Date#getDay().
 const WEEKDAY_NAMES: Record<DateLanguage, string[]> = {
   en: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
   ka: ['კვირა', 'ორშაბათი', 'სამშაბათი', 'ოთხშაბათი', 'ხუთშაბათი', 'პარასკევი', 'შაბათი'],
+  de: ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'],
 };
 
 /** Monday-first short names, for the calendar grid's column headers. */
 const WEEKDAY_SHORT_NAMES: Record<DateLanguage, string[]> = {
   en: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
   ka: ['ორშ', 'სამ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვ'],
+  de: ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'],
 };
 
 export function monthNames(language: DateLanguage): string[] {
@@ -33,8 +39,8 @@ export function weekdayShortNames(language: DateLanguage): string[] {
 }
 
 /** Formats a Date using the app's own month/weekday names for the given language, e.g.
- * "19 July 2026" / "19 ივლისი 2026", instead of the browser's ambient locale (which usually
- * isn't Georgian even when the in-app language is). */
+ * "19 July 2026" / "19 ივლისი 2026" / "19. Juli 2026", instead of the browser's ambient locale
+ * (which usually isn't Georgian even when the in-app language is). */
 export function formatLocalizedDate(
   date: Date,
   language: DateLanguage,
@@ -42,7 +48,8 @@ export function formatLocalizedDate(
 ): string {
   const parts: string[] = [];
   if (options?.weekday) parts.push(`${WEEKDAY_NAMES[language][date.getDay()]},`);
-  parts.push(String(date.getDate()));
+  // German writes the day as an ordinal: "19. Juli".
+  parts.push(language === 'de' ? `${date.getDate()}.` : String(date.getDate()));
   parts.push(MONTH_NAMES[language][date.getMonth()]);
   if (options?.year !== false) parts.push(String(date.getFullYear()));
   return parts.join(' ');
@@ -116,14 +123,14 @@ export function formatLocalizedIsoDay(
 }
 
 /** Formats a `HH:mm` or `HH:mm:ss` time string. English uses a 12-hour clock ("9:30 AM");
- * Georgian has no common AM/PM equivalent, so it uses a 24-hour clock ("09:30"). Deliberately
- * not `toLocaleTimeString`, which would follow the browser locale and leave an English-language
- * clock on a Georgian page. */
+ * Georgian and German have no common AM/PM equivalent, so they use a 24-hour clock ("09:30").
+ * Deliberately not `toLocaleTimeString`, which would follow the browser locale and leave an
+ * English-language clock on a Georgian page. */
 export function formatTime(time: string, language: DateLanguage): string {
   const [hours, minutes] = time.split(':').map(Number);
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return time;
 
-  if (language === 'ka') {
+  if (language !== 'en') {
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   }
 

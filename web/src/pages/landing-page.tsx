@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type CSSProperties, type RefObject, type SVGProps } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject, type SVGProps } from 'react';
 import { Link } from 'react-router-dom';
 
-import farmland from '@/assets/farmland-wide.png';
+import farmland from '@/assets/farmland-wide.webp';
 import logo from '@/assets/logo.png';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -26,7 +26,7 @@ import {
 } from '@/config/landing';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrency } from '@/contexts/currency-context';
-import { useLanguage } from '@/contexts/language-context';
+import { LANGUAGES, useLanguage, type Language } from '@/contexts/language-context';
 import './landing-page.css';
 
 /* ------------------------------------------------------------------ icons */
@@ -161,14 +161,147 @@ function useScrolled(): boolean {
   return scrolled;
 }
 
+/* --------------------------------------------------------------------- seo */
+
+/**
+ * Where the site is served from. Structured data and the canonical need absolute URLs and neither
+ * may follow whichever host the bundle happens to run on, so the origin is written out rather than
+ * read from `location` — kept in step with the canonical in index.html.
+ */
+const SITE_URL = 'https://mtabari.com.ge';
+
+/**
+ * Keeps the head in step with the language the page is actually being read in.
+ *
+ * index.html ships the Georgian tags statically, so a crawler that never runs the bundle still
+ * reads a complete head. This only rewrites what is already there — appending would leave a second
+ * copy of a tag index.html owns, and a page with two descriptions has none — so someone reading in
+ * English gets an English tab title, snippet and link preview instead of the Georgian default.
+ *
+ * Nothing is restored on unmount: these values are the document's defaults, and every other route
+ * is behind sign-in with nothing of its own to say.
+ */
+const OG_LOCALES: Record<Language, string> = { ka: 'ka_GE', en: 'en_US', de: 'de_DE' };
+
+/** The languages the page can be read in, for the structured data. Taken from the picker rather
+ *  than written out, so a fourth one is added in the one place it is already added. */
+const CONTENT_LANGUAGES = LANGUAGES.map((option) => option.code);
+
+function useLandingSeo() {
+  const { t, language } = useLanguage();
+
+  useEffect(() => {
+    const title = t('landing.seo.title');
+    const description = t('landing.seo.description');
+    /* Link previews get the shorter line — Facebook and X cut a description off around 200
+       characters, and a sentence that ends mid-word reads worse than a shorter whole one. */
+    const shareDescription = t('landing.seo.shareDescription');
+    const locale = OG_LOCALES[language];
+    /* index.html carries a single alternate tag, so only one of the other two locales fits. */
+    const alternate = Object.values(OG_LOCALES).find((value) => value !== locale) ?? locale;
+
+    document.title = title;
+
+    const set = (selector: string, content: string) => {
+      document.head.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', content);
+    };
+
+    set('meta[name="description"]', description);
+    set('meta[property="og:title"]', title);
+    set('meta[property="og:description"]', shareDescription);
+    set('meta[property="og:locale"]', locale);
+    set('meta[property="og:locale:alternate"]', alternate);
+    set('meta[name="twitter:title"]', title);
+    set('meta[name="twitter:description"]', shareDescription);
+  }, [t, language]);
+}
+
+/**
+ * What the page says about itself to a machine: the company behind it, the site, and the product
+ * with its plans priced. Search engines and the answer engines that read schema.org would otherwise
+ * have to infer all of it from the markup.
+ *
+ * The offers are built from `PLAN_PACKETS` — the same array the cards below render from — so the
+ * marked-up prices cannot drift from the printed ones, which is exactly what Google penalises. They
+ * are stated in GEL because that is what `PLAN_PACKETS` holds; the currency toggle is a display
+ * conversion and must not reach the markup. (Those figures are still the placeholders flagged in
+ * config/landing.ts. Correcting them there corrects this too.)
+ */
+function useStructuredData(): string {
+  const { t } = useLanguage();
+
+  return useMemo(() => {
+    const name = t('auth.appName');
+    const description = t('landing.seo.description');
+    const organization = `${SITE_URL}/#organization`;
+
+    /* Escaping the angle bracket at the end: a `</script>` that found its way into the copy would
+       otherwise close the tag early and spill the rest of the graph into the page as text. */
+    return JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': organization,
+          name,
+          url: `${SITE_URL}/`,
+          description: t('auth.tagline'),
+          logo: {
+            '@type': 'ImageObject',
+            url: `${SITE_URL}/logo.png`,
+            width: 512,
+            height: 512,
+          },
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${SITE_URL}/#website`,
+          name,
+          url: `${SITE_URL}/`,
+          description,
+          inLanguage: CONTENT_LANGUAGES,
+          publisher: { '@id': organization },
+        },
+        {
+          '@type': 'SoftwareApplication',
+          '@id': `${SITE_URL}/#app`,
+          name,
+          url: `${SITE_URL}/`,
+          description,
+          applicationCategory: 'BusinessApplication',
+          /* Machine-facing taxonomy rather than the badge's marketing line: this is the phrase a
+             search engine matches the product against. */
+          applicationSubCategory: 'Farm Management Software',
+          operatingSystem: 'Web',
+          inLanguage: CONTENT_LANGUAGES,
+          publisher: { '@id': organization },
+          featureList: MANAGE_CARDS.map((card) => t(`landing.manage.${card.id}.title`)),
+          offers: PLAN_PACKETS.map((packet) => ({
+            '@type': 'Offer',
+            name: t(packet.nameKey),
+            description: t(`landing.packets.${packet.id}.tagline`),
+            price: packet.price,
+            priceCurrency: 'GEL',
+            url: `${SITE_URL}/#packets`,
+            availability: 'https://schema.org/InStock',
+          })),
+        },
+      ],
+    }).replace(/</g, '\\u003c');
+  }, [t]);
+}
+
 /* --------------------------------------------------------------- fragments */
 
 function SectionHead({
+  id,
   eyebrow,
   title,
   lead,
   align = 'center',
 }: {
+  /** The heading's own id, so the section around it can name itself with `aria-labelledby`. */
+  id: string;
   eyebrow: string;
   title: string;
   lead?: string;
@@ -177,7 +310,9 @@ function SectionHead({
   return (
     <div className={align === 'left' ? 'landing-head landing-head-left' : 'landing-head'} data-reveal>
       <p className="landing-eyebrow">{eyebrow}</p>
-      <h2 className="landing-h2">{title}</h2>
+      <h2 className="landing-h2" id={id}>
+        {title}
+      </h2>
       {lead && <p className="landing-lead">{lead}</p>}
     </div>
   );
@@ -265,7 +400,7 @@ function PreviewFarm() {
         {PREVIEW_TILES.map((tile) => (
           <div key={tile.labelKey} className="preview-tile">
             <span className="preview-tile-icon">
-              <img src={tile.icon} alt="" />
+              <img src={tile.icon} alt="" loading="lazy" decoding="async" />
             </span>
             <span className="preview-tile-label">{t(tile.labelKey)}</span>
           </div>
@@ -465,7 +600,7 @@ function AppPreview() {
       <div className="preview-body">
         <div className="preview-side">
           <div className="preview-side-brand">
-            <img src={logo} alt="" />
+            <img src={logo} alt="" loading="lazy" decoding="async" />
             <span>{t('auth.appName')}</span>
           </div>
           {PREVIEW_NAV.map((item) => (
@@ -476,7 +611,7 @@ function AppPreview() {
               aria-pressed={item.id === screen}
               onClick={() => setScreen(item.id)}
             >
-              <img src={item.icon} alt="" />
+              <img src={item.icon} alt="" loading="lazy" decoding="async" />
               <span>{t(item.labelKey)}</span>
             </button>
           ))}
@@ -813,8 +948,10 @@ export function LandingPage() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const scrolled = useScrolled();
+  const structuredData = useStructuredData();
 
   useReveal(rootRef);
+  useLandingSeo();
 
   /* `wide` links drop out below 1100px, where the bar runs out of room before the nav collapses
      into the burger menu entirely. */
@@ -830,6 +967,10 @@ export function LandingPage() {
 
   return (
     <div className="landing-page" ref={rootRef}>
+      {/* Read out of the DOM, so it does not matter that it sits in the body rather than the head —
+          and it must stay a plain <script>, since React only hoists the async ones. */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: structuredData }} />
+
       <header className={scrolled ? 'landing-header is-scrolled' : 'landing-header'}>
         <div className="landing-container landing-header-inner">
           <a href="#hero" className="landing-brand">
@@ -892,8 +1033,11 @@ export function LandingPage() {
 
       <main>
         {/* 1 — Hero */}
-        <section id="hero" className="landing-hero">
-          <img src={farmland} className="landing-hero-bg" alt="" />
+        <section id="hero" className="landing-hero" aria-labelledby="hero-title">
+          {/* The largest thing on the first screen, so it is what Google times the page by. React
+              only renders it once the bundle has run, by which point the browser has long finished
+              guessing what to fetch — the priority hint is what puts it back at the front. */}
+          <img src={farmland} className="landing-hero-bg" alt="" fetchPriority="high" decoding="async" />
           <span className="landing-hero-scrim" />
 
           <div className="landing-container">
@@ -901,7 +1045,7 @@ export function LandingPage() {
               <span className="landing-hero-badge-dot" />
               {t('landing.hero.badge')}
             </p>
-            <h1 className="landing-hero-title" data-reveal>
+            <h1 className="landing-hero-title" id="hero-title" data-reveal>
               {t('landing.hero.title')}
             </h1>
             <p className="landing-hero-text" data-reveal>
@@ -942,9 +1086,14 @@ export function LandingPage() {
 
         {/* 2 — Available packets. Sits directly under the hero, so it carries the extra top
             padding the overlapping preview card needs. */}
-        <section id="packets" className="landing-section landing-after-hero landing-alt">
+        <section
+          id="packets"
+          className="landing-section landing-after-hero landing-alt"
+          aria-labelledby="packets-title"
+        >
           <div className="landing-container">
             <SectionHead
+              id="packets-title"
               eyebrow={t('landing.packets.eyebrow')}
               title={t('landing.packets.title')}
               lead={t('landing.packets.subtitle')}
@@ -959,9 +1108,10 @@ export function LandingPage() {
         </section>
 
         {/* 3 — Everything you can manage */}
-        <section id="features" className="landing-section">
+        <section id="features" className="landing-section" aria-labelledby="features-title">
           <div className="landing-container">
             <SectionHead
+              id="features-title"
               eyebrow={t('landing.manage.eyebrow')}
               title={t('landing.manage.title')}
               lead={t('landing.manage.subtitle')}
@@ -1000,10 +1150,11 @@ export function LandingPage() {
         </section>
 
         {/* 4 — Harvest management */}
-        <section id="harvest" className="landing-section landing-alt">
+        <section id="harvest" className="landing-section landing-alt" aria-labelledby="harvest-title">
           <div className="landing-container landing-split">
             <div className="landing-split-copy">
               <SectionHead
+                id="harvest-title"
                 eyebrow={t('landing.harvest.eyebrow')}
                 title={t('landing.harvest.title')}
                 lead={t('landing.harvest.subtitle')}
@@ -1027,10 +1178,11 @@ export function LandingPage() {
         </section>
 
         {/* 5 — Marketplace */}
-        <section id="marketplace" className="landing-section">
+        <section id="marketplace" className="landing-section" aria-labelledby="marketplace-title">
           <div className="landing-container landing-split landing-split-reverse">
             <div className="landing-split-copy">
               <SectionHead
+                id="marketplace-title"
                 eyebrow={t('landing.market.eyebrow')}
                 title={t('landing.market.title')}
                 lead={t('landing.market.subtitle')}
@@ -1074,10 +1226,11 @@ export function LandingPage() {
         </section>
 
         {/* 6 — Reporting & analytics */}
-        <section id="reports" className="landing-section landing-alt">
+        <section id="reports" className="landing-section landing-alt" aria-labelledby="reports-title">
           <div className="landing-container landing-split">
             <div className="landing-split-copy">
               <SectionHead
+                id="reports-title"
                 eyebrow={t('landing.reports.eyebrow')}
                 title={t('landing.reports.title')}
                 lead={t('landing.reports.subtitle')}
@@ -1101,10 +1254,11 @@ export function LandingPage() {
         </section>
 
         {/* 7 — The neighbourhood map */}
-        <section id="map" className="landing-section">
+        <section id="map" className="landing-section" aria-labelledby="map-title">
           <div className="landing-container landing-split landing-split-reverse">
             <div className="landing-split-copy">
               <SectionHead
+                id="map-title"
                 eyebrow={t('landing.map.eyebrow')}
                 title={t('landing.map.title')}
                 lead={t('landing.map.subtitle')}
@@ -1131,10 +1285,11 @@ export function LandingPage() {
             bringing back PhonePreview, PHONE_TILES, PHONE_TABS, AndroidIcon and AppleIcon above,
             plus the #mobile links in the nav and the footer.
 
-        <section id="mobile" className="landing-section">
+        <section id="mobile" className="landing-section" aria-labelledby="mobile-title">
           <div className="landing-container landing-split landing-split-reverse">
             <div className="landing-split-copy">
               <SectionHead
+                id="mobile-title"
                 eyebrow={t('landing.mobile.eyebrow')}
                 title={t('landing.mobile.title')}
                 lead={t('landing.mobile.subtitle')}
@@ -1180,11 +1335,15 @@ export function LandingPage() {
         */}
 
         {/* 9 — Final call to action */}
-        <section className="landing-final">
-          <img src={farmland} className="landing-final-bg" alt="" />
+        <section className="landing-final" aria-labelledby="cta-title">
+          {/* Same file as the hero's, but the browser has no way to know that until it resolves the
+              URL — lazy keeps it off the critical path either way. */}
+          <img src={farmland} className="landing-final-bg" alt="" loading="lazy" decoding="async" />
           <span className="landing-final-scrim" />
           <div className="landing-container" data-reveal>
-            <h2 className="landing-final-title">{t('landing.cta.title')}</h2>
+            <h2 className="landing-final-title" id="cta-title">
+              {t('landing.cta.title')}
+            </h2>
             <p className="landing-final-text">{t('landing.cta.subtitle')}</p>
             <div className="landing-hero-actions">
               <Link to="/login" state={SIGN_UP_STATE} className="landing-btn landing-btn-primary landing-btn-lg">
@@ -1201,14 +1360,16 @@ export function LandingPage() {
         <div className="landing-container landing-footer-inner">
           <div className="landing-footer-brand">
             <a href="#hero" className="landing-brand">
-              <img src={logo} alt="" />
+              <img src={logo} alt="" loading="lazy" decoding="async" />
               <span>{t('auth.appName')}</span>
             </a>
             <p>{t('auth.tagline')}</p>
           </div>
 
+          {/* h2, not h4: these sit at the top level of the footer, and a document whose outline
+              jumps a level or two is read as one with sections missing. The size is the CSS's. */}
           <div className="landing-footer-col">
-            <h4>{t('landing.footer.product')}</h4>
+            <h2>{t('landing.footer.product')}</h2>
             <a href="#packets">{t('landing.nav.packets')}</a>
             <a href="#features">{t('landing.nav.features')}</a>
             <a href="#harvest">{t('dashboard.harvest')}</a>
@@ -1218,7 +1379,7 @@ export function LandingPage() {
           </div>
 
           <div className="landing-footer-col">
-            <h4>{t('landing.footer.account')}</h4>
+            <h2>{t('landing.footer.account')}</h2>
             <Link to="/login">{t('landing.nav.login')}</Link>
             <Link to="/login" state={SIGN_UP_STATE}>
               {t('landing.nav.startFree')}

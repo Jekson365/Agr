@@ -1,7 +1,7 @@
 .sidebar {
   /* Always expanded — never collapses to icons, at any window width. rem so it widens and
      narrows along with the user's font size setting. */
-  width: 16.5rem;
+  width: 24.75rem;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -40,7 +40,15 @@
   gap: 4px;
   flex: 1;
   min-height: 0;
+  /* Still scrolls when the tree outgrows the window — the bar itself is just hidden, since it
+     would otherwise sit permanently against the nav's own right edge. */
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .sidebar-group {

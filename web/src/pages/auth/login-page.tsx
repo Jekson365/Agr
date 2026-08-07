@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 
-import farmland from '@/assets/farmland-wide.png';
+import farmland from '@/assets/farmland-wide.webp';
 import logo from '@/assets/logo.png';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { useAuth } from '@/contexts/auth-context';

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { ChevronDownIcon } from '@/components/icons/nav-icons';
+import { monthNames as localizedMonthNames } from '@/components/ui/date-utils';
 import { fruitKindImage, fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY } from '@/config/stock-kinds';
 import { useCurrency } from '@/contexts/currency-context';
@@ -27,24 +28,6 @@ const SEASON_LABEL_KEY: Record<Season, string> = {
   spring: 'report.seasonSpring',
   summer: 'report.seasonSummer',
   autumn: 'report.seasonAutumn',
-};
-
-const MONTH_NAMES: Record<'en' | 'ka', string[]> = {
-  en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-  ka: [
-    'იანვარი',
-    'თებერვალი',
-    'მარტი',
-    'აპრილი',
-    'მაისი',
-    'ივნისი',
-    'ივლისი',
-    'აგვისტო',
-    'სექტემბერი',
-    'ოქტომბერი',
-    'ნოემბერი',
-    'დეკემბერი',
-  ],
 };
 
 // Meteorological Northern-hemisphere convention: Dec–Feb winter, Mar–May spring, etc.
@@ -201,7 +184,7 @@ export function ReportHarvestPage() {
     setExpandedIds((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
-  const monthNames = MONTH_NAMES[language];
+  const monthNames = localizedMonthNames(language);
 
   return (
     <div className="report-harvest-page">

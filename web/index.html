@@ -20,6 +20,11 @@
          visitor can read — every other route redirects to /login and has nothing to index. -->
     <link rel="canonical" href="https://mtabari.com.ge/" />
 
+    <!-- Indexing is the default; what is worth saying is the rest. Without max-image-preview a
+         result carries a thumbnail at best, and the snippet limits are the ones Discover and the
+         AI summaries read before deciding how much of the page they may quote. -->
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="მთაბარი" />
     <meta property="og:locale" content="ka_GE" />
@@ -70,6 +75,19 @@
     </script>
   </head>
   <body>
+    <!-- The marketing page's blocks fade in as they scroll past, which means they start at zero
+         opacity and are revealed by an observer. With the page baked in at build time (see
+         scripts/prerender.mjs) there is now something to read before that observer exists, so a
+         reader without JavaScript is handed it revealed rather than blank. -->
+    <noscript>
+      <style>
+        [data-reveal] {
+          opacity: 1;
+          transform: none;
+        }
+      </style>
+    </noscript>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
