@@ -37,6 +37,14 @@ public class TreeStocksController(
     {
         stock.Name = stock.Name.Trim();
 
+        // An orchard is a count of trees, so it can't start below zero — and a negative opening
+        // amount would be stored without a movement to explain it, leaving the Fruit page and the
+        // Balance page (which sums the ledger) reading the row as two different numbers forever.
+        if (stock.Amount < 0)
+        {
+            return BadRequest("Amount cannot be negative.");
+        }
+
         var invalid = await ValidateAsync(stock);
         if (invalid is not null)
         {
@@ -66,6 +74,11 @@ public class TreeStocksController(
         }
 
         stock.Name = stock.Name.Trim();
+
+        if (stock.Amount < 0)
+        {
+            return BadRequest("Amount cannot be negative.");
+        }
 
         var existing = await treeStockRepository.GetByIdAsync(id);
         if (existing is null)
@@ -185,6 +198,20 @@ public class TreeStocksController(
         if (request.Quantity <= 0)
         {
             return BadRequest("Quantity must be positive.");
+        }
+
+        var stock = await treeStockRepository.GetByIdAsync(id);
+        if (stock is null)
+        {
+            return NotFound();
+        }
+
+        // The client checks this too, but two sales recorded at once would both pass that check
+        // and overdraw the orchard; the ledger is only meaningful if it can't go negative. Same
+        // guard the production and fruit-produce sale endpoints carry.
+        if (request.Quantity > stock.Amount)
+        {
+            return Conflict($"Only {stock.Amount} of this fruit is available.");
         }
 
         var updated = await treeStockRepository.AdjustAmountAsync(id, -request.Quantity, StockMovementSource.Market, request.MarketListingId);

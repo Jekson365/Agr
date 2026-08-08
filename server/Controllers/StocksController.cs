@@ -199,6 +199,20 @@ public class StocksController(
             return BadRequest("Quantity must be positive.");
         }
 
+        var stock = await stockRepository.GetByIdAsync(id);
+        if (stock is null)
+        {
+            return NotFound();
+        }
+
+        // The client checks this too, but two sales recorded at once would both pass that check
+        // and overdraw the stock; the ledger is only meaningful if it can't go negative. Same
+        // guard the production and fruit-produce sale endpoints carry.
+        if (request.Quantity > stock.Amount)
+        {
+            return Conflict($"Only {stock.Amount} of this stock is available.");
+        }
+
         var updated = await stockRepository.AdjustAmountAsync(id, -request.Quantity, StockMovementSource.Market, request.MarketListingId);
         return updated is null ? NotFound() : Ok(updated);
     }
