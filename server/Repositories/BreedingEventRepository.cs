@@ -69,6 +69,9 @@ public class BreedingEventRepository(AppDbContext context) : IBreedingEventRepos
         existing.BreedingDate = breedingEvent.BreedingDate;
         existing.Comment = breedingEvent.Comment;
         existing.Status = breedingEvent.Status;
+        // OffspringCount and OffspringLivestockId are deliberately not copied — they are the
+        // event's record of what it produced, written only by AddOffspringAsync, and an edit of
+        // its date or comment has nothing to say about them.
         // The stage dates are worked out by the controller from the status it is moving to, and
         // arrive here already settled — copied rather than recomputed so this stays the one place
         // that writes the row.
@@ -76,6 +79,21 @@ public class BreedingEventRepository(AppDbContext context) : IBreedingEventRepos
         existing.CompletedDate = breedingEvent.CompletedDate;
         existing.FailedDate = breedingEvent.FailedDate;
 
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> AddOffspringAsync(int id, int quantity, int livestockId)
+    {
+        var existing = await context.BreedingEvents.FindAsync(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        // Added to, not replaced: a pairing can be recorded as producing more than once.
+        existing.OffspringCount += quantity;
+        existing.OffspringLivestockId = livestockId;
         await context.SaveChangesAsync();
         return true;
     }

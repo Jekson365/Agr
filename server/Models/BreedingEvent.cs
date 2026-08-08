@@ -44,5 +44,16 @@ public class BreedingEvent
     /// <summary>When the event reached <see cref="BreedingStatus.Failed"/>.</summary>
     public DateOnly? FailedDate { get; set; }
 
+    /// <summary>
+    /// How many animals this pairing has produced, totalled over every result recorded against it.
+    /// Kept on the event rather than counted from the offspring, because a result can be recorded
+    /// as a number of head without writing each animal down — those have no rows to count.
+    /// </summary>
+    public int OffspringCount { get; set; }
+
+    /// <summary>The group the offspring joined, from the most recent result. Null until one is
+    /// recorded.</summary>
+    public int? OffspringLivestockId { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

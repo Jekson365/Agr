@@ -12,6 +12,7 @@ namespace Server.Controllers;
 public class LivestockDetailsController(
     ILivestockDetailRepository livestockDetailRepository,
     IAnimalProductionRepository animalProductionRepository,
+    ILivestockMovementRepository livestockMovementRepository,
     IFileStorageService fileStorageService) : ControllerBase
 {
     /// <summary>
@@ -90,6 +91,18 @@ public class LivestockDetailsController(
         {
             return NotFound();
         }
+
+        // One animal fewer, and the ledger says so. Recorded as Manual rather than Realization:
+        // this is a record being taken back, not an animal slaughtered — a realization is its own
+        // act, with its own meat and its own entry. The movement is what lowers the group's count,
+        // which is the only thing that moves it.
+        await livestockMovementRepository.AddAsync(new LivestockMovement
+        {
+            LivestockId = existing.LivestockId,
+            Delta = -1,
+            Source = LivestockMovementSource.Manual,
+            Date = DateOnly.FromDateTime(DateTime.UtcNow),
+        });
 
         await fileStorageService.DeleteImageAsync(existing.ImagePath);
         return NoContent();

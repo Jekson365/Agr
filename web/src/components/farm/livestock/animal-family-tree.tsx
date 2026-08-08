@@ -20,8 +20,9 @@ type Props = {
 /** One row of the tree: a generation, and how far it sits from the animal in focus. */
 type Generation = { offset: number; animals: LivestockDetail[] };
 
-/** A line to draw, in the overlay's own coordinates. */
-type Segment = { x1: number; y1: number; x2: number; y2: number };
+/** A line to draw, in the overlay's own coordinates, tagged with the couple it descends from so
+ *  hovering one of them can pick out its own lines. */
+type Segment = { x1: number; y1: number; x2: number; y2: number; parents: number[] };
 
 /** The node width and the gap between nodes at full size, matching animal-family-tree.css. */
 const BASE_NODE_WIDTH = 104;
@@ -42,6 +43,8 @@ export function AnimalFamilyTree({ animal, all, groupsById }: Props) {
   const [segments, setSegments] = useState<Segment[]>([]);
   /** How much the nodes are shrunk so the widest generation fits across. 1 is full size. */
   const [scale, setScale] = useState(1);
+  /** The node under the cursor, whose children are picked out while it is. */
+  const [hoveredId, setHoveredId] = useState<number | null>(null);
 
   /**
    * Measures where the nodes ended up and works out the lines between them.
@@ -115,7 +118,7 @@ export function AnimalFamilyTree({ animal, all, groupsById }: Props) {
 
         // Each parent down to the couple's point. Two parents give the two lines that meet.
         for (const parent of parentBoxes) {
-          next.push({ x1: parent.centerX, y1: parent.bottom, x2: junctionX, y2: busY });
+          next.push({ x1: parent.centerX, y1: parent.bottom, x2: junctionX, y2: busY, parents });
         }
 
         // The bus, spanning from the leftmost child to the rightmost — and to the junction, so a
@@ -123,12 +126,12 @@ export function AnimalFamilyTree({ animal, all, groupsById }: Props) {
         const left = Math.min(junctionX, ...childBoxes.map((b) => b.centerX));
         const right = Math.max(junctionX, ...childBoxes.map((b) => b.centerX));
         if (right - left > 0.5) {
-          next.push({ x1: left, y1: busY, x2: right, y2: busY });
+          next.push({ x1: left, y1: busY, x2: right, y2: busY, parents });
         }
 
         // And down into each child.
         for (const child of childBoxes) {
-          next.push({ x1: child.centerX, y1: busY, x2: child.centerX, y2: child.top });
+          next.push({ x1: child.centerX, y1: busY, x2: child.centerX, y2: child.top, parents });
         }
       }
     }
@@ -172,6 +175,19 @@ export function AnimalFamilyTree({ animal, all, groupsById }: Props) {
       : t('animalTree.generationsDown', { n: offset });
   }
 
+  // Who descends from whom, for the hover. Direct children only: lighting up a whole line down to
+  // the last generation says less about the animal under the cursor than its own offspring do.
+  const childIdsOf = new Map<number, Set<number>>();
+  for (const item of all) {
+    for (const parentId of [item.parentOneId, item.parentTwoId]) {
+      if (parentId == null) continue;
+      const set = childIdsOf.get(parentId) ?? new Set<number>();
+      set.add(item.id);
+      childIdsOf.set(parentId, set);
+    }
+  }
+  const highlighted = hoveredId != null ? (childIdsOf.get(hoveredId) ?? new Set<number>()) : new Set<number>();
+
   return (
     <section className="animal-tree">
       <h2 className="animal-tree-title">{t('animalTree.title')}</h2>
@@ -190,7 +206,11 @@ export function AnimalFamilyTree({ animal, all, groupsById }: Props) {
               y1={segment.y1}
               x2={segment.x2}
               y2={segment.y2}
-              className="animal-tree-line"
+              className={
+                hoveredId != null && segment.parents.includes(hoveredId)
+                  ? 'animal-tree-line active'
+                  : 'animal-tree-line'
+              }
             />
           ))}
         </svg>
@@ -214,7 +234,16 @@ export function AnimalFamilyTree({ animal, all, groupsById }: Props) {
                       else nodeRefs.current.delete(item.id);
                     }}
                     to={`/farm/livestock/${item.livestockId}/animal/${item.id}`}
-                    className={item.id === animal.id ? 'animal-tree-node focus' : 'animal-tree-node'}
+                    className={[
+                      'animal-tree-node',
+                      item.id === animal.id ? 'focus' : '',
+                      highlighted.has(item.id) ? 'related' : '',
+                      hoveredId === item.id ? 'hovered' : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    onPointerEnter={() => setHoveredId(item.id)}
+                    onPointerLeave={() => setHoveredId((prev) => (prev === item.id ? null : prev))}
                   >
                     <img src={image} alt="" className="animal-tree-node-image" />
                     <span className="animal-tree-node-code">{item.code}</span>

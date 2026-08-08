@@ -31,6 +31,12 @@ export type BreedingEvent = {
   pregnancyConfirmedDate: string | null;
   completedDate: string | null;
   failedDate: string | null;
+  /** How many animals this pairing has produced, over every result recorded against it. 0 until
+   *  one is. Held on the event because a result can be recorded as a head count with no animals
+   *  written down, and those leave nothing to count. */
+  offspringCount: number;
+  /** The group they joined, from the most recent result. */
+  offspringLivestockId: number | null;
   createdAt: string;
 };
 

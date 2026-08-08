@@ -144,6 +144,9 @@ public class BreedingEventsController(
             return NotFound();
         }
 
+        // What this pairing produced, kept on the event so its row can say so.
+        await breedingEventRepository.AddOffspringAsync(id, request.Quantity, request.LivestockId);
+
         // Either way the herd grew, and it grew by birth. The movement is what moves the count.
         await livestockMovementRepository.AddAsync(new LivestockMovement
         {

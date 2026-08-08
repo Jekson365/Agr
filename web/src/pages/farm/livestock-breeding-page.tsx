@@ -142,6 +142,8 @@ export function LivestockBreedingPage() {
    * why this is not simply this group's own animals, but they are all the one kind.
    */
   const breedable = animals.filter((option) => option.groupType === livestock?.type);
+  /** Group names by id, for naming where a result's offspring went. */
+  const groupNames = new Map(groups.map((group) => [group.id, group.name]));
 
   // Only animals whose gender is recorded can be offered: an animal of unknown sex belongs on
   // neither side of a pairing.
@@ -225,6 +227,10 @@ export function LivestockBreedingPage() {
           pregnancyConfirmedDate: null,
           completedDate: null,
           failedDate: null,
+          // Likewise: what a pairing produced is written only when a result is recorded against
+          // it, never by the form that creates it.
+          offspringCount: 0,
+          offspringLivestockId: null,
         });
       }
       setFormOpen(false);
@@ -505,6 +511,22 @@ export function LivestockBreedingPage() {
                       }
                     />
                   </div>
+
+                  {/* What the pairing produced, under the row that produced it. */}
+                  {item.offspringCount > 0 && (
+                    <div className="breeding-row-result">
+                      <span className="breeding-row-result-count">+{item.offspringCount}</span>
+                      <span>{t('breedingEvent.resultRecorded')}</span>
+                      {item.offspringLivestockId != null && (
+                        <Link
+                          to={`/farm/livestock/${item.offspringLivestockId}`}
+                          className="breeding-row-result-group"
+                        >
+                          {groupNames.get(item.offspringLivestockId) ?? t('farm.livestock')}
+                        </Link>
+                      )}
+                    </div>
+                  )}
 
                   {/* Every stage on the row, the one it is at marked. Picking one asks for the day
                       it happened rather than assuming today — a pregnancy is confirmed in the

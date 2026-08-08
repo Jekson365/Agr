@@ -1293,7 +1293,8 @@
     "resultBornDate": "Born date",
     "resultImageError": "Couldn't upload the photo. Please try again.",
     "resultAddIndividuals": "Create a record per animal",
-    "resultAddIndividualsHint": "Each newborn gets its own record, carrying both parents. Left unticked, only the head count rises."
+    "resultAddIndividualsHint": "Each newborn gets its own record, carrying both parents. Left unticked, only the head count rises.",
+    "resultRecorded": "offspring recorded"
   },
   "animalTree": {
     "title": "Family tree",

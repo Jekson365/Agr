@@ -14,6 +14,7 @@ public class LivestockController(
     IAnimalProductionRepository animalProductionRepository,
     IProductionTypeRepository productionTypeRepository,
     ILivestockMovementRepository livestockMovementRepository,
+    ILivestockDetailRepository livestockDetailRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     private const string ProduceSettledMessage = "What this group produces is already set and can no longer change.";
@@ -75,6 +76,21 @@ public class LivestockController(
             });
             // The row now holds it; carry it back so the caller sees the group it asked for.
             created.Count = openingCount;
+
+            // And a row per animal, so the group starts out with something to point at. Every
+            // per-animal feature — breeding, parentage, an animal's own production — needs these,
+            // and forty ear tags typed by hand is not a way anyone starts.
+            //
+            // The count is deliberately not touched here: the movement above already accounts for
+            // exactly these animals, and raising it again would count them twice. The codes are
+            // built from the kind's initial, so a chicken group starts at C-1.
+            var codePrefix = created.Type.Trim() is { Length: > 0 } type
+                ? char.ToUpperInvariant(type[0]).ToString()
+                : "A";
+            await livestockDetailRepository.AddOffspringAsync(
+                new LivestockDetail { LivestockId = created.Id },
+                openingCount,
+                codePrefix);
         }
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);

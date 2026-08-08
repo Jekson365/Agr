@@ -41,6 +41,15 @@
   stroke: var(--color-border);
   stroke-width: 2;
   stroke-linecap: round;
+  transition:
+    stroke 0.12s ease,
+    stroke-width 0.12s ease;
+}
+
+/* The lines down from the node under the cursor. */
+.animal-tree-line.active {
+  stroke: var(--color-green);
+  stroke-width: 3;
 }
 
 .animal-tree-level {
@@ -149,4 +158,21 @@
   .animal-tree-level-label {
     display: none;
   }
+}
+
+/* Hovering a node picks out the animals that came from it. The node itself takes the darker ring
+   so it stays distinguishable from the children it is pointing at. */
+.animal-tree-node.hovered {
+  border-color: var(--color-green);
+}
+
+.animal-tree-node.related {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+/* The animal whose page this is keeps its filled green, hovered or not — losing the one fixed
+   point in the tree to a passing cursor would be a poor trade. */
+.animal-tree-node.focus.related {
+  background: var(--color-green);
 }

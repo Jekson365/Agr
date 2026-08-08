@@ -1293,7 +1293,8 @@
     "resultBornDate": "Geburtsdatum",
     "resultImageError": "Foto konnte nicht hochgeladen werden. Bitte erneut versuchen.",
     "resultAddIndividuals": "Eintrag je Tier anlegen",
-    "resultAddIndividualsHint": "Jedes Jungtier erhält einen eigenen Eintrag mit beiden Elterntieren. Ohne Haken steigt nur der Bestand."
+    "resultAddIndividualsHint": "Jedes Jungtier erhält einen eigenen Eintrag mit beiden Elterntieren. Ohne Haken steigt nur der Bestand.",
+    "resultRecorded": "Jungtiere erfasst"
   },
   "animalTree": {
     "title": "Stammbaum",

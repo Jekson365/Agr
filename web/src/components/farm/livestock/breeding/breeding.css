@@ -250,3 +250,35 @@
   background: var(--color-danger-bg);
   color: var(--color-danger);
 }
+
+/* What a pairing produced, sat under its row. Tinted, so a pairing that has borne something reads
+   apart from one still waiting at a glance down the list. */
+.breeding-row-result {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--color-green-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.breeding-row-result-count {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-green);
+  font-variant-numeric: tabular-nums;
+}
+
+.breeding-row-result-group {
+  color: var(--color-green);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.breeding-row-result-group:hover {
+  text-decoration: underline;
+}
