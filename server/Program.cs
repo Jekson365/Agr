@@ -41,6 +41,8 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IFarmRepository, FarmRepository>();
 builder.Services.AddScoped<ILivestockRepository, LivestockRepository>();
 builder.Services.AddScoped<ILivestockDetailRepository, LivestockDetailRepository>();
+builder.Services.AddScoped<IBreedingEventRepository, BreedingEventRepository>();
+builder.Services.AddScoped<ILivestockMovementRepository, LivestockMovementRepository>();
 builder.Services.AddScoped<ILandPlotRepository, LandPlotRepository>();
 builder.Services.AddScoped<IStockRepository, StockRepository>();
 builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();

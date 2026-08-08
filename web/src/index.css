@@ -33,9 +33,14 @@
   --color-amber: #d97706;
   --color-amber-soft: #fbebd5;
 
-  /* Another farmer's land on the territory map. A blue no crop or soil is, so it stays legible
-     over satellite imagery and is never mistaken for the user's green or a neighbour's amber. */
-  --color-map-other: #2563eb;
+  /* The third accent, after the green and the amber. A blue no crop or soil is, so it is never
+     mistaken for either — which is what makes it work both over satellite imagery and as a fill
+     beside a green button. */
+  --color-blue: #2563eb;
+  --color-blue-soft: #dbeafe;
+
+  /* Another farmer's land on the territory map, in that same blue. */
+  --color-map-other: var(--color-blue);
 
   --color-shadow: rgba(0, 0, 0, 0.08);
   --color-shadow-strong: rgba(0, 0, 0, 0.2);
@@ -67,8 +72,11 @@
   --color-on-overlay: #ffffff;
   --color-amber: #e0a04a;
   --color-amber-soft: #33281a;
-  /* Lifted like the other accents, so it reads against a dark ground. */
-  --color-map-other: #60a5fa;
+  /* Lifted like the other accents, so it reads against a dark ground — and light enough that
+     --color-on-accent's dark text sits on it, the way it does on the green. */
+  --color-blue: #60a5fa;
+  --color-blue-soft: #17243a;
+  --color-map-other: var(--color-blue);
 
   --color-shadow: rgba(0, 0, 0, 0.5);
   --color-shadow-strong: rgba(0, 0, 0, 0.65);
@@ -189,3 +197,23 @@ a {
   color: var(--color-danger);
   font-size: 0.8125rem;
 }
+
+/* A checkbox inside a .field, which otherwise sizes every input as a 48px text box. */
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.field .field-checkbox input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  accent-color: var(--color-green);
+  cursor: pointer;
+}
+

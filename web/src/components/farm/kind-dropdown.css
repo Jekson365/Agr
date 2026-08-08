@@ -111,12 +111,12 @@
 }
 
 .kind-dropdown-popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  left: 0;
-  right: 0;
-  /* Over the fields below it, and over the modal's own footer buttons. */
-  z-index: 40;
+  /* Fixed and portalled to <body>: inside the field it was absolute, and an ancestor card with
+     overflow-y:auto clipped it — raising that card's scrollbar as soon as the list opened. Top,
+     left and width are measured from the trigger in kind-dropdown.tsx. */
+  position: fixed;
+  /* Above the modal overlay (z-index 100), which it is now a sibling of rather than inside. */
+  z-index: 200;
   padding: 8px;
   border: 1px solid var(--color-border);
   border-radius: 12px;

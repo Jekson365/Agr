@@ -5,6 +5,11 @@ export function getLivestockDetails(livestockId: number) {
   return apiFetch<LivestockDetail[]>(`/api/livestockdetails?livestockId=${livestockId}`);
 }
 
+/** Every animal on the farm. A family tree spans groups, so it cannot be built from one. */
+export function getAllLivestockDetails() {
+  return apiFetch<LivestockDetail[]>('/api/livestockdetails');
+}
+
 export function getLivestockDetailItem(id: number) {
   return apiFetch<LivestockDetail>(`/api/livestockdetails/${id}`);
 }
@@ -32,3 +37,4 @@ export function deleteLivestockDetail(id: number) {
 export function uploadLivestockDetailImage(file: File): Promise<string> {
   return uploadImage(file, '/api/livestockdetails/upload-image');
 }
+

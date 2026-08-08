@@ -17,6 +17,9 @@ export type AnimalProduction = {
   collectedBy: string | null;
   batchNumber: string | null;
   notes: string | null;
+  /** A realization: the animals this covers were slaughtered and their meat taken. Saved like any
+   *  other record, but the group's count falls by animalCount and rises again if it is deleted. */
+  isRealization: boolean;
   createdAt: string;
 };
 
@@ -34,4 +37,5 @@ export type AnimalProductionInput = {
   collectedBy: string | null;
   batchNumber: string | null;
   notes: string | null;
+  isRealization: boolean;
 };

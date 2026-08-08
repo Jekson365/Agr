@@ -13,6 +13,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Farm> Farms => Set<Farm>();
     public DbSet<Livestock> Livestock => Set<Livestock>();
     public DbSet<LivestockDetail> LivestockDetails => Set<LivestockDetail>();
+    public DbSet<BreedingEvent> BreedingEvents => Set<BreedingEvent>();
+    public DbSet<LivestockMovement> LivestockMovements => Set<LivestockMovement>();
     public DbSet<LandPlot> LandPlots => Set<LandPlot>();
     public DbSet<Stock> Stocks => Set<Stock>();
     public DbSet<Seed> Seeds => Set<Seed>();
@@ -144,6 +146,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(l => l.ProductionTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // The group's own meat, under the same rule — reference data the group points at, which
+        // deleting has to be refused while it is pointed at.
+        modelBuilder.Entity<Livestock>()
+            .HasOne<ProductionType>()
+            .WithMany()
+            .HasForeignKey(l => l.MeatProductionTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Each detail (individual animal) belongs to a livestock group; deleting the group
         // removes its details.
         modelBuilder.Entity<LivestockDetail>()
@@ -151,6 +161,61 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(d => d.LivestockId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // An animal's parents, when it was recorded as a breeding result. SetNull rather than
+        // cascade — losing a parent must not take its offspring with it — and Restrict would be
+        // worse still, since it would refuse to remove any animal that had ever bred.
+        modelBuilder.Entity<LivestockDetail>()
+            .HasOne<LivestockDetail>()
+            .WithMany()
+            .HasForeignKey(d => d.ParentOneId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<LivestockDetail>()
+            .HasOne<LivestockDetail>()
+            .WithMany()
+            .HasForeignKey(d => d.ParentTwoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Store the movement's cause as its readable name (e.g. "Purchase").
+        modelBuilder.Entity<LivestockMovement>()
+            .Property(m => m.Source)
+            .HasConversion<string>();
+
+        // A movement is part of its group's account of itself; deleting the group takes them.
+        modelBuilder.Entity<LivestockMovement>()
+            .HasOne<Livestock>()
+            .WithMany()
+            .HasForeignKey(m => m.LivestockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Store the breeding stage as its readable name (e.g. "PregnancyConfirmed").
+        modelBuilder.Entity<BreedingEvent>()
+            .Property(b => b.Status)
+            .HasConversion<string>();
+
+        // A breeding event outlives what it points at. All three references are optional and are
+        // nulled rather than cascaded: losing the sire, the dam or the group is not a reason to
+        // lose the record that the pairing happened, and the dates it carries are the only account
+        // of it. SetNull throughout also keeps the group's cascade to its details from reaching in
+        // here as a second path.
+        modelBuilder.Entity<BreedingEvent>()
+            .HasOne<Livestock>()
+            .WithMany()
+            .HasForeignKey(b => b.LivestockId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<BreedingEvent>()
+            .HasOne<LivestockDetail>()
+            .WithMany()
+            .HasForeignKey(b => b.MaleAnimalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<BreedingEvent>()
+            .HasOne<LivestockDetail>()
+            .WithMany()
+            .HasForeignKey(b => b.FemaleAnimalId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // Each plot belongs to a farm; deleting the farm removes its plots.
         modelBuilder.Entity<LandPlot>()

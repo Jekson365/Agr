@@ -30,5 +30,16 @@ public class AnimalProduction
     public string? CollectedBy { get; set; }
     public string? BatchNumber { get; set; }
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// A realization: the animals this record covers were slaughtered and their meat taken off
+    /// them. It is an ordinary production record in every other respect — same fields, same save
+    /// path — but the group's <see cref="Livestock.Count"/> moves with it, falling by
+    /// <see cref="AnimalCount"/> when one is saved and rising again when it is removed. Recorded
+    /// under the group's own meat type, not the type it declares it produces, so a herd that
+    /// yields milk can still be realized without its milk history changing meaning.
+    /// </summary>
+    public bool IsRealization { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

@@ -1,0 +1,152 @@
+.animal-tree {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
+}
+
+.animal-tree-title {
+  margin: 0 0 16px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.animal-tree-levels {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* The room the connectors are drawn in. The bus sits halfway down this gap, so it needs to be
+     deep enough for the two drops either side of it to read as lines rather than as ticks. */
+  gap: 56px;
+  /* A gutter for the generation labels. They cannot sit between the rows — that band is where the
+     connectors run — and they cannot sit among the nodes either, so they get a column of their
+     own that the tree never grows into. */
+  padding-left: 110px;
+  /* Set from the component once the widest generation is known; 1 is full size. */
+  --tree-scale: 1;
+}
+
+/* Covers the whole tree and is measured in its coordinates. Behind the nodes and transparent to
+   pointers, so every card above it stays clickable. */
+.animal-tree-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.animal-tree-line {
+  stroke: var(--color-border);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.animal-tree-level {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.animal-tree-level-label {
+  position: absolute;
+  top: 14px;
+  left: -110px;
+  width: 96px;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.animal-tree-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: calc(12px * var(--tree-scale));
+  /* Past the smallest the nodes go, a generation wraps rather than pushing the page sideways. */
+  max-width: 100%;
+}
+
+.animal-tree-node {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6px * var(--tree-scale));
+  width: calc(104px * var(--tree-scale));
+  padding: calc(12px * var(--tree-scale)) calc(8px * var(--tree-scale));
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  text-decoration: none;
+  color: var(--color-dark);
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+@media (hover: hover) {
+  .animal-tree-node:hover {
+    border-color: var(--color-green);
+    transform: translateY(-2px);
+  }
+}
+
+/* The animal whose page this is. Filled rather than outlined, so the row it sits in is findable
+   at a glance in a tree several generations deep. */
+.animal-tree-node.focus {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.animal-tree-node-image {
+  width: calc(56px * var(--tree-scale));
+  height: calc(56px * var(--tree-scale));
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-green-muted);
+  border: 1px solid var(--color-border);
+}
+
+.animal-tree-node-code {
+  font-size: calc(0.8125rem * max(var(--tree-scale), 0.82));
+  font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.animal-tree-node-group {
+  font-size: calc(0.6875rem * max(var(--tree-scale), 0.85));
+  color: var(--color-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Inherits the filled node's own colour, which the muted grey would disappear into. */
+.animal-tree-node.focus .animal-tree-node-group {
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* No room for a gutter on a narrow screen, and the tree needs the width more than the rows need
+   naming — the one that matters is filled in, and the rest read as generations by position. */
+@media (max-width: 700px) {
+  .animal-tree-levels {
+    padding-left: 0;
+  }
+
+  .animal-tree-level-label {
+    display: none;
+  }
+}

@@ -53,9 +53,46 @@ public class AnimalProductionRepository(AppDbContext context) : IAnimalProductio
         return await context.AnimalProductions.AnyAsync(p => p.AnimalId == animalId);
     }
 
+    /// <summary>
+    /// Moves the owning group's headcount by <paramref name="delta"/> for a realization — the
+    /// animals such a record covers left the herd, so the count has to follow. Left tracked
+    /// rather than read AsNoTracking, so it goes out with the caller's own SaveChangesAsync and
+    /// the record and the count land in one write.
+    /// </summary>
+    private async Task ShiftHeadcountAsync(AnimalProduction production, int delta)
+    {
+        if (!production.IsRealization || production.LivestockId is not int groupId || delta == 0)
+        {
+            return;
+        }
+
+        var group = await context.Livestock.FirstOrDefaultAsync(l => l.Id == groupId);
+        if (group is null)
+        {
+            return;
+        }
+
+        // The controller already refuses to realize more animals than the group has. The clamp is
+        // for the gap between that check and this write — a herd stuck at zero is recoverable,
+        // a negative one is not.
+        group.Count = Math.Max(0, group.Count + delta);
+
+        // And the ledger says why it moved. Added to the same context, so it goes out with the
+        // caller's SaveChangesAsync alongside the record and the count — a realization that left
+        // no entry would leave the group's own account of itself unable to explain its count.
+        context.LivestockMovements.Add(new LivestockMovement
+        {
+            LivestockId = groupId,
+            Delta = delta,
+            Source = LivestockMovementSource.Realization,
+            Date = DateOnly.FromDateTime(production.CollectionDate),
+        });
+    }
+
     public async Task<AnimalProduction> AddAsync(AnimalProduction production)
     {
         context.AnimalProductions.Add(production);
+        await ShiftHeadcountAsync(production, -production.AnimalCount);
         await context.SaveChangesAsync();
         return production;
     }
@@ -67,6 +104,11 @@ public class AnimalProductionRepository(AppDbContext context) : IAnimalProductio
         {
             return false;
         }
+
+        // Before AnimalCount is overwritten: a realization edited from 3 head to 5 takes two more
+        // animals out of the herd. IsRealization itself is deliberately not copied below, so a
+        // record cannot be turned into a realization — or out of one — by an edit.
+        await ShiftHeadcountAsync(existing, existing.AnimalCount - production.AnimalCount);
 
         existing.AnimalCount = production.AnimalCount;
         existing.ProductionTypeId = production.ProductionTypeId;
@@ -91,6 +133,10 @@ public class AnimalProductionRepository(AppDbContext context) : IAnimalProductio
         {
             return false;
         }
+
+        // Removing a realization puts its animals back: the record was the only thing saying they
+        // had left the herd.
+        await ShiftHeadcountAsync(existing, existing.AnimalCount);
 
         context.AnimalProductions.Remove(existing);
         await context.SaveChangesAsync();

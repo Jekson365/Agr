@@ -45,12 +45,17 @@ public class ProductionTypeRepository(AppDbContext context) : IProductionTypeRep
         }
 
         // The FKs to ProductionType (from production records, movements, and the livestock groups
-        // that declare it as what they produce) are Restrict, so deleting one that is still
-        // referenced would throw at the database. Check first and report it as a conflict the
-        // client can explain, rather than surfacing a 500.
+        // that declare it as what they produce or as their own meat) are Restrict, so deleting one
+        // that is still referenced would throw at the database. Check first and report it as a
+        // conflict the client can explain, rather than surfacing a 500.
+        //
+        // MeatProductionTypeId belongs in here alongside ProductionTypeId. A meat type is normally
+        // one group's alone, but nothing stops two from pointing at the same row — a group renamed
+        // to a name another group's meat already carries, or a type picked by hand — and the FK
+        // would throw either way.
         var inUse = await context.AnimalProductions.AnyAsync(p => p.ProductionTypeId == id)
             || await context.ProductionMovements.AnyAsync(m => m.ProductionTypeId == id)
-            || await context.Livestock.AnyAsync(l => l.ProductionTypeId == id);
+            || await context.Livestock.AnyAsync(l => l.ProductionTypeId == id || l.MeatProductionTypeId == id);
         if (inUse)
         {
             return DeleteProductionTypeResult.InUse;

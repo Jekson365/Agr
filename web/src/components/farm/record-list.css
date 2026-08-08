@@ -184,6 +184,28 @@
   background: var(--color-surface-sunken);
 }
 
+/* A realization: this row is why the group's head count dropped, so it is set apart from the
+   collections around it rather than just labelled. Amber, not red — nothing went wrong.
+   The accent is an inset shadow rather than a left border: the row is a grid on a shared track
+   list, and a border would push its cells out of line with every other row's. */
+.production-row.realization {
+  background: var(--color-amber-soft);
+  box-shadow: inset 3px 0 0 var(--color-amber);
+}
+
+/* Hover repaints the background for every row, which would drop the tint above — the accent
+   survives on its own, but the row should not go green when the others do. */
+.production-row.realization:hover {
+  background: var(--color-amber-soft);
+}
+
+/* Ledger coloring on the quantity column: a realization's animals left the herd, so its count
+   reads as a deduction even though the meat it yielded is an addition. */
+.production-row.realization .production-row-cell.animals-out {
+  color: var(--color-amber);
+  font-weight: 700;
+}
+
 /* Ledger coloring on the quantity column: collections add (green), sales deduct (red). */
 .production-row-cell.income-delta {
   color: var(--color-green);
@@ -320,4 +342,27 @@
 .production-row-delete:hover {
   background: var(--color-danger-bg);
   color: var(--color-danger);
+}
+
+/* The pair of buttons under the production table: adding a record, and realizing the group.
+   They read as alternatives, so they sit on one row rather than stacked. */
+.production-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Marks a row whose animals left the herd, so a realization is not mistaken for an ordinary
+   batch when the group's count no longer matches its history. */
+.production-realization-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
 }

@@ -19,6 +19,9 @@ export type ProductionForm = {
   collectedBy: string;
   batchNumber: string;
   notes: string;
+  /** Set by the realization button, never by a field — it decides whether saving this record
+   *  also takes its animals off the group, so it is not something the form offers to toggle. */
+  isRealization: boolean;
 };
 
 function toDateInputValue(iso: string): string {
@@ -46,6 +49,7 @@ export function makeEmptyForm(animalCount: number): ProductionForm {
     collectedBy: '',
     batchNumber: '',
     notes: '',
+    isRealization: false,
   };
 }
 
@@ -68,6 +72,7 @@ export function formFromRecord(record: AnimalProduction): ProductionForm {
     collectedBy: record.collectedBy ?? '',
     batchNumber: record.batchNumber ?? '',
     notes: record.notes ?? '',
+    isRealization: record.isRealization,
   };
 }
 
@@ -128,5 +133,8 @@ export function buildProductionInput(
     collectedBy: form.collectedBy.trim() || null,
     batchNumber: form.batchNumber.trim() || null,
     notes: form.notes.trim() || null,
+    // An edited record keeps what it was saved as: the server refuses to turn a realization into
+    // an ordinary record either way, since flipping it would strand the animals it removed.
+    isRealization: editingRecord ? editingRecord.isRealization : form.isRealization,
   };
 }

@@ -1,0 +1,252 @@
+.breeding-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.breeding-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+/* What the record is — the pair, where it stands, and the dates it has collected. Read-only. */
+.breeding-row-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+/* Every stage the event can be at, on the row. Laid out as the sequence it moves through, with
+   the one it is at filled in, so where a pairing stands and where it can go next read as one
+   thing rather than a closed dropdown. */
+.breeding-row-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.breeding-stage-chip {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.breeding-stage-chip:hover:not(:disabled) {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.breeding-stage-chip.active {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+/* Failing is the one ending that is not a good outcome, so it is red wherever it appears rather
+   than taking the green every other stage gets — an event that failed should not read at a glance
+   as one that finished well. */
+.breeding-stage-chip.failed:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.breeding-stage-chip.failed.active {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  /* Flips with the theme exactly as the fill does: white on the dark red of the light theme,
+     dark on the lifted red of the dark one. A fixed white would fail against #f87171. */
+  color: var(--color-on-accent);
+}
+
+.breeding-stage-chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* The question a chip asks: which day did this happen. Nothing is saved until it is answered. */
+.breeding-stage-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--color-green-muted);
+}
+
+.breeding-stage-form-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+/* The comment, changed in place: sending someone through a modal to add a note is the long way
+   round. */
+.breeding-row-edit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* The status is the narrower of the two; the comment takes whatever is left. */
+.breeding-row-edit select {
+  flex: 0 0 auto;
+  min-width: 180px;
+}
+
+.breeding-row-edit input {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+/* Matching .field's controls, which these are not inside. */
+.breeding-row-edit select,
+.breeding-row-edit input {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  padding: 0 12px;
+  font-size: 0.875rem;
+  background: var(--color-surface);
+  color: var(--color-dark);
+}
+
+.breeding-row-edit select:focus,
+.breeding-row-edit input:focus {
+  outline: 2px solid var(--color-green);
+  outline-offset: -1px;
+}
+
+.breeding-row-edit select:disabled,
+.breeding-row-edit input:disabled {
+  opacity: 0.6;
+}
+
+.breeding-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* The pair is what the record is: both codes on one line, joined by a symbol rather than a word
+   so it reads the same in every language. */
+.breeding-row-pair {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+/* One parent: its picture and its tag, read as a single unit so the × between them separates the
+   two animals rather than an image from a number. */
+.breeding-row-parent {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Inherits the pair line's weight and colour rather than looking like a link in running text —
+   the whole parent is the target, avatar included, so it needs no underline to be found. */
+.breeding-row-parent.link {
+  color: inherit;
+  text-decoration: none;
+  border-radius: 999px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.breeding-row-parent.link:hover {
+  color: var(--color-green);
+}
+
+.breeding-row-parent.link:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 2px;
+}
+
+.breeding-row-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  /* The kind's artwork is a flat mark on no background, so it needs a ground of its own; a real
+     photo covers this entirely. */
+  background: var(--color-green-muted);
+  border: 1px solid var(--color-border);
+}
+
+.breeding-row-join {
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.breeding-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.breeding-row-comment {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+.breeding-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Where the event stands: in progress, carrying, done, or over without a result. */
+.breeding-status-badge.breeding {
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+}
+
+.breeding-status-badge.pregnancy-confirmed {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.breeding-status-badge.completed {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.breeding-status-badge.failed {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}

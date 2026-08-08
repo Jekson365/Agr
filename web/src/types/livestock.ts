@@ -12,6 +12,10 @@ export type Livestock = {
    *  Chosen when the group is added and settled from then on. Null only for a group recorded
    *  before the choice moved here that has collected nothing. */
   productionTypeId: number | null;
+  /** This group's meat — the type a realization of it is recorded under, separate from what it
+   *  produces day to day. Created with the group and named after its animal, so rabbit meat and
+   *  cow meat are not the same output. Null for a group recorded before this existed. */
+  meatProductionTypeId: number | null;
 };
 
 export type LivestockInput = Omit<Livestock, 'id'>;

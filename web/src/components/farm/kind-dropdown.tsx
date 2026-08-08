@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import type { KindOption } from '@/components/farm/kind-picker';
 import { useLanguage } from '@/contexts/language-context';
@@ -28,6 +29,14 @@ type Props = {
  * matter how long the catalog grows, which is why the stock form uses it. Catalogs that are still
  * a handful of kinds keep the chips, where every option is visible without a click.
  */
+/**
+ * The popover at its tallest, used only to decide whether it has room under the trigger or has to
+ * flip above it. Adds up the sizes in kind-dropdown.css — a 220px list, the 34px search box and
+ * its 6px margin, 8px padding either side and the border — rounded up, since erring high only
+ * flips it a little sooner than strictly needed.
+ */
+const POPOVER_MAX_HEIGHT = 300;
+
 export function KindDropdown({
   options,
   selected,
@@ -52,6 +61,10 @@ export function KindDropdown({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  /** Where the portalled popover sits, in viewport coordinates. Null until it is measured. */
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const selectedOption = options.find((opt) => opt.value === selected) ?? null;
 
@@ -78,10 +91,45 @@ export function KindDropdown({
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (event: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      // The popover is portalled out of the field, so it is no longer inside rootRef and has to
+      // be asked about separately — without this, clicking an option would close the list first.
+      if (rootRef.current?.contains(target) || popoverRef.current?.contains(target)) return;
+      setOpen(false);
     };
     document.addEventListener('pointerdown', onPointerDown);
     return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [open]);
+
+  /*
+   * The popover is portalled to <body> and positioned from the trigger's box, so it cannot be
+   * clipped by the modal it sits in — an absolutely positioned popover inside a card with
+   * overflow-y:auto raises that card's scrollbar the moment it opens.
+   *
+   * Placed on layout rather than in an effect, so it is never painted at the wrong spot first.
+   */
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    function place() {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const box = trigger.getBoundingClientRect();
+
+      // Flip above the field when there is not room under it.
+      const below = window.innerHeight - box.bottom;
+      const top = below < POPOVER_MAX_HEIGHT && box.top > below ? box.top - POPOVER_MAX_HEIGHT - 6 : box.bottom + 6;
+      setRect({ top: Math.max(8, top), left: box.left, width: box.width });
+    }
+
+    place();
+    // Capture phase, so it follows the trigger when an ancestor scrolls rather than only the page.
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
+    };
   }, [open]);
 
   // Opening starts on the selected kind, so Enter without touching anything is a no-op rather
@@ -169,6 +217,7 @@ export function KindDropdown({
           <button
             type="button"
             className={open ? 'kind-dropdown-trigger open' : 'kind-dropdown-trigger'}
+            ref={triggerRef}
             onClick={() => setOpen((prev) => !prev)}
             disabled={loading}
             aria-haspopup="listbox"
@@ -183,8 +232,14 @@ export function KindDropdown({
             </span>
           </button>
 
-          {open && (
-            <div className="kind-dropdown-popover">
+          {open &&
+            rect &&
+            createPortal(
+              <div
+                ref={popoverRef}
+                className="kind-dropdown-popover"
+                style={{ top: rect.top, left: rect.left, width: rect.width }}
+              >
               <input
                 className="kind-dropdown-search"
                 value={query}
@@ -255,8 +310,9 @@ export function KindDropdown({
                   <span className="kind-dropdown-add-name">{t('farm.typeAddNamed', { name: trimmed })}</span>
                 </button>
               )}
-            </div>
-          )}
+              </div>,
+              document.body
+            )}
         </div>
 
         {/* The signposted way in, for someone who knows the kind isn't there yet and would rather

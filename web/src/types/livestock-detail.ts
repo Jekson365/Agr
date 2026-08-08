@@ -8,6 +8,10 @@ export type LivestockDetail = {
   /** ISO date string (YYYY-MM-DD) or null when unknown. */
   bornDate: string | null;
   gender: Gender | null;
+  /** The two animals this one came from, when it was recorded as a breeding result. Null for an
+   *  animal entered on its own, and nulled again if a parent is later removed. */
+  parentOneId: number | null;
+  parentTwoId: number | null;
 };
 
 export type LivestockDetailInput = Omit<LivestockDetail, 'id'>;

@@ -19,6 +19,12 @@ public class AnimalProductionsController(
     /// </summary>
     private const string ProduceMismatchMessage = "A record is collected under what its group produces.";
 
+    /// <summary>
+    /// A realization takes its animals out of the group (see
+    /// <see cref="AnimalProduction.IsRealization"/>), so it cannot cover more than the group has.
+    /// </summary>
+    private const string NotEnoughAnimalsMessage = "The group does not have that many animals left.";
+
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AnimalProduction>>> Get([FromQuery] int? animalId, [FromQuery] int? livestockId)
@@ -45,7 +51,34 @@ public class AnimalProductionsController(
             return BadRequest("Provide exactly one of animalId or livestockId.");
         }
 
-        if (await DeclaredProductionTypeAsync(production) is int declared && production.ProductionTypeId != declared)
+        if (production.IsRealization)
+        {
+            // A realization is an act on the herd — it takes animals out of a group — so it is
+            // recorded against the group, never against one animal of it.
+            if (production.LivestockId is not int groupId)
+            {
+                return BadRequest("A realization is recorded against a group, not a single animal.");
+            }
+
+            var group = await livestockRepository.GetByIdAsync(groupId);
+            if (group is null)
+            {
+                return NotFound();
+            }
+
+            if (production.AnimalCount < 1)
+            {
+                return BadRequest("A realization covers at least one animal.");
+            }
+
+            if (production.AnimalCount > group.Count)
+            {
+                return Conflict(NotEnoughAnimalsMessage);
+            }
+        }
+        // A realization is collected under the group's meat, not under what it produces day to
+        // day, so it is the one record that is allowed to name a different type.
+        else if (await DeclaredProductionTypeAsync(production) is int declared && production.ProductionTypeId != declared)
         {
             return Conflict(ProduceMismatchMessage);
         }
@@ -75,10 +108,29 @@ public class AnimalProductionsController(
             return NotFound();
         }
 
+        if (existing.IsRealization)
+        {
+            if (production.AnimalCount < 1)
+            {
+                return BadRequest("A realization covers at least one animal.");
+            }
+
+            // Only the difference is taken from the herd — the animals this record already
+            // accounts for left it when it was saved. Raising 3 head to 5 needs 2 more to exist.
+            var additional = production.AnimalCount - existing.AnimalCount;
+            if (additional > 0
+                && existing.LivestockId is int groupId
+                && await livestockRepository.GetByIdAsync(groupId) is Livestock group
+                && additional > group.Count)
+            {
+                return Conflict(NotEnoughAnimalsMessage);
+            }
+        }
         // Only a change of type is judged, and against the owner the row actually has: a record
         // collected under something else before its group declared an output keeps that type, so
-        // editing its quantity doesn't turn into a fight over what it was collected as.
-        if (production.ProductionTypeId != existing.ProductionTypeId
+        // editing its quantity doesn't turn into a fight over what it was collected as. A
+        // realization is exempt for the same reason it is on create — it names the group's meat.
+        else if (production.ProductionTypeId != existing.ProductionTypeId
             && await DeclaredProductionTypeAsync(existing) is int declared
             && production.ProductionTypeId != declared)
         {

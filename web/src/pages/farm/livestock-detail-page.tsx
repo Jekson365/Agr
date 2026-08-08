@@ -6,6 +6,7 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LivestockDetailFormModal } from '@/components/farm/livestock/livestock-detail-form-modal';
 import { StockFeedRow } from '@/components/farm/livestock/stock-feed-row';
+import { CalendarIcon, ChevronRightIcon, PawIcon } from '@/components/icons/misc-icons';
 import { formatAge } from '@/config/age';
 import { livestockImage } from '@/config/livestock-kinds';
 import { useLanguage } from '@/contexts/language-context';
@@ -126,35 +127,56 @@ export function LivestockDetailPage() {
       ) : details.length === 0 ? (
         <p className="empty-state">{t('livestockDetail.empty')}</p>
       ) : (
-        <div className="list-card-grid two-col">
+        <div className="entity-tile-grid">
           {details.map((detail) => {
             const age = formatAge(detail.bornDate, t);
             const genderLabel = detail.gender ? t(detail.gender === 'Male' ? 'livestockDetail.male' : 'livestockDetail.female') : null;
+            const animalHref = `/farm/livestock/${livestockId}/animal/${detail.id}`;
             return (
-              <div key={detail.id} className="list-card">
-                <Link to={`/farm/livestock/${livestockId}/animal/${detail.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    {detail.imagePath ? (
-                      <img
-                        src={resolveAssetUrl(detail.imagePath)}
-                        alt=""
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }}
-                      />
-                    ) : livestock ? (
-                      <img src={livestockImage(livestock.type)} alt="" />
-                    ) : null}
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{detail.code}</span>
-                    <br />
-                    <span className="list-card-subtitle">
-                      {age ? `${t('farm.age')}: ${age}` : ''}
-                      {age && genderLabel ? ' · ' : ''}
-                      {genderLabel ?? ''}
-                    </span>
-                  </span>
+              <div key={detail.id} className="entity-tile">
+                <Link to={animalHref} className="entity-tile-media">
+                  {/* An animal's own photo fills the panel the way a land's does; the kind's
+                      artwork is a flat mark, so it stays contained on the muted green. */}
+                  {detail.imagePath ? (
+                    <img src={resolveAssetUrl(detail.imagePath)} alt="" className="entity-tile-photo" />
+                  ) : livestock ? (
+                    <img src={livestockImage(livestock.type)} alt="" className="entity-tile-icon" />
+                  ) : null}
                 </Link>
-                <CardMenu onEdit={() => openEdit(detail)} onDelete={() => setConfirmDelete({ id: detail.id, code: detail.code })} />
+
+                <div className="entity-tile-menu">
+                  <CardMenu onEdit={() => openEdit(detail)} onDelete={() => setConfirmDelete({ id: detail.id, code: detail.code })} />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{detail.code}</h2>
+
+                  {(age || genderLabel) && (
+                    <div className="entity-tile-meta">
+                      {age && (
+                        <div className="entity-tile-row">
+                          <CalendarIcon width={16} height={16} />
+                          <span>
+                            {t('farm.age')}: {age}
+                          </span>
+                        </div>
+                      )}
+                      {genderLabel && (
+                        <div className="entity-tile-row">
+                          <PawIcon width={16} height={16} />
+                          <span>{genderLabel}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <span className="entity-tile-divider" />
+
+                  <Link to={animalHref} className="entity-tile-details">
+                    {t('common.details')}
+                    <ChevronRightIcon width={16} height={16} />
+                  </Link>
+                </div>
               </div>
             );
           })}

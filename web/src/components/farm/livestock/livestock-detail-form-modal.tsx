@@ -70,7 +70,17 @@ export function LivestockDetailFormModal({ open, livestockId, editingDetail, onC
         await updateLivestockDetail(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createLivestockDetail({ livestockId, code: trimmedCode, imagePath, bornDate, gender });
+        const created = await createLivestockDetail({
+          livestockId,
+          code: trimmedCode,
+          imagePath,
+          bornDate,
+          gender,
+          // An animal entered by hand has no recorded parentage. Only a breeding result carries
+          // it, and that goes through its own endpoint.
+          parentOneId: null,
+          parentTwoId: null,
+        });
         onSaved(created, true);
       }
       onClose();

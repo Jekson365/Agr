@@ -49,6 +49,9 @@ namespace Server.Migrations.Tenant
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("IsRealization")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("LivestockId")
                         .HasColumnType("integer");
 
@@ -84,6 +87,56 @@ namespace Server.Migrations.Tenant
                     b.HasIndex("UnitId");
 
                     b.ToTable("AnimalProductions");
+                });
+
+            modelBuilder.Entity("Server.Models.BreedingEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("BreedingDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("CompletedDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("FailedDate")
+                        .HasColumnType("date");
+
+                    b.Property<int?>("FemaleAnimalId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("LivestockId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("MaleAnimalId")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("PregnancyConfirmedDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FemaleAnimalId");
+
+                    b.HasIndex("LivestockId");
+
+                    b.HasIndex("MaleAnimalId");
+
+                    b.ToTable("BreedingEvents");
                 });
 
             modelBuilder.Entity("Server.Models.CalendarEvent", b =>
@@ -888,6 +941,9 @@ namespace Server.Migrations.Tenant
                     b.Property<int>("FarmId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("MeatProductionTypeId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -902,6 +958,8 @@ namespace Server.Migrations.Tenant
                     b.HasKey("Id");
 
                     b.HasIndex("FarmId");
+
+                    b.HasIndex("MeatProductionTypeId");
 
                     b.HasIndex("ProductionTypeId");
 
@@ -933,9 +991,19 @@ namespace Server.Migrations.Tenant
                     b.Property<int>("LivestockId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ParentOneId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ParentTwoId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LivestockId");
+
+                    b.HasIndex("ParentOneId");
+
+                    b.HasIndex("ParentTwoId");
 
                     b.ToTable("LivestockDetails");
                 });
@@ -1010,6 +1078,40 @@ namespace Server.Migrations.Tenant
                             Id = 10,
                             Name = "Rabbit"
                         });
+                });
+
+            modelBuilder.Entity("Server.Models.LivestockMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Delta")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LivestockId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LivestockId");
+
+                    b.ToTable("LivestockMovements");
                 });
 
             modelBuilder.Entity("Server.Models.MedicalRecord", b =>
@@ -1748,6 +1850,24 @@ namespace Server.Migrations.Tenant
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Server.Models.BreedingEvent", b =>
+                {
+                    b.HasOne("Server.Models.LivestockDetail", null)
+                        .WithMany()
+                        .HasForeignKey("FemaleAnimalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Server.Models.Livestock", null)
+                        .WithMany()
+                        .HasForeignKey("LivestockId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Server.Models.LivestockDetail", null)
+                        .WithMany()
+                        .HasForeignKey("MaleAnimalId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
             modelBuilder.Entity("Server.Models.GreenhouseFloor", b =>
                 {
                     b.HasOne("Server.Models.Greenhouse", null)
@@ -1991,11 +2111,35 @@ namespace Server.Migrations.Tenant
 
                     b.HasOne("Server.Models.ProductionType", null)
                         .WithMany()
+                        .HasForeignKey("MeatProductionTypeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Server.Models.ProductionType", null)
+                        .WithMany()
                         .HasForeignKey("ProductionTypeId")
                         .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Server.Models.LivestockDetail", b =>
+                {
+                    b.HasOne("Server.Models.Livestock", null)
+                        .WithMany()
+                        .HasForeignKey("LivestockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.LivestockDetail", null)
+                        .WithMany()
+                        .HasForeignKey("ParentOneId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("Server.Models.LivestockDetail", null)
+                        .WithMany()
+                        .HasForeignKey("ParentTwoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Server.Models.LivestockMovement", b =>
                 {
                     b.HasOne("Server.Models.Livestock", null)
                         .WithMany()

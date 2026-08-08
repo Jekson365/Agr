@@ -88,6 +88,17 @@
   border-color: var(--color-green);
 }
 
+.secondary-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Hover must not suggest it is still live. */
+.secondary-button:disabled:hover {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
 .state-box {
   display: flex;
   flex-direction: column;
@@ -622,6 +633,14 @@
   object-fit: contain;
 }
 
+/* A real photograph in the same panel — an individual animal's own picture. It fills the panel
+   rather than sitting on it, the way a land's photo does on its tile. */
+.entity-tile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* Greenhouses carry an uploaded photo rather than a flat mark, so theirs fills the panel the
    way the land tile's does instead of sitting contained in the middle of it. */
 .entity-tile-photo {
@@ -651,6 +670,30 @@
 /* The stack owns the bottom alignment, so the buttons inside it must not also claim it. */
 .entity-tile-actions .entity-tile-details {
   margin-top: 0;
+}
+
+/* A pair of equally weighted actions sharing one line of the stack. Equal basis-0 tracks so the
+   two split the row evenly however long their labels are, rather than one taking the space its
+   text happens to need. */
+.entity-tile-actions-row {
+  display: flex;
+  gap: calc(6px * var(--tile-scale));
+}
+
+.entity-tile-actions-row .entity-tile-details {
+  flex: 1 1 0;
+  min-width: 0;
+  /* These labels are single words that must not be split; the padding gives way first. */
+  padding-left: calc(4px * var(--tile-scale));
+  padding-right: calc(4px * var(--tile-scale));
+  white-space: nowrap;
+}
+
+/* Breeding sits beside production and does something different with the same herd, so it takes
+   the blue accent — same weight as its neighbour, not the same action. */
+.entity-tile-details.breeding {
+  background: var(--color-blue);
+  color: var(--color-on-accent);
 }
 
 .entity-tile-details.secondary {
@@ -891,4 +934,15 @@
 .stock-form-modal .modal-card,
 .livestock-form-modal .modal-card {
   max-width: 880px;
+}
+
+/* The head count beside a page title, for a page that changes it. */
+.page-header-count {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
 }

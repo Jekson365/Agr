@@ -14,10 +14,17 @@ public class LivestockDetailsController(
     IAnimalProductionRepository animalProductionRepository,
     IFileStorageService fileStorageService) : ControllerBase
 {
+    /// <summary>
+    /// A group's animals, or every animal on the farm when no group is named — which is what a
+    /// family tree needs, since an animal's offspring are routinely put in a different group from
+    /// its own.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LivestockDetail>>> GetByLivestock([FromQuery] int livestockId)
+    public async Task<ActionResult<IEnumerable<LivestockDetail>>> GetByLivestock([FromQuery] int? livestockId)
     {
-        return Ok(await livestockDetailRepository.GetByLivestockAsync(livestockId));
+        return Ok(livestockId is int groupId
+            ? await livestockDetailRepository.GetByLivestockAsync(groupId)
+            : await livestockDetailRepository.GetAllAsync());
     }
 
     [HttpGet("{id:int}")]

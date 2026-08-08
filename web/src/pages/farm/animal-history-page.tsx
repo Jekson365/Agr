@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/history-columns.css';
+import { AnimalFamilyTree } from '@/components/farm/livestock/animal-family-tree';
 import { AnimalProductionTotals } from '@/components/farm/livestock/animal-production-totals';
 import { AnimalProductionView } from '@/components/farm/livestock/animal-production/animal-production-view';
 import { MedicalRecordsView } from '@/components/farm/livestock/medical-records/medical-records-view';
@@ -11,7 +12,9 @@ import { StockHistoryView } from '@/components/farm/livestock/stock-history-view
 import './animal-history-page.css';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
-import { getLivestockDetailItem } from '@/services/livestock-detail-service';
+import { getAllLivestockDetails, getLivestockDetailItem } from '@/services/livestock-detail-service';
+import { getLivestock } from '@/services/livestock-service';
+import type { Livestock } from '@/types/livestock';
 import type { LivestockDetail } from '@/types/livestock-detail';
 
 /**
@@ -47,6 +50,10 @@ export function AnimalHistoryPage() {
   const stockId = Number(stockIdParam);
 
   const [detail, setDetail] = useState<LivestockDetail | null>(null);
+  /** Everything the family tree is drawn from: every animal on the farm, and the groups they sit
+   *  in for their kind's artwork and name. */
+  const [allAnimals, setAllAnimals] = useState<LivestockDetail[]>([]);
+  const [groups, setGroups] = useState<Livestock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +67,16 @@ export function AnimalHistoryPage() {
     setLoading(true);
     setError(null);
     try {
-      setDetail(await getLivestockDetailItem(stockId));
+      const [item, everyAnimal, groupList] = await Promise.all([
+        getLivestockDetailItem(stockId),
+        // Best effort: without these the tree cannot be drawn, but the rest of the page is worth
+        // showing regardless.
+        getAllLivestockDetails().catch(() => [] as LivestockDetail[]),
+        getLivestock().catch(() => [] as Livestock[]),
+      ]);
+      setDetail(item);
+      setAllAnimals(everyAnimal);
+      setGroups(groupList);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -119,6 +135,10 @@ export function AnimalHistoryPage() {
           </div>
 
           <AnimalProductionTotals animalId={stockId} />
+
+          {/* Last on the page and full width: it is the one thing here that is about the animal's
+              place among the others rather than about the animal itself. */}
+          <AnimalFamilyTree animal={detail} all={allAnimals} groupsById={new Map(groups.map((g) => [g.id, g]))} />
         </>
       )}
     </div>

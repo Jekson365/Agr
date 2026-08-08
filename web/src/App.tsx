@@ -18,7 +18,9 @@ import { GreenhouseStockPage } from '@/pages/farm/greenhouse-stock-page';
 import { LandDetailPage } from '@/pages/farm/land-detail-page';
 import { LandPage } from '@/pages/farm/land-page';
 // import { LivestockBalancePage } from '@/pages/farm/livestock-balance-page';
+import { LivestockBreedingPage } from '@/pages/farm/livestock-breeding-page';
 import { LivestockDetailPage } from '@/pages/farm/livestock-detail-page';
+import { LivestockMovementPage } from '@/pages/farm/livestock-movement-page';
 import { LivestockPage } from '@/pages/farm/livestock-page';
 import { LivestockProductionPage } from '@/pages/farm/livestock-production-page';
 import { SeedHistoryPage } from '@/pages/farm/seed-history-page';
@@ -80,6 +82,8 @@ function App() {
             {/* <Route path="/farm/livestock/balance" element={<LivestockBalancePage />} /> */}
             <Route path="/farm/livestock/:id" element={<LivestockDetailPage />} />
             <Route path="/farm/livestock/:livestockId/production" element={<LivestockProductionPage />} />
+            <Route path="/farm/livestock/:livestockId/breeding" element={<LivestockBreedingPage />} />
+            <Route path="/farm/livestock/:livestockId/movement" element={<LivestockMovementPage />} />
             <Route path="/farm/livestock/:livestockId/animal/:stockId" element={<AnimalHistoryPage />} />
           </Route>
 

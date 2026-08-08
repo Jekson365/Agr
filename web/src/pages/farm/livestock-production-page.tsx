@@ -41,10 +41,19 @@ export function LivestockProductionPage() {
       </Link>
 
       <div className="page-header">
-        <h1 className="page-title">
-          {t('production.title')}
-          {livestock ? ` · ${livestock.name}` : ''}
-        </h1>
+        <div className="page-header-left">
+          <h1 className="page-title">
+            {t('production.title')}
+            {livestock ? ` · ${livestock.name}` : ''}
+          </h1>
+          {/* Shown here because realization moves it: without the count on the page that changes
+              it, there is nothing to see the change against. */}
+          {livestock && (
+            <span className="page-header-count">
+              {t('farm.count')}: {livestock.count}
+            </span>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -57,7 +66,13 @@ export function LivestockProductionPage() {
           </button>
         </div>
       ) : (
-        <AnimalProductionView target="livestock" livestockId={livestockId} animalCount={livestock.count} />
+        <AnimalProductionView
+          target="livestock"
+          livestockId={livestockId}
+          animalCount={livestock.count}
+          // A realization took animals off the group; read it back so the count above follows.
+          onHeadcountChange={load}
+        />
       )}
     </div>
   );

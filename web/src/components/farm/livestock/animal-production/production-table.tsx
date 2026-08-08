@@ -113,16 +113,30 @@ export function ProductionTable({
             .join(' · ');
 
           return (
-            <div key={row.key} className={isSingle ? 'production-row single' : 'production-row'}>
+            <div
+              key={row.key}
+              className={
+                record.isRealization ? 'production-row realization' : isSingle ? 'production-row single' : 'production-row'
+              }
+            >
               <button type="button" className="production-row-cell type" onClick={() => onEdit(record)} title={t('common.edit')}>
                 {typeName}
                 {animalCode && <span className="production-row-animal"> · {animalCode}</span>}
+                {/* Its animals left the herd, which is why the group's count no longer adds up
+                    against the rest of this history. */}
+                {record.isRealization && (
+                  <span className="production-realization-badge">{t('production.realizationBadge')}</span>
+                )}
               </button>
               <span className="production-row-cell muted">{dateLabel}</span>
               <span className="production-row-cell num strong income-delta">
                 +{record.quantity} <span className="production-row-unit">{shortUnit(unit)}</span>
               </span>
-              {isGroup && <span className="production-row-cell num">{record.animalCount}</span>}
+              {isGroup && (
+                <span className={record.isRealization ? 'production-row-cell num animals-out' : 'production-row-cell num'}>
+                  {record.isRealization ? `−${record.animalCount}` : record.animalCount}
+                </span>
+              )}
               <span className="production-row-cell">{record.quality || '—'}</span>
               <span className="production-row-cell num">
                 {record.pricePerUnit != null ? formatPrice(record.pricePerUnit) : '—'}

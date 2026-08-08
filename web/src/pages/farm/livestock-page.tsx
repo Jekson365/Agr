@@ -139,10 +139,18 @@ export function LivestockPage() {
 
                   <span className="entity-tile-divider" />
 
-                  {/* Both destinations the old card offered, kept as a stack. */}
                   <div className="entity-tile-actions">
-                    <Link to={`/farm/livestock/${item.id}/production`} className="entity-tile-details">
-                      {t('production.title')}
+                    {/* What the herd yields and how it grows are a pair, so they share a row. */}
+                    <div className="entity-tile-actions-row">
+                      <Link to={`/farm/livestock/${item.id}/production`} className="entity-tile-details">
+                        {t('production.title')}
+                      </Link>
+                      <Link to={`/farm/livestock/${item.id}/breeding`} className="entity-tile-details breeding">
+                        {t('farm.breeding')}
+                      </Link>
+                    </div>
+                    <Link to={`/farm/livestock/${item.id}/movement`} className="entity-tile-details secondary">
+                      {t('livestockMovement.title')}
                     </Link>
                     <Link to={`/farm/livestock/${item.id}`} className="entity-tile-details secondary">
                       {t('farm.individualAnimals')}

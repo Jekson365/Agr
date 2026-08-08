@@ -1,0 +1,67 @@
+.movement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.movement-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+/* The number leads the row: what changed is read before why it changed. */
+.movement-delta {
+  flex-shrink: 0;
+  min-width: 56px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.movement-delta.in {
+  color: var(--color-green);
+}
+
+.movement-delta.out {
+  color: var(--color-danger);
+}
+
+.movement-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+
+.movement-source {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+/* The one source that takes animals off the group reads in the same red as its number. */
+.movement-source.realization {
+  color: var(--color-danger);
+}
+
+.movement-date {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.movement-note {
+  flex-basis: 100%;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}

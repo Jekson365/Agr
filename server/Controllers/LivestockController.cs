@@ -12,6 +12,8 @@ namespace Server.Controllers;
 public class LivestockController(
     ILivestockRepository livestockRepository,
     IAnimalProductionRepository animalProductionRepository,
+    IProductionTypeRepository productionTypeRepository,
+    ILivestockMovementRepository livestockMovementRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     private const string ProduceSettledMessage = "What this group produces is already set and can no longer change.";
@@ -54,7 +56,27 @@ public class LivestockController(
             return PlanLimitReached(ex.Message);
         }
 
+        // The group is created empty and its opening count arrives as the first movement, rather
+        // than being set here and logged as well — that would count it twice, since a movement
+        // moves the count. It also means the ledger accounts for every animal the group has,
+        // starting from zero rather than from an unexplained number.
+        var openingCount = livestock.Count;
+        livestock.Count = 0;
         var created = await livestockRepository.AddAsync(livestock);
+
+        if (openingCount > 0)
+        {
+            await livestockMovementRepository.AddAsync(new LivestockMovement
+            {
+                LivestockId = created.Id,
+                Delta = openingCount,
+                Source = LivestockMovementSource.Manual,
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
+            });
+            // The row now holds it; carry it back so the caller sees the group it asked for.
+            created.Count = openingCount;
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -66,11 +88,8 @@ public class LivestockController(
             return BadRequest();
         }
 
-        if (await livestockRepository.ExistsByNameAsync(livestock.Name.Trim(), id))
-        {
-            return Conflict("A livestock group with this name already exists.");
-        }
-
+        // No name check here: the name is settled at creation and the repository ignores whatever
+        // arrives on an update, so an edit cannot collide with another group however it is spelled.
         var existing = await livestockRepository.GetByIdAsync(id);
         if (existing is null)
         {
@@ -82,19 +101,18 @@ public class LivestockController(
             return Conflict(TypeSettledMessage);
         }
 
-        // The records the group has collected are counted under what it produces, so pointing it
-        // at another output would recount them as something they were never collected as. A group
-        // that has not declared one yet may still do so — that is the choice being made, not
-        // changed. A request that omits the field entirely leaves the declaration standing rather
-        // than clearing it, so a client that predates it can still edit the count or the name.
-        if (existing.ProductionTypeId is int settled)
+        // What a group produces is settled when it is created, declared or not. The records it has
+        // collected are counted under it, so pointing it at another output would recount them as
+        // something they were never collected as — and a group created without one stays without
+        // one rather than acquiring a history retrospectively.
+        //
+        // A request that omits the field leaves whatever is there standing rather than clearing
+        // it, so a client that predates it can still edit the name.
+        if (livestock.ProductionTypeId is int requested && requested != existing.ProductionTypeId)
         {
-            if (livestock.ProductionTypeId is int requested && requested != settled)
-            {
-                return Conflict(ProduceSettledMessage);
-            }
-            livestock.ProductionTypeId = settled;
+            return Conflict(ProduceSettledMessage);
         }
+        livestock.ProductionTypeId = existing.ProductionTypeId;
 
         try
         {
@@ -129,7 +147,29 @@ public class LivestockController(
             return Conflict("This group still has production records. Remove them first.");
         }
 
+        // Read before the group goes: its meat is the one production type that exists only
+        // because this group did, so it leaves with it rather than sitting in the catalog as an
+        // output for an animal the farm no longer keeps.
+        var meatProductionTypeId = (await livestockRepository.GetByIdAsync(id))?.MeatProductionTypeId;
+
         var deleted = await livestockRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        if (meatProductionTypeId is int meatTypeId)
+        {
+            // After the group, never before: the FK from Livestock to ProductionType is Restrict,
+            // so while the group is still there its meat cannot go anywhere.
+            //
+            // A realization recorded before the group was emptied still points at its meat, and
+            // another group could have been pointed at the same row. DeleteAsync already refuses
+            // in both cases and reports InUse rather than throwing, so this asks and accepts the
+            // answer.
+            await productionTypeRepository.DeleteAsync(meatTypeId);
+        }
+
+        return NoContent();
     }
 }

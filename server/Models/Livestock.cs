@@ -23,4 +23,16 @@ public class Livestock
     /// before its first record.
     /// </summary>
     public int? ProductionTypeId { get; set; }
+
+    /// <summary>
+    /// This group's meat — the <see cref="ProductionType"/> a realization of it is recorded under,
+    /// kept apart from <see cref="ProductionTypeId"/> because a herd that yields milk still has
+    /// meat. One type per group, named after it, rather than a single shared "Meat", so one
+    /// herd's meat is told apart from another's on the balances and in the marketplace.
+    ///
+    /// Held as an id rather than found by name when needed: the row is named in the language of
+    /// whoever created the group, so a farm working in two languages has no name to compute.
+    /// Null for a group that has never been realized, including every group predating this.
+    /// </summary>
+    public int? MeatProductionTypeId { get; set; }
 }
