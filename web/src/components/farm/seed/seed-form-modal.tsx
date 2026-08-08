@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
+import { kindDeleteMessage } from '@/components/farm/kind-delete-message';
 import { KindPicker, type KindOption } from '@/components/farm/kind-picker';
 import { Modal } from '@/components/ui/modal';
 import { SEED_UNIT_OPTIONS } from '@/config/seed-kinds';
-import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
+import { isBuiltInStockKind, stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createStockKind, deleteStockKind, getStockKinds } from '@/services/stock-kind-service';
@@ -102,8 +103,7 @@ export function SeedFormModal({ open, editingSeed, onClose, onSaved }: Props) {
         setSeedType(next[0]?.name ?? '');
       }
     } catch (err) {
-      // The server refuses to delete a kind that existing stock or seeds still reference.
-      setKindError(err instanceof ApiError && err.status === 409 ? t('farm.typeInUse') : t('farm.typeDeleteError'));
+      setKindError(kindDeleteMessage(err, t));
     } finally {
       setConfirmDeleteKind(null);
     }
@@ -153,11 +153,18 @@ export function SeedFormModal({ open, editingSeed, onClose, onSaved }: Props) {
           ) : (
             <>
               <KindPicker
-                options={kinds.map((k) => ({ value: k.name, label: stockTypeLabel(k.name, t), icon: stockKindImage(k.name) }))}
+                options={kinds.map((k) => ({
+                  value: k.name,
+                  label: stockTypeLabel(k.name, t),
+                  icon: stockKindImage(k.name),
+                  removable: !isBuiltInStockKind(k.name),
+                }))}
                 selected={seedType}
                 onSelect={setSeedType}
                 onAddNew={handleAddKind}
                 addPlaceholder={t('farm.newStockTypePlaceholder')}
+                /* Off here as on the stock form — same catalog, so the two agree about it. */
+                allowAdd={false}
                 loading={kindsLoading}
                 onRemove={(value) => {
                   const kind = kinds.find((k) => k.name === value);

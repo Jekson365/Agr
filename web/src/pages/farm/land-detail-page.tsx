@@ -8,6 +8,7 @@ import '@/components/farm/farm-crud.css';
 import { LandPlotFormModal } from '@/components/farm/land/land-plot-form-modal';
 import { TerritoryMap } from '@/components/farm/land/territory-map';
 import { TerritoryViewerModal } from '@/components/farm/land/territory-viewer-modal';
+import { LeafIcon, LocationIcon, SquareIcon } from '@/components/icons/misc-icons';
 import { cropImage, cropLabel } from '@/config/crop';
 import { treeStockLabel } from '@/config/fruit-kinds';
 import { stockTypeLabel } from '@/config/stock-kinds';
@@ -178,97 +179,127 @@ export function LandDetailPage() {
         </div>
       ) : (
         <>
-          {farm && (
-            <div className="land-detail-header">
-              <img
-                src={farm.imagePath ? resolveAssetUrl(farm.imagePath) : landPlaceholder}
-                alt=""
-                className="land-detail-image"
-              />
-              <div className="land-detail-facts">
-                <div className="list-card-subtitle">
-                  {t('farm.area')} {farm.area} {t('farm.areaUnit')}
-                </div>
-                <div className="list-card-subtitle">
-                  {t('farm.location')}: {farm.location}
-                </div>
-                <div className="land-detail-allocation">
-                  <div className="land-detail-allocation-row">
-                    <span>{t('landPlot.allocated')}</span>
-                    <span>
-                      {round2(allocatedArea)} / {farm.area} {t('farm.areaUnit')}
+          {/* Its own class rather than .land-detail-header, which the greenhouse detail page
+              shares and lays out differently. */}
+          <div className="land-detail-layout">
+            {/* The land and the plots on it read as one column — the plots belong to the card
+                above them, not to the map beside it. */}
+            <div className="land-detail-main">
+              {farm && (
+                /* Same card as the one this land is shown as on /farm/land — photo, badge over
+                   its edge, then the facts — so arriving here reads as opening that card. */
+                <div className="land-detail-card">
+                  <div className="land-detail-media">
+                    <img
+                      src={farm.imagePath ? resolveAssetUrl(farm.imagePath) : landPlaceholder}
+                      alt=""
+                      className="land-detail-card-image"
+                    />
+                    <span className="land-detail-badge">
+                      <LeafIcon width={26} height={26} />
                     </span>
                   </div>
-                  <div className="land-detail-allocation-track">
-                    <div
-                      className={allocatedArea > farm.area ? 'land-detail-allocation-fill over' : 'land-detail-allocation-fill'}
-                      style={{ width: `${farm.area > 0 ? Math.min(100, (allocatedArea / farm.area) * 100) : 0}%` }}
-                    />
-                  </div>
-                  <span className={remainingArea < 0 ? 'limit-hint land-detail-over' : 'limit-hint'}>
-                    {remainingArea < 0
-                      ? t('landPlot.overAllocated', { area: round2(Math.abs(remainingArea)), unit: t('farm.areaUnit') })
-                      : t('landPlot.remaining', { area: round2(remainingArea), unit: t('farm.areaUnit') })}
-                  </span>
-                </div>
-              </div>
 
-              {/* The territory marked out on the map, for land that has one. */}
-              {territory.length > 0 && (
-                <div className="land-detail-territory">
-                  <div className="land-detail-territory-header">
-                    <span className="land-detail-territory-title">{t('landTerritory.label')}</span>
-                    {territoryArea > 0 && (
-                      <span className="land-detail-territory-area">
-                        ≈ {formatArea(territoryArea)} {t('farm.areaUnit')}
+                  <div className="land-detail-body">
+                    <div className="land-detail-row">
+                      <SquareIcon width={16} height={16} />
+                      <span>
+                        {t('farm.area')} {farm.area} {t('farm.areaUnit')}
                       </span>
-                    )}
-                  </div>
-                  <div className="land-detail-territory-map">
-                    <TerritoryMap points={territory} others={otherTerritories} label={farm.name} />
-                    {/* The map in the page is a picture of the land; panning and zooming it
-                        happens full screen. The overlay takes every gesture so a drag meant for
-                        the big map can't quietly shift this one instead. */}
-                    <button
-                      type="button"
-                      className="land-detail-territory-open"
-                      onClick={() => setMapFullScreen(true)}
-                      aria-label={t('landTerritory.openFullScreen')}
-                    >
-                      <span className="land-detail-territory-open-hint">{t('landTerritory.fullScreen')}</span>
-                    </button>
+                    </div>
+                    <div className="land-detail-row">
+                      <LocationIcon width={16} height={16} />
+                      <span>{farm.location}</span>
+                    </div>
+
+                    <span className="land-detail-divider" />
+
+                    <div className="land-detail-allocation">
+                      <div className="land-detail-allocation-row">
+                        <span>{t('landPlot.allocated')}</span>
+                        <span>
+                          {round2(allocatedArea)} / {farm.area} {t('farm.areaUnit')}
+                        </span>
+                      </div>
+                      <div className="land-detail-allocation-track">
+                        <div
+                          className={
+                            allocatedArea > farm.area
+                              ? 'land-detail-allocation-fill over'
+                              : 'land-detail-allocation-fill'
+                          }
+                          style={{ width: `${farm.area > 0 ? Math.min(100, (allocatedArea / farm.area) * 100) : 0}%` }}
+                        />
+                      </div>
+                      <span className={remainingArea < 0 ? 'limit-hint land-detail-over' : 'limit-hint'}>
+                        {remainingArea < 0
+                          ? t('landPlot.overAllocated', {
+                              area: round2(Math.abs(remainingArea)),
+                              unit: t('farm.areaUnit'),
+                            })
+                          : t('landPlot.remaining', { area: round2(remainingArea), unit: t('farm.areaUnit') })}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {plots.length === 0 ? (
-            <p className="empty-state">{t('landPlot.empty')}</p>
-          ) : (
-            <div className="list-card-grid">
-              {plots.map((plot) => (
-                <div key={plot.id} className="list-card">
-                  <button type="button" className="list-card-body" onClick={() => openEdit(plot)}>
-                    <span className="list-card-icon-wrap">
-                      <img src={cropImage(plot.crop)} alt="" />
-                    </span>
-                    <span className="list-card-info">
-                      <span className="list-card-title">{plotLabel(plot)}</span>
-                      <br />
-                      <span className="list-card-subtitle">
-                        {plot.area} {t('farm.areaUnit')}
-                      </span>
-                    </span>
-                  </button>
-                  <CardMenu
-                    onEdit={() => openEdit(plot)}
-                    onDelete={() => setConfirmDelete({ id: plot.id, crop: plotLabel(plot) })}
-                  />
+              {plots.length === 0 ? (
+                <p className="empty-state">{t('landPlot.empty')}</p>
+              ) : (
+                <div className="list-card-grid">
+                  {plots.map((plot) => (
+                    <div key={plot.id} className="list-card">
+                      <button type="button" className="list-card-body" onClick={() => openEdit(plot)}>
+                        <span className="list-card-icon-wrap">
+                          <img src={cropImage(plot.crop)} alt="" />
+                        </span>
+                        <span className="list-card-info">
+                          <span className="list-card-title">{plotLabel(plot)}</span>
+                          <br />
+                          <span className="list-card-subtitle">
+                            {plot.area} {t('farm.areaUnit')}
+                          </span>
+                        </span>
+                      </button>
+                      <CardMenu
+                        onEdit={() => openEdit(plot)}
+                        onDelete={() => setConfirmDelete({ id: plot.id, crop: plotLabel(plot) })}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+
+            {/* The territory marked out on the map, for land that has one. */}
+            {farm && territory.length > 0 && (
+              <div className="land-detail-territory">
+                <div className="land-detail-territory-header">
+                  <span className="land-detail-territory-title">{t('landTerritory.label')}</span>
+                  {territoryArea > 0 && (
+                    <span className="land-detail-territory-area">
+                      ≈ {formatArea(territoryArea)} {t('farm.areaUnit')}
+                    </span>
+                  )}
+                </div>
+                <div className="land-detail-territory-map">
+                  <TerritoryMap points={territory} others={otherTerritories} label={farm.name} />
+                  {/* The map in the page is a picture of the land; panning and zooming it
+                      happens full screen. The overlay takes every gesture so a drag meant for
+                      the big map can't quietly shift this one instead. */}
+                  <button
+                    type="button"
+                    className="land-detail-territory-open"
+                    onClick={() => setMapFullScreen(true)}
+                    aria-label={t('landTerritory.openFullScreen')}
+                  >
+                    <span className="land-detail-territory-open-hint">{t('landTerritory.fullScreen')}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </>
       )}
 

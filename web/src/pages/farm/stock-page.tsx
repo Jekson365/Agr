@@ -6,6 +6,7 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { StockFormModal } from '@/components/farm/stock/stock-form/stock-form-modal';
+import { ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useAuth } from '@/contexts/auth-context';
@@ -113,27 +114,40 @@ export function StockPage() {
           </button>
         </div>
       ) : (
-        <div className="list-card-grid">
+        <div className="entity-tile-grid">
           {stock.map((item) => {
             const typeLabel = stockTypeLabel(item.type, t);
             const title = item.name.trim() || typeLabel;
             return (
-              <div key={item.id} className="list-card">
-                <Link to={`/farm/stock/${item.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={stockKindImage(item.type)} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{title}</span>
-                    {item.name.trim() && (
-                      <>
-                        <br />
-                        <span className="list-card-subtitle">{typeLabel}</span>
-                      </>
-                    )}
-                  </span>
+              <div key={item.id} className="entity-tile">
+                <Link to={`/farm/stock/${item.id}`} className="entity-tile-media">
+                  <img src={stockKindImage(item.type)} alt="" className="entity-tile-icon" />
                 </Link>
-                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
+
+                <div className="entity-tile-menu">
+                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{title}</h2>
+
+                  {/* The crop only needs spelling out when a custom name replaced it above. */}
+                  {item.name.trim() && (
+                    <div className="entity-tile-meta">
+                      <div className="entity-tile-row">
+                        <LeafIcon width={16} height={16} />
+                        <span>{typeLabel}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <span className="entity-tile-divider" />
+
+                  <Link to={`/farm/stock/${item.id}`} className="entity-tile-details">
+                    {t('common.details')}
+                    <ChevronRightIcon width={16} height={16} />
+                  </Link>
+                </div>
               </div>
             );
           })}

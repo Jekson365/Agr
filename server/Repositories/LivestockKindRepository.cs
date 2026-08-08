@@ -41,6 +41,12 @@ public class LivestockKindRepository(AppDbContext context) : ILivestockKindRepos
             return DeleteLivestockKindResult.NotFound;
         }
 
+        // Seeded kinds are the catalog's floor — see StockKindRepository.DeleteAsync.
+        if (BuiltInKinds.IsLivestock(existing.Name))
+        {
+            return DeleteLivestockKindResult.BuiltIn;
+        }
+
         // Livestock references the kind by name; deleting one that is still in use would leave
         // groups with a type no picker can show. Report it as a conflict the client can explain.
         var inUse = await context.Livestock.AnyAsync(l => l.Type.ToLower() == existing.Name.ToLower());

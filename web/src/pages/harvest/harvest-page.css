@@ -1,19 +1,22 @@
 /* Larger, more readable text scoped to the harvest list (shared list/page classes live in
-   farm-crud.css, so overriding them here keeps other pages at their original sizes). */
+   farm-crud.css, so overriding them here keeps other pages at their original sizes).
+   The card's own type used to be bumped here too; the tiles size theirs from
+   --tile-text-scale instead, so those two overrides went with the .list-card markup. */
 .harvest-page .page-title {
   font-size: 1.5rem;
 }
 
-.harvest-page .list-card-title {
-  font-size: 1rem;
-}
-
-.harvest-page .list-card-subtitle {
-  font-size: 0.875rem;
-}
-
 .harvest-status-badge {
   margin-top: 4px;
+}
+
+/* In a tile the badges sit in a flex row that spaces them itself. The margins above are there
+   for the inline runs on the calendar, the harvest detail and both greenhouse pages, which
+   still lay these out after a <br> — so they are cleared here rather than dropped. */
+.entity-tile-badges .harvest-status-badge,
+.entity-tile-badges .harvest-overdue-badge,
+.entity-tile-badges .harvest-due-badge {
+  margin: 0;
 }
 
 .harvest-overdue-badge,

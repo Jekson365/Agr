@@ -1,5 +1,5 @@
 import type { KindCatalog } from '@/components/farm/kind-catalog-field';
-import { fruitKindImage, fruitTypeLabel } from '@/config/fruit-kinds';
+import { fruitKindImage, fruitTypeLabel, isBuiltInFruitKind } from '@/config/fruit-kinds';
 import { createFruitKind, deleteFruitKind, getFruitKinds } from '@/services/fruit-kind-service';
 
 /** The fruit-kind catalog behind the tree stock form's type picker. A module constant so the
@@ -10,4 +10,5 @@ export const FRUIT_KIND_CATALOG: KindCatalog = {
   remove: deleteFruitKind,
   label: fruitTypeLabel,
   icon: fruitKindImage,
+  isBuiltIn: isBuiltInFruitKind,
 };

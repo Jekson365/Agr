@@ -192,6 +192,8 @@ export function GreenhouseStockFormModal({
             onSelect={setStockType}
             onAddNew={handleAddKind}
             addPlaceholder={t('farm.newStockTypePlaceholder')}
+            /* Off here as on the stock form — same catalog, so the two agree about it. */
+            allowAdd={false}
             loading={kindsLoading}
           />
           {kindError && <div className="error-banner">{kindError}</div>}

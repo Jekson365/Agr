@@ -11,6 +11,14 @@ export const PRODUCTION_TYPE_LABEL_KEY: Record<string, string> = {
   Silk: 'production.typeSilk',
 };
 
+/**
+ * Outputs that are no longer offered when a group declares what it produces. They keep their
+ * labels above on purpose: the rows are dropped from the seed and deleted by the
+ * DropMeatAndLeatherProductionTypes migration wherever nothing references them, but a tenant
+ * that already recorded one keeps it, and that history still has to read properly.
+ */
+export const RETIRED_PRODUCTION_TYPE_NAMES: ReadonlySet<string> = new Set(['Meat', 'Leather']);
+
 export const UNIT_LABEL_KEY: Record<string, string> = {
   Kilogram: 'production.unitKilogram',
   Liter: 'production.unitLiter',

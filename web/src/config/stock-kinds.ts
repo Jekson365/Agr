@@ -63,3 +63,10 @@ export function stockTypeLabel(type: string, t: (key: string) => string): string
 export function stockKindImage(type: string): string {
   return STOCK_KIND_IMAGE[type] ?? defaultStockIcon;
 }
+
+/** Whether this is one of the kinds every tenant is seeded with, as opposed to one a user added.
+ * Built-ins can't be deleted from the catalog — they're what a fresh farm starts from, and the
+ * server refuses to remove them however the request arrives. */
+export function isBuiltInStockKind(type: string): boolean {
+  return type in STOCK_TYPE_LABEL_KEY;
+}

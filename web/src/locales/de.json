@@ -11,7 +11,8 @@
     "done": "Fertig",
     "clear": "Zurücksetzen",
     "today": "Heute",
-    "close": "Schließen"
+    "close": "Schließen",
+    "details": "Details"
   },
   "nav": {
     "expandSection": "{name} aufklappen",
@@ -200,6 +201,11 @@
     "amountPlaceholder": "z. B. 120",
     "stockNamePlaceholder": "z. B. Holländische Gurke",
     "newStockTypePlaceholder": "Name des neuen Typs",
+    "typeSelect": "Typ wählen",
+    "typeSearchPlaceholder": "Typen durchsuchen …",
+    "typeNoMatches": "Kein Typ passt zu deiner Suche.",
+    "typeAddNamed": "„{name}“ hinzufügen",
+    "typeAddNew": "Neuer Typ",
     "stockHarvestedFixed": "Eine Ernte erfasst diesen Bestand bereits, daher können Typ und Einheit nicht mehr geändert werden.",
     "newLivestockTypePlaceholder": "Name der neuen Tierart",
     "typeFixed": "Eine Gruppe behält den Typ, mit dem sie angelegt wurde.",
@@ -208,6 +214,7 @@
     "deleteHasProduction": "Lösche zuerst die Produktionseinträge — sie jetzt zu entfernen, würde sie aus deinen Berichten löschen.",
     "typeSaveError": "Der Typ konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "typeInUse": "Dieser Typ wird noch von vorhandenen Einträgen verwendet.",
+    "typeBuiltIn": "Vorgegebene Typen können nicht gelöscht werden.",
     "typeDeleteError": "Der Typ konnte nicht gelöscht werden. Bitte erneut versuchen.",
     "unit": "Einheit",
     "unitKg": "kg",

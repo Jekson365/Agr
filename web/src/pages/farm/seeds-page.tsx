@@ -5,6 +5,7 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { SeedFormModal } from '@/components/farm/seed/seed-form-modal';
+import { BoxIcon, ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
 import { SEED_UNIT_LABEL_KEY, seedTitle } from '@/config/seed-kinds';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
@@ -102,27 +103,45 @@ export function SeedsPage() {
       ) : seeds.length === 0 ? (
         <p className="empty-state">{t('seed.empty')}</p>
       ) : (
-        <div className="list-card-grid two-col">
+        <div className="entity-tile-grid">
           {seeds.map((seed) => {
             const cropLabel = stockTypeLabel(seed.type, t);
             const title = seedTitle(seed, t);
             const onHand = t('seed.onHand', { amount: seed.amount, unit: t(SEED_UNIT_LABEL_KEY[seed.unit]) });
             return (
-              <div key={seed.id} className="list-card">
-                <Link to={`/farm/seeds/${seed.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={stockKindImage(seed.type)} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{title}</span>
-                    <br />
-                    {/* The crop only needs spelling out when a custom name replaced it above. */}
-                    <span className="list-card-subtitle">
-                      {seed.name.trim() ? `${cropLabel} · ${onHand}` : onHand}
-                    </span>
-                  </span>
+              <div key={seed.id} className="entity-tile">
+                <Link to={`/farm/seeds/${seed.id}`} className="entity-tile-media">
+                  <img src={stockKindImage(seed.type)} alt="" className="entity-tile-icon" />
                 </Link>
-                <CardMenu onEdit={() => openEdit(seed)} onDelete={() => setConfirmDelete({ id: seed.id, name: title })} />
+
+                <div className="entity-tile-menu">
+                  <CardMenu onEdit={() => openEdit(seed)} onDelete={() => setConfirmDelete({ id: seed.id, name: title })} />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{title}</h2>
+
+                  <div className="entity-tile-meta">
+                    <div className="entity-tile-row">
+                      <BoxIcon width={16} height={16} />
+                      <span>{onHand}</span>
+                    </div>
+                    {/* The crop only needs spelling out when a custom name replaced it above. */}
+                    {seed.name.trim() && (
+                      <div className="entity-tile-row">
+                        <LeafIcon width={16} height={16} />
+                        <span>{cropLabel}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="entity-tile-divider" />
+
+                  <Link to={`/farm/seeds/${seed.id}`} className="entity-tile-details">
+                    {t('common.details')}
+                    <ChevronRightIcon width={16} height={16} />
+                  </Link>
+                </div>
               </div>
             );
           })}

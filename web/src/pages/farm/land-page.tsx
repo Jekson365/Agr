@@ -7,6 +7,7 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LandFormModal } from '@/components/farm/land/land-form-modal';
 import { PacketsModal } from '@/components/farm/packets-modal';
+import { ChevronRightIcon, LeafIcon, LocationIcon, SquareIcon } from '@/components/icons/misc-icons';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -114,30 +115,52 @@ export function LandPage() {
           </button>
         </div>
       ) : (
-        <div className="land-card-grid">
+        <div className="land-tile-grid">
           {farms.map((item) => (
-            <div key={item.id} className="land-card">
-              <div className="land-card-header">
-                {/* Opening a land shows its plots, mirroring the mobile app; editing the land
-                    itself stays on the card menu. */}
-                <Link to={`/farm/land/${item.id}`} className="land-card-body">
-                  <div className="list-card-title">{item.name}</div>
-                  <div className="list-card-subtitle">
-                    {t('farm.area')} {item.area} {t('farm.areaUnit')}
-                  </div>
-                  <div className="list-card-subtitle">
-                    {t('farm.location')}: {item.location}
-                  </div>
-                </Link>
-                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: item.name })} />
-              </div>
-              <Link to={`/farm/land/${item.id}`}>
+            <div key={item.id} className="land-tile">
+              {/* Photo first: it is what tells one piece of land from another at a glance, and
+                  the name underneath reads as its caption. */}
+              <Link to={`/farm/land/${item.id}`} className="land-tile-media">
                 <img
                   src={item.imagePath ? resolveAssetUrl(item.imagePath) : landPlaceholder}
                   alt=""
-                  className="land-card-image"
+                  className="land-tile-image"
                 />
+                <span className="land-tile-badge">
+                  <LeafIcon width={26} height={26} />
+                </span>
               </Link>
+
+              {/* Sits over the photo rather than in the text, so the body below stays a clean
+                  column. Editing the land itself stays on this menu. */}
+              <div className="land-tile-menu">
+                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: item.name })} />
+              </div>
+
+              <div className="land-tile-body">
+                <h2 className="land-tile-title">{item.name}</h2>
+
+                <div className="land-tile-meta">
+                  <div className="land-tile-row">
+                    <SquareIcon width={16} height={16} />
+                    <span>
+                      {t('farm.area')} {item.area} {t('farm.areaUnit')}
+                    </span>
+                  </div>
+                  <div className="land-tile-row">
+                    <LocationIcon width={16} height={16} />
+                    <span>{item.location}</span>
+                  </div>
+                </div>
+
+                <span className="land-tile-divider" />
+
+                {/* Opening a land shows its plots, mirroring the mobile app. */}
+                <Link to={`/farm/land/${item.id}`} className="land-tile-details">
+                  {t('common.details')}
+                  <ChevronRightIcon width={16} height={16} />
+                </Link>
+              </div>
             </div>
           ))}
         </div>

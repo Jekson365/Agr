@@ -50,3 +50,9 @@ export function livestockTypeLabel(type: string, t: (key: string) => string): st
   const key = LIVESTOCK_KIND_LABEL_KEY[type];
   return key ? t(key) : type;
 }
+
+/** Whether this is one of the kinds every tenant is seeded with, as opposed to one a user added.
+ * Built-ins can't be deleted from the catalog — see isBuiltInStockKind. */
+export function isBuiltInLivestockKind(type: string): boolean {
+  return type in LIVESTOCK_KIND_LABEL_KEY;
+}

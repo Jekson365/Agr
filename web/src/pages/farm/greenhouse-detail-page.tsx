@@ -6,12 +6,11 @@ import harvestIcon from '@/assets/icons/harvest.png';
 import '@/components/farm/farm-crud.css';
 import { GreenhousePositioningModal } from '@/components/farm/greenhouse/positioning/greenhouse-positioning-modal';
 import { ChevronDownIcon } from '@/components/icons/nav-icons';
-import { ChevronRightIcon } from '@/components/icons/misc-icons';
+import { CalendarIcon, ChevronRightIcon, LocationIcon, SquareIcon } from '@/components/icons/misc-icons';
 import '@/components/farm/kind-picker.css';
 import '@/components/farm/search-filter.css';
 import '@/components/farm/record-list.css';
 import '@/components/harvest/harvest.css';
-import '@/pages/farm/land-detail-page.css';
 import '@/pages/report-page.css';
 import './greenhouse-detail-page.css';
 import { formatLocalizedIsoDate, formatLocalizedIsoDay } from '@/components/ui/date-utils';
@@ -131,26 +130,38 @@ export function GreenhouseDetailPage() {
       ) : (
         greenhouse && (
           <>
-            <div className="land-detail-header">
-              <img
-                src={greenhouse.imagePath ? resolveAssetUrl(greenhouse.imagePath) : greenhousePlaceholder}
-                alt=""
-                className="land-detail-image"
-              />
-              <div className="land-detail-facts">
-                <div className="list-card-subtitle">
-                  {t('farm.area')} {greenhouse.area} {t('farm.areaUnit')}
+            {/* The same card this greenhouse is shown as on /farm/greenhouse — photo, then its
+                facts. The name is already the page title, so the card drops it. */}
+            <div className="entity-tile greenhouse-detail-card">
+              <div className="entity-tile-media">
+                <img
+                  src={greenhouse.imagePath ? resolveAssetUrl(greenhouse.imagePath) : greenhousePlaceholder}
+                  alt=""
+                  className="entity-tile-photo"
+                />
+              </div>
+
+              <div className="entity-tile-body">
+                <div className="entity-tile-meta">
+                  <div className="entity-tile-row">
+                    <SquareIcon width={16} height={16} />
+                    <span>
+                      {t('farm.area')} {greenhouse.area} {t('farm.areaUnit')}
+                    </span>
+                  </div>
+                  {greenhouse.establishDate && (
+                    <div className="entity-tile-row">
+                      <CalendarIcon width={16} height={16} />
+                      <span>{formatLocalizedIsoDay(greenhouse.establishDate, language)}</span>
+                    </div>
+                  )}
+                  {greenhouse.location && (
+                    <div className="entity-tile-row">
+                      <LocationIcon width={16} height={16} />
+                      <span>{greenhouse.location}</span>
+                    </div>
+                  )}
                 </div>
-                {greenhouse.establishDate && (
-                  <div className="list-card-subtitle">
-                    {t('farm.establishDate')}: {formatLocalizedIsoDay(greenhouse.establishDate, language)}
-                  </div>
-                )}
-                {greenhouse.location && (
-                  <div className="list-card-subtitle">
-                    {t('farm.location')}: {greenhouse.location}
-                  </div>
-                )}
               </div>
             </div>
 

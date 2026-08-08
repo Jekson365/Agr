@@ -1,3 +1,23 @@
+/* The greenhouse itself, built from the same .entity-tile as the card on /farm/greenhouse so
+   arriving here reads as opening the tile that was clicked. --tile-scale and --tile-text-scale
+   are declared for this selector in farm-crud.css, alongside the list grid's, so the two stay in
+   step from one place. */
+.greenhouse-detail-card {
+  /* Capped rather than stretched: the facts under the photo are three short lines, and a card
+     the width of the page would be mostly empty beside them. */
+  max-width: calc(280px * var(--tile-scale));
+  margin-bottom: 24px;
+}
+
+/* The tile in the list lifts because it opens something. This one is already the page's subject,
+   so it stays put — compounded with .entity-tile to outrank that hover rule wherever the two
+   files land in the bundle. */
+.entity-tile.greenhouse-detail-card:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--color-border);
+}
+
 /* This greenhouse's own harvests: one collapsible row each, revealing its recorded yield
    underneath — mirrors the report stock page's expand-for-movements pattern. */
 .greenhouse-harvest-rows {

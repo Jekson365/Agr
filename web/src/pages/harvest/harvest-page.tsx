@@ -8,7 +8,7 @@ import '@/components/farm/farm-crud.css';
 import '@/components/farm/search-filter.css';
 import { HarvestFormModal } from '@/components/harvest/harvest-form-modal';
 import '@/components/harvest/harvest.css';
-import { FilterIcon, SearchIcon } from '@/components/icons/misc-icons';
+import { CalendarIcon, ChevronRightIcon, FilterIcon, SearchIcon } from '@/components/icons/misc-icons';
 import { daysUntilExpected, isOverdue } from '@/config/harvest-analysis';
 import { HARVEST_STATUS_BADGE_CLASS, HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/config/harvest-status';
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
@@ -202,33 +202,51 @@ export function HarvestPage({ kind = 'Crop' }: Props) {
       ) : visibleHarvests.length === 0 ? (
         <p className="empty-state">{t('harvest.noResults')}</p>
       ) : (
-        <div className="list-card-grid">
+        <div className="entity-tile-grid">
           {visibleHarvests.map((item) => {
             const overdue = isOverdue(item);
             const daysLeft = daysUntilExpected(item);
 
             return (
-              <div key={item.id} className="list-card">
-                <Link to={`${detailBase}/${item.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={harvestIcon} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{item.title}</span>
-                    <br />
-                    <span className="list-card-subtitle">{formatLocalizedIsoDate(item.date, language)}</span>
-                    <br />
-                    <span className={`${HARVEST_STATUS_BADGE_CLASS[item.status]} harvest-status-badge`}>
-                      {t(HARVEST_STATUS_LABEL_KEY[item.status])}
-                    </span>
-                    {overdue ? (
-                      <span className="harvest-overdue-badge">{t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}</span>
-                    ) : item.status !== 'Harvested' && daysLeft != null ? (
-                      <span className="harvest-due-badge">{t('harvest.dueIn', { days: daysLeft })}</span>
-                    ) : null}
-                  </span>
+              <div key={item.id} className="entity-tile">
+                <Link to={`${detailBase}/${item.id}`} className="entity-tile-media">
+                  <img src={harvestIcon} alt="" className="entity-tile-icon" />
                 </Link>
-                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, title: item.title })} />
+
+                <div className="entity-tile-menu">
+                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, title: item.title })} />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{item.title}</h2>
+
+                  <div className="entity-tile-meta">
+                    <div className="entity-tile-row">
+                      <CalendarIcon width={16} height={16} />
+                      <span>{formatLocalizedIsoDate(item.date, language)}</span>
+                    </div>
+
+                    <div className="entity-tile-badges">
+                      <span className={`${HARVEST_STATUS_BADGE_CLASS[item.status]} harvest-status-badge`}>
+                        {t(HARVEST_STATUS_LABEL_KEY[item.status])}
+                      </span>
+                      {overdue ? (
+                        <span className="harvest-overdue-badge">
+                          {t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}
+                        </span>
+                      ) : item.status !== 'Harvested' && daysLeft != null ? (
+                        <span className="harvest-due-badge">{t('harvest.dueIn', { days: daysLeft })}</span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <span className="entity-tile-divider" />
+
+                  <Link to={`${detailBase}/${item.id}`} className="entity-tile-details">
+                    {t('common.details')}
+                    <ChevronRightIcon width={16} height={16} />
+                  </Link>
+                </div>
               </div>
             );
           })}

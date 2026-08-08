@@ -1,5 +1,5 @@
 import type { KindCatalog } from '@/components/farm/kind-catalog-field';
-import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
+import { isBuiltInStockKind, stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { createStockKind, deleteStockKind, getStockKinds } from '@/services/stock-kind-service';
 
 /** The crop-kind catalog behind the stock form's type picker. A module constant so the field's
@@ -10,4 +10,5 @@ export const STOCK_KIND_CATALOG: KindCatalog = {
   remove: deleteStockKind,
   label: stockTypeLabel,
   icon: stockKindImage,
+  isBuiltIn: isBuiltInStockKind,
 };

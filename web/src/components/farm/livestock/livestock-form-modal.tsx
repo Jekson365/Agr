@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
+import { kindDeleteMessage } from '@/components/farm/kind-delete-message';
 import { KindPicker, type KindOption } from '@/components/farm/kind-picker';
 import { Modal } from '@/components/ui/modal';
-import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
+import { isBuiltInLivestockKind, livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { isPlanLimitError } from '@/config/plan-benefits';
-import { PRODUCTION_TYPE_LABEL_KEY } from '@/config/production';
+import { PRODUCTION_TYPE_LABEL_KEY, RETIRED_PRODUCTION_TYPE_NAMES } from '@/config/production';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createLivestockKind, deleteLivestockKind, getLivestockKinds } from '@/services/livestock-kind-service';
@@ -96,9 +97,15 @@ export function LivestockFormModal({
     setProductionTypesLoading(true);
     try {
       const list = await getProductionTypes();
-      setProductionTypes(list);
+      // Meat and leather are not what a herd yields over and over, so they are not on offer.
+      // The group being edited keeps the one it already declares, though — that value is shown
+      // back as fixed text read out of this same list, and dropping it would blank it out.
+      const offered = list.filter(
+        (productionType) => productionType.id === preset || !RETIRED_PRODUCTION_TYPE_NAMES.has(productionType.name)
+      );
+      setProductionTypes(offered);
       // A group has to say what it produces, so default to the first output on offer.
-      setProductionTypeId(preset ?? list[0]?.id ?? null);
+      setProductionTypeId(preset ?? offered[0]?.id ?? null);
     } catch {
       setProductionTypes([]);
       setProductionTypeId(preset);
@@ -216,8 +223,7 @@ export function LivestockFormModal({
         setLivestockType(next[0]?.name ?? '');
       }
     } catch (err) {
-      // The server refuses to delete a kind that existing livestock groups still reference.
-      setKindError(err instanceof ApiError && err.status === 409 ? t('farm.typeInUse') : t('farm.typeDeleteError'));
+      setKindError(kindDeleteMessage(err, t));
     } finally {
       setConfirmDeleteKind(null);
     }
@@ -327,11 +333,15 @@ export function LivestockFormModal({
                   value: k.name,
                   label: livestockTypeLabel(k.name, t),
                   icon: livestockImage(k.name),
+                  removable: !isBuiltInLivestockKind(k.name),
                 }))}
                 selected={livestockType}
                 onSelect={setLivestockType}
                 onAddNew={handleAddKind}
                 addPlaceholder={t('farm.newLivestockTypePlaceholder')}
+                /* Adding an animal type from here is switched off — the catalog is settled.
+                   Flip to true to bring the "+" chip back. */
+                allowAdd={false}
                 loading={kindsLoading}
                 onRemove={(value) => {
                   const kind = kinds.find((k) => k.name === value);

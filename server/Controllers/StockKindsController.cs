@@ -40,6 +40,9 @@ public class StockKindsController(IStockKindRepository stockKindRepository) : Co
         {
             DeleteStockKindResult.Deleted => NoContent(),
             DeleteStockKindResult.InUse => Conflict("This stock type is still used by existing stock or seeds."),
+            // Forbidden rather than Conflict: nothing about the farm's data is in the way, the
+            // type simply isn't the user's to remove.
+            DeleteStockKindResult.BuiltIn => StatusCode(StatusCodes.Status403Forbidden, "Built-in stock types can't be deleted."),
             _ => NotFound(),
         };
     }

@@ -5,6 +5,7 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LivestockFormModal } from '@/components/farm/livestock/livestock-form-modal';
+import { ChevronRightIcon, LocationIcon, PawIcon } from '@/components/icons/misc-icons';
 import { livestockImage } from '@/config/livestock-kinds';
 import { isAtLimit } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
@@ -103,31 +104,52 @@ export function LivestockPage() {
           </button>
         </div>
       ) : (
-        <div className="list-card-grid two-col">
+        <div className="entity-tile-grid">
           {livestock.map((item) => {
             const farmName = farms.find((f) => f.id === item.farmId)?.name;
             return (
-              <div key={item.id} className="list-card">
-                <Link to={`/farm/livestock/${item.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={livestockImage(item.type)} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{item.name}</span>
-                    <br />
-                    <span className="list-card-subtitle">
-                      {t('farm.count')}: {item.count}
-                      {farmName ? ` · ${t('farm.farm')}: ${farmName}` : ''}
-                    </span>
-                  </span>
+              <div key={item.id} className="entity-tile">
+                <Link to={`/farm/livestock/${item.id}`} className="entity-tile-media">
+                  <img src={livestockImage(item.type)} alt="" className="entity-tile-icon" />
                 </Link>
-                <Link to={`/farm/livestock/${item.id}/production`} className="list-card-production-link primary">
-                  {t('production.title')}
-                </Link>
-                <Link to={`/farm/livestock/${item.id}`} className="list-card-production-link">
-                  {t('farm.individualAnimals')}
-                </Link>
-                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: item.name })} />
+
+                <div className="entity-tile-menu">
+                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: item.name })} />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{item.name}</h2>
+
+                  <div className="entity-tile-meta">
+                    <div className="entity-tile-row">
+                      <PawIcon width={16} height={16} />
+                      <span>
+                        {t('farm.count')}: {item.count}
+                      </span>
+                    </div>
+                    {farmName && (
+                      <div className="entity-tile-row">
+                        <LocationIcon width={16} height={16} />
+                        <span>
+                          {t('farm.farm')}: {farmName}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="entity-tile-divider" />
+
+                  {/* Both destinations the old card offered, kept as a stack. */}
+                  <div className="entity-tile-actions">
+                    <Link to={`/farm/livestock/${item.id}/production`} className="entity-tile-details">
+                      {t('production.title')}
+                    </Link>
+                    <Link to={`/farm/livestock/${item.id}`} className="entity-tile-details secondary">
+                      {t('farm.individualAnimals')}
+                      <ChevronRightIcon width={16} height={16} />
+                    </Link>
+                  </div>
+                </div>
               </div>
             );
           })}

@@ -5,6 +5,7 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { GreenhouseSeedFormModal } from '@/components/farm/greenhouse/greenhouse-seed-form-modal';
+import { BoxIcon, LeafIcon, LocationIcon } from '@/components/icons/misc-icons';
 import { SEED_UNIT_LABEL_KEY } from '@/config/seed-kinds';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
@@ -84,30 +85,50 @@ export function GreenhouseSeedsPage() {
       ) : seeds.length === 0 ? (
         <p className="empty-state">{t('greenhouse.seedEmpty')}</p>
       ) : (
-        <div className="list-card-grid">
+        <div className="entity-tile-grid">
           {seeds.map((item) => {
             const typeLabel = stockTypeLabel(item.type, t);
             const title = item.name.trim() || typeLabel;
+            const onHand = t('seed.onHand', {
+              amount: item.amount,
+              unit: t(SEED_UNIT_LABEL_KEY[item.unit] ?? item.unit),
+            });
             return (
-              <div key={item.id} className="list-card">
-                <div className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={stockKindImage(item.type)} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{title}</span>
-                    <br />
-                    <span className="list-card-subtitle">
-                      {t('seed.onHand', { amount: item.amount, unit: t(SEED_UNIT_LABEL_KEY[item.unit] ?? item.unit) })}
-                    </span>
-                    <br />
-                    <span className="list-card-subtitle">{greenhouseName(item.greenhouseId)}</span>
-                  </span>
+              <div key={item.id} className="entity-tile">
+                {/* Greenhouse seed has no page of its own, so the panel is a plain frame rather
+                    than a link and the card ends at its facts — no details button to offer. */}
+                <div className="entity-tile-media">
+                  <img src={stockKindImage(item.type)} alt="" className="entity-tile-icon" />
                 </div>
-                <CardMenu
-                  onEdit={() => setEditingSeed(item)}
-                  onDelete={() => setConfirmDelete({ id: item.id, name: title })}
-                />
+
+                <div className="entity-tile-menu">
+                  <CardMenu
+                    onEdit={() => setEditingSeed(item)}
+                    onDelete={() => setConfirmDelete({ id: item.id, name: title })}
+                  />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{title}</h2>
+
+                  <div className="entity-tile-meta">
+                    <div className="entity-tile-row">
+                      <BoxIcon width={16} height={16} />
+                      <span>{onHand}</span>
+                    </div>
+                    {/* The crop only needs spelling out when a custom name replaced it above. */}
+                    {item.name.trim() && (
+                      <div className="entity-tile-row">
+                        <LeafIcon width={16} height={16} />
+                        <span>{typeLabel}</span>
+                      </div>
+                    )}
+                    <div className="entity-tile-row">
+                      <LocationIcon width={16} height={16} />
+                      <span>{greenhouseName(item.greenhouseId)}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })}

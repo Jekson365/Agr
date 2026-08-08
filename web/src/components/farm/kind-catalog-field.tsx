@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
+import { kindDeleteMessage } from '@/components/farm/kind-delete-message';
+import { KindDropdown } from '@/components/farm/kind-dropdown';
 import { KindPicker, type KindOption } from '@/components/farm/kind-picker';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
@@ -21,6 +23,8 @@ export type KindCatalog = {
    *  the name it was created with. */
   label: (name: string, t: (key: string) => string) => string;
   icon: (name: string) => string;
+  /** Whether a kind is one of the seeded built-ins. Those are offered but never deletable. */
+  isBuiltIn: (name: string) => boolean;
 };
 
 type Props = {
@@ -34,6 +38,15 @@ type Props = {
   preset: string | null;
   labelText: string;
   addPlaceholder: string;
+  /**
+   * How the catalog is offered. 'chips' — the default — lays every kind out at once, which suits a
+   * short catalog. 'dropdown' is one field tall with a search box, for catalogs the user keeps
+   * adding to until scanning a chip row stops being quicker than typing.
+   */
+  variant?: 'chips' | 'dropdown';
+  /** Whether the catalog may be added to from the form. Defaults to true; the stock form passes
+   *  false, leaving the field a picker over a settled list. */
+  allowAdd?: boolean;
 };
 
 /**
@@ -42,7 +55,17 @@ type Props = {
  * identically — same duplicate rules, same conflict handling, same "don't leave the form pointing
  * at a deleted kind" — so they differ only by the {@link KindCatalog} passed in.
  */
-export function KindCatalogField({ open, catalog, value, onChange, preset, labelText, addPlaceholder }: Props) {
+export function KindCatalogField({
+  open,
+  catalog,
+  value,
+  onChange,
+  preset,
+  labelText,
+  addPlaceholder,
+  variant = 'chips',
+  allowAdd = true,
+}: Props) {
   const { t } = useLanguage();
 
   const [kinds, setKinds] = useState<CatalogKind[]>([]);
@@ -114,26 +137,31 @@ export function KindCatalogField({ open, catalog, value, onChange, preset, label
         onChange(next[0]?.name ?? '');
       }
     } catch (err) {
-      // The server refuses to delete a kind that existing rows still reference.
-      setError(err instanceof ApiError && err.status === 409 ? t('farm.typeInUse') : t('farm.typeDeleteError'));
+      setError(kindDeleteMessage(err, t));
     } finally {
       setConfirmDelete(null);
     }
   }
 
+  /* The two forms take the same props and do the same three things, so which one renders is the
+     only difference between the variants. */
+  const Picker = variant === 'dropdown' ? KindDropdown : KindPicker;
+
   return (
     <div className="field">
       <label>{labelText}</label>
-      <KindPicker
+      <Picker
         options={kinds.map((kind) => ({
           value: kind.name,
           label: catalog.label(kind.name, t),
           icon: catalog.icon(kind.name),
+          removable: !catalog.isBuiltIn(kind.name),
         }))}
         selected={value}
         onSelect={onChange}
         onAddNew={handleAdd}
         addPlaceholder={addPlaceholder}
+        allowAdd={allowAdd}
         loading={loading}
         onRemove={(name) => {
           const kind = kinds.find((k) => k.name === name);

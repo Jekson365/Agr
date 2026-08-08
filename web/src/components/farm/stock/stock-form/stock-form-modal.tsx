@@ -141,6 +141,8 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
             </span>
           </div>
         ) : (
+          /* A dropdown rather than the chip row: the crop catalog is the one users add to most,
+             and past a couple of dozen kinds the row filled the modal before the fields below it. */
           <KindCatalogField
             open={open}
             catalog={STOCK_KIND_CATALOG}
@@ -149,6 +151,11 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
             preset={editingStock?.type ?? null}
             labelText={t('farm.type')}
             addPlaceholder={t('farm.newStockTypePlaceholder')}
+            variant="dropdown"
+            /* Adding a crop type from here is switched off — the catalog is settled, and a type
+               invented mid-form lands as a near-duplicate of one already in it. Flip to true to
+               bring back both the "New type" button and the add row under a fruitless search. */
+            allowAdd={false}
           />
         )}
 

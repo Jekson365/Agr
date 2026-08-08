@@ -40,6 +40,7 @@ public class LivestockKindsController(ILivestockKindRepository livestockKindRepo
         {
             DeleteLivestockKindResult.Deleted => NoContent(),
             DeleteLivestockKindResult.InUse => Conflict("This livestock type is still used by existing groups."),
+            DeleteLivestockKindResult.BuiltIn => StatusCode(StatusCodes.Status403Forbidden, "Built-in livestock types can't be deleted."),
             _ => NotFound(),
         };
     }

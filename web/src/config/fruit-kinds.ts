@@ -51,6 +51,12 @@ export function fruitKindImage(type: string): string {
   return FRUIT_KIND_IMAGE[type] ?? defaultFruitIcon;
 }
 
+/** Whether this is one of the kinds every tenant is seeded with, as opposed to one a user added.
+ * Built-ins can't be deleted from the catalog — see isBuiltInStockKind. */
+export function isBuiltInFruitKind(type: string): boolean {
+  return type in FRUIT_TYPE_LABEL_KEY;
+}
+
 /** How a fruit entry is named wherever it's listed: its own label ("Gala Apples") when it was
  * given one, else the fruit it is. */
 export function treeStockLabel(stock: { type: string; name: string }, t: (key: string) => string): string {

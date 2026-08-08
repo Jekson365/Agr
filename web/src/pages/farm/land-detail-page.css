@@ -5,6 +5,8 @@
   margin-bottom: 24px;
 }
 
+/* Used by the greenhouse detail page, which imports this file and still lays its header out as
+   a plain photo beside a column of facts. The land page below has its own card instead. */
 .land-detail-image {
   width: 280px;
   height: 180px;
@@ -20,10 +22,127 @@
   max-width: 420px;
 }
 
-/* The marked territory, taking the rest of the row to the right of the photo and the figures. */
+/* The same card as the land's tile on /farm/land. --tile-scale and --tile-text-scale are
+   declared for this selector in farm-crud.css, alongside the list grid's, so both stay in
+   step from one place. */
+.land-detail-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  /* Fills its half of the row rather than keeping the list tile's fixed width — the card and
+     the map are meant to read as two equal panels here. */
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: calc(18px * var(--tile-scale));
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+/* No overflow clipping: the badge deliberately hangs past the bottom edge. */
+.land-detail-media {
+  position: relative;
+  display: block;
+}
+
+.land-detail-card-image {
+  width: 100%;
+  height: calc(140px * var(--tile-scale));
+  object-fit: cover;
+  display: block;
+  background: var(--color-green-muted);
+}
+
+.land-detail-badge {
+  position: absolute;
+  left: calc(14px * var(--tile-scale));
+  bottom: calc(-22px * var(--tile-scale));
+  width: calc(52px * var(--tile-scale));
+  height: calc(52px * var(--tile-scale));
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  border: calc(3px * var(--tile-scale)) solid var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 calc(2px * var(--tile-scale)) calc(8px * var(--tile-scale)) var(--color-shadow);
+}
+
+/* Sized here rather than by the width/height props in the JSX — CSS wins over an SVG's
+   presentation attributes, which is what lets the icon follow the scale. */
+.land-detail-badge svg {
+  width: calc(26px * var(--tile-scale));
+  height: calc(26px * var(--tile-scale));
+}
+
+.land-detail-body {
+  /* The top padding is what clears the badge hanging over this edge. */
+  padding: calc(32px * var(--tile-scale)) calc(16px * var(--tile-scale)) calc(16px * var(--tile-scale));
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--tile-text-scale));
+  flex: 1;
+}
+
+.land-detail-row {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--tile-text-scale));
+  min-width: 0;
+  font-size: calc(0.8125rem * var(--tile-text-scale));
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.land-detail-row svg {
+  color: var(--color-green);
+  flex-shrink: 0;
+  width: calc(16px * var(--tile-text-scale));
+  height: calc(16px * var(--tile-text-scale));
+}
+
+.land-detail-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.land-detail-divider {
+  height: 1px;
+  background: var(--color-border);
+  margin-top: calc(4px * var(--tile-scale));
+}
+
+/* The land page's own row: the card and its plots on the left, the map on the right.
+   .land-detail-header above stays as it is for the greenhouse detail page. */
+.land-detail-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+/* Half the row, matching the map beside it. flex-basis 0 rather than auto is what makes the
+   split even — on auto the two would be sized by their contents first and only share what
+   was left over. */
+.land-detail-main {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* The column's gap already separates the plots from the card above them. */
+.land-detail-main .list-card-grid {
+  margin-bottom: 0;
+}
+
+/* The other half of the row. */
 .land-detail-territory {
-  min-width: 320px;
-  flex: 1.4;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 100%;
   align-self: stretch;
 }
 
@@ -92,7 +211,7 @@
 
 /* How much of the land the plots account for. */
 .land-detail-allocation {
-  margin-top: 14px;
+  margin-top: calc(4px * var(--tile-scale));
 }
 
 .land-detail-allocation-row {
@@ -100,23 +219,23 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 6px;
-  font-size: 0.8125rem;
+  margin-bottom: calc(6px * var(--tile-text-scale));
+  font-size: calc(0.8125rem * var(--tile-text-scale));
   font-weight: 600;
   color: var(--color-dark);
 }
 
 .land-detail-allocation-track {
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
+  height: calc(6px * var(--tile-text-scale));
+  border-radius: 999px;
   background: var(--color-green-muted);
   overflow: hidden;
 }
 
 .land-detail-allocation-fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 999px;
   background: var(--color-green);
 }
 
@@ -130,7 +249,8 @@
 }
 
 @media (max-width: 860px) {
-  .land-detail-header {
+  .land-detail-header,
+  .land-detail-layout {
     flex-direction: column;
   }
 
@@ -139,10 +259,13 @@
     max-width: 100%;
   }
 
-  /* Stacked, the map goes full width — but capped against the viewport, so a phone doesn't have
-     to scroll through a screen and a half of map to reach the plots below it. */
+  /* Stacked, the row's direction is vertical, so the 50/50 basis above would be asking these
+     two to share a *height*. Both go back to being sized by their content.
+     The map is capped against the viewport as well, so a phone doesn't have to scroll through
+     a screen and a half of it to reach the plots. */
+  .land-detail-main,
   .land-detail-territory {
-    min-width: 0;
+    flex: 0 0 auto;
     width: 100%;
   }
 

@@ -6,6 +6,7 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form/tree-stock-form-modal';
+import { BoxIcon, ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { fruitKindImage, fruitTypeLabel, treeStockLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useAuth } from '@/contexts/auth-context';
@@ -123,27 +124,47 @@ export function FruitsPage() {
           </button>
         </div>
       ) : (
-        <div className="list-card-grid">
+        <div className="entity-tile-grid">
           {items.map((item) => {
             const typeLabel = fruitTypeLabel(item.type, t);
             const unitLabel = t(TREE_STOCK_UNIT_LABEL_KEY[item.unit]);
             const title = treeStockLabel(item, t);
             return (
-              <div key={item.id} className="list-card">
-                <Link to={`/farm/fruits/${item.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={fruitKindImage(item.type)} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{title}</span>
-                    <br />
-                    <span className="list-card-subtitle">
-                      {item.name.trim() ? `${typeLabel} · ` : ''}
-                      {item.amount} {unitLabel}
-                    </span>
-                  </span>
+              <div key={item.id} className="entity-tile">
+                <Link to={`/farm/fruits/${item.id}`} className="entity-tile-media">
+                  <img src={fruitKindImage(item.type)} alt="" className="entity-tile-icon" />
                 </Link>
-                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
+
+                <div className="entity-tile-menu">
+                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{title}</h2>
+
+                  <div className="entity-tile-meta">
+                    <div className="entity-tile-row">
+                      <BoxIcon width={16} height={16} />
+                      <span>
+                        {item.amount} {unitLabel}
+                      </span>
+                    </div>
+                    {/* The kind only needs spelling out when a custom name replaced it above. */}
+                    {item.name.trim() && (
+                      <div className="entity-tile-row">
+                        <LeafIcon width={16} height={16} />
+                        <span>{typeLabel}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="entity-tile-divider" />
+
+                  <Link to={`/farm/fruits/${item.id}`} className="entity-tile-details">
+                    {t('common.details')}
+                    <ChevronRightIcon width={16} height={16} />
+                  </Link>
+                </div>
               </div>
             );
           })}

@@ -40,6 +40,7 @@ public class FruitKindsController(IFruitKindRepository fruitKindRepository) : Co
         {
             DeleteFruitKindResult.Deleted => NoContent(),
             DeleteFruitKindResult.InUse => Conflict("This fruit type is still used by existing tree stock."),
+            DeleteFruitKindResult.BuiltIn => StatusCode(StatusCodes.Status403Forbidden, "Built-in fruit types can't be deleted."),
             _ => NotFound(),
         };
     }

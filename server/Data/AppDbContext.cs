@@ -99,34 +99,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             new Configuration { Id = 5, Name = "marketplace", Value = 1 },
             new Configuration { Id = 6, Name = "calendar", Value = 1 });
 
-        modelBuilder.Entity<StockKind>().HasData(
-            new StockKind { Id = 1, Name = "Weat" },
-            new StockKind { Id = 2, Name = "Beans" },
-            new StockKind { Id = 3, Name = "Milk" },
-            new StockKind { Id = 4, Name = "Cabbage" },
-            new StockKind { Id = 5, Name = "Cucumber" },
-            new StockKind { Id = 6, Name = "Eggplant" },
-            new StockKind { Id = 7, Name = "Potato" },
-            new StockKind { Id = 8, Name = "Pumpkin" },
-            new StockKind { Id = 9, Name = "Tomato" });
-
-        modelBuilder.Entity<FruitKind>().HasData(
-            new FruitKind { Id = 1, Name = "Apple" },
-            new FruitKind { Id = 2, Name = "Orange" },
-            new FruitKind { Id = 3, Name = "Banana" });
-
-        // The former AnimalType enum members, now an editable catalog like StockKinds.
-        modelBuilder.Entity<LivestockKind>().HasData(
-            new LivestockKind { Id = 1, Name = "Cow" },
-            new LivestockKind { Id = 2, Name = "Sheep" },
-            new LivestockKind { Id = 3, Name = "Chicken" },
-            new LivestockKind { Id = 4, Name = "Turkey" },
-            new LivestockKind { Id = 5, Name = "Pig" },
-            new LivestockKind { Id = 6, Name = "Cat" },
-            new LivestockKind { Id = 7, Name = "Dog" },
-            new LivestockKind { Id = 8, Name = "Duck" },
-            new LivestockKind { Id = 9, Name = "Goat" },
-            new LivestockKind { Id = 10, Name = "Rabbit" });
+        // The three seeded catalogs live in BuiltInKinds, which the repositories also read to
+        // refuse deleting one of them.
+        modelBuilder.Entity<StockKind>().HasData(BuiltInKinds.Stock);
+        modelBuilder.Entity<FruitKind>().HasData(BuiltInKinds.Fruit);
+        modelBuilder.Entity<LivestockKind>().HasData(BuiltInKinds.Livestock);
 
         // Store the movement source as its readable name (e.g. "Harvest") instead of an integer.
         modelBuilder.Entity<StockMovement>()
@@ -564,13 +541,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Restrict);
 
         // Fixed reference lists: what an animal can produce, and the units it's measured in.
+        // Ids 5 and 6 were "Meat" and "Leather" and are deliberately absent — a group here is a
+        // herd that keeps producing, and neither is that. The ids are left unused rather than
+        // reassigned, so existing rows that still point at them keep their meaning.
         modelBuilder.Entity<ProductionType>().HasData(
             new ProductionType { Id = 1, Name = "Milk" },
             new ProductionType { Id = 2, Name = "Egg" },
             new ProductionType { Id = 3, Name = "Wool" },
             new ProductionType { Id = 4, Name = "Honey" },
-            new ProductionType { Id = 5, Name = "Meat" },
-            new ProductionType { Id = 6, Name = "Leather" },
             new ProductionType { Id = 7, Name = "Manure" },
             new ProductionType { Id = 8, Name = "Silk" });
 

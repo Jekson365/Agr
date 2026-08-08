@@ -11,7 +11,8 @@
     "done": "Done",
     "clear": "Clear",
     "today": "Today",
-    "close": "Close"
+    "close": "Close",
+    "details": "Details"
   },
   "nav": {
     "expandSection": "Expand {name}",
@@ -200,6 +201,11 @@
     "amountPlaceholder": "e.g. 120",
     "stockNamePlaceholder": "e.g. Dutch Cucumber",
     "newStockTypePlaceholder": "New type name",
+    "typeSelect": "Select a type",
+    "typeSearchPlaceholder": "Search types…",
+    "typeNoMatches": "No type matches your search.",
+    "typeAddNamed": "Add “{name}”",
+    "typeAddNew": "New type",
     "stockHarvestedFixed": "A harvest already records this stock, so its type and unit can no longer change.",
     "newLivestockTypePlaceholder": "New animal type name",
     "typeFixed": "A group keeps the type it was created with.",
@@ -208,6 +214,7 @@
     "deleteHasProduction": "Delete its production records first — removing it now would erase them from your reports.",
     "typeSaveError": "Couldn't save the type. Please try again.",
     "typeInUse": "This type is still used by existing records.",
+    "typeBuiltIn": "Built-in types can't be deleted.",
     "typeDeleteError": "Couldn't delete the type. Please try again.",
     "unit": "Unit",
     "unitKg": "kg",

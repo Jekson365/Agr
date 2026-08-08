@@ -368,6 +368,303 @@
   cursor: pointer;
 }
 
+/* Land tile — the /farm/land card. Its own classes rather than a variant of .land-card above,
+   which the greenhouse list still uses: the photo carries a floating menu and an overlapping
+   badge here, and nothing about that shape suits the plainer card next door. */
+/* The two knobs the tiles are built from. Declared for every grid that uses one plus the two
+   detail heroes, so there is a single place to change either number and all of them move
+   together: /farm/land, /farm/land/:id, /harvest, /farm/seeds, /farm/stock, and the greenhouse's
+   own list, goods, seed, harvest and detail pages. */
+.land-tile-grid,
+.entity-tile-grid,
+.land-detail-card,
+.greenhouse-detail-card {
+  /* Every length in the card is written as its natural size times this, so the whole thing
+     resizes from one number. 1 is the compact card; 1.5 is where it stands now. */
+  --tile-scale: 1.5;
+  /* Type is deliberately not on --tile-scale: text that grew with the frame came out heavy for
+     what these lines say. Anything sitting on the text baseline — the title, the fact rows
+     and their icons, the button label — follows this instead. */
+  --tile-text-scale: 1.15;
+}
+
+.land-tile-grid,
+.entity-tile-grid {
+  display: grid;
+  /* The cards size themselves rather than sitting in fixed columns. min() is what stops the
+     scaled-up track from forcing a horizontal scrollbar on a phone: below that width the
+     column simply becomes the screen. */
+  grid-template-columns: repeat(auto-fill, minmax(min(calc(230px * var(--tile-scale)), 100%), 1fr));
+  gap: calc(18px * var(--tile-scale));
+  margin-bottom: 20px;
+}
+
+/* The frame, the menu, and everything below the media area are the same card whether the top
+   is a photo (.land-tile) or an icon panel (.entity-tile), so they are defined once here. */
+.land-tile,
+.entity-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-border);
+  border-radius: calc(18px * var(--tile-scale));
+  overflow: hidden;
+  background: var(--color-surface);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+
+/* Guarded so a touch device does not keep the lifted state after a tap. */
+@media (hover: hover) {
+  .land-tile:hover,
+  .entity-tile:hover {
+    transform: translateY(calc(-2px * var(--tile-scale)));
+    box-shadow: 0 calc(8px * var(--tile-scale)) calc(20px * var(--tile-scale)) var(--color-shadow);
+    border-color: var(--color-green);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .land-tile,
+  .entity-tile {
+    transition: none;
+  }
+
+  .land-tile:hover,
+  .entity-tile:hover {
+    transform: none;
+  }
+}
+
+/* No overflow clipping: the badge below deliberately hangs past the bottom edge. */
+.land-tile-media {
+  position: relative;
+  display: block;
+}
+
+.land-tile-image {
+  width: 100%;
+  height: calc(140px * var(--tile-scale));
+  object-fit: cover;
+  display: block;
+  background: var(--color-green-muted);
+}
+
+.land-tile-badge {
+  position: absolute;
+  left: calc(14px * var(--tile-scale));
+  bottom: calc(-22px * var(--tile-scale));
+  width: calc(52px * var(--tile-scale));
+  height: calc(52px * var(--tile-scale));
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  /* Ringed in the card's own background so the circle reads as separate from the photo. */
+  border: calc(3px * var(--tile-scale)) solid var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 calc(2px * var(--tile-scale)) calc(8px * var(--tile-scale)) var(--color-shadow);
+}
+
+/* Sized here rather than by the width/height props in the JSX — CSS wins over an SVG's
+   presentation attributes, which is what lets the icon follow the scale. */
+.land-tile-badge svg {
+  width: calc(26px * var(--tile-scale));
+  height: calc(26px * var(--tile-scale));
+}
+
+.land-tile-menu,
+.entity-tile-menu {
+  position: absolute;
+  top: calc(10px * var(--tile-scale));
+  right: calc(10px * var(--tile-scale));
+  z-index: 2;
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: 0 calc(2px * var(--tile-scale)) calc(8px * var(--tile-scale)) var(--color-shadow-strong);
+}
+
+/* The bare trigger is muted grey, which disappears against a photo. */
+.land-tile-menu .card-menu-trigger,
+.entity-tile-menu .card-menu-trigger {
+  color: var(--color-dark);
+  border-radius: 999px;
+  width: calc(32px * var(--tile-scale));
+  height: calc(32px * var(--tile-scale));
+  font-size: calc(1.125rem * var(--tile-scale));
+}
+
+/* The menu itself is a control, not part of the card's content, so it keeps its normal size —
+   only its offset has to clear the now much taller trigger. */
+.land-tile-menu .card-menu-dropdown,
+.entity-tile-menu .card-menu-dropdown {
+  top: calc(32px * var(--tile-scale) + 4px);
+}
+
+.land-tile-body,
+.entity-tile-body {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12px * var(--tile-scale));
+  flex: 1;
+}
+
+/* The top padding is what clears the badge hanging over this edge. */
+.land-tile-body {
+  padding: calc(32px * var(--tile-scale)) calc(16px * var(--tile-scale)) calc(16px * var(--tile-scale));
+}
+
+/* No badge to clear, so the body is evenly inset. */
+.entity-tile-body {
+  padding: calc(16px * var(--tile-scale));
+}
+
+.land-tile-title,
+.entity-tile-title {
+  margin: 0;
+  font-size: calc(1.0625rem * var(--tile-text-scale));
+  font-weight: 700;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.land-tile-meta,
+.entity-tile-meta {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--tile-scale));
+}
+
+/* Full-strength text at 600, not the muted 400 of .list-card-subtitle — these two lines are the
+   only facts the card carries, so they are not an aside. */
+.land-tile-row,
+.entity-tile-row {
+  display: flex;
+  align-items: center;
+  gap: calc(8px * var(--tile-text-scale));
+  min-width: 0;
+  font-size: calc(0.8125rem * var(--tile-text-scale));
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.land-tile-row svg,
+.entity-tile-row svg {
+  color: var(--color-green);
+  flex-shrink: 0;
+  width: calc(16px * var(--tile-text-scale));
+  height: calc(16px * var(--tile-text-scale));
+}
+
+.land-tile-row span,
+.entity-tile-row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.land-tile-divider,
+.entity-tile-divider {
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* margin-top:auto pins this to the bottom, so cards in a row line their buttons up however
+   long the names above them run. */
+.land-tile-details,
+.entity-tile-details {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6px * var(--tile-text-scale));
+  /* Padding stays on --tile-scale: the button is part of the frame, so it keeps its weight
+     even as the label inside it shrinks. */
+  padding: calc(10px * var(--tile-scale)) calc(12px * var(--tile-scale));
+  border-radius: calc(10px * var(--tile-scale));
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  font-size: calc(0.8125rem * var(--tile-text-scale));
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.land-tile-details svg,
+.entity-tile-details svg {
+  width: calc(16px * var(--tile-text-scale));
+  height: calc(16px * var(--tile-text-scale));
+}
+
+.land-tile-details:hover,
+.entity-tile-details:hover {
+  filter: brightness(1.08);
+}
+
+/* The icon panel that stands in for the land tile's photo. The icons here are flat PNG marks
+   on no background, so they are contained on the muted green rather than cropped to fill. */
+.entity-tile-media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(140px * var(--tile-scale));
+  background: var(--color-green-muted);
+}
+
+.entity-tile-icon {
+  width: calc(96px * var(--tile-scale));
+  height: calc(96px * var(--tile-scale));
+  object-fit: contain;
+}
+
+/* Greenhouses carry an uploaded photo rather than a flat mark, so theirs fills the panel the
+   way the land tile's does instead of sitting contained in the middle of it. */
+.entity-tile-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Badges keep their own type size — they are labels, not part of the card's copy. */
+.entity-tile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: calc(6px * var(--tile-text-scale));
+}
+
+/* For tiles that end in more than one button — livestock offers its production and its
+   individual animals. Stacked rather than side by side: these labels run long in Georgian,
+   and a row of two would wrap mid-word at this width. */
+.entity-tile-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(6px * var(--tile-scale));
+}
+
+/* The stack owns the bottom alignment, so the buttons inside it must not also claim it. */
+.entity-tile-actions .entity-tile-details {
+  margin-top: 0;
+}
+
+.entity-tile-details.secondary {
+  background: transparent;
+  color: var(--color-green);
+  border: 1px solid var(--color-border);
+}
+
+.entity-tile-details.secondary:hover {
+  filter: none;
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
 /* Balance table */
 /* Four side-by-side balances: plant stock, livestock production, fruit trees, greenhouse. */
 .balance-columns {

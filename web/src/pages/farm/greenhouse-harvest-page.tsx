@@ -6,6 +6,7 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { GreenhouseHarvestFormModal } from '@/components/farm/greenhouse/greenhouse-harvest-form-modal';
+import { CalendarIcon, ChevronRightIcon, LocationIcon } from '@/components/icons/misc-icons';
 import '@/components/harvest/harvest.css';
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { daysUntilExpected, isOverdue } from '@/config/harvest-analysis';
@@ -108,38 +109,60 @@ export function GreenhouseHarvestPage() {
       ) : harvests.length === 0 ? (
         <p className="empty-state">{t('greenhouse.harvestEmpty')}</p>
       ) : (
-        <div className="list-card-grid">
+        <div className="entity-tile-grid">
           {harvests.map((item) => {
             const overdue = isOverdue(item);
             const daysLeft = daysUntilExpected(item);
 
             return (
-              <div key={item.id} className="list-card">
-                <Link to={`/farm/greenhouse/harvest/${item.id}`} className="list-card-body">
-                  <span className="list-card-icon-wrap">
-                    <img src={harvestIcon} alt="" />
-                  </span>
-                  <span className="list-card-info">
-                    <span className="list-card-title">{item.title}</span>
-                    <br />
-                    <span className="list-card-subtitle">
-                      {formatLocalizedIsoDate(item.date, language)} · {greenhouseName(item.greenhouseId)}
-                    </span>
-                    <br />
-                    <span className={`${HARVEST_STATUS_BADGE_CLASS[item.status]} harvest-status-badge`}>
-                      {t(HARVEST_STATUS_LABEL_KEY[item.status])}
-                    </span>
-                    {overdue ? (
-                      <span className="harvest-overdue-badge">{t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}</span>
-                    ) : item.status !== 'Harvested' && daysLeft != null ? (
-                      <span className="harvest-due-badge">{t('harvest.dueIn', { days: daysLeft })}</span>
-                    ) : null}
-                  </span>
+              <div key={item.id} className="entity-tile">
+                <Link to={`/farm/greenhouse/harvest/${item.id}`} className="entity-tile-media">
+                  <img src={harvestIcon} alt="" className="entity-tile-icon" />
                 </Link>
-                <CardMenu
-                  onEdit={() => openEdit(item)}
-                  onDelete={() => setConfirmDelete({ id: item.id, title: item.title })}
-                />
+
+                <div className="entity-tile-menu">
+                  <CardMenu
+                    onEdit={() => openEdit(item)}
+                    onDelete={() => setConfirmDelete({ id: item.id, title: item.title })}
+                  />
+                </div>
+
+                <div className="entity-tile-body">
+                  <h2 className="entity-tile-title">{item.title}</h2>
+
+                  <div className="entity-tile-meta">
+                    <div className="entity-tile-row">
+                      <CalendarIcon width={16} height={16} />
+                      <span>{formatLocalizedIsoDate(item.date, language)}</span>
+                    </div>
+                    {/* The field's harvests all sit on one farm; these are spread over the houses,
+                        so which house it came from is a fact the card has to carry. */}
+                    <div className="entity-tile-row">
+                      <LocationIcon width={16} height={16} />
+                      <span>{greenhouseName(item.greenhouseId)}</span>
+                    </div>
+
+                    <div className="entity-tile-badges">
+                      <span className={`${HARVEST_STATUS_BADGE_CLASS[item.status]} harvest-status-badge`}>
+                        {t(HARVEST_STATUS_LABEL_KEY[item.status])}
+                      </span>
+                      {overdue ? (
+                        <span className="harvest-overdue-badge">
+                          {t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}
+                        </span>
+                      ) : item.status !== 'Harvested' && daysLeft != null ? (
+                        <span className="harvest-due-badge">{t('harvest.dueIn', { days: daysLeft })}</span>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  <span className="entity-tile-divider" />
+
+                  <Link to={`/farm/greenhouse/harvest/${item.id}`} className="entity-tile-details">
+                    {t('common.details')}
+                    <ChevronRightIcon width={16} height={16} />
+                  </Link>
+                </div>
               </div>
             );
           })}

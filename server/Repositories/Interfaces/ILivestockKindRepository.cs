@@ -10,6 +10,10 @@ public enum DeleteLivestockKindResult
 
     /// <summary>Livestock groups still reference it, so removing it would orphan them.</summary>
     InUse,
+
+    /// <summary>One of the kinds every farm is seeded with. Those are the catalog's floor — only
+    /// kinds a user added may be taken back out.</summary>
+    BuiltIn,
 }
 
 public interface ILivestockKindRepository

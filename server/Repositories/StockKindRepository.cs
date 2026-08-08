@@ -39,6 +39,14 @@ public class StockKindRepository(AppDbContext context) : IStockKindRepository
             return DeleteStockKindResult.NotFound;
         }
 
+        // The seeded kinds are the catalog's floor: they are what a farm starts from, and every
+        // client shows them without a delete. Checked here too, so the rule doesn't depend on
+        // which client sent the request.
+        if (BuiltInKinds.IsStock(existing.Name))
+        {
+            return DeleteStockKindResult.BuiltIn;
+        }
+
         // Stock and seed both reference the crop by name (seed shares this catalog); deleting one
         // still in use would leave rows with a type no picker can show. Report it as a conflict
         // the client can explain.

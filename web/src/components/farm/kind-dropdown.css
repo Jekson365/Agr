@@ -1,0 +1,273 @@
+/* The dropdown form of the kind picker. Sized and coloured like the searchable filter dropdown
+   in components/ui/multi-select.css, but full width: it sits in a form field, not a filter bar. */
+/* The field is the dropdown and its add button side by side. */
+.kind-dropdown-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kind-dropdown {
+  position: relative;
+  /* Takes the room the button beside it doesn't need; min-width lets the trigger's label
+     ellipsize rather than push the button off the edge. */
+  flex: 1;
+  min-width: 0;
+}
+
+/* Adds a kind without searching for it first — the chip picker's "+", kept visible next to the
+   field now that the search box has taken over the typing. */
+.kind-dropdown-new {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  height: 42px;
+  padding: 0 14px;
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-green);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.kind-dropdown-new:hover:not(:disabled),
+.kind-dropdown-new[aria-expanded='true'] {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.kind-dropdown-new:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+/* The chip picker's add row, moved under the field it belongs to. */
+.kind-dropdown-new-row {
+  margin-top: 8px;
+}
+
+/* Fills the field's width instead of the chip row's fixed 160px — there is nothing beside it
+   here to leave room for. */
+.kind-dropdown-new-row .kind-add-input {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.kind-dropdown-new-row .kind-add-confirm:disabled {
+  color: var(--color-muted);
+  background: var(--color-surface-sunken);
+  cursor: default;
+}
+
+.kind-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kind-dropdown-trigger:hover,
+.kind-dropdown-trigger.open {
+  border-color: var(--color-green);
+}
+
+.kind-dropdown-trigger:disabled {
+  cursor: default;
+  color: var(--color-muted);
+}
+
+.kind-dropdown-value {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kind-dropdown-value.placeholder {
+  color: var(--color-muted);
+}
+
+.kind-dropdown-caret {
+  flex-shrink: 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+
+.kind-dropdown-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  /* Over the fields below it, and over the modal's own footer buttons. */
+  z-index: 40;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: 0 12px 28px var(--color-shadow-strong);
+}
+
+.kind-dropdown-search {
+  width: 100%;
+  height: 34px;
+  padding: 0 10px;
+  margin-bottom: 6px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.kind-dropdown-search:focus {
+  outline: 2px solid var(--color-green);
+  outline-offset: -1px;
+}
+
+.kind-dropdown-list {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* A row is a wrapper around a select button and an optional remove button — a button can't be
+   nested inside a button, the same reason the chip row is built this way. */
+.kind-dropdown-row {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+
+/* Follows the keyboard rather than the pointer: whichever row Enter would take. */
+.kind-dropdown-row[data-active='true'] {
+  background: var(--color-surface-sunken);
+}
+
+.kind-dropdown-row.selected {
+  background: var(--color-green-muted);
+}
+
+.kind-dropdown-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kind-dropdown-check {
+  flex-shrink: 0;
+  width: 16px;
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.kind-dropdown-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.kind-dropdown-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kind-dropdown-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.kind-dropdown-remove:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+/* Offered under the list once what was typed matches no existing kind — the chip row's "+"
+   button, moved to where the typing already is. */
+.kind-dropdown-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  background: none;
+  color: var(--color-green);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.kind-dropdown-add[data-active='true'],
+.kind-dropdown-add:hover {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.kind-dropdown-add:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.kind-dropdown-add-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kind-dropdown-empty {
+  margin: 0;
+  padding: 10px 8px;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-align: center;
+}

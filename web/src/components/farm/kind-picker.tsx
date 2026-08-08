@@ -2,7 +2,14 @@ import { useState } from 'react';
 
 import './kind-picker.css';
 
-export type KindOption = { value: string; label: string; icon?: string };
+export type KindOption = {
+  value: string;
+  label: string;
+  icon?: string;
+  /** Whether this one may be deleted from the catalog. Defaults to true; the built-in kinds every
+   *  tenant is seeded with set it false, and the server refuses those regardless. */
+  removable?: boolean;
+};
 
 type Props = {
   options: KindOption[];
@@ -18,6 +25,13 @@ type Props = {
    */
   onRemove?: (value: string) => void;
   removeLabel?: string;
+  /**
+   * Whether the catalog may be added to from here. Defaults to true. The stock and livestock
+   * pickers pass false: those catalogs are settled, and a type invented mid-form ends up as a
+   * near-duplicate of one already in the list. `onAddNew` is still wired up so switching a call
+   * site back on is the one prop.
+   */
+  allowAdd?: boolean;
 };
 
 /** A chip-row picker that also lets the user type a new name and add it to the catalog on the
@@ -32,6 +46,7 @@ export function KindPicker({
   loading,
   onRemove,
   removeLabel,
+  allowAdd = true,
 }: Props) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -63,7 +78,8 @@ export function KindPicker({
       {options.map((opt) =>
         // Without removal a chip is a single button, as it has always been. With removal it
         // becomes a wrapper holding two buttons, since a button can't be nested inside a button.
-        onRemove ? (
+        // A built-in kind takes the plain form even in a picker that offers removal.
+        onRemove && opt.removable !== false ? (
           <span key={opt.value} className={opt.value === selected ? 'kind-chip active' : 'kind-chip'}>
             <button type="button" className="kind-chip-select" onClick={() => onSelect(opt.value)}>
               {opt.icon && <img src={opt.icon} className="kind-chip-icon" alt="" />}
@@ -92,43 +108,45 @@ export function KindPicker({
         )
       )}
 
-      {adding ? (
-        <div className="kind-add-row">
-          <input
-            className="kind-add-input"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder={addPlaceholder}
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') handleAdd();
-            }}
-          />
-          <button type="button" className="kind-add-confirm" onClick={handleAdd} disabled={saving} aria-label="Confirm">
-            ✓
-          </button>
+      {/* Off wherever allowAdd is false — the row is then the catalog and nothing else. */}
+      {allowAdd &&
+        (adding ? (
+          <div className="kind-add-row">
+            <input
+              className="kind-add-input"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder={addPlaceholder}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleAdd();
+              }}
+            />
+            <button type="button" className="kind-add-confirm" onClick={handleAdd} disabled={saving} aria-label="Confirm">
+              ✓
+            </button>
+            <button
+              type="button"
+              className="kind-add-cancel"
+              onClick={() => {
+                setAdding(false);
+                setNewName('');
+              }}
+              aria-label="Cancel"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
           <button
             type="button"
-            className="kind-add-cancel"
-            onClick={() => {
-              setAdding(false);
-              setNewName('');
-            }}
-            aria-label="Cancel"
+            className="kind-chip-add"
+            onClick={() => setAdding(true)}
+            aria-label={addPlaceholder}
           >
-            ✕
+            +
           </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="kind-chip-add"
-          onClick={() => setAdding(true)}
-          aria-label={addPlaceholder}
-        >
-          +
-        </button>
-      )}
+        ))}
     </div>
   );
 }

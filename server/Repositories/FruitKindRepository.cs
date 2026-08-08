@@ -39,6 +39,12 @@ public class FruitKindRepository(AppDbContext context) : IFruitKindRepository
             return DeleteFruitKindResult.NotFound;
         }
 
+        // Seeded kinds are the catalog's floor — see StockKindRepository.DeleteAsync.
+        if (BuiltInKinds.IsFruit(existing.Name))
+        {
+            return DeleteFruitKindResult.BuiltIn;
+        }
+
         // Tree stock references the kind by name; deleting one that is still in use would leave
         // rows with a type no picker can show. Report it as a conflict the client can explain.
         var inUse = await context.TreeStocks.AnyAsync(s => s.Type.ToLower() == existing.Name.ToLower());
