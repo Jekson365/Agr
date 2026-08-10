@@ -22,8 +22,11 @@ public interface IBreedingEventRepository
     Task<bool> HasOpenEventForFemaleAsync(int femaleAnimalId, int? excludeId = null);
     Task<BreedingEvent> AddAsync(BreedingEvent breedingEvent);
     Task<bool> UpdateAsync(BreedingEvent breedingEvent);
-    /// <summary>Adds a recorded result to the event's running total of what it produced.</summary>
-    Task<bool> AddOffspringAsync(int id, int quantity, int livestockId);
+    /// <summary>
+    /// Writes what the pairing produced, once. False when there is no such event or it already
+    /// carries a result — the second recording of one birth is refused rather than added on.
+    /// </summary>
+    Task<bool> SetResultAsync(int id, int quantity, int livestockId);
 
     Task<bool> DeleteAsync(int id);
 }

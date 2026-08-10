@@ -352,9 +352,12 @@ export function LivestockBreedingPage() {
    * Records what a pairing produced. The offspring are individual animals in a group of the
    * parents' kind, each stamped with both parents by the server, and the group's head count rises
    * with them — the one path that grows a herd, where realization is the one that shrinks it.
+   *
+   * Recorded once per pairing. The button is gone once one is, so the refusal below only turns up
+   * where this page could not have known — a second tab, or a submit that landed twice.
    */
   async function submitResult(input: BreedingResultInput) {
-    if (!resultFor) return;
+    if (!resultFor || resultSaving) return;
     setResultSaving(true);
     setResultError(null);
     try {
@@ -363,7 +366,13 @@ export function LivestockBreedingPage() {
       // The receiving group's count changed, and it may well be this page's own.
       await load();
     } catch (err) {
-      setResultError(err instanceof Error ? err.message : t('breedingEvent.saveError'));
+      setResultError(
+        err instanceof ApiError && err.status === 409
+          ? t('breedingEvent.resultAlreadyRecorded')
+          : err instanceof Error
+            ? err.message
+            : t('breedingEvent.saveError')
+      );
     } finally {
       setResultSaving(false);
     }
@@ -494,12 +503,15 @@ export function LivestockBreedingPage() {
                       </div>
                     </div>
 
-                    {/* Offered on every pairing rather than only a completed one: a result is
+                    {/* Offered at any stage rather than only on a completed pairing: a result is
                         what moves it to completed, and being made to set the stage first would be
-                        a step in the wrong order. */}
-                    <button type="button" className="secondary-button" onClick={() => setResultFor(item)}>
-                      {t('breedingEvent.result')}
-                    </button>
+                        a step in the wrong order. Gone once one is recorded — a pairing produces
+                        its litter once, and what it produced is shown below instead. */}
+                    {item.offspringCount === 0 && (
+                      <button type="button" className="secondary-button" onClick={() => setResultFor(item)}>
+                        {t('breedingEvent.result')}
+                      </button>
+                    )}
 
                     <CardMenu
                       onEdit={() => openEdit(item)}

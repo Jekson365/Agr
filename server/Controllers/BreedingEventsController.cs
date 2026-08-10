@@ -20,6 +20,9 @@ public class BreedingEventsController(
     /// </summary>
     private const string FemaleUnavailableMessage = "This female is already in an unfinished pairing.";
 
+    /// <summary>A pairing produces its litter once, so its result is recorded once.</summary>
+    private const string ResultAlreadyRecordedMessage = "A result has already been recorded for this pairing.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<BreedingEvent>>> Get([FromQuery] int? livestockId)
     {
@@ -114,7 +117,7 @@ public class BreedingEventsController(
         bool AddIndividuals);
 
     /// <summary>
-    /// Records what a pairing produced. The receiving group's head count always rises by the
+    /// Records what a pairing produced, once. The receiving group's head count always rises by the
     /// quantity; whether each animal also gets a row of its own is the caller's choice.
     ///
     /// A row per animal is what per-animal production, breeding and parentage need to work with,
@@ -144,8 +147,14 @@ public class BreedingEventsController(
             return NotFound();
         }
 
-        // What this pairing produced, kept on the event so its row can say so.
-        await breedingEventRepository.AddOffspringAsync(id, request.Quantity, request.LivestockId);
+        // What this pairing produced, kept on the event so its row can say so — and the gate on
+        // the rest of this method. A pairing has one outcome, so a second result is refused here,
+        // before anything is created: a repeat would otherwise raise the head count twice and tag
+        // a second litter that was never born.
+        if (!await breedingEventRepository.SetResultAsync(id, request.Quantity, request.LivestockId))
+        {
+            return Conflict(ResultAlreadyRecordedMessage);
+        }
 
         // Either way the herd grew, and it grew by birth. The movement is what moves the count.
         await livestockMovementRepository.AddAsync(new LivestockMovement

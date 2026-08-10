@@ -1851,6 +1851,94 @@ html:has(.landing-page) {
   opacity: 1;
 }
 
+/* ------------------------------------------------------------------- faq */
+
+.landing-faq {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Narrower than the grid sections: these are paragraphs, and a line of prose that runs the full
+     1160px is one the eye loses its place in. */
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* No `transition` on the row itself, deliberately. These carry `data-reveal`, whose fade-up rule
+   has the same specificity and sits higher in the file, so any transition declared here would
+   replace it outright and the section would snap in while every other one fades. What does animate
+   — the chevron — is a child, and out of that fight. */
+.landing-faq-item {
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-surface);
+}
+
+.landing-faq-item[open] {
+  border-color: color-mix(in srgb, var(--color-green) 45%, var(--color-border));
+  box-shadow: 0 12px 28px var(--color-shadow);
+}
+
+.landing-faq-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px 24px;
+  cursor: pointer;
+  /* The row is the control; the browser's own triangle would sit outside the layout and duplicate
+     the chevron. Both properties are needed — WebKit still reads the pseudo-element. */
+  list-style: none;
+}
+
+.landing-faq-summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Keyboard users tab straight onto the summary, so the ring goes on it rather than the row. */
+.landing-faq-summary:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: -2px;
+}
+
+.landing-faq-question {
+  /* h3 for the outline, but the size of the body text around it — a question is not a title. */
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.landing-faq-item[open] .landing-faq-question {
+  color: var(--color-green);
+}
+
+.landing-faq-chevron {
+  flex: none;
+  color: var(--color-muted);
+  transition: transform 0.18s ease;
+}
+
+.landing-faq-item[open] .landing-faq-chevron {
+  transform: rotate(180deg);
+  color: var(--color-green);
+}
+
+.landing-faq-answer {
+  margin: 0;
+  /* Indented to clear nothing in particular — it lines up with the question above it, and stops
+     short of the chevron's column so the two blocks read as one. */
+  padding: 0 56px 22px 24px;
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-faq-chevron {
+    transition: none;
+  }
+}
+
 /* ------------------------------------------------------------- final cta */
 
 .landing-final {
@@ -2081,6 +2169,20 @@ html:has(.landing-page) {
 
   .landing-after-hero {
     padding-top: 120px;
+  }
+
+  .landing-faq-summary {
+    padding: 16px 18px;
+  }
+
+  .landing-faq-question {
+    font-size: 0.9375rem;
+  }
+
+  /* The chevron keeps its column; the answer only gives back the side padding. */
+  .landing-faq-answer {
+    padding: 0 44px 18px 18px;
+    font-size: 0.875rem;
   }
 
   .landing-hero {

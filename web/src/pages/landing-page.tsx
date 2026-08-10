@@ -6,6 +6,7 @@ import logo from '@/assets/logo.png';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import {
+  FAQ_ITEMS,
   HARVEST_FEATURES,
   MANAGE_CARDS,
   MAP_FEATURES,
@@ -14,15 +15,16 @@ import {
   MAP_VIEWBOX,
   MARKET_CATEGORIES,
   MARKET_SAMPLES,
-  PACKET_ROWS,
-  PLAN_PACKETS,
+  // PACKET_ROWS,
+  // PLAN_PACKETS,
   PREVIEW_BARS,
   PREVIEW_GREENHOUSE,
   PREVIEW_ICONS,
   PREVIEW_LIVESTOCK,
   REPORT_FEATURES,
   REPORT_SHARES,
-  type LandingPacket,
+  SEO_KEYWORDS,
+  // type LandingPacket,
 } from '@/config/landing';
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrency } from '@/contexts/currency-context';
@@ -79,6 +81,14 @@ function CloseIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
       <path d="M6 6l12 12M18 6 6 18" />
+    </Icon>
+  );
+}
+
+function ChevronIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon width="18" height="18" {...props}>
+      <path d="m6 9 6 6 6-6" />
     </Icon>
   );
 }
@@ -217,15 +227,17 @@ function useLandingSeo() {
 }
 
 /**
- * What the page says about itself to a machine: the company behind it, the site, and the product
- * with its plans priced. Search engines and the answer engines that read schema.org would otherwise
- * have to infer all of it from the markup.
+ * What the page says about itself to a machine: the company behind it, the site, the product, and
+ * the questions the FAQ section answers. Search engines and the answer engines that read schema.org
+ * would otherwise have to infer all of it from the markup.
  *
- * The offers are built from `PLAN_PACKETS` — the same array the cards below render from — so the
- * marked-up prices cannot drift from the printed ones, which is exactly what Google penalises. They
- * are stated in GEL because that is what `PLAN_PACKETS` holds; the currency toggle is a display
- * conversion and must not reach the markup. (Those figures are still the placeholders flagged in
- * config/landing.ts. Correcting them there corrects this too.)
+ * The priced offers went out with the packets section below: a price marked up for a machine has to
+ * be one the visitor can also read on the page, and pricing a plan the page no longer prints is
+ * exactly what Google penalises. Restoring the section restores them — they are built from the same
+ * `PLAN_PACKETS` the cards render from, so the two cannot drift. They are stated in GEL because that
+ * is what `PLAN_PACKETS` holds; the currency toggle is a display conversion and must not reach the
+ * markup. (Those figures are still the placeholders flagged in config/landing.ts. Correcting them
+ * there corrects this too.)
  */
 function useStructuredData(): string {
   const { t } = useLanguage();
@@ -260,6 +272,7 @@ function useStructuredData(): string {
           url: `${SITE_URL}/`,
           description,
           inLanguage: CONTENT_LANGUAGES,
+          keywords: SEO_KEYWORDS,
           publisher: { '@id': organization },
         },
         {
@@ -274,9 +287,10 @@ function useStructuredData(): string {
           applicationSubCategory: 'Farm Management Software',
           operatingSystem: 'Web',
           inLanguage: CONTENT_LANGUAGES,
+          keywords: SEO_KEYWORDS,
           publisher: { '@id': organization },
           featureList: MANAGE_CARDS.map((card) => t(`landing.manage.${card.id}.title`)),
-          offers: PLAN_PACKETS.map((packet) => ({
+          /* offers: PLAN_PACKETS.map((packet) => ({
             '@type': 'Offer',
             name: t(packet.nameKey),
             description: t(`landing.packets.${packet.id}.tagline`),
@@ -284,6 +298,27 @@ function useStructuredData(): string {
             priceCurrency: 'GEL',
             url: `${SITE_URL}/#packets`,
             availability: 'https://schema.org/InStock',
+          })), */
+        },
+        /* The FAQ section spelled out for a machine. Google stopped drawing FAQ rich results for
+           ordinary sites in 2023, so this earns no stars in the result — the visible section below
+           is what does the ranking. It is here because the answer engines that summarise a page
+           read this graph in preference to parsing the markup, and a question already paired with
+           its answer is the one shape they can quote without guessing. Built from `FAQ_ITEMS`, the
+           same array the section renders from, so the two cannot fall out of step — which matters
+           more than usual here: marking up an answer the page does not show is what Google reads
+           as an attempt to game it. */
+        {
+          '@type': 'FAQPage',
+          '@id': `${SITE_URL}/#faq`,
+          inLanguage: CONTENT_LANGUAGES,
+          mainEntity: FAQ_ITEMS.map((item) => ({
+            '@type': 'Question',
+            name: t(`landing.faq.${item.id}.q`),
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: t(`landing.faq.${item.id}.a`),
+            },
           })),
         },
       ],
@@ -712,13 +747,16 @@ function PhonePreview() {
 
 */
 
-/** One packet card: name, price, the caps it allows and a link into sign-up. */
+/* One packet card: name, price, the caps it allows and a link into sign-up. Used only by the
+   commented-out packets section — restoring it means bringing back the PACKET_ROWS, PLAN_PACKETS and
+   LandingPacket imports, and the offers in the structured data above.
+
 function PacketCard({ packet, index }: { packet: LandingPacket; index: number }) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  /* A cap reads as a plain number, a number with its period, a size, or included/not — whichever
-     the row asked for. `null` always means the plan lifts the cap entirely. */
+  A cap reads as a plain number, a number with its period, a size, or included/not — whichever
+  the row asked for. `null` always means the plan lifts the cap entirely.
   const capLabel = (row: (typeof PACKET_ROWS)[number]) => {
     const value = packet.limits[row.id];
     if (row.kind === 'boolean') {
@@ -743,7 +781,7 @@ function PacketCard({ packet, index }: { packet: LandingPacket; index: number })
 
       <p className="landing-packet-price">
         <span className="landing-packet-amount">{formatPrice(packet.price)}</span>
-        {/* A free plan has no billing period to name. */}
+        A free plan has no billing period to name.
         {packet.price > 0 && <span className="landing-packet-period">{t('landing.packets.perMonth')}</span>}
       </p>
 
@@ -771,6 +809,8 @@ function PacketCard({ packet, index }: { packet: LandingPacket; index: number })
     </article>
   );
 }
+
+*/
 
 /** The same planned-against-actual comparison as the preview's harvest screen, at section size. */
 function HarvestPanel() {
@@ -956,12 +996,13 @@ export function LandingPage() {
   /* `wide` links drop out below 1100px, where the bar runs out of room before the nav collapses
      into the burger menu entirely. */
   const navLinks = [
-    { href: '#packets', label: t('landing.nav.packets') },
+    // { href: '#packets', label: t('landing.nav.packets') },
     { href: '#features', label: t('landing.nav.features') },
     { href: '#harvest', label: t('dashboard.harvest') },
     { href: '#marketplace', label: t('landing.nav.marketplace'), wide: true },
     { href: '#reports', label: t('landing.nav.reports'), wide: true },
     { href: '#map', label: t('landing.nav.map'), wide: true },
+    { href: '#faq', label: t('landing.nav.faq'), wide: true },
     // { href: '#mobile', label: t('landing.nav.mobile'), wide: true },
   ];
 
@@ -1084,8 +1125,12 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* 2 — Available packets. Sits directly under the hero, so it carries the extra top
-            padding the overlapping preview card needs. */}
+        {/* 2 — Available packets — commented out. Restoring it means bringing back PacketCard and
+            the PACKET_ROWS / PLAN_PACKETS / LandingPacket imports above, the offers in the
+            structured data, and the #packets links in the nav and the footer — and moving
+            `landing-after-hero` back off the section below, since this one would be under the hero
+            again.
+
         <section
           id="packets"
           className="landing-section landing-after-hero landing-alt"
@@ -1107,8 +1152,11 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* 3 — Everything you can manage */}
-        <section id="features" className="landing-section" aria-labelledby="features-title">
+        */}
+
+        {/* 3 — Everything you can manage. First section under the hero while the packets are out, so
+            it carries the extra top padding the overlapping preview card needs. */}
+        <section id="features" className="landing-section landing-after-hero" aria-labelledby="features-title">
           <div className="landing-container">
             <SectionHead
               id="features-title"
@@ -1334,7 +1382,48 @@ export function LandingPage() {
 
         */}
 
-        {/* 9 — Final call to action */}
+        {/* 9 — Frequently asked questions.
+
+            The only prose on the page written in the words a stranger types into Google rather
+            than the words the product uses about itself — see the note over FAQ_ITEMS. Native
+            <details> rather than a scripted accordion, for two reasons: a collapsed answer is
+            still in the DOM, so a crawler reads all seven whether or not it opens them, and the
+            section still works for a reader the bundle never reached (the page is baked at build
+            time, so there is one). */}
+        <section id="faq" className="landing-section landing-alt" aria-labelledby="faq-title">
+          <div className="landing-container">
+            <SectionHead
+              id="faq-title"
+              eyebrow={t('landing.faq.eyebrow')}
+              title={t('landing.faq.title')}
+              lead={t('landing.faq.subtitle')}
+            />
+
+            <div className="landing-faq">
+              {FAQ_ITEMS.map((item, index) => (
+                <details
+                  key={item.id}
+                  className="landing-faq-item"
+                  /* The first answer is open on arrival, so the section reads as an answer rather
+                     than as a stack of closed bars. */
+                  open={index === 0}
+                  data-reveal
+                  style={{ '--reveal-delay': `${index * 60}ms` } as CSSProperties}
+                >
+                  <summary className="landing-faq-summary">
+                    {/* h3 under the section's h2: the questions are the headings a search engine
+                        matches the query against, so they are headings, not styled spans. */}
+                    <h3 className="landing-faq-question">{t(`landing.faq.${item.id}.q`)}</h3>
+                    <ChevronIcon className="landing-faq-chevron" />
+                  </summary>
+                  <p className="landing-faq-answer">{t(`landing.faq.${item.id}.a`)}</p>
+                </details>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* 10 — Final call to action */}
         <section className="landing-final" aria-labelledby="cta-title">
           {/* Same file as the hero's, but the browser has no way to know that until it resolves the
               URL — lazy keeps it off the critical path either way. */}
@@ -1370,12 +1459,13 @@ export function LandingPage() {
               jumps a level or two is read as one with sections missing. The size is the CSS's. */}
           <div className="landing-footer-col">
             <h2>{t('landing.footer.product')}</h2>
-            <a href="#packets">{t('landing.nav.packets')}</a>
+            {/* <a href="#packets">{t('landing.nav.packets')}</a> */}
             <a href="#features">{t('landing.nav.features')}</a>
             <a href="#harvest">{t('dashboard.harvest')}</a>
             <a href="#marketplace">{t('landing.nav.marketplace')}</a>
             <a href="#reports">{t('landing.nav.reports')}</a>
             <a href="#map">{t('landing.nav.map')}</a>
+            <a href="#faq">{t('landing.nav.faq')}</a>
           </div>
 
           <div className="landing-footer-col">

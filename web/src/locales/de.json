@@ -1025,6 +1025,7 @@
       "marketplace": "Marktplatz",
       "reports": "Berichte",
       "map": "Karte",
+      "faq": "FAQ",
       "mobile": "Mobile App",
       "login": "Anmelden",
       "startFree": "Kostenlos starten",
@@ -1249,6 +1250,39 @@
       "storeAndroid": "Android",
       "storeIos": "iOS"
     },
+    "faq": {
+      "eyebrow": "Fragen",
+      "title": "Häufig gestellte Fragen",
+      "subtitle": "Kurze Antworten dazu, wie Mtabari funktioniert und was es einem Landwirt bringt.",
+      "management": {
+        "q": "Was heißt es, einen Hof digital zu verwalten?",
+        "a": "Es heißt, dass Land, Tiere, Obstgärten, Gewächshäuser, Ernten, Bestand und Verkäufe in einem System erfasst sind — nicht im Heft und nicht in getrennten Tabellen. Mtabari ist die Software, die diese Aufzeichnungen zusammenführt und daraus die Berichte selbst erstellt."
+      },
+      "software": {
+        "q": "Welche Hofsoftware passt zu einem georgischen Landwirt?",
+        "a": "Eine, die die georgische Landwirtschaft kennt. Mtabari ist vollständig auf Georgisch verfügbar, rechnet in Lari und deckt die Kulturen und Tiere ab, die in Georgien tatsächlich gehalten werden. Englisch und Deutsch stehen ebenfalls zur Verfügung."
+      },
+      "app": {
+        "q": "Gibt es eine Hof-App auf Georgisch?",
+        "a": "Ja. Die App läuft im Browser am Computer und auf dem Telefon — mit demselben Konto. Ein Eintrag, der auf dem Feld gemacht wird, erscheint sofort auch am Computer."
+      },
+      "greenhouse": {
+        "q": "Wie funktioniert die Gewächshausverwaltung?",
+        "a": "Auf Ebene von Abschnitten, Regalen und Beeten: Für jedes Beet weißt du, was gesät wurde, wann und auf welcher Fläche, welche chemische Behandlung es bekam und welchen Ertrag es brachte. Eine separate Gewächshaus-App brauchst du dafür nicht."
+      },
+      "modern": {
+        "q": "Was bringt ein moderner Hof gegenüber der üblichen Buchführung?",
+        "a": "Ein moderner Hof steht auf Zahlen: was ausgegeben wurde, was hereinkam und welche Kultur sich gelohnt hat. Ist diese Historie einmal da, beruht die Planung der nächsten Saison nicht mehr auf Vermutungen."
+      },
+      "georgian": {
+        "q": "Wie stellt ein georgischer Hof auf digitale Aufzeichnungen um?",
+        "a": "Schrittweise. Die meisten beginnen mit einem Heft oder mit Tabellen — in Mtabari trägst du zuerst Felder und Tiere ein und ergänzt danach Ernten und Kosten. Die Registrierung ist kostenlos und braucht keine Karte."
+      },
+      "site": {
+        "q": "Website oder mobile App — was soll ich nehmen?",
+        "a": "Beides ist ein Produkt und zeigt dieselben Daten. Die Website ist auf dem großen Bildschirm für Berichte und Planung bequemer, das Telefon für schnelle Einträge vor Ort."
+      }
+    },
     "cta": {
       "title": "Bereit, deinen Hof zu modernisieren?",
       "subtitle": "Erstelle dein Konto, füge dein erstes Feld hinzu und erfasse noch heute deine erste Ernte — das dauert etwa fünf Minuten.",
@@ -1294,7 +1328,8 @@
     "resultImageError": "Foto konnte nicht hochgeladen werden. Bitte erneut versuchen.",
     "resultAddIndividuals": "Eintrag je Tier anlegen",
     "resultAddIndividualsHint": "Jedes Jungtier erhält einen eigenen Eintrag mit beiden Elterntieren. Ohne Haken steigt nur der Bestand.",
-    "resultRecorded": "Jungtiere erfasst"
+    "resultRecorded": "Jungtiere erfasst",
+    "resultAlreadyRecorded": "Für diese Paarung wurde bereits ein Ergebnis erfasst."
   },
   "animalTree": {
     "title": "Stammbaum",

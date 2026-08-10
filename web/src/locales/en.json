@@ -1025,6 +1025,7 @@
       "marketplace": "Marketplace",
       "reports": "Reports",
       "map": "Map",
+      "faq": "FAQ",
       "mobile": "Mobile app",
       "login": "Log in",
       "startFree": "Start Free",
@@ -1249,6 +1250,39 @@
       "storeAndroid": "Android",
       "storeIos": "iOS"
     },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Frequently asked questions",
+      "subtitle": "Short answers on how Mtabari works and what it gives a farmer.",
+      "management": {
+        "q": "What does managing a farm digitally mean?",
+        "a": "It means land, livestock, orchards, greenhouses, harvests, stock and sales are recorded in one system — not in a notebook and not in separate spreadsheets. Mtabari is the software that collects those records together and builds the reports from them for you."
+      },
+      "software": {
+        "q": "Which farm software suits a Georgian farmer?",
+        "a": "One that knows Georgian farming. Mtabari is fully available in Georgian, counts in lari, and covers the crops and animals actually raised in Georgia. English and German interfaces are available too."
+      },
+      "app": {
+        "q": "Is there a farm app in Georgian?",
+        "a": "Yes. The app runs in a computer browser and on a phone with the same account. A record made out in the field shows up on the computer straight away."
+      },
+      "greenhouse": {
+        "q": "How does greenhouse management work?",
+        "a": "At the level of sections, shelves and beds: for each bed you know what was sown, when and over what area, what chemical treatment it had and what it yielded. You do not need a separate greenhouse app for it."
+      },
+      "modern": {
+        "q": "What does a modern farm gain over ordinary bookkeeping?",
+        "a": "A modern farm runs on numbers: what was spent, what was taken in, and which crop paid off. Once that history is kept, planning the next season stops being guesswork."
+      },
+      "georgian": {
+        "q": "How does a Georgian farm move to digital records?",
+        "a": "Step by step. Most start with a notebook or spreadsheets — in Mtabari you enter fields and livestock first, then add harvests and costs. Signing up is free and needs no card."
+      },
+      "site": {
+        "q": "Website or mobile app — which should I use?",
+        "a": "Both are one product and show the same data. The website is easier on a big screen for reports and planning; the phone is for quick records made on the spot."
+      }
+    },
     "cta": {
       "title": "Ready to modernize your farm?",
       "subtitle": "Create your account, add your first field and record your first harvest today — it takes about five minutes.",
@@ -1294,7 +1328,8 @@
     "resultImageError": "Couldn't upload the photo. Please try again.",
     "resultAddIndividuals": "Create a record per animal",
     "resultAddIndividualsHint": "Each newborn gets its own record, carrying both parents. Left unticked, only the head count rises.",
-    "resultRecorded": "offspring recorded"
+    "resultRecorded": "offspring recorded",
+    "resultAlreadyRecorded": "A result has already been recorded for this pairing."
   },
   "animalTree": {
     "title": "Family tree",

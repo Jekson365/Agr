@@ -163,6 +163,44 @@ export const MAP_FEATURES: LandingCard[] = [
   { id: 'connect', icon: farmIcon, points: 0 },
 ];
 
+/*
+ * Section 8 — frequently asked questions.
+ *
+ * These are search terms before they are questions. Georgian farmers looking for this kind of
+ * product type "ფერმის მართვა", "ფერმის პროგრამა", "ფერმის აპლიკაცია", "ქართული ფერმა",
+ * "თანამედროვე ფერმა", "ფერმის საიტი", "სათბურის მართვა" or "სათბურის აპლიკაცია" — and none of
+ * those phrases appeared anywhere on this page, which is why it could not be found by them. Each
+ * entry below carries one of them in its question and again in its answer, in the nominative the
+ * search box gets rather than the genitive the marketing copy happens to use.
+ *
+ * So the wording in `landing.faq.*` is load-bearing: rephrase an answer freely, but keep its
+ * phrase intact and in the nominative, or the page stops matching that query. Order is display
+ * order; the first is open on arrival.
+ */
+export const FAQ_ITEMS = [
+  { id: 'management' },
+  { id: 'software' },
+  { id: 'app' },
+  { id: 'greenhouse' },
+  { id: 'modern' },
+  { id: 'georgian' },
+  { id: 'site' },
+];
+
+/** The same phrases, for the `keywords` of the structured data. Not a ranking signal to Google —
+ *  it retired meta keywords long ago — but schema.org is where a machine looks for them, and the
+ *  answer engines that read this graph do use it. What earns the ranking is `FAQ_ITEMS` above. */
+export const SEO_KEYWORDS = [
+  'ფერმის მართვა',
+  'ფერმის პროგრამა',
+  'ფერმის აპლიკაცია',
+  'ქართული ფერმა',
+  'თანამედროვე ფერმა',
+  'ფერმის საიტი',
+  'სათბურის მართვა',
+  'სათბურის აპლიკაცია',
+];
+
 /** The box the mocked map is drawn in. The panel holds the same ratio, so a pin placed in these
  *  coordinates lands on the same patch of ground at every screen size. */
 export const MAP_VIEWBOX = { width: 320, height: 240 };

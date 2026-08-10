@@ -12,7 +12,12 @@ import { StockHistoryView } from '@/components/farm/livestock/stock-history-view
 import './animal-history-page.css';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
-import { getAllLivestockDetails, getLivestockDetailItem } from '@/services/livestock-detail-service';
+import {
+  getAllLivestockDetails,
+  getLivestockDetailItem,
+  updateLivestockDetail,
+  uploadLivestockDetailImage,
+} from '@/services/livestock-detail-service';
 import { getLivestock } from '@/services/livestock-service';
 import type { Livestock } from '@/types/livestock';
 import type { LivestockDetail } from '@/types/livestock-detail';
@@ -39,6 +44,67 @@ function FoldableColumn({ title, children }: { title: string; children: ReactNod
         </span>
       </button>
       <div className={open ? 'history-column-body' : 'history-column-body folded'}>{children}</div>
+    </div>
+  );
+}
+
+/**
+ * The animal's photo, and the one place it can be replaced without going back to the group's list
+ * to open the edit form. The file is uploaded before the animal is saved, so an upload that fails
+ * leaves the record still pointing at the picture it already had.
+ */
+function AnimalHeroImage({
+  detail,
+  onChanged,
+}: {
+  detail: LivestockDetail;
+  onChanged: (detail: LivestockDetail) => void;
+}) {
+  const { t } = useLanguage();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function changeImage(file: File) {
+    setSaving(true);
+    setError(null);
+    try {
+      const imagePath = await uploadLivestockDetailImage(file);
+      const updated: LivestockDetail = { ...detail, imagePath };
+      await updateLivestockDetail(updated.id, updated);
+      onChanged(updated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('farm.saveError'));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="history-hero">
+      <div className="history-hero-frame">
+        {detail.imagePath ? (
+          <img src={resolveAssetUrl(detail.imagePath)} alt="" className="history-hero-image" />
+        ) : (
+          <div className="history-hero-placeholder" />
+        )}
+
+        <label className={saving ? 'history-hero-button disabled' : 'history-hero-button'}>
+          {saving ? `${t('farm.changeImage')}…` : detail.imagePath ? t('farm.changeImage') : t('farm.chooseImage')}
+          <input
+            type="file"
+            accept="image/*"
+            disabled={saving}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              // Cleared straight away, so picking the same file twice still counts as a change.
+              e.target.value = '';
+              if (file) void changeImage(file);
+            }}
+          />
+        </label>
+      </div>
+
+      {error && <div className="error-banner">{error}</div>}
     </div>
   );
 }
@@ -107,11 +173,7 @@ export function AnimalHistoryPage() {
         <>
           <div className="history-columns">
             <div className="animal-history-sidebar">
-              {detail.imagePath ? (
-                <img src={resolveAssetUrl(detail.imagePath)} alt="" className="history-hero-image" />
-              ) : (
-                <div className="history-hero-placeholder" />
-              )}
+              <AnimalHeroImage detail={detail} onChanged={setDetail} />
 
               {/* What the animal's group is fed — group-scoped, same as on mobile. */}
               <div className="history-column">

@@ -23,10 +23,16 @@ public class LandPlotsController(
     /// <summary>The same rule as <see cref="TreeStockTakenMessage"/>, for a stock good.</summary>
     private const string StockTakenMessage = "This land already has a plot of that stock.";
 
+    /// <summary>
+    /// One piece of land's plots, or every plot on the farm when no land is named — which is what
+    /// the land list needs, since each card says what is growing on it.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LandPlot>>> GetByFarm([FromQuery] int farmId)
+    public async Task<ActionResult<IEnumerable<LandPlot>>> GetByFarm([FromQuery] int? farmId)
     {
-        return Ok(await landPlotRepository.GetByFarmAsync(farmId));
+        return Ok(farmId is int landId
+            ? await landPlotRepository.GetByFarmAsync(landId)
+            : await landPlotRepository.GetAllAsync());
     }
 
     /// <summary>

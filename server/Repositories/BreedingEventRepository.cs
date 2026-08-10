@@ -70,7 +70,7 @@ public class BreedingEventRepository(AppDbContext context) : IBreedingEventRepos
         existing.Comment = breedingEvent.Comment;
         existing.Status = breedingEvent.Status;
         // OffspringCount and OffspringLivestockId are deliberately not copied — they are the
-        // event's record of what it produced, written only by AddOffspringAsync, and an edit of
+        // event's record of what it produced, written only by SetResultAsync, and an edit of
         // its date or comment has nothing to say about them.
         // The stage dates are worked out by the controller from the status it is moving to, and
         // arrive here already settled — copied rather than recomputed so this stays the one place
@@ -83,7 +83,7 @@ public class BreedingEventRepository(AppDbContext context) : IBreedingEventRepos
         return true;
     }
 
-    public async Task<bool> AddOffspringAsync(int id, int quantity, int livestockId)
+    public async Task<bool> SetResultAsync(int id, int quantity, int livestockId)
     {
         var existing = await context.BreedingEvents.FindAsync(id);
         if (existing is null)
@@ -91,8 +91,15 @@ public class BreedingEventRepository(AppDbContext context) : IBreedingEventRepos
             return false;
         }
 
-        // Added to, not replaced: a pairing can be recorded as producing more than once.
-        existing.OffspringCount += quantity;
+        // Written once and never added to: a pairing produces its litter once, and a second
+        // recording would be the same birth counted twice. Refused here rather than only in the
+        // page, so a double submit or a second tab cannot slip one past.
+        if (existing.OffspringCount > 0)
+        {
+            return false;
+        }
+
+        existing.OffspringCount = quantity;
         existing.OffspringLivestockId = livestockId;
         await context.SaveChangesAsync();
         return true;

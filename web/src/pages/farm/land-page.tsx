@@ -8,18 +8,36 @@ import '@/components/farm/farm-crud.css';
 import { LandFormModal } from '@/components/farm/land/land-form-modal';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { ChevronRightIcon, LeafIcon, LocationIcon, SquareIcon } from '@/components/icons/misc-icons';
+import { cropImage, cropLabel } from '@/config/crop';
+import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { deleteFarm, getFarms } from '@/services/farm-service';
+import { getAllLandPlots } from '@/services/land-plot-service';
+import { getLivestock } from '@/services/livestock-service';
 import type { Farm } from '@/types/farm';
+import type { LandPlot } from '@/types/land-plot';
+import type { Livestock } from '@/types/livestock';
+
+/** One kind of thing a piece of land holds, as the card shows it: the kind's artwork over how much
+ *  of it there is. The name is carried as the tooltip only — the picture is the label. */
+type LandContent = { key: string; icon: string; label: string; count: number };
+
+/** How many kinds a card shows before the rest are gathered into a "+N". Enough to say what a
+ *  piece of land is for; past that the card would be a list rather than a card. */
+const MAX_TILE_CONTENTS = 6;
 
 export function LandPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
 
   const [farms, setFarms] = useState<Farm[]>([]);
+  /** What the cards say each piece of land holds: the plots planted on it and the herds kept
+   *  there. */
+  const [plots, setPlots] = useState<LandPlot[]>([]);
+  const [livestock, setLivestock] = useState<Livestock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +55,16 @@ export function LandPage() {
     setLoading(true);
     setError(null);
     try {
-      setFarms(await getFarms());
+      // Only the land itself decides whether this page loaded. The rest fills in what each card
+      // holds — worth showing the land without when any of it can't be read.
+      const [farmList, plotList, livestockList] = await Promise.all([
+        getFarms(),
+        getAllLandPlots().catch(() => [] as LandPlot[]),
+        getLivestock().catch(() => [] as Livestock[]),
+      ]);
+      setFarms(farmList);
+      setPlots(plotList);
+      setLivestock(livestockList);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -87,6 +114,39 @@ export function LandPage() {
     }
   }
 
+  /**
+   * What the land holds, gathered by kind: every plot of apples on it counts as apples once, and
+   * two herds of cows are one cow with their heads added up. Crops come first — a piece of land is
+   * named for what grows on it, and the animals are what else is kept there.
+   */
+  function landContents(farmId: number): LandContent[] {
+    const byKind = new Map<string, LandContent>();
+
+    function add(key: string, icon: string, label: string, count: number) {
+      const existing = byKind.get(key);
+      if (existing) {
+        existing.count += count;
+      } else {
+        byKind.set(key, { key, icon, label, count });
+      }
+    }
+
+    // A plot counts as one of its crop: what a plot records is its share of the land, not an
+    // amount, so the number here is how many plots of that crop the land carries.
+    for (const plot of plots) {
+      if (plot.farmId !== farmId) continue;
+      add(`crop-${plot.crop}`, cropImage(plot.crop), cropLabel(plot.crop, t), 1);
+    }
+
+    // A herd counts as its head count, which is an amount of animals in its own right.
+    for (const group of livestock) {
+      if (group.farmId !== farmId) continue;
+      add(`herd-${group.type}`, livestockImage(group.type), livestockTypeLabel(group.type, t), group.count);
+    }
+
+    return [...byKind.values()];
+  }
+
   function handleSaved(farm: Farm, isNew: boolean) {
     setFarms((prev) => (isNew ? [...prev, farm] : prev.map((f) => (f.id === farm.id ? farm : f))));
   }
@@ -116,7 +176,12 @@ export function LandPage() {
         </div>
       ) : (
         <div className="land-tile-grid">
-          {farms.map((item) => (
+          {farms.map((item) => {
+            const contents = landContents(item.id);
+            const shown = contents.slice(0, MAX_TILE_CONTENTS);
+            const hidden = contents.length - shown.length;
+
+            return (
             <div key={item.id} className="land-tile">
               {/* Photo first: it is what tells one piece of land from another at a glance, and
                   the name underneath reads as its caption. */}
@@ -153,6 +218,21 @@ export function LandPage() {
                   </div>
                 </div>
 
+                {/* What the land is actually for, in its own artwork: the crops planted on it and
+                    the herds kept there. The kind's name is the tooltip — on the card the picture
+                    says it, with how many under it. Land holding neither skips the row. */}
+                {contents.length > 0 && (
+                  <div className="land-tile-contents">
+                    {shown.map((entry) => (
+                      <span key={entry.key} className="land-tile-chip" title={`${entry.label}: ${entry.count}`}>
+                        <img src={entry.icon} alt={entry.label} />
+                        <b>{entry.count}</b>
+                      </span>
+                    ))}
+                    {hidden > 0 && <span className="land-tile-chip more">+{hidden}</span>}
+                  </div>
+                )}
+
                 <span className="land-tile-divider" />
 
                 {/* Opening a land shows its plots, mirroring the mobile app. */}
@@ -162,7 +242,8 @@ export function LandPage() {
                 </Link>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

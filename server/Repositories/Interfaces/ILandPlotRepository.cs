@@ -5,6 +5,13 @@ namespace Server.Repositories.Interfaces;
 public interface ILandPlotRepository
 {
     Task<IEnumerable<LandPlot>> GetByFarmAsync(int farmId);
+
+    /// <summary>
+    /// Every plot on the farm, whichever land it sits on — what the land list needs to say what
+    /// each piece of land grows without asking per card.
+    /// </summary>
+    Task<IEnumerable<LandPlot>> GetAllAsync();
+
     Task<LandPlot?> GetByIdAsync(int id);
 
     /// <summary>

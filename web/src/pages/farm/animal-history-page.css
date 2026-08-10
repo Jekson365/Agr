@@ -1,3 +1,37 @@
+/* The photo and the control that replaces it are one box: the button sits over the picture's
+   bottom edge rather than taking a row of the sidebar to itself. */
+.history-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Only the picture, so the button sits on its bottom edge and not below whatever follows. */
+.history-hero-frame {
+  position: relative;
+}
+
+.history-hero-button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--color-scrim);
+  color: var(--color-on-overlay);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.history-hero-button.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.history-hero-button input {
+  display: none;
+}
+
 .history-hero-image {
   width: 100%;
   aspect-ratio: 1;

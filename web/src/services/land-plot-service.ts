@@ -5,6 +5,12 @@ export function getLandPlots(farmId: number) {
   return apiFetch<LandPlot[]>(`/api/landplots?farmId=${farmId}`);
 }
 
+/** Every plot on the farm. The land list draws each card's contents from these, so it reads them
+ *  once rather than once per piece of land. */
+export function getAllLandPlots() {
+  return apiFetch<LandPlot[]>('/api/landplots');
+}
+
 export function getLandPlot(id: number) {
   return apiFetch<LandPlot>(`/api/landplots/${id}`);
 }

@@ -16,6 +16,14 @@ public class LandPlotRepository(AppDbContext context) : ILandPlotRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<LandPlot>> GetAllAsync()
+    {
+        return await context.LandPlots
+            .AsNoTracking()
+            .OrderBy(p => p.Id)
+            .ToListAsync();
+    }
+
     public async Task<LandPlot?> GetByIdAsync(int id)
     {
         return await context.LandPlots.FindAsync(id);

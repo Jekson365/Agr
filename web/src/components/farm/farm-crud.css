@@ -579,6 +579,52 @@
   white-space: nowrap;
 }
 
+/* What the land holds, as a wrapping row of kinds. No names here — the artwork says which kind it
+   is and the number under it says how much, so the row reads as a picture of the place rather
+   than another few lines of text. */
+.land-tile-contents {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(10px * var(--tile-scale));
+}
+
+/* Artwork over its count, the two centred on each other so a row of them lines up however wide
+   the numbers run. */
+.land-tile-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(2px * var(--tile-text-scale));
+  min-width: calc(34px * var(--tile-scale));
+  padding: calc(6px * var(--tile-scale)) calc(8px * var(--tile-scale));
+  border-radius: calc(10px * var(--tile-scale));
+  background: var(--color-green-muted);
+}
+
+.land-tile-chip img {
+  width: calc(26px * var(--tile-text-scale));
+  height: calc(26px * var(--tile-text-scale));
+  object-fit: contain;
+}
+
+.land-tile-chip b {
+  font-size: calc(0.75rem * var(--tile-text-scale));
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1;
+}
+
+/* The tail of a land holding more kinds than the card shows: a count on its own, with no artwork
+   above it, so it centres in the same box. */
+.land-tile-chip.more {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: calc(0.75rem * var(--tile-text-scale));
+  font-weight: 700;
+}
+
 .land-tile-divider,
 .entity-tile-divider {
   height: 1px;
