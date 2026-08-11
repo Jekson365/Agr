@@ -94,8 +94,8 @@ public class LivestockDetailsController(
 
         // One animal fewer, and the ledger says so. Recorded as Manual rather than Realization:
         // this is a record being taken back, not an animal slaughtered — a realization is its own
-        // act, with its own meat and its own entry. The movement is what lowers the group's count,
-        // which is the only thing that moves it.
+        // act, with its own meat, and it marks the group rather than emptying it. The movement is
+        // what lowers the group's count, and now the only thing that does.
         await livestockMovementRepository.AddAsync(new LivestockMovement
         {
             LivestockId = existing.LivestockId,

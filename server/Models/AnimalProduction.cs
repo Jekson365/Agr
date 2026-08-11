@@ -34,10 +34,12 @@ public class AnimalProduction
     /// <summary>
     /// A realization: the animals this record covers were slaughtered and their meat taken off
     /// them. It is an ordinary production record in every other respect — same fields, same save
-    /// path — but the group's <see cref="Livestock.Count"/> moves with it, falling by
-    /// <see cref="AnimalCount"/> when one is saved and rising again when it is removed. Recorded
-    /// under the group's own meat type, not the type it declares it produces, so a herd that
-    /// yields milk can still be realized without its milk history changing meaning.
+    /// path — but it marks its group as realized (see <see cref="Livestock.IsRealized"/>), and
+    /// unmarks it again when it is the last such record removed. The group's
+    /// <see cref="Livestock.Count"/> is deliberately left alone: the herd is not taken apart to
+    /// say it was realized. Recorded under the group's own meat type, not the type it declares it
+    /// produces, so a herd that yields milk can still be realized without its milk history
+    /// changing meaning.
     /// </summary>
     public bool IsRealization { get; set; }
 

@@ -36,9 +36,10 @@ const SOURCE_LABEL_KEY: Record<LivestockMovementSource, string> = {
  * How a group came by the animals it has: every change to its head count, with what caused it.
  *
  * The count itself is one number and says nothing about where it came from. These entries are
- * written by the things that move it — the group's opening count, a breeding result, a
- * realization — and by hand for the ways in that have no flow of their own, so the ledger and the
- * count cannot tell different stories.
+ * written by the things that move it — the group's opening count, a breeding result, an animal
+ * taken off the group — and by hand for the ways in that have no flow of their own, so the ledger
+ * and the count cannot tell different stories. A realization is absent: it marks the group rather
+ * than moving its count, so there is nothing here for it to explain.
  */
 export function LivestockMovementPage() {
   const { t, language } = useLanguage();
@@ -97,8 +98,8 @@ export function LivestockMovementPage() {
     try {
       await createLivestockMovement({
         livestockId,
-        // Only ways in are offered here, so this is always an addition. Animals leave through a
-        // realization, which writes its own entry.
+        // Only ways in are offered here, so this is always an addition. Animals leave by being
+        // taken off the group one at a time, which writes its own entry.
         delta: quantity,
         source,
         date,

@@ -15,8 +15,10 @@ public enum LivestockMovementSource
     /// <summary>Bought in.</summary>
     Purchase,
 
-    /// <summary>Slaughtered — the one source that takes animals off a group rather than adding
-    /// them. See <see cref="AnimalProduction.IsRealization"/>.</summary>
+    /// <summary>Slaughtered. Kept for the entries written while a realization took its animals
+    /// off the group; it no longer does — it marks the group instead (see
+    /// <see cref="Livestock.IsRealized"/>) — so nothing writes this any more and the rows that
+    /// carry it are history.</summary>
     Realization,
 }
 

@@ -35,4 +35,18 @@ public class Livestock
     /// Null for a group that has never been realized, including every group predating this.
     /// </summary>
     public int? MeatProductionTypeId { get; set; }
+
+    /// <summary>
+    /// The group has been realized: an <see cref="AnimalProduction"/> with
+    /// <see cref="AnimalProduction.IsRealization"/> was recorded against it.
+    ///
+    /// A mark, not a deduction — <see cref="Count"/> is left where it stands. The group is the
+    /// farm's record of what it kept and of everything that group produced, and taking its animals
+    /// off it to say they were slaughtered spends that record to store one fact. So the fact is
+    /// stored as itself, and the herd stays whole and legible beside its history.
+    ///
+    /// Set by the realization record and cleared when the last one is removed (see
+    /// AnimalProductionRepository), so the mark and the records that justify it cannot disagree.
+    /// </summary>
+    public bool IsRealized { get; set; }
 }

@@ -50,9 +50,9 @@ type Props =
       livestockId: number;
       /** The group's current head count, used to prefill the "animals counted" field. */
       animalCount: number;
-      /** Called when a realization has moved the group's head count, so the page holding it can
-       *  read it back — this view refreshes its own copy, not the caller's. */
-      onHeadcountChange?: () => void;
+      /** Called when a realization has marked the group — or removing one has unmarked it — so the
+       *  page holding it can read it back; this view refreshes its own copy, not the caller's. */
+      onGroupChange?: () => void;
     };
 
 /**
@@ -150,11 +150,12 @@ export function AnimalProductionView(props: Props) {
     }
   }
 
-  /** Tells the page above that the group's head count moved. Group pages only — the prop is
-   *  theirs, and a single animal's page has no count to correct. */
-  function headcountChanged() {
+  /** Tells the page above that the group itself changed — it was realized, or a realization was
+   *  removed. Group pages only: the prop is theirs, and a single animal's page has no group of
+   *  its own to correct. */
+  function groupChanged() {
     if (props.target === 'livestock') {
-      props.onHeadcountChange?.();
+      props.onGroupChange?.();
     }
   }
 
@@ -162,8 +163,8 @@ export function AnimalProductionView(props: Props) {
     if (producedTypeId == null) return;
     setEditingRecord(null);
     setForm({
-      // The group as last read, not the count this view was mounted with: a realization since
-      // then took animals off it, and prefilling a herd that no longer exists is how a milking
+      // The group as last read, not the count this view was mounted with: animals can have been
+      // added or taken off it since, and prefilling a herd that no longer exists is how a milking
       // ends up recorded against more animals than the farm has.
       ...makeEmptyForm(isGroup ? (group?.count ?? defaultAnimalCount) : 1),
       // Not a choice here: the batch is collected under what the group produces.
@@ -177,16 +178,16 @@ export function AnimalProductionView(props: Props) {
   /**
    * A realization: the same form and the same save path as a record, with two things settled for
    * it. It is filed under the group's own meat rather than what the group produces, and it says
-   * so on the way out, which is what has the server take its animals off the group.
+   * so on the way out, which is what has the server mark the group realized.
    *
    * The count defaults to 1 rather than the whole herd — the add form covers every animal because
    * they all contributed to a milking, but realizing the entire group by pressing a button once
    * is not a default anyone wants.
    */
   async function openRealization() {
-    // Also guarded on the button. Checked again here because the count can have fallen to zero
-    // since this page loaded — the form would open onto a save the server is bound to refuse.
-    if (!group || group.count < 1) return;
+    // Also guarded on the button. Checked again here because the group can have emptied or been
+    // realized elsewhere since this page loaded.
+    if (!group || group.count < 1 || group.isRealized) return;
 
     const meatTypeId = group.meatProductionTypeId ?? (await createMeatTypeForGroup());
     if (meatTypeId == null) {
@@ -257,12 +258,12 @@ export function AnimalProductionView(props: Props) {
       }
       setFormOpen(false);
 
-      // A realization moved the group's headcount on the server. Read the page back rather than
-      // guessing the new count here — deleting one puts the animals back too, and one place that
-      // re-reads is easier to trust than three that each do their own arithmetic.
+      // A realization marked the group on the server. Read the page back rather than setting the
+      // mark here — removing the last one takes it off again, and one place that re-reads is
+      // easier to trust than three that each keep their own copy in step.
       if (input.isRealization) {
         await load();
-        headcountChanged();
+        groupChanged();
       }
     } catch (err) {
       // The group can be short of animals if it was realized elsewhere since this page loaded.
@@ -295,8 +296,8 @@ export function AnimalProductionView(props: Props) {
   async function confirmDeleteRecord() {
     if (!confirmDelete) return;
     const { id } = confirmDelete;
-    // Read before it is gone: deleting a realization gives the group its animals back, and the
-    // headcount on screen has to follow.
+    // Read before it is gone: deleting the group's last realization takes the mark off it, and
+    // what is on screen has to follow.
     const wasRealization = [...records, ...singleRecords].some((r) => r.id === id && r.isRealization);
     try {
       await deleteAnimalProduction(id);
@@ -304,7 +305,7 @@ export function AnimalProductionView(props: Props) {
       setSingleRecords((prev) => prev.filter((r) => r.id !== id));
       if (wasRealization) {
         await load();
-        headcountChanged();
+        groupChanged();
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -384,21 +385,32 @@ export function AnimalProductionView(props: Props) {
 
         {/* Realization stands apart from what the group produces: a herd can be realized whether
             or not it has declared an output, so this is not behind the check above. Group pages
-            only — it takes animals off a group, which a single animal's page has none of. */}
+            only — it marks a group, which a single animal's page has none of. */}
         {isGroup && group && (
           <>
-            {/* An emptied group has nothing left to take. The server refuses it too, but a
-                button that can only fail is not worth offering. */}
+            {/* A group is realized once, and an emptied one has nothing to realize. Both are said
+                back next to the button rather than only greying it out, since a button that does
+                nothing when pressed explains nothing. */}
             <button
               type="button"
               className="secondary-button"
               onClick={openRealization}
-              disabled={group.count < 1}
-              title={group.count < 1 ? t('production.realizationNoAnimals') : undefined}
+              disabled={group.isRealized || group.count < 1}
+              title={
+                group.isRealized
+                  ? t('production.realizedAlready')
+                  : group.count < 1
+                    ? t('production.realizationNoAnimals')
+                    : undefined
+              }
             >
               {t('production.realization')}
             </button>
-            {group.count < 1 && <span className="limit-hint">{t('production.realizationNoAnimals')}</span>}
+            {group.isRealized ? (
+              <span className="limit-hint">{t('production.realizedAlready')}</span>
+            ) : (
+              group.count < 1 && <span className="limit-hint">{t('production.realizationNoAnimals')}</span>
+            )}
           </>
         )}
       </div>

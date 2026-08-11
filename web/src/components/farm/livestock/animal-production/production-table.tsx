@@ -122,8 +122,8 @@ export function ProductionTable({
               <button type="button" className="production-row-cell type" onClick={() => onEdit(record)} title={t('common.edit')}>
                 {typeName}
                 {animalCode && <span className="production-row-animal"> · {animalCode}</span>}
-                {/* Its animals left the herd, which is why the group's count no longer adds up
-                    against the rest of this history. */}
+                {/* The record that marked the group realized — set apart from the collections
+                    around it, which are what the group yielded while it was kept. */}
                 {record.isRealization && (
                   <span className="production-realization-badge">{t('production.realizationBadge')}</span>
                 )}
@@ -132,9 +132,11 @@ export function ProductionTable({
               <span className="production-row-cell num strong income-delta">
                 +{record.quantity} <span className="production-row-unit">{shortUnit(unit)}</span>
               </span>
+              {/* Plain, not "−5": these animals were realized, but the group keeps its count, so a
+                  deduction is not what this column is saying any more. */}
               {isGroup && (
                 <span className={record.isRealization ? 'production-row-cell num animals-out' : 'production-row-cell num'}>
-                  {record.isRealization ? `−${record.animalCount}` : record.animalCount}
+                  {record.animalCount}
                 </span>
               )}
               <span className="production-row-cell">{record.quality || '—'}</span>

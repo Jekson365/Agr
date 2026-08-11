@@ -45,11 +45,15 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         // meat type carries the name it was created with — a rename would leave all of that
         // naming something that no longer exists.
         // Count is deliberately not copied. It is settled when the group is created and moves
-        // only with its realizations (see AnimalProductionRepository.ShiftHeadcountAsync), so a
-        // figure arriving on an edit would put the herd out of step with the records that
-        // account for it. Ignored rather than refused: callers legitimately PUT the whole group
-        // to change something else — linking its meat, renaming it — and carry the count along
-        // without meaning anything by it.
+        // only with the things that keep the movement ledger — animals added to or taken off the
+        // group — so a figure arriving on an edit would put the herd out of step with the entries
+        // that account for it. Ignored rather than refused: callers legitimately PUT the whole
+        // group to change something else — linking its meat, renaming it — and carry the count
+        // along without meaning anything by it.
+        // IsRealized is not copied for the same reason, and a stronger one: it is owned by the
+        // group's realization records (see AnimalProductionRepository), and a PUT that carried a
+        // stale copy of it would either claim a realization that never happened or deny one that
+        // did.
         // Only ever the first declaration or the value it already has — the controller refuses
         // anything else, so what arrives here is what the group produces either way.
         existing.ProductionTypeId = livestock.ProductionTypeId;

@@ -20,8 +20,9 @@ public class AnimalProductionsController(
     private const string ProduceMismatchMessage = "A record is collected under what its group produces.";
 
     /// <summary>
-    /// A realization takes its animals out of the group (see
-    /// <see cref="AnimalProduction.IsRealization"/>), so it cannot cover more than the group has.
+    /// A realization names the animals of the group it was slaughtered from, so it cannot name
+    /// more of them than the group has — even though the group keeps its head count either way
+    /// (see <see cref="Livestock.IsRealized"/>).
     /// </summary>
     private const string NotEnoughAnimalsMessage = "The group does not have that many animals left.";
 
@@ -53,7 +54,7 @@ public class AnimalProductionsController(
 
         if (production.IsRealization)
         {
-            // A realization is an act on the herd — it takes animals out of a group — so it is
+            // A realization is an act on the herd — it marks a whole group as realized — so it is
             // recorded against the group, never against one animal of it.
             if (production.LivestockId is not int groupId)
             {
@@ -115,13 +116,12 @@ public class AnimalProductionsController(
                 return BadRequest("A realization covers at least one animal.");
             }
 
-            // Only the difference is taken from the herd — the animals this record already
-            // accounts for left it when it was saved. Raising 3 head to 5 needs 2 more to exist.
-            var additional = production.AnimalCount - existing.AnimalCount;
-            if (additional > 0
-                && existing.LivestockId is int groupId
+            // The same bound as on create, judged against the whole count rather than the change:
+            // the group keeps its animals through a realization, so raising a record from 3 head
+            // to 5 asks whether the group ever had 5, not whether it has 2 to spare.
+            if (existing.LivestockId is int groupId
                 && await livestockRepository.GetByIdAsync(groupId) is Livestock group
-                && additional > group.Count)
+                && production.AnimalCount > group.Count)
             {
                 return Conflict(NotEnoughAnimalsMessage);
             }

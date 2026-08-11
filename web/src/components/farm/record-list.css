@@ -184,7 +184,7 @@
   background: var(--color-surface-sunken);
 }
 
-/* A realization: this row is why the group's head count dropped, so it is set apart from the
+/* A realization: this row is why the group is marked realized, so it is set apart from the
    collections around it rather than just labelled. Amber, not red — nothing went wrong.
    The accent is an inset shadow rather than a left border: the row is a grid on a shared track
    list, and a border would push its cells out of line with every other row's. */
@@ -199,8 +199,8 @@
   background: var(--color-amber-soft);
 }
 
-/* Ledger coloring on the quantity column: a realization's animals left the herd, so its count
-   reads as a deduction even though the meat it yielded is an addition. */
+/* The animals column on a realization row: these are the animals it was realized from, not a
+   batch that contributed to a collection, so the figure is tinted to say it is read differently. */
 .production-row.realization .production-row-cell.animals-out {
   color: var(--color-amber);
   font-weight: 700;
@@ -353,8 +353,8 @@
   gap: 12px;
 }
 
-/* Marks a row whose animals left the herd, so a realization is not mistaken for an ordinary
-   batch when the group's count no longer matches its history. */
+/* Marks the row that realized the group, so it is not mistaken for one of the ordinary batches
+   it sits among. */
 .production-realization-badge {
   display: inline-block;
   margin-left: 6px;

@@ -208,6 +208,9 @@ export function LivestockFormModal({
           // Settled with the group and never edited here; carried through so saving the form
           // doesn't unlink the meat a realization is recorded under.
           meatProductionTypeId: editingItem!.meatProductionTypeId,
+          // Owned by the group's realization records — carried so the object is whole, and
+          // ignored by the server for the same reason it is not editable here.
+          isRealized: editingItem!.isRealized,
         };
         await updateLivestock(updated.id, updated);
         onSaved(updated, false);
@@ -219,6 +222,8 @@ export function LivestockFormModal({
           farmId,
           productionTypeId,
           meatProductionTypeId: await ensureMeatProductionType(trimmedName),
+          // A new group has been realized as much as it has produced.
+          isRealized: false,
         });
         onSaved(created, true);
       }
@@ -339,7 +344,7 @@ export function LivestockFormModal({
         </div>
 
         {/* Settled at creation, like the animal and the output above it. From then on the count is
-            what the group's realizations have left it at, so a figure typed here would silently
+            what the group's movement ledger has left it at, so a figure typed here would silently
             disagree with the history that produced it. */}
         <div className="field">
           <label>{t('farm.count')}</label>

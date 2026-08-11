@@ -2,7 +2,8 @@
 export type LivestockMovementSource = 'Manual' | 'Birth' | 'Gift' | 'Purchase' | 'Realization';
 
 /** The ways a herd can grow, which are the ones offered when recording one by hand. Realization
- *  is absent on purpose: animals leave through a realization record, not through this form. */
+ *  is absent on purpose: it marks a group rather than moving its count, and the entries carrying
+ *  it are from when it did. */
 export const LIVESTOCK_MOVEMENT_SOURCES: readonly LivestockMovementSource[] = [
   'Purchase',
   'Gift',

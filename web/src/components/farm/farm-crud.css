@@ -992,3 +992,16 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+/* A realized group, said beside its head count. Amber and shaped like the count it sits next to,
+   matching the badge on the realization row itself — nothing went wrong, the group is simply not
+   only a herd any more. */
+.page-header-realized {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
