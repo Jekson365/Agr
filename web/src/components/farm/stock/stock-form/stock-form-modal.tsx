@@ -110,7 +110,9 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
             catalog={STOCK_KIND_CATALOG}
             value={values.type}
             onChange={(type) => setField('type', type)}
-            preset={editingStock?.type ?? null}
+            /* Only a new stock reaches this branch — an existing one shows its kind back above —
+               so there is nothing to preset the catalog to. */
+            preset={null}
             labelText={t('farm.type')}
             addPlaceholder={t('farm.newStockTypePlaceholder')}
             variant="dropdown"

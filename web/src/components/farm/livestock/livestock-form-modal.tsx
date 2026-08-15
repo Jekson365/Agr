@@ -204,17 +204,13 @@ export function LivestockFormModal({
       const count = Math.max(0, parseInt(countInput, 10) || 0);
       if (isEditing) {
         const updated: Livestock = {
-          id: editingItem!.id,
-          // Every one of these is settled at creation — the fields above only show them back,
-          // and the server ignores them on an update in any case.
+          // Every field but the name and the farm is settled at creation — the ones above only
+          // show them back, and the server ignores them on an update in any case. Spread rather
+          // than listed one by one so a field added to the group later travels with it: the
+          // removed mark is one such, and dropping it here would read as un-removing the group.
+          ...editingItem!,
           name: trimmedName,
-          type: editingItem!.type,
-          count: editingItem!.count,
           farmId,
-          productionTypeId: editingItem!.productionTypeId,
-          // Settled with the group and never edited here; carried through so saving the form
-          // doesn't unlink the meat a realization is recorded under.
-          meatProductionTypeId: editingItem!.meatProductionTypeId,
         };
         await updateLivestock(updated.id, updated);
         onSaved(updated, false);

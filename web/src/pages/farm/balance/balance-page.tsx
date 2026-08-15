@@ -215,7 +215,6 @@ export function BalancePage() {
       <Link to="/farm" className="back-link">
         ← {t('farm.title')}
       </Link>
-{/* 
       <div className="page-header">
         <h1 className="page-title">{t('farm.balance')}</h1>
         {!loading && !error && hasRemoved && (
@@ -228,7 +227,7 @@ export function BalancePage() {
             {t(showRemoved ? 'balance.hideRemoved' : 'balance.showRemoved')}
           </button>
         )}
-      </div> */}
+      </div>
 
       {loading ? (
         <div className="state-box">…</div>
