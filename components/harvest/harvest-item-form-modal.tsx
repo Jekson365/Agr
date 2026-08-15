@@ -56,11 +56,17 @@ export function HarvestItemFormModal({ visible, harvestId, editingItem, onClose,
   async function loadTargets() {
     setTargetsLoading(true);
     try {
-      const [stockList, treeStockList] = await Promise.all([getStock(), getTreeStock()]);
-      setStocks(stockList);
+      const [stockList, treeStockList] = await Promise.all([getStock(true), getTreeStock()]);
+
+      // A removed good takes no more plans, and only stays on the list for the row already
+      // recorded against it — dropping it there would retarget that row on the next save.
+      const editingStockId = editingItem?.stockId ?? null;
+      const allowedStocks = stockList.filter((s) => !s.isDeleted || s.id === editingStockId);
+
+      setStocks(allowedStocks);
       setTreeStocks(treeStockList);
 
-      const options = buildHarvestTargetOptions(stockList, treeStockList, t);
+      const options = buildHarvestTargetOptions(allowedStocks, treeStockList, t);
       const editingKey = editingItem ? harvestTargetKey(editingItem.stockId, editingItem.treeStockId) : null;
       const preset = editingKey && options.some((o) => o.key === editingKey) ? editingKey : (options[0]?.key ?? null);
       setSelectedKey(preset);

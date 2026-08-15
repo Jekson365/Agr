@@ -170,9 +170,12 @@ export function StockPage() {
         onClose={() => setPacketsMessage(null)}
       />
 
+      {/* Removing a stock hides it rather than dropping it — say so, since the standard "cannot
+          be undone" line would overstate what happens to the harvests and photos behind it. */}
       <ConfirmDeleteModal
         open={!!confirmDelete}
         name={confirmDelete?.name ?? ''}
+        body={t('farm.deleteStockBody')}
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteItem}
       />

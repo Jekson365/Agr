@@ -59,7 +59,9 @@ export function FruitHarvestDetailPage() {
       const [item, treeList, treeStockList, productList] = await Promise.all([
         getHarvest(harvestId),
         getHarvestTrees(harvestId),
-        getTreeStock(),
+        // Removed orchards included: this harvest's rows still name the fruit they picked, and a
+        // row whose orchard is gone from the list loses its label and its icon.
+        getTreeStock(true),
         getTreeProducts(),
       ]);
       setHarvest(item);

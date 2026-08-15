@@ -947,7 +947,7 @@ namespace Server.Migrations.Tenant
                     b.Property<int>("FarmId")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsRealized")
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<int?>("MeatProductionTypeId")
@@ -1384,6 +1384,9 @@ namespace Server.Migrations.Tenant
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1444,6 +1447,9 @@ namespace Server.Migrations.Tenant
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1713,6 +1719,9 @@ namespace Server.Migrations.Tenant
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
                     b.Property<int?>("LandPlotId")
                         .HasColumnType("integer");
 
@@ -1735,7 +1744,9 @@ namespace Server.Migrations.Tenant
 
                     b.HasIndex("LandPlotId");
 
-                    b.HasIndex("TreeProductId");
+                    b.HasIndex("TreeProductId")
+                        .IsUnique()
+                        .HasFilter("\"TreeProductId\" IS NOT NULL");
 
                     b.ToTable("TreeStocks");
                 });

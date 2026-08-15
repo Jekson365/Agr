@@ -171,8 +171,9 @@ export function MapPage() {
   async function loadOwn(farmId: number): Promise<Details> {
     const farm = farms.find((item) => item.id === farmId);
     if (treeStockRef.current === null) {
-      // Fruits can be switched off for a tenant; without them a plot just goes by its crop.
-      treeStockRef.current = await getTreeStock().catch(() => []);
+      // Fruits can be switched off for a tenant; without them a plot just goes by its crop. Removed
+      // orchards are included so a plot planted with one keeps naming it rather than falling back.
+      treeStockRef.current = await getTreeStock(true).catch(() => []);
     }
     const plots = await getLandPlots(farmId);
 

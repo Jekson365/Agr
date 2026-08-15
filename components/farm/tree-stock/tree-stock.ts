@@ -25,6 +25,16 @@ export const TREE_STOCK_UNIT_LABEL_KEY: Record<string, string> = {
   Box: 'farm.unitBox',
 };
 
+/** The unit every new product is created with — produce is weighed. Mirrors the web form, where
+ * the unit stopped being a choice; older products keep whatever they were entered under. */
+export const TREE_PRODUCT_DEFAULT_UNIT = 'Kilogram';
+
+export const TREE_PRODUCT_UNIT_LABEL_KEY: Record<string, string> = {
+  Kilogram: 'farm.unitKg',
+  Box: 'farm.unitBox',
+  Quantity: 'farm.unitQuantity',
+};
+
 const DEFAULT_FRUIT_ICON = require('@/assets/trees/empty.png');
 
 /** A fruit type's display label: its translation if it's a known built-in, otherwise its raw

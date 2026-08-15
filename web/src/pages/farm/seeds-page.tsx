@@ -1,28 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CardMenu } from '@/components/farm/card-menu';
-import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
-import { SeedFormModal } from '@/components/farm/seed/seed-form-modal';
 import { BoxIcon, ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
 import { SEED_UNIT_LABEL_KEY, seedTitle } from '@/config/seed-kinds';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
-import { ApiError } from '@/services/api-client';
-import { deleteSeed, getSeeds } from '@/services/seed-service';
+import { getSeeds } from '@/services/seed-service';
 import type { Seed } from '@/types/seed';
 
+/**
+ * The seed the farm holds — a read-only list. Seed is not kept by hand: it is created with the
+ * stock of the crop it grows (POST /api/stocks/with-seed), goes out of use when that stock is
+ * removed, and its amount moves by being sown against a harvest. So there is nothing to add,
+ * edit or delete here; a tile only leads to that seed's history.
+ */
 export function SeedsPage() {
   const { t } = useLanguage();
 
   const [seeds, setSeeds] = useState<Seed[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [formOpen, setFormOpen] = useState(false);
-  const [editingSeed, setEditingSeed] = useState<Seed | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     load();
@@ -40,42 +38,6 @@ export function SeedsPage() {
     }
   }
 
-  // Disabled along with the add button above — seeds aren't created from this page.
-  // function openAdd() {
-  //   setEditingSeed(null);
-  //   setFormOpen(true);
-  // }
-
-  function openEdit(seed: Seed) {
-    setEditingSeed(seed);
-    setFormOpen(true);
-  }
-
-  async function confirmDeleteSeed() {
-    if (!confirmDelete) return;
-    const { id } = confirmDelete;
-    try {
-      await deleteSeed(id);
-      setSeeds((prev) => prev.filter((s) => s.id !== id));
-    } catch (err) {
-      // The server refuses while a harvest still records this seed as sown.
-      setError(
-        err instanceof ApiError && err.status === 409
-          ? t('seed.deleteInUse')
-          : err instanceof Error
-            ? err.message
-            : String(err)
-      );
-    } finally {
-      setConfirmDelete(null);
-    }
-  }
-
-  function handleSaved(seed: Seed, isNew: boolean) {
-    setSeeds((prev) => (isNew ? [...prev, seed] : prev.map((s) => (s.id === seed.id ? seed : s))));
-  }
-
-
   return (
     <div>
       <Link to="/farm" className="back-link">
@@ -84,11 +46,6 @@ export function SeedsPage() {
 
       <div className="page-header">
         <h1 className="page-title">{t('seed.title')}</h1>
-        {/* Adding seed here is disabled — seeds are created elsewhere, not from this page.
-        <button type="button" className="add-button" onClick={openAdd}>
-          + {t('seed.add')}
-        </button>
-        */}
       </div>
 
       {loading ? (
@@ -113,10 +70,6 @@ export function SeedsPage() {
                 <Link to={`/farm/seeds/${seed.id}`} className="entity-tile-media">
                   <img src={stockKindImage(seed.type)} alt="" className="entity-tile-icon" />
                 </Link>
-
-                <div className="entity-tile-menu">
-                  <CardMenu onEdit={() => openEdit(seed)} onDelete={() => setConfirmDelete({ id: seed.id, name: title })} />
-                </div>
 
                 <div className="entity-tile-body">
                   <h2 className="entity-tile-title">{title}</h2>
@@ -147,15 +100,6 @@ export function SeedsPage() {
           })}
         </div>
       )}
-
-      <SeedFormModal open={formOpen} editingSeed={editingSeed} onClose={() => setFormOpen(false)} onSaved={handleSaved} />
-
-      <ConfirmDeleteModal
-        open={!!confirmDelete}
-        name={confirmDelete?.name ?? ''}
-        onCancel={() => setConfirmDelete(null)}
-        onConfirm={confirmDeleteSeed}
-      />
     </div>
   );
 }

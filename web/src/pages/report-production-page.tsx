@@ -340,10 +340,12 @@ export function ReportProductionPage() {
     productionTypes,
   ]);
 
-  /** How much of each product was sold — movement deltas are negative, shown as positive here. */
+  /** How much of each product was sold — movement deltas are negative, shown as positive here.
+   *  Sales only: a realization's entry adds meat rather than taking any away, and counting it
+   *  here would report it as a negative sale. */
   const soldTotals = useMemo(() => {
     const totals = new Map<string, ProductionTotalRow>();
-    for (const movement of filteredMovements) {
+    for (const movement of filteredMovements.filter((m) => m.source === 'Market')) {
       const key = `${movement.productionTypeId}-${movement.unitId}`;
       const existing = totals.get(key);
       if (existing) {

@@ -348,14 +348,20 @@
     "namePlaceholder": "e.g. Gala Apples",
     "empty": "No tree stock yet. Add one below.",
     "loadError": "Couldn't load tree stock.",
-    "deletePlanted": "The land plots growing this fruit, and what it produces, are removed with it. This can't be undone.",
-    "deleteProduct": "What this fruit produces is removed from Products with it. This can't be undone.",
+    "deleteKept": "This fruit is hidden from the list. What it produced, its history and its land plot are kept.",
     "landLabel": "Land",
     "plotLabel": "Land plot",
     "noLandPlot": "Not assigned",
     "noFarms": "No land yet. Add one in the Land tab first.",
     "newFruitTypePlaceholder": "New fruit name",
     "nameDuplicate": "A tree stock with this name already exists."
+  },
+  "treeProduct": {
+    "producesLabel": "Produces",
+    "name": "Product name",
+    "taken": "Another fruit already produces that product.",
+    "requiredHint": "Add a product first — trees must declare what they produce.",
+    "allTaken": "Every product is already produced by another fruit. Add a new one with +."
   },
   "treeStockHistory": {
     "title": "Tree stock history",

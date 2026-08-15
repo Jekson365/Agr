@@ -7,9 +7,13 @@ namespace Server.Repositories;
 
 public class SeedRepository(AppDbContext context, ISeedMovementRepository seedMovementRepository) : ISeedRepository
 {
-    public async Task<IEnumerable<Seed>> GetAllAsync()
+    public async Task<IEnumerable<Seed>> GetAllAsync(bool includeDeleted = false)
     {
-        return await context.Seeds.AsNoTracking().OrderBy(s => s.Id).ToListAsync();
+        return await context.Seeds
+            .AsNoTracking()
+            .Where(s => includeDeleted || !s.IsDeleted)
+            .OrderBy(s => s.Id)
+            .ToListAsync();
     }
 
     public async Task<Seed?> GetByIdAsync(int id)
@@ -32,42 +36,24 @@ public class SeedRepository(AppDbContext context, ISeedMovementRepository seedMo
         return seed;
     }
 
-    public async Task<bool> UpdateAsync(Seed seed)
+    public async Task<int> SoftDeleteByCropAsync(string type, string name)
     {
-        var existing = await context.Seeds.FindAsync(seed.Id);
-        if (existing is null)
+        var wantedType = type.Trim().ToLower();
+        var wantedName = name.Trim().ToLower();
+
+        var seeds = await context.Seeds
+            .Where(s => !s.IsDeleted
+                && s.Type.Trim().ToLower() == wantedType
+                && s.Name.Trim().ToLower() == wantedName)
+            .ToListAsync();
+
+        foreach (var seed in seeds)
         {
-            return false;
+            seed.IsDeleted = true;
         }
-
-        var delta = seed.Amount - existing.Amount;
-
-        existing.Type = seed.Type;
-        existing.Name = seed.Name;
-        existing.Amount = seed.Amount;
-        existing.Unit = seed.Unit;
 
         await context.SaveChangesAsync();
-
-        if (delta != 0)
-        {
-            await LogMovementAsync(seed.Id, delta, SeedMovementSource.Manual);
-        }
-
-        return true;
-    }
-
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var existing = await context.Seeds.FindAsync(id);
-        if (existing is null)
-        {
-            return false;
-        }
-
-        context.Seeds.Remove(existing);
-        await context.SaveChangesAsync();
-        return true;
+        return seeds.Count;
     }
 
     public async Task AdjustAmountRawAsync(int seedId, decimal delta)

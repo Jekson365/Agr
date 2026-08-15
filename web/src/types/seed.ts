@@ -9,6 +9,7 @@ export type Seed = {
   name: string;
   amount: number;
   unit: SeedUnit;
+  /** Set when the stock this seed grows into was removed — the pair goes together. Hidden from
+   *  the seeds page and the sowing picker; only `getSeeds(true)` returns such rows. */
+  isDeleted: boolean;
 };
-
-export type SeedInput = Omit<Seed, 'id'>;

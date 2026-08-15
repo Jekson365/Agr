@@ -84,8 +84,10 @@ export function LandDetailPage() {
       const [item, list, treeStock, stock] = await Promise.all([
         getFarm(farmId),
         getLandPlots(farmId),
-        getTreeStock(),
-        getStock(),
+        // Plots outlive what they grow — a removed orchard or good is included so its plot still
+        // shows the name it was planted under rather than falling back to the bare crop.
+        getTreeStock(true),
+        getStock(true),
       ]);
       setFarm(item);
       setPlots(list);
@@ -113,10 +115,10 @@ export function LandDetailPage() {
     // The form offers entries added since this page loaded, which aren't in the lists yet — fetch
     // them so the plot shows the name of the one it grows rather than falling back to its kind.
     if (plot.treeStockId != null && !fruits.some((fruit) => fruit.id === plot.treeStockId)) {
-      getTreeStock().then(setFruits).catch(() => {});
+      getTreeStock(true).then(setFruits).catch(() => {});
     }
     if (plot.stockId != null && !stocks.some((stock) => stock.id === plot.stockId)) {
-      getStock().then(setStocks).catch(() => {});
+      getStock(true).then(setStocks).catch(() => {});
     }
   }
 

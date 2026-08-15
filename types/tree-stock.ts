@@ -10,6 +10,10 @@ export type TreeStock = {
   amount: number;
   unit: TreeStockUnit;
   landPlotId: number | null;
+  /** The one product these trees yield, from the tree-product catalog. Required when a fruit is
+   *  added, and no two stocks may name the same product. Null only on fruit recorded before it
+   *  was asked for. */
+  treeProductId: number | null;
 };
 
 export type TreeStockInput = Omit<TreeStock, 'id'>;

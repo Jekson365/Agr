@@ -9,6 +9,10 @@ export type Stock = {
   name: string;
   amount: number;
   unit: StockUnit;
+  /** Removed from the stock list: the row is kept for the history recorded against it, but it is
+   *  hidden and no longer offered as a good to pick. Only rows fetched with `getStock(true)` can
+   *  carry it — the plain call leaves them out server-side. */
+  isDeleted: boolean;
 };
 
-export type StockInput = Omit<Stock, 'id'>;
+export type StockInput = Omit<Stock, 'id' | 'isDeleted'>;

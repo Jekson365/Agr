@@ -2,31 +2,25 @@ import { useEffect, useState } from 'react';
 
 import { KindCatalogField } from '@/components/farm/kind-catalog-field';
 import { Modal } from '@/components/ui/modal';
-import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
+import {
+  fruitKindImage,
+  fruitTypeLabel,
+  TREE_PRODUCT_DEFAULT_UNIT,
+  TREE_STOCK_UNIT_LABEL_KEY,
+} from '@/config/fruit-kinds';
 import { isPlanLimitError } from '@/config/plan-benefits';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
-import { getPickedTreeStockIds } from '@/services/harvest-tree-service';
-import { getTreeProducts } from '@/services/tree-product-service';
-import { createTreeStock, getTreeStock, updateTreeStock } from '@/services/tree-stock-service';
-import type { TreeProduct } from '@/types/tree-product';
+import { createTreeProduct, deleteTreeProduct, getTreeProducts } from '@/services/tree-product-service';
+import { createTreeStock, updateTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 import { FRUIT_KIND_CATALOG } from './fruit-kind-catalog';
-import { TreeProductField } from './tree-product-field';
-import {
-  isFormComplete,
-  isNameTaken,
-  makeInitialValues,
-  parseAmount,
-  productsOfOtherRows,
-  type TreeStockFormValues,
-} from './tree-stock-form';
+import { isFormComplete, isNameTaken, makeInitialValues, parseAmount, type TreeStockFormValues } from './tree-stock-form';
 
 type Props = {
   open: boolean;
   editingStock: TreeStock | null;
-  /** The rows that already exist, so a name or a product another row holds is caught before
-   *  saving — and, for the product, kept out of the picker in the first place. */
+  /** The rows that already exist, so a name another row holds is caught before saving. */
   existingItems: TreeStock[];
   onClose: () => void;
   onSaved: (stock: TreeStock, isNew: boolean) => void;
@@ -34,27 +28,11 @@ type Props = {
   onLimitReached?: (message: string) => void;
 };
 
-/** Add or edit an orchard: what fruit it is, how many trees, and which catalog product they yield. */
+/** Add or edit an orchard: what fruit it is, how many trees, and what those trees produce. */
 export function TreeStockFormModal({ open, editingStock, existingItems, onClose, onSaved, onLimitReached }: Props) {
   const { t } = useLanguage();
 
   const [values, setValues] = useState<TreeStockFormValues>(() => makeInitialValues(editingStock));
-  const [products, setProducts] = useState<TreeProduct[]>([]);
-  /** The products the other rows already yield — one orchard per product, so these aren't on offer. */
-  const [takenProducts, setTakenProducts] = useState<Set<number>>(new Set());
-  /**
-   * The product this form added inline, if it added one. An orchard yields a single product, so the
-   * + is spent once used: adding a second would write a catalog entry that nothing produces, since
-   * only the selected one is ever assigned.
-   */
-  const [createdProductId, setCreatedProductId] = useState<number | null>(null);
-  /**
-   * Whether a harvest already recorded this fruit as picked. What it yielded is booked against the
-   * product these trees produce, so from then on the product is settled — moving it would carry
-   * produce nobody harvested onto another product's ledger. Read when the form opens rather than
-   * taken from the list behind it, since a harvest may have been recorded since that was loaded.
-   */
-  const [productLocked, setProductLocked] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -64,39 +42,23 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
     if (!open) return;
     setValues(makeInitialValues(editingStock));
     setFormError(null);
-    setCreatedProductId(null);
-    setProductLocked(false);
-    const taken = productsOfOtherRows(existingItems, editingStock);
-    setTakenProducts(taken);
-    loadProducts(editingStock?.treeProductId ?? null, taken);
-    loadPickedState(editingStock);
+    loadAssignedProduce(editingStock);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingStock]);
 
-  async function loadProducts(preset: number | null, taken: Set<number>) {
-    try {
-      const list = await getTreeProducts();
-      setProducts(list);
-      // A product is required, so default to the assigned one, else the first one still free.
-      setProductId(preset ?? list.find((product) => !taken.has(product.id))?.id ?? null);
-    } catch {
-      setProducts([]);
-      setProductId(preset);
-    }
-  }
-
   /**
-   * Whether this fruit is already picked by a harvest. Only an existing row can be — a new one has
-   * no history — and a failed read leaves the field open, since the server refuses the change
-   * anyway if it turns out there is one.
+   * The name of what an existing orchard produces, to show back beside its trees. Only its name is
+   * wanted — the row already carries the id, and nothing here rewrites the product. A new orchard
+   * has nothing to read, and neither has a row recorded before produce was asked for; both show a
+   * dash instead.
    */
-  async function loadPickedState(stock: TreeStock | null) {
-    if (stock == null) return;
+  async function loadAssignedProduce(stock: TreeStock | null) {
+    if (stock?.treeProductId == null) return;
     try {
-      const picked = await getPickedTreeStockIds();
-      setProductLocked(picked.includes(stock.id));
+      const found = (await getTreeProducts()).find((product) => product.id === stock.treeProductId);
+      if (found) setField('produce', found.name);
     } catch {
-      setProductLocked(false);
+      // Couldn't read it: the field shows a dash, which changes nothing about what is saved.
     }
   }
 
@@ -104,18 +66,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
     setValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  function setProductId(productId: number | null) {
-    setField('productId', productId);
-  }
-
-  // A product just added inline: keep it and select it, so it's assigned on save.
-  function handleProductCreated(product: TreeProduct) {
-    setProducts((prev) => (prev.some((p) => p.id === product.id) ? prev : [...prev, product]));
-    setProductId(product.id);
-    setCreatedProductId(product.id);
-  }
-
-  const canSubmit = isFormComplete(values) && !saving;
+  const canSubmit = isFormComplete(values, isEditing) && !saving;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -125,40 +76,38 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
       return;
     }
 
-    // The picker leaves out products another row yields, so this only catches one that was taken
-    // while the form sat open.
-    if (values.productId != null && takenProducts.has(values.productId)) {
-      setFormError(t('treeProduct.taken'));
-      return;
-    }
-
     setSaving(true);
     setFormError(null);
     try {
       const name = values.name.trim();
+      const produce = values.produce.trim();
       const amount = parseAmount(values.amount);
 
       if (isEditing) {
-        const updated: TreeStock = {  
-          ...editingStock,
-          type: values.type,
-          name,
-          amount,
-          unit: values.unit,
-          // A picked row keeps the product it came in with — the field only shows it back.
-          treeProductId: productLocked ? editingStock.treeProductId : values.productId,
-        };
+        // The produce isn't on offer here, so the row carries the product it already had straight
+        // through — spread in with the rest of the orchard.
+        const updated: TreeStock = { ...editingStock, type: values.type, name, amount, unit: values.unit };
         await updateTreeStock(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createTreeStock({
-          type: values.type,
-          name,
-          amount,
-          unit: values.unit,
-          landPlotId: null,
-          treeProductId: values.productId,
-        });
+        // The product has to exist before the row can name it, so it is written first — and taken
+        // back out again if the row is then refused, rather than left in the catalog with nothing
+        // producing it.
+        const product = await createTreeProduct({ name: produce, unit: TREE_PRODUCT_DEFAULT_UNIT });
+        let created: TreeStock;
+        try {
+          created = await createTreeStock({
+            type: values.type,
+            name,
+            amount,
+            unit: values.unit,
+            landPlotId: null,
+            treeProductId: product.id,
+          });
+        } catch (err) {
+          await deleteTreeProduct(product.id).catch(() => {});
+          throw err;
+        }
         onSaved(created, true);
       }
       onClose();
@@ -167,51 +116,16 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
         onLimitReached(err.message);
         return;
       }
-      // The server rejects a name or a product another row already holds (e.g. one added from
-      // another session, which this form couldn't have known about).
+      // The produce is this orchard's own, so the label is the only thing left that another row can
+      // already hold — one added from another session, which this form couldn't have known about.
       if (err instanceof ApiError && err.status === 409) {
-        setFormError(await conflictMessage());
+        setFormError(t('treeStock.nameDuplicate'));
         return;
       }
       setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);
     }
-  }
-
-  /**
-   * Which of the two rules the server refused on. Reads the rows back rather than guessing: a 409
-   * means this form's picture of them was out of date, so the fresh list also re-hides a product
-   * that was claimed meanwhile.
-   */
-  async function conflictMessage(): Promise<string> {
-    // A harvest recorded while the form sat open settles what the row produces: put the assigned
-    // product back and lock the field, as it would have been had the picking come first.
-    if (editingStock != null && !productLocked) {
-      try {
-        const picked = await getPickedTreeStockIds();
-        if (picked.includes(editingStock.id)) {
-          setProductLocked(true);
-          setProductId(editingStock.treeProductId);
-          return t('treeProduct.harvestedFixed');
-        }
-      } catch {
-        // Couldn't look: the two rules below are the other ways a save is refused.
-      }
-    }
-
-    try {
-      const rows = await getTreeStock();
-      const taken = productsOfOtherRows(rows, editingStock);
-      setTakenProducts(taken);
-      if (values.productId != null && taken.has(values.productId)) {
-        setProductId(null);
-        return t('treeProduct.taken');
-      }
-    } catch {
-      // Couldn't look: the name is the other way a save is refused, so say that.
-    }
-    return t('treeStock.nameDuplicate');
   }
 
   return (
@@ -231,6 +145,9 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
             </span>
           </div>
         ) : (
+          /* A dropdown rather than the chip row, as on the stock and livestock forms: one field
+             tall with a search box, so the fruit catalog can grow without pushing the fields
+             below it off the modal. */
           <KindCatalogField
             open={open}
             catalog={FRUIT_KIND_CATALOG}
@@ -239,27 +156,46 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
             preset={null}
             labelText={t('farm.type')}
             addPlaceholder={t('treeStock.newFruitTypePlaceholder')}
+            variant="dropdown"
+            /* Adding a fruit from here is switched off — the catalog is settled, and a fruit
+               invented mid-form lands as a near-duplicate of one already in it. Flip to true to
+               bring back both the "New type" button and the add row under a fruitless search. */
+            allowAdd={false}
           />
         )}
 
+        {/* The label is how this orchard is named everywhere it appears — its plot, its history,
+            the harvests that picked it — so it is settled with the row rather than moved under
+            them afterwards. */}
         <div className="field">
           <label>{t('farm.name')}</label>
-          <input
-            value={values.name}
-            onChange={(e) => setField('name', e.target.value)}
-            placeholder={t('treeStock.namePlaceholder')}
-          />
+          {isEditing ? (
+            <span className="limit-hint field-fixed-value">{values.name.trim() || '—'}</span>
+          ) : (
+            <input
+              value={values.name}
+              onChange={(e) => setField('name', e.target.value)}
+              placeholder={t('treeStock.namePlaceholder')}
+            />
+          )}
         </div>
 
+        {/* How many trees stand today is the sum of the movements logged against the orchard, so it
+            is recorded on its history page rather than typed over here — an edit straight to the
+            figure would leave the page and the ledger telling two different stories. */}
         <div className="field">
           <label>{t('farm.amount')}</label>
-          <input
-            type="number"
-            step="0.01"
-            value={values.amount}
-            onChange={(e) => setField('amount', e.target.value)}
-            placeholder={t('farm.amountPlaceholder')}
-          />
+          {isEditing ? (
+            <span className="limit-hint field-fixed-value">{values.amount}</span>
+          ) : (
+            <input
+              type="number"
+              step="0.01"
+              value={values.amount}
+              onChange={(e) => setField('amount', e.target.value)}
+              placeholder={t('farm.amountPlaceholder')}
+            />
+          )}
         </div>
 
         {/* Fruit is counted in trees, so the unit isn't a choice — just shown for confirmation. */}
@@ -268,28 +204,40 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
           <span className="limit-hint">{t(TREE_STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitPlant')}</span>
         </div>
 
-        {/* A new orchard may add the product it yields, once — without that, a farm with nothing
-            left to pick could not record its trees at all. An existing one only reassigns among
-            the products already in the catalog, and once a harvest has picked it, not even that. */}
-        <TreeProductField
-          products={products}
-          taken={takenProducts}
-          value={values.productId}
-          onChange={setProductId}
-          onProductCreated={isEditing || createdProductId != null ? undefined : handleProductCreated}
-          locked={productLocked}
-        />
+        {/* Typed, not picked: an orchard's produce is its own, so every entry already in the
+            catalog belongs to another orchard and offering them would only list choices that
+            can't be taken. Named once, with the row — what it yielded is booked against that
+            product from the first harvest on, so an existing orchard shows it back rather than
+            offering to rewrite it. */}
+        <div className="field">
+          <label>{t('treeProduct.producesLabel')}</label>
+          {isEditing ? (
+            <span className="limit-hint field-fixed-value">{values.produce || '—'}</span>
+          ) : (
+            <input
+              value={values.produce}
+              onChange={(e) => setField('produce', e.target.value)}
+              placeholder={t('treeProduct.producesPlaceholder')}
+            />
+          )}
+        </div>
 
         {formError && <div className="error-banner">{formError}</div>}
       </div>
 
+      {/* Every field an existing orchard shows is settled at this point, so there is nothing for a
+          Save to write — it reads as what it is, a look at the row. Amounts are recorded on its
+          history page. Should a field become editable again, the Add button below covers both
+          cases as it did before. */}
       <div className="modal-actions">
         <button type="button" className="btn btn-secondary" onClick={onClose}>
-          {t('common.cancel')}
+          {isEditing ? t('common.close') : t('common.cancel')}
         </button>
-        <button type="button" className="btn" onClick={handleSubmit} disabled={!canSubmit}>
-          {isEditing ? t('common.save') : t('common.add')}
-        </button>
+        {!isEditing && (
+          <button type="button" className="btn" onClick={handleSubmit} disabled={!canSubmit}>
+            {t('common.add')}
+          </button>
+        )}
       </div>
     </Modal>
   );

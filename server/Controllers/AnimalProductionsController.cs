@@ -20,11 +20,18 @@ public class AnimalProductionsController(
     private const string ProduceMismatchMessage = "A record is collected under what its group produces.";
 
     /// <summary>
-    /// A realization names the animals of the group it was slaughtered from, so it cannot name
-    /// more of them than the group has — even though the group keeps its head count either way
-    /// (see <see cref="Livestock.IsRealized"/>).
+    /// A realization is one animal's: it is recorded from that animal, for the meat taken off it.
+    /// A whole herd is realized by recording each of its animals, not by naming a number here.
     /// </summary>
-    private const string NotEnoughAnimalsMessage = "The group does not have that many animals left.";
+    private const string OneAnimalMessage = "A realization covers exactly one animal.";
+
+    /// <summary>The animal it was taken from is what a realization is recorded against — it is
+    /// that animal's last entry, and what marks it realized.</summary>
+    private const string RealizationNeedsAnimalMessage = "A realization is recorded against the animal it was taken from.";
+
+    /// <summary>An animal is realized once. Its record is what says so, so a second would be
+    /// claiming the same animal twice.</summary>
+    private const string AlreadyRealizedMessage = "This animal has already been realized.";
 
 
     [HttpGet]
@@ -54,27 +61,27 @@ public class AnimalProductionsController(
 
         if (production.IsRealization)
         {
-            // A realization is an act on the herd — it marks a whole group as realized — so it is
-            // recorded against the group, never against one animal of it.
-            if (production.LivestockId is not int groupId)
+            // Recorded against the animal, not its group: it is that animal that was realized, and
+            // this record is what marks it. Filed under the group's meat all the same — the meat is
+            // the group's produce, whichever of its animals it came off.
+            if (production.AnimalId is not int animalId)
             {
-                return BadRequest("A realization is recorded against a group, not a single animal.");
+                return BadRequest(RealizationNeedsAnimalMessage);
             }
 
-            var group = await livestockRepository.GetByIdAsync(groupId);
-            if (group is null)
+            if (await livestockDetailRepository.GetByIdAsync(animalId) is null)
             {
                 return NotFound();
             }
 
-            if (production.AnimalCount < 1)
+            if (production.AnimalCount != 1)
             {
-                return BadRequest("A realization covers at least one animal.");
+                return BadRequest(OneAnimalMessage);
             }
 
-            if (production.AnimalCount > group.Count)
+            if (await animalProductionRepository.ExistsRealizationForAnimalAsync(animalId))
             {
-                return Conflict(NotEnoughAnimalsMessage);
+                return Conflict(AlreadyRealizedMessage);
             }
         }
         // A realization is collected under the group's meat, not under what it produces day to
@@ -109,28 +116,15 @@ public class AnimalProductionsController(
             return NotFound();
         }
 
-        if (existing.IsRealization)
-        {
-            if (production.AnimalCount < 1)
-            {
-                return BadRequest("A realization covers at least one animal.");
-            }
-
-            // The same bound as on create, judged against the whole count rather than the change:
-            // the group keeps its animals through a realization, so raising a record from 3 head
-            // to 5 asks whether the group ever had 5, not whether it has 2 to spare.
-            if (existing.LivestockId is int groupId
-                && await livestockRepository.GetByIdAsync(groupId) is Livestock group
-                && production.AnimalCount > group.Count)
-            {
-                return Conflict(NotEnoughAnimalsMessage);
-            }
-        }
-        // Only a change of type is judged, and against the owner the row actually has: a record
-        // collected under something else before its group declared an output keeps that type, so
-        // editing its quantity doesn't turn into a fight over what it was collected as. A
-        // realization is exempt for the same reason it is on create — it names the group's meat.
-        else if (production.ProductionTypeId != existing.ProductionTypeId
+        // Nothing to judge on a realization: it names the group's meat rather than what the group
+        // produces, and the animal it covers is settled when it is recorded — the repository keeps
+        // the count the row was saved with, so an edit cannot restate how many animals it was.
+        //
+        // Otherwise only a change of type is judged, and against the owner the row actually has: a
+        // record collected under something else before its group declared an output keeps that
+        // type, so editing its quantity doesn't turn into a fight over what it was collected as.
+        if (!existing.IsRealization
+            && production.ProductionTypeId != existing.ProductionTypeId
             && await DeclaredProductionTypeAsync(existing) is int declared
             && production.ProductionTypeId != declared)
         {

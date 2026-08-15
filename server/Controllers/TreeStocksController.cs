@@ -12,17 +12,16 @@ namespace Server.Controllers;
 public class TreeStocksController(
     ITreeStockRepository treeStockRepository,
     IHarvestTreeRepository harvestTreeRepository,
-    IHarvestProductRepository harvestProductRepository,
-    ITreeProductRepository treeProductRepository,
-    ILandPlotRepository landPlotRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     private const string ProduceHarvestedMessage = "A harvest already records this fruit as picked, so what it produces can no longer change.";
+    private const string ProduceRequiredMessage = "A fruit has to name the product it produces.";
+    private const string DeletedMessage = "This fruit was removed.";
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TreeStock>>> GetAll()
+    public async Task<ActionResult<IEnumerable<TreeStock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
-        return Ok(await treeStockRepository.GetAllAsync());
+        return Ok(await treeStockRepository.GetAllAsync(includeDeleted));
     }
 
     [HttpGet("{id:int}")]
@@ -43,6 +42,15 @@ public class TreeStocksController(
         if (stock.Amount < 0)
         {
             return BadRequest("Amount cannot be negative.");
+        }
+
+        // An orchard is the trees that yield one product, so which product is part of recording it
+        // rather than something to fill in later: until one is named, a harvest that picks these
+        // trees has nowhere to book what it took (see HarvestTreeRepository.SyncProduceAsync) and
+        // the produce is silently lost.
+        if (stock.TreeProductId is null)
+        {
+            return BadRequest(ProduceRequiredMessage);
         }
 
         var invalid = await ValidateAsync(stock);
@@ -85,6 +93,19 @@ public class TreeStocksController(
         {
             return NotFound();
         }
+
+        // Removed fruit is kept only so the history recorded against it still reads back; it is out
+        // of use, so it takes no more edits.
+        if (existing.IsDeleted)
+        {
+            return Conflict(DeletedMessage);
+        }
+
+        // Naming no product is "leave it as it is", not "produce nothing" — an orchard keeps the one
+        // it holds unless another is named. That is what a client editing the other fields sends
+        // (an older app carries no such field at all), and it means no edit can leave trees with
+        // nothing to yield. Settled before the checks below, so both compare two real products.
+        stock.TreeProductId ??= existing.TreeProductId;
 
         // What a picked harvest yielded is booked against the orchard's product, so pointing the
         // orchard at another one would move produce nobody harvested onto that product's ledger and
@@ -149,44 +170,28 @@ public class TreeStocksController(
     private ObjectResult PlanLimitReached(string message) =>
         StatusCode(StatusCodes.Status402PaymentRequired, message);
 
+    /// <summary>
+    /// Removes a fruit from the Fruit page. The row is marked deleted rather than dropped: its
+    /// movement log, the harvest rows recording these trees as picked and its land plot all cascade
+    /// off it, so deleting it for real would rewrite what past harvests say was picked. Hidden and
+    /// out of use is all "removed" has to mean — which is also why a harvest having picked it no
+    /// longer stands in the way.
+    /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        // Its "trees picked" rows cascade with it, which would rewrite what those harvests
-        // recorded — refuse, matching how a seed used by a harvest behaves.
-        if (await harvestTreeRepository.ExistsForTreeStockAsync(id))
-        {
-            return Conflict("A harvest still records this orchard as picked.");
-        }
-
-        // Read the row before it goes: what it yields is only knowable from the stock itself.
-        var stock = await treeStockRepository.GetByIdAsync(id);
-        if (stock is null)
+        var existing = await treeStockRepository.GetByIdAsync(id);
+        if (existing is null)
         {
             return NotFound();
         }
 
-        // A plot is a plot *of* these trees — with them gone there is nothing growing there, so it
-        // goes too rather than staying behind as an empty patch of land. Before the stock itself,
-        // since removing that first would clear the reference the plot is found by.
-        await landPlotRepository.DeleteByTreeStockAsync(id);
+        await treeStockRepository.SoftDeleteAsync(id);
 
-        var deleted = await treeStockRepository.DeleteAsync(id);
-        if (!deleted)
-        {
-            return NotFound();
-        }
-
-        // What it produced goes with it, ledger and all (the movements cascade): a product comes
-        // off one orchard, so with the trees gone nothing can ever yield it again and it would
-        // sit on the Products page as an entry nothing fills. Produce a harvest already recorded
-        // is the exception — that history outlives the trees, and the Restrict FK refuses anyway
-        // — so the product stays behind to keep it readable.
-        if (stock.TreeProductId is int productId && !await harvestProductRepository.ExistsForProductAsync(productId))
-        {
-            await treeProductRepository.DeleteAsync(productId);
-        }
-
+        // What it produced stays, balance and harvest history intact — that is a record in its own
+        // right, and it belongs to this orchard alone, so no other fruit can pick it up. The plot
+        // stays too, as it does for stock: nothing is being removed here, and a plot still records
+        // how much land was given over to these trees. It falls back to naming its crop.
         return NoContent();
     }
 
@@ -204,6 +209,13 @@ public class TreeStocksController(
         if (stock is null)
         {
             return NotFound();
+        }
+
+        // Removed fruit isn't offered for sale anywhere; a sale against it would move an amount
+        // nothing shows any more.
+        if (stock.IsDeleted)
+        {
+            return Conflict(DeletedMessage);
         }
 
         // The client checks this too, but two sales recorded at once would both pass that check

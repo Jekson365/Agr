@@ -55,6 +55,15 @@ public class LivestockDetailsController(
         {
             return NotFound();
         }
+
+        // A realized animal's record is closed. It was taken off the farm for its meat, and what
+        // it was at that moment is what its history — and the realization filed against it — is
+        // read against; an edit afterwards would restate an animal that is no longer there.
+        if (await animalProductionRepository.ExistsRealizationForAnimalAsync(id))
+        {
+            return Conflict("This animal has been realized, so its record can no longer be changed.");
+        }
+
         var oldImagePath = existing.ImagePath;
 
         var updated = await livestockDetailRepository.UpdateAsync(detail);

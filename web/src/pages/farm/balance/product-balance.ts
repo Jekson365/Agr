@@ -1,8 +1,10 @@
 import { PRODUCTION_TYPE_LABEL_KEY, UNIT_LABEL_KEY } from '@/config/production';
 import { fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
+import { livestockTypeLabel } from '@/config/livestock-kinds';
 import { STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import type { AnimalProduction } from '@/types/animal-production';
 import type { GreenhouseStock } from '@/types/greenhouse-stock';
+import type { Livestock } from '@/types/livestock';
 import type { ListingCategory, MarketListing } from '@/types/market-listing';
 import type { ProductionMovement } from '@/types/production-movement';
 import type { ProductionType } from '@/types/production-type';
@@ -29,7 +31,18 @@ export type ProductBalance = {
     /** The underlying kind name the marketplace uses for icon/label lookup. */
     itemType: string;
   };
+  /**
+   * Whether the holding behind this row has been removed. Such a row only appears once the removed
+   * holdings are asked for, and is marked so it isn't read as part of what the farm keeps today.
+   * Never carries {@link market}: the server refuses a sale against a removed holding, so offering
+   * one here would only fail.
+   */
+  removed?: boolean;
 };
+
+/** Which rows a balance covers: what the farm keeps now, that plus what it has removed, or the
+ *  removed holdings on their own. */
+export type DeletedFilter = 'exclude' | 'include' | 'only';
 
 export function round2(value: number): number {
   return Math.round(value * 100) / 100;
@@ -43,7 +56,8 @@ export function round2(value: number): number {
 export function balancesByProduct(
   rows: StockMovementReportRow[],
   kind: 'stock' | 'tree',
-  t: Translate
+  t: Translate,
+  deleted: DeletedFilter = 'exclude'
 ): ProductBalance[] {
   const balances: ProductBalance[] = [];
   const byKey = new Map<string, ProductBalance>();
@@ -51,6 +65,10 @@ export function balancesByProduct(
   for (const row of rows) {
     const isTree = row.stockId == null;
     if (isTree !== (kind === 'tree')) continue;
+    // A good taken off the list isn't part of what the farm holds any more, however its movements
+    // still read in a report of the period they happened in — and in the removed holdings here.
+    if (deleted === 'exclude' && row.isDeleted) continue;
+    if (deleted === 'only' && !row.isDeleted) continue;
 
     const key = isTree ? `tree:${row.treeStockId}` : `stock:${row.stockId}`;
     let balance = byKey.get(key);
@@ -62,7 +80,9 @@ export function balancesByProduct(
           ? t(TREE_STOCK_UNIT_LABEL_KEY[row.unit] ?? row.unit)
           : t(STOCK_UNIT_LABEL_KEY[row.unit] ?? row.unit),
         balance: 0,
-        market: { category: isTree ? 'TreeStock' : 'Stock', itemType: row.type },
+        // A removed good is not for sale — the server refuses, so no Sell is offered.
+        market: row.isDeleted ? undefined : { category: isTree ? 'TreeStock' : 'Stock', itemType: row.type },
+        removed: row.isDeleted || undefined,
       };
       byKey.set(key, balance);
       balances.push(balance);
@@ -71,6 +91,25 @@ export function balancesByProduct(
   }
 
   return balances;
+}
+
+/**
+ * The groups the farm has removed, by head count. A removed group is no longer part of the herd, so
+ * it is off the livestock tab until the removed holdings are asked for — but what it held was real,
+ * and this is where it reads back. Its production is not repeated here: that is already counted by
+ * {@link balancesByProductionType}, which reads the records rather than the group, and those
+ * outlive the group they were collected from.
+ */
+export function removedLivestockBalances(livestock: Livestock[], t: Translate): ProductBalance[] {
+  return livestock
+    .filter((group) => group.isDeleted)
+    .map((group) => ({
+      key: `livestock:${group.id}`,
+      title: group.name.trim() || livestockTypeLabel(group.type, t),
+      unitLabel: t('balance.unitHead'),
+      balance: group.count,
+      removed: true,
+    }));
 }
 
 /**

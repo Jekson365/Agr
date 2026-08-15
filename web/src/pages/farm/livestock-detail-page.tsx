@@ -4,12 +4,14 @@ import { Link, useParams } from 'react-router-dom';
 import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
+import { LivestockRealizationModal } from '@/components/farm/livestock/animal-production/livestock-realization-modal';
 import { LivestockDetailFormModal } from '@/components/farm/livestock/livestock-detail-form-modal';
 import { StockFeedRow } from '@/components/farm/livestock/stock-feed-row';
 import { CalendarIcon, ChevronRightIcon, PawIcon } from '@/components/icons/misc-icons';
 import { formatAge } from '@/config/age';
 import { livestockImage } from '@/config/livestock-kinds';
 import { useLanguage } from '@/contexts/language-context';
+import { getAllAnimalProductions } from '@/services/animal-production-service';
 import { ApiError, resolveAssetUrl } from '@/services/api-client';
 import { deleteLivestockDetail, getLivestockDetails } from '@/services/livestock-detail-service';
 import { getLivestockItem } from '@/services/livestock-service';
@@ -29,6 +31,15 @@ export function LivestockDetailPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingDetail, setEditingDetail] = useState<LivestockDetail | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; code: string } | null>(null);
+  /** The animal whose realization window is open, or null. One window for the page, opened from
+   *  whichever card asked for it. */
+  const [realizationFor, setRealizationFor] = useState<LivestockDetail | null>(null);
+  /**
+   * The animals of this group that have been realized. Read from the records rather than held on
+   * the animal: a realization record is what marks one, so removing it takes the mark off again
+   * without anything having to be kept in step.
+   */
+  const [realizedIds, setRealizedIds] = useState<Set<number>>(new Set());
   /** A refused delete. Kept apart from `error`, which stands for "the list didn't load" and
    *  replaces the list with a retry — no use for an animal that is simply not deletable. */
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -49,10 +60,25 @@ export function LivestockDetailPage() {
       ]);
       setLivestock(livestockItem);
       setDetails(detailList);
+      await loadRealized();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
+    }
+  }
+
+  /** Which animals carry a realization record. Best effort: an animal wrongly shown as still on
+   *  the farm is better than a list that won't render, and the server refuses a second
+   *  realization — or an edit of a realized animal — either way. */
+  async function loadRealized() {
+    try {
+      const productions = await getAllAnimalProductions();
+      setRealizedIds(
+        new Set(productions.filter((p) => p.isRealization && p.animalId != null).map((p) => p.animalId as number))
+      );
+    } catch {
+      // Left as it was.
     }
   }
 
@@ -132,24 +158,47 @@ export function LivestockDetailPage() {
             const age = formatAge(detail.bornDate, t);
             const genderLabel = detail.gender ? t(detail.gender === 'Male' ? 'livestockDetail.male' : 'livestockDetail.female') : null;
             const animalHref = `/farm/livestock/${livestockId}/animal/${detail.id}`;
+            // Realized: taken off the farm for its meat. Its record is closed — nothing to edit
+            // and nothing further to add — so the card shows what it was and stops there.
+            const realized = realizedIds.has(detail.id);
+            const media = (
+              <>
+                {/* An animal's own photo fills the panel the way a land's does; the kind's
+                    artwork is a flat mark, so it stays contained on the muted green. */}
+                {detail.imagePath ? (
+                  <img src={resolveAssetUrl(detail.imagePath)} alt="" className="entity-tile-photo" />
+                ) : livestock ? (
+                  <img src={livestockImage(livestock.type)} alt="" className="entity-tile-icon" />
+                ) : null}
+              </>
+            );
             return (
-              <div key={detail.id} className="entity-tile">
-                <Link to={animalHref} className="entity-tile-media">
-                  {/* An animal's own photo fills the panel the way a land's does; the kind's
-                      artwork is a flat mark, so it stays contained on the muted green. */}
-                  {detail.imagePath ? (
-                    <img src={resolveAssetUrl(detail.imagePath)} alt="" className="entity-tile-photo" />
-                  ) : livestock ? (
-                    <img src={livestockImage(livestock.type)} alt="" className="entity-tile-icon" />
-                  ) : null}
-                </Link>
+              <div key={detail.id} className={realized ? 'entity-tile realized' : 'entity-tile'}>
+                {realized ? (
+                  <div className="entity-tile-media">{media}</div>
+                ) : (
+                  <Link to={animalHref} className="entity-tile-media">
+                    {media}
+                  </Link>
+                )}
 
                 <div className="entity-tile-menu">
-                  <CardMenu onEdit={() => openEdit(detail)} onDelete={() => setConfirmDelete({ id: detail.id, code: detail.code })} />
+                  {/* A realized animal keeps its record as it stands; deleting it is refused by
+                      the server anyway, since its realization is production history. */}
+                  <CardMenu
+                    onEdit={realized ? undefined : () => openEdit(detail)}
+                    onDelete={() => setConfirmDelete({ id: detail.id, code: detail.code })}
+                  />
                 </div>
 
                 <div className="entity-tile-body">
                   <h2 className="entity-tile-title">{detail.code}</h2>
+
+                  {realized && (
+                    <div className="entity-tile-badges">
+                      <span className="entity-tile-realized">{t('production.realizedBadge')}</span>
+                    </div>
+                  )}
 
                   {(age || genderLabel) && (
                     <div className="entity-tile-meta">
@@ -172,10 +221,28 @@ export function LivestockDetailPage() {
 
                   <span className="entity-tile-divider" />
 
-                  <Link to={animalHref} className="entity-tile-details">
-                    {t('common.details')}
-                    <ChevronRightIcon width={16} height={16} />
-                  </Link>
+                  {/* A realized animal has neither: its details are closed, and it cannot be
+                      realized twice. The line in their place says why the card ends here. */}
+                  {realized ? (
+                    <p className="limit-hint">{t('production.realizedBlocked')}</p>
+                  ) : (
+                    <div className="entity-tile-actions">
+                      <Link to={animalHref} className="entity-tile-details">
+                        {t('common.details')}
+                        <ChevronRightIcon width={16} height={16} />
+                      </Link>
+                      {/* One animal at a time: a realization covers the animal whose card it was
+                          started from, which is why it is offered per card and not once for the
+                          herd. */}
+                      <button
+                        type="button"
+                        className="entity-tile-details secondary"
+                        onClick={() => setRealizationFor(detail)}
+                      >
+                        {t('production.realization')}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -196,6 +263,17 @@ export function LivestockDetailPage() {
         name={confirmDelete?.code ?? ''}
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteDetail}
+      />
+
+      {/* Keyed by animal so the window starts fresh for each one it is opened from, rather than
+          carrying the last animal's half-filled form. */}
+      <LivestockRealizationModal
+        key={realizationFor?.id ?? 'none'}
+        open={realizationFor != null}
+        animalId={realizationFor?.id ?? 0}
+        livestockId={livestockId}
+        onClose={() => setRealizationFor(null)}
+        onSaved={loadRealized}
       />
     </div>
   );

@@ -70,8 +70,10 @@ export function ReportHarvestPage() {
     try {
       const [harvestList, stockList, treeStockList, treeProductList, harvestProductList] = await Promise.all([
         getHarvests(),
-        getStock(),
-        getTreeStock(),
+        // Reported harvests can name a good or an orchard that has since been removed, so include
+        // those rows.
+        getStock(true),
+        getTreeStock(true),
         getTreeProducts(),
         getHarvestProducts(),
       ]);

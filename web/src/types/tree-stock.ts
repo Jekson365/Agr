@@ -14,6 +14,10 @@ export type TreeStock = {
   landPlotId: number | null;
   /** The product these trees yield, from the tree-product catalog. Null until assigned. */
   treeProductId: number | null;
+  /** Whether the fruit has been removed from the fruit page. Removing marks rather than drops, so
+   *  everything recorded against it still reads back; it is left out of the list and of the balance
+   *  until the removed holdings are asked for. */
+  isDeleted: boolean;
 };
 
-export type TreeStockInput = Omit<TreeStock, 'id'>;
+export type TreeStockInput = Omit<TreeStock, 'id' | 'isDeleted'>;

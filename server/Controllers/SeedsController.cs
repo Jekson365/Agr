@@ -5,17 +5,26 @@ using Server.Repositories.Interfaces;
 
 namespace Server.Controllers;
 
+/// <summary>
+/// Read-only. A seed is not a record kept by hand: it is created with the stock of the crop it
+/// grows (<c>POST /api/stocks/with-seed</c>), goes out of use when that stock is removed, and its
+/// amount moves only by being sown against a harvest (see <see cref="HarvestSeedsController"/>).
+/// Adding, editing or deleting one directly would put it out of step with the stock it belongs to
+/// and rewrite what past harvests say was sown, so there is no endpoint for it.
+/// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class SeedsController(
-    ISeedRepository seedRepository,
-    IHarvestSeedRepository harvestSeedRepository) : ControllerBase
+public class SeedsController(ISeedRepository seedRepository) : ControllerBase
 {
+    /// <summary>
+    /// The seed on hand. Seed removed along with the stock it grows into is left out;
+    /// <paramref name="includeDeleted"/> brings it back for the pages naming what a harvest sowed.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Seed>>> GetAll()
+    public async Task<ActionResult<IEnumerable<Seed>>> GetAll([FromQuery] bool includeDeleted = false)
     {
-        return Ok(await seedRepository.GetAllAsync());
+        return Ok(await seedRepository.GetAllAsync(includeDeleted));
     }
 
     [HttpGet("{id:int}")]
@@ -23,43 +32,5 @@ public class SeedsController(
     {
         var seed = await seedRepository.GetByIdAsync(id);
         return seed is null ? NotFound() : Ok(seed);
-    }
-
-    [HttpPost]
-    public async Task<ActionResult<Seed>> Create(Seed seed)
-    {
-        if (string.IsNullOrWhiteSpace(seed.Type))
-        {
-            return BadRequest("A seed needs a crop type.");
-        }
-
-        var created = await seedRepository.AddAsync(seed);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-    }
-
-    [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, Seed seed)
-    {
-        if (id != seed.Id)
-        {
-            return BadRequest();
-        }
-
-        var updated = await seedRepository.UpdateAsync(seed);
-        return updated ? NoContent() : NotFound();
-    }
-
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        // Its usage rows cascade with it, which would silently rewrite what those harvests say
-        // was sown — refuse instead, matching how a livestock group with production behaves.
-        if (await harvestSeedRepository.ExistsForSeedAsync(id))
-        {
-            return Conflict("This seed is still recorded as sown on a harvest.");
-        }
-
-        var deleted = await seedRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
     }
 }

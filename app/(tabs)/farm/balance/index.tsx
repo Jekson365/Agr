@@ -29,6 +29,10 @@ function balancesByProduct(rows: StockMovementReportRow[], t: (key: string) => s
   const byKey = new Map<string, ProductBalance>();
 
   for (const row of rows) {
+    // A good taken off the stock list isn't part of what the farm holds any more, however its
+    // movements still read in a report of the period they happened in.
+    if (row.isDeleted) continue;
+
     const isTree = row.stockId == null;
     const key = isTree ? `tree:${row.treeStockId}` : `stock:${row.stockId}`;
     let balance = byKey.get(key);

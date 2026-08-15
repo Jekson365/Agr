@@ -1,33 +1,19 @@
 import { apiFetch } from '@/services/api-client';
-import type { Seed, SeedInput } from '@/types/seed';
+import type { Seed } from '@/types/seed';
 import type { SeedMovement } from '@/types/seed-movement';
 
-export function getSeeds() {
-  return apiFetch<Seed[]>('/api/seeds');
+// Read-only on purpose: seed is created with the stock of the crop it grows
+// (see createStockWithSeed), goes out of use with that stock, and its amount moves only by being
+// sown against a harvest. Nothing here may add, edit or remove one.
+
+/** The seed on hand. Seed removed with the stock it grows into is left out unless
+ *  `includeDeleted` asks for it — see {@link getStock}. */
+export function getSeeds(includeDeleted = false) {
+  return apiFetch<Seed[]>(`/api/seeds${includeDeleted ? '?includeDeleted=true' : ''}`);
 }
 
 export function getSeed(id: number) {
   return apiFetch<Seed>(`/api/seeds/${id}`);
-}
-
-export function createSeed(seed: SeedInput) {
-  return apiFetch<Seed>('/api/seeds', {
-    method: 'POST',
-    body: JSON.stringify(seed),
-  });
-}
-
-export function updateSeed(id: number, seed: Seed) {
-  return apiFetch<void>(`/api/seeds/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(seed),
-  });
-}
-
-export function deleteSeed(id: number) {
-  return apiFetch<void>(`/api/seeds/${id}`, {
-    method: 'DELETE',
-  });
 }
 
 /** A seed's history: the opening amount, manual corrections, and sowing deductions. */

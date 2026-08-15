@@ -7,9 +7,12 @@ namespace Server.Repositories;
 
 public class LivestockRepository(AppDbContext context) : ILivestockRepository
 {
-    public async Task<IEnumerable<Livestock>> GetAllAsync()
+    public async Task<IEnumerable<Livestock>> GetAllAsync(bool includeDeleted = false)
     {
-        return await context.Livestock.AsNoTracking().ToListAsync();
+        return await context.Livestock
+            .AsNoTracking()
+            .Where(l => includeDeleted || !l.IsDeleted)
+            .ToListAsync();
     }
 
     public async Task<Livestock?> GetByIdAsync(int id)
@@ -19,8 +22,9 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
 
     public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
     {
+        // A removed group appears in no list, so there is nothing left for a name to tell apart.
         return await context.Livestock
-            .AnyAsync(l => l.Name.ToLower() == name.ToLower() && (excludeId == null || l.Id != excludeId));
+            .AnyAsync(l => !l.IsDeleted && l.Name.ToLower() == name.ToLower() && (excludeId == null || l.Id != excludeId));
     }
 
     public async Task<Livestock> AddAsync(Livestock livestock)
@@ -50,10 +54,6 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         // that account for it. Ignored rather than refused: callers legitimately PUT the whole
         // group to change something else — linking its meat, renaming it — and carry the count
         // along without meaning anything by it.
-        // IsRealized is not copied for the same reason, and a stronger one: it is owned by the
-        // group's realization records (see AnimalProductionRepository), and a PUT that carried a
-        // stale copy of it would either claim a realization that never happened or deny one that
-        // did.
         // Only ever the first declaration or the value it already has — the controller refuses
         // anything else, so what arrives here is what the group produces either way.
         existing.ProductionTypeId = livestock.ProductionTypeId;
@@ -81,7 +81,7 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> SoftDeleteAsync(int id)
     {
         var existing = await context.Livestock.FindAsync(id);
         if (existing is null)
@@ -89,7 +89,7 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
             return false;
         }
 
-        context.Livestock.Remove(existing);
+        existing.IsDeleted = true;
         await context.SaveChangesAsync();
         return true;
     }

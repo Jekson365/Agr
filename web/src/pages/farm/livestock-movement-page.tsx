@@ -37,9 +37,8 @@ const SOURCE_LABEL_KEY: Record<LivestockMovementSource, string> = {
  *
  * The count itself is one number and says nothing about where it came from. These entries are
  * written by the things that move it — the group's opening count, a breeding result, an animal
- * taken off the group — and by hand for the ways in that have no flow of their own, so the ledger
- * and the count cannot tell different stories. A realization is absent: it marks the group rather
- * than moving its count, so there is nothing here for it to explain.
+ * taken off the group, an animal realized — and by hand for the ways in that have no flow of their
+ * own, so the ledger and the count cannot tell different stories.
  */
 export function LivestockMovementPage() {
   const { t, language } = useLanguage();
@@ -186,14 +185,19 @@ export function LivestockMovementPage() {
                   {movement.note && <span className="movement-note">{movement.note}</span>}
                 </div>
 
-                <CardMenu
-                  onDelete={() =>
-                    setConfirmDelete({
-                      id: movement.id,
-                      label: `${movement.delta > 0 ? '+' : ''}${movement.delta} · ${t(SOURCE_LABEL_KEY[movement.source])}`,
-                    })
-                  }
-                />
+                {/* A realization's entry is not this page's to remove: it was written with the
+                    animal's realization record and goes back with it, so removing it here would
+                    raise the head count while the animal stayed realized. */}
+                {movement.source !== 'Realization' && (
+                  <CardMenu
+                    onDelete={() =>
+                      setConfirmDelete({
+                        id: movement.id,
+                        label: `${movement.delta > 0 ? '+' : ''}${movement.delta} · ${t(SOURCE_LABEL_KEY[movement.source])}`,
+                      })
+                    }
+                  />
+                )}
               </div>
             ))}
           </div>

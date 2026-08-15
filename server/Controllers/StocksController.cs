@@ -13,15 +13,20 @@ public class StocksController(
     IStockRepository stockRepository,
     ISeedRepository seedRepository,
     IHarvestRepository harvestRepository,
-    ILandPlotRepository landPlotRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     private const string HarvestRecordedMessage = "A harvest already records this stock, so its type and unit can no longer change.";
+    private const string DeletedMessage = "This stock was removed.";
 
+    /// <summary>
+    /// The stocks on hand. Removed ones are left out, which is what hides them from the stock page
+    /// and keeps them off every picker; <paramref name="includeDeleted"/> brings them back for the
+    /// pages that have to put a name to a harvest or plot recorded against one.
+    /// </summary>
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Stock>>> GetAll()
+    public async Task<ActionResult<IEnumerable<Stock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
-        return Ok(await stockRepository.GetAllAsync());
+        return Ok(await stockRepository.GetAllAsync(includeDeleted));
     }
 
     [HttpGet("{id:int}")]
@@ -129,6 +134,13 @@ public class StocksController(
             return NotFound();
         }
 
+        // Removed stock is kept only so the history recorded against it still reads back; it is
+        // out of use, so it takes no more edits.
+        if (existing.IsDeleted)
+        {
+            return Conflict(DeletedMessage);
+        }
+
         // A harvest records this good by kind and counts its yield in this unit — its plan rows fall
         // back to it, and its results are what moved the balance. Renaming the kind would rewrite
         // what those harvests say was collected, and reading their amounts in another unit would
@@ -176,17 +188,40 @@ public class StocksController(
         return null;
     }
 
+    /// <summary>
+    /// Removes a stock from the stock page. The row is marked deleted rather than dropped: harvest
+    /// plans and results, the movement log, photos and feed rows all cascade off it, so deleting
+    /// it for real would rewrite what past harvests say they produced. Hidden and out of use is
+    /// all "removed" has to mean.
+    /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        // A plot is a plot *of* this stock — with it gone there is nothing growing there, so the
-        // plot goes too rather than staying behind as an empty patch of land. Matches how
-        // deleting a tree stock takes its plots with it. Before the stock itself, since removing
-        // that first would clear the reference the plot is found by.
-        await landPlotRepository.DeleteByStockAsync(id);
+        var existing = await stockRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
 
-        var deleted = await stockRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        await stockRepository.SoftDeleteAsync(id);
+
+        // The seed of this crop was created with the stock (see CreateWithSeed) and grows into it,
+        // so it goes out of use at the same time. Matched on type and name, which is all the two
+        // share — there is no key between them, which is also why another stock still holding that
+        // same crop and label keeps the seed: it reads as that stock's seed just as much.
+        var stillHeld = (await stockRepository.GetAllAsync())
+            .Any(s => s.Id != id
+                && string.Equals(s.Type.Trim(), existing.Type.Trim(), StringComparison.OrdinalIgnoreCase)
+                && string.Equals(s.Name.Trim(), existing.Name.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (!stillHeld)
+        {
+            await seedRepository.SoftDeleteByCropAsync(existing.Type, existing.Name);
+        }
+
+        // The plots stay: nothing is being removed here, and a plot still records how much land
+        // was given over to this crop. They fall back to naming their crop once the stock they
+        // point at is out of the list.
+        return NoContent();
     }
 
     /// <summary>Records a marketplace sale: deducts the sold quantity and logs a movement
@@ -203,6 +238,13 @@ public class StocksController(
         if (stock is null)
         {
             return NotFound();
+        }
+
+        // Removed stock isn't offered for sale anywhere; a sale against it would move an amount
+        // nothing shows any more.
+        if (stock.IsDeleted)
+        {
+            return Conflict(DeletedMessage);
         }
 
         // The client checks this too, but two sales recorded at once would both pass that check

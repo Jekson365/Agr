@@ -11,12 +11,17 @@ export type TreeStockFormValues = {
   name: string;
   amount: string;
   unit: TreeStockUnit;
-  /** The catalog product these trees yield. Required to save. */
-  productId: number | null;
+  /**
+   * What these trees produce, by name. Required. Not a pick from the catalog: a product belongs to
+   * the one orchard that yields it, so every entry already in the catalog is another orchard's and
+   * listing them would only offer choices that can't be taken. Typing here names this orchard's own
+   * — created with the row, and renamed in place afterwards.
+   */
+  produce: string;
 };
 
-/** The form as it opens: the row being edited, or blank for a new one. The type and the product
- * are filled in once their lists arrive, when there is nothing to preset them to. */
+/** The form as it opens: the row being edited, or blank for a new one. The type is filled in once
+ * the catalog arrives, and the produce once the assigned product is read back. */
 export function makeInitialValues(editingStock: TreeStock | null): TreeStockFormValues {
   return {
     type: editingStock?.type ?? '',
@@ -24,7 +29,7 @@ export function makeInitialValues(editingStock: TreeStock | null): TreeStockForm
     amount: editingStock ? String(editingStock.amount) : '',
     // Always trees for a new entry; an older row keeps whatever it was created under.
     unit: editingStock?.unit ?? TREE_STOCK_DEFAULT_UNIT,
-    productId: editingStock?.treeProductId ?? null,
+    produce: '',
   };
 }
 
@@ -33,17 +38,13 @@ export function parseAmount(value: string): number {
   return Math.max(0, parseFloat(value) || 0);
 }
 
-/** Trees must declare what they produce, so a product is required alongside the fruit kind. */
-export function isFormComplete(values: TreeStockFormValues): boolean {
-  return values.type.trim() !== '' && values.productId != null;
-}
-
-/** The products already spoken for by rows other than the one being edited. */
-export function productsOfOtherRows(rows: TreeStock[], editing: TreeStock | null): Set<number> {
-  const ids = rows
-    .filter((row) => row.id !== editing?.id && row.treeProductId != null)
-    .map((row) => row.treeProductId as number);
-  return new Set(ids);
+/**
+ * Trees must declare what they produce, so a name for it is required alongside the fruit kind — on
+ * a new row. An existing one only shows its produce back rather than taking a new one, and a row
+ * recorded before produce was asked for has none to show, so there is nothing there to require.
+ */
+export function isFormComplete(values: TreeStockFormValues, isEditing: boolean): boolean {
+  return values.type.trim() !== '' && (isEditing || values.produce.trim() !== '');
 }
 
 /**

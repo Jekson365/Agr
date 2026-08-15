@@ -1,8 +1,14 @@
 import { apiFetch } from '@/services/api-client';
 import type { TreeStock, TreeStockInput } from '@/types/tree-stock';
 
-export function getTreeStock() {
-  return apiFetch<TreeStock[]>('/api/treestocks');
+/**
+ * The fruit the farm holds. Removed orchards are left out, which is what keeps them off the fruit
+ * page and out of every picker. Pass `includeDeleted` where a removed one still has to be named:
+ * the harvests, reports and plots recorded against it hold its id and nothing else, so without it
+ * those rows lose their label and icon.
+ */
+export function getTreeStock(includeDeleted = false) {
+  return apiFetch<TreeStock[]>(`/api/treestocks${includeDeleted ? '?includeDeleted=true' : ''}`);
 }
 
 export function getTreeStockItem(id: number) {

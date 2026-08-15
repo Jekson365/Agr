@@ -90,7 +90,9 @@ export default function HarvestDetailScreen() {
         getHarvest(harvestId),
         getHarvestItems(harvestId),
         getHarvestResults(harvestId),
-        getStock(),
+        // Removed goods included: this harvest's rows still name the stock they were recorded
+        // against, and a row whose good is gone from the list would read as blank.
+        getStock(true),
         getTreeStock(),
       ]);
       setHarvest(item);

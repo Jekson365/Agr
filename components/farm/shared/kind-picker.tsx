@@ -15,12 +15,15 @@ type Props = {
   onAddNew: (name: string) => Promise<KindOption | null>;
   addPlaceholder: string;
   loading?: boolean;
+  /** Whether the catalog may be added to from here. Defaults to true; the tree stock form turns it
+   *  off once it has added a product, leaving the row a picker over a settled list. */
+  allowAdd?: boolean;
 };
 
 /** A chip-row picker (like the built-in type chips elsewhere) that also lets the user type a new
  * name and add it to the catalog on the fly — used for stock/fruit kinds, which aren't a fixed
  * set. New kinds behave exactly like the built-in ones once added. */
-export function KindPicker({ options, selected, onSelect, onAddNew, addPlaceholder, loading }: Props) {
+export function KindPicker({ options, selected, onSelect, onAddNew, addPlaceholder, loading, allowAdd = true }: Props) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -60,7 +63,7 @@ export function KindPicker({ options, selected, onSelect, onAddNew, addPlacehold
         </Pressable>
       ))}
 
-      {adding ? (
+      {!allowAdd ? null : adding ? (
         <View style={styles.kindAddRow}>
           <TextInput
             style={styles.kindAddInput}

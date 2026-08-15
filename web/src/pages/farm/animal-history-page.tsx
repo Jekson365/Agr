@@ -11,6 +11,7 @@ import { StockFeedRow } from '@/components/farm/livestock/stock-feed-row';
 import { StockHistoryView } from '@/components/farm/livestock/stock-history-view';
 import './animal-history-page.css';
 import { useLanguage } from '@/contexts/language-context';
+import { getAnimalProductions } from '@/services/animal-production-service';
 import { resolveAssetUrl } from '@/services/api-client';
 import {
   getAllLivestockDetails,
@@ -19,6 +20,7 @@ import {
   uploadLivestockDetailImage,
 } from '@/services/livestock-detail-service';
 import { getLivestock } from '@/services/livestock-service';
+import type { AnimalProduction } from '@/types/animal-production';
 import type { Livestock } from '@/types/livestock';
 import type { LivestockDetail } from '@/types/livestock-detail';
 
@@ -120,6 +122,9 @@ export function AnimalHistoryPage() {
    *  in for their kind's artwork and name. */
   const [allAnimals, setAllAnimals] = useState<LivestockDetail[]>([]);
   const [groups, setGroups] = useState<Livestock[]>([]);
+  /** The animal was realized — taken off the farm for its meat. Its page is closed from then on:
+   *  there is nothing left to record against it, and its record stands as it was. */
+  const [realized, setRealized] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,16 +138,18 @@ export function AnimalHistoryPage() {
     setLoading(true);
     setError(null);
     try {
-      const [item, everyAnimal, groupList] = await Promise.all([
+      const [item, everyAnimal, groupList, productions] = await Promise.all([
         getLivestockDetailItem(stockId),
         // Best effort: without these the tree cannot be drawn, but the rest of the page is worth
         // showing regardless.
         getAllLivestockDetails().catch(() => [] as LivestockDetail[]),
         getLivestock().catch(() => [] as Livestock[]),
+        getAnimalProductions(stockId).catch(() => [] as AnimalProduction[]),
       ]);
       setDetail(item);
       setAllAnimals(everyAnimal);
       setGroups(groupList);
+      setRealized(productions.some((production) => production.isRealization));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -168,6 +175,15 @@ export function AnimalHistoryPage() {
           <button type="button" className="retry-button" onClick={load}>
             {t('common.retry')}
           </button>
+        </div>
+      ) : realized ? (
+        /* Closed. The realization is the animal's last entry and sits in its group's production
+           history, which is where it is read from now. */
+        <div className="state-box">
+          <span>{t('production.realizedBlocked')}</span>
+          <Link to={`/farm/livestock/${livestockId}/production`} className="retry-button">
+            {t('production.title')}
+          </Link>
         </div>
       ) : (
         <>

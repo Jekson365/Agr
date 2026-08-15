@@ -1,8 +1,13 @@
 import { apiFetch } from '@/services/api-client';
 import type { Livestock, LivestockInput } from '@/types/livestock';
 
-export function getLivestock() {
-  return apiFetch<Livestock[]>('/api/livestock');
+/**
+ * The groups the farm keeps. Removed ones are left out, which is what keeps them off the livestock
+ * page. Pass `includeDeleted` where a removed group still has to be named — the balance's removed
+ * holdings, and anywhere history collected from it is read back.
+ */
+export function getLivestock(includeDeleted = false) {
+  return apiFetch<Livestock[]>(`/api/livestock${includeDeleted ? '?includeDeleted=true' : ''}`);
 }
 
 export function getLivestockItem(id: number) {

@@ -63,13 +63,11 @@ export function treeStockLabel(stock: { type: string; name: string }, t: (key: s
   return stock.name.trim() || fruitTypeLabel(stock.type, t);
 }
 
-/** Units a tree's produce is measured in — weight, boxes, or counted pieces. */
-export const TREE_PRODUCT_UNIT_OPTIONS: { value: string; labelKey: string }[] = [
-  { value: 'Kilogram', labelKey: 'farm.unitKg' },
-  { value: 'Box', labelKey: 'farm.unitBox' },
-  { value: 'Quantity', labelKey: 'farm.unitQuantity' },
-];
+/** The unit every new product is created with — produce is weighed. */
+export const TREE_PRODUCT_DEFAULT_UNIT = 'Kilogram';
 
+// Box and Quantity only appear on products created while the unit was still a choice; they stay
+// here so those rows still render with the unit they were entered under.
 export const TREE_PRODUCT_UNIT_LABEL_KEY: Record<string, string> = {
   Kilogram: 'farm.unitKg',
   Box: 'farm.unitBox',

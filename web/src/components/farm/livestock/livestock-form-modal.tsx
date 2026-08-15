@@ -13,7 +13,12 @@ import { meatProductionTypeName, PRODUCTION_TYPE_LABEL_KEY, RETIRED_PRODUCTION_T
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createLivestock, updateLivestock } from '@/services/livestock-service';
-import { createProductionType, deleteProductionType, getProductionTypes } from '@/services/production-type-service';
+import {
+  createProductionType,
+  deleteProductionType,
+  ensureProductionType,
+  getProductionTypes,
+} from '@/services/production-type-service';
 import type { Farm } from '@/types/farm';
 import type { AnimalType, Livestock } from '@/types/livestock';
 import type { ProductionType } from '@/types/production-type';
@@ -101,14 +106,16 @@ export function LivestockFormModal({
    * meat, named after it, so one herd's realizations are never filed as another's.
    *
    * Created with the group rather than on the first realization, which is what the group's
-   * meatProductionTypeId then points at. Safe to call again: the server returns the existing type
-   * when the name is already taken. Best effort — a group that cannot get one is still worth
-   * saving, and the realization form makes one on demand.
+   * meatProductionTypeId then points at. Safe to call again: an existing type of that name is
+   * taken as this group's rather than refused — the name can be left over from a group creation
+   * that failed after making it, and a group saved unlinked is a group that cannot realize.
+   * Still best effort — a group that cannot get one is worth saving, and the realization window
+   * looks the name up again on demand.
    */
   async function ensureMeatProductionType(groupName: string): Promise<number | null> {
     try {
-      const created = await createProductionType(meatProductionTypeName(groupName, t));
-      return created.id;
+      const meatType = await ensureProductionType(meatProductionTypeName(groupName, t));
+      return meatType.id;
     } catch {
       return null;
     }
@@ -208,9 +215,6 @@ export function LivestockFormModal({
           // Settled with the group and never edited here; carried through so saving the form
           // doesn't unlink the meat a realization is recorded under.
           meatProductionTypeId: editingItem!.meatProductionTypeId,
-          // Owned by the group's realization records — carried so the object is whole, and
-          // ignored by the server for the same reason it is not editable here.
-          isRealized: editingItem!.isRealized,
         };
         await updateLivestock(updated.id, updated);
         onSaved(updated, false);
@@ -222,8 +226,6 @@ export function LivestockFormModal({
           farmId,
           productionTypeId,
           meatProductionTypeId: await ensureMeatProductionType(trimmedName),
-          // A new group has been realized as much as it has produced.
-          isRealized: false,
         });
         onSaved(created, true);
       }

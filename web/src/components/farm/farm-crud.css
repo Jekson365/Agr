@@ -754,49 +754,120 @@
   background: var(--color-green-muted);
 }
 
+/* Most tile actions go somewhere and are links; one opens a window instead. It has to sit in the
+   same stack looking the same, so it gives up the browser's own button styling. */
+button.entity-tile-details {
+  width: 100%;
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button.entity-tile-details.secondary {
+  border: 1px solid var(--color-border);
+}
+
+/* Nothing left to do — the group is already realized, or has no animals. Muted rather than
+   hidden: the action still belongs on the card, it just isn't open any more. */
+button.entity-tile-details:disabled {
+  color: var(--color-muted);
+  border-color: var(--color-border);
+  cursor: not-allowed;
+}
+
+button.entity-tile-details:disabled:hover {
+  filter: none;
+  background: transparent;
+  border-color: var(--color-border);
+}
+
 /* Balance table */
-/* Four side-by-side balances: plant stock, livestock production, fruit trees, greenhouse. */
-.balance-columns {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: start;
-  gap: 20px;
+/* Four holdings — plant stock, livestock production, fruit trees, greenhouse — one open at a
+   time. The tab row names them; the panel below holds whichever is open. */
+.balance-tabs .tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.balance-column {
-  min-width: 0;
+/* Four tabs carrying artwork and a count run wider than four words do, so on a narrow screen the
+   row scrolls rather than squeezing its labels. The active tab's underline is lifted onto the
+   row's own border, since a scroll container would clip the 1px it otherwise hangs below. */
+.balance-tabs {
+  overflow-x: auto;
 }
 
-.balance-column-title {
-  font-size: 0.9375rem;
-  font-weight: 700;
-  color: var(--color-dark);
-  margin: 0 0 10px;
-}
-
-/* Four columns need more room than three did before the tables start wrapping their figures. */
-@media (max-width: 1400px) {
-  .balance-columns {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 1100px) {
-  .balance-columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.balance-tabs .tab-item.active::after {
+  bottom: 0;
 }
 
 @media (max-width: 720px) {
-  .balance-columns {
-    grid-template-columns: minmax(0, 1fr);
+  .balance-tabs {
+    gap: 18px;
+  }
+
+  .balance-tab-icon {
+    width: 18px;
+    height: 18px;
   }
 }
 
-.balance-table {
+/* The artwork the sidebar and the farm page already use for this holding, so a tab is recognised
+   before it is read. */
+.balance-tab-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* How many products the table behind the tab reports. Quiet while the tab is closed — it is a
+   reason to open it, not a figure to read from here — and takes the accent once it is open. */
+.balance-tab-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tab-item.active .balance-tab-count {
+  border-color: transparent;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+/* One table has the whole page to spread into, and reads worse for taking it: these are four
+   short columns, and a row pulled to the width of a desk monitor breaks the tie between a product
+   and its figure. */
+.balance-panel {
+  max-width: 860px;
+}
+
+/* The table sits in a card. The frame lives here rather than on the table so the corners clip
+   whatever the panel holds — a table, or the line saying the holding is empty. */
+.balance-column {
+  min-width: 0;
   border: 1px solid var(--color-border);
   border-radius: 16px;
   overflow: hidden;
+  background: var(--color-surface);
+}
+
+/* A holding with nothing in it: no figures to head, so the table gives way to the line saying so
+   rather than leaving column labels standing over an empty body. */
+.balance-column-empty {
+  margin: 0;
+  padding: 26px 14px;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+
+/* The card owns the frame; the table only has to fill it. */
+.balance-table {
   border-collapse: collapse;
   width: 100%;
   background: var(--color-surface);
@@ -804,38 +875,133 @@
 
 .balance-table th,
 .balance-table td {
-  padding: 12px 14px;
+  padding: 13px 14px;
   text-align: left;
   border-bottom: 1px solid var(--color-border);
   font-size: 0.8125rem;
 }
 
-.balance-table th {
-  background: var(--color-green-muted);
+/* The row's ends keep clear of the card's rounded corners. */
+.balance-table th:first-child,
+.balance-table td:first-child {
+  padding-left: 18px;
+}
+
+.balance-table th:last-child,
+.balance-table td:last-child {
+  padding-right: 18px;
+}
+
+/* The column labels, on a band of their own: micro-caps alone left them reading as a first row
+   of data rather than as the heading of the rows under them. */
+.balance-table thead th {
+  background: var(--color-surface-sunken);
   color: var(--color-muted);
   text-transform: uppercase;
   font-size: 0.6875rem;
   font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .balance-table td {
   color: var(--color-dark);
 }
 
-.balance-table tr:last-child td {
+/* The product anchors its row against the figure at the far end of it. */
+.balance-table td:first-child {
+  font-weight: 600;
+}
+
+.balance-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.balance-amount {
+/* The table is read by running down the figures, so a hover settles which line the eye is on —
+   a row is a name and a number with a stretch of nothing between them. */
+.balance-table tbody tr:hover td {
+  background: var(--color-surface-sunken);
+}
+
+/* Figures are compared down the column: ranged right, over the tabular digits that keep them in
+   step. Both selectors carry the table, or `.balance-table td` out-ranks them on specificity and
+   the column sits left with the names — which is what it did before. */
+.balance-table .balance-amount {
   text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* What the farm holds is what the table is for, so the figure carries its row. */
+.balance-table td.balance-amount {
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
-/* How much of the product is listed on the marketplace — secondary to the balance beside it. */
-.balance-listed {
+/* The unit travels with the figure but isn't the figure. */
+.balance-unit {
+  margin-left: 3px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-muted);
+}
+
+/* How much of the product is already on the marketplace — a quantity, but not one the farm can
+   count on, so it is set apart from the holding beside it rather than matching its weight. */
+.balance-table td.balance-listed {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+/* Kept on the plain surface rather than the sunken one, so the chip still reads as a chip once
+   the row it sits in takes the hover. */
+.balance-listed-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
   white-space: nowrap;
+}
+
+/* Nothing on hand. The row stays — the product exists and may come back — but it steps back, so
+   the table reads as what the farm actually holds. */
+.balance-table .balance-row-empty td {
+  color: var(--color-muted);
+}
+
+/* A zero keeps its place in the column of figures without keeping their emphasis. */
+.balance-table .balance-row-empty .balance-amount {
+  font-weight: 600;
+}
+
+/* Marks a holding the farm has removed, on the rows that only appear once those are asked for.
+   Beside the name rather than in the figures: what is in question is the holding, not its amount. */
+.balance-removed-chip {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* A switch, not an action: it reads as pressed while the removed holdings are on show. */
+.balance-removed-toggle {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+.balance-removed-toggle.active {
+  color: var(--color-dark);
+  border-color: var(--color-dark);
 }
 
 /* Form */
@@ -902,27 +1068,6 @@
   font-weight: 600;
 }
 
-/* Lists a balance row's holding on the marketplace. */
-.balance-sell {
-  height: 26px;
-  padding: 0 10px;
-  border: 1px solid var(--color-danger-border);
-  border-radius: 13px;
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.balance-sell:hover {
-  background: var(--color-danger);
-  border-color: var(--color-danger);
-  color: var(--color-on-accent);
-}
-
 /* Confirmation shown once a balance row has been listed on the marketplace. */
 .sell-success {
   display: flex;
@@ -958,20 +1103,6 @@
   text-decoration: none;
 }
 
-.balance-sell-cell {
-  width: 1%;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.balance-sell:disabled {
-  opacity: 0.4;
-  cursor: default;
-  background: var(--color-surface);
-  border-color: var(--color-border);
-  color: var(--color-muted);
-}
-
 /* The stock and livestock forms, at twice the standard 440px: both are mostly chip rows — crops
    and units on one, animal kinds and what the group produces on the other — which read as rows
    rather than a wrapped pile with the width to spread into. The width lives on a descendant
@@ -993,10 +1124,10 @@
   white-space: nowrap;
 }
 
-/* A realized group, said beside its head count. Amber and shaped like the count it sits next to,
-   matching the badge on the realization row itself — nothing went wrong, the group is simply not
-   only a herd any more. */
-.page-header-realized {
+/* A good taken off the stock list, said beside the title of the history it left behind. Amber
+   like the realized badge below: nothing went wrong, this is simply no longer stock the farm
+   works with. */
+.page-header-removed {
   padding: 4px 12px;
   border-radius: 999px;
   background: var(--color-amber-soft);
@@ -1004,4 +1135,22 @@
   font-size: 0.8125rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* A realized animal, said on its own card. Amber like the badge on the realization row itself —
+   nothing went wrong, this animal is simply no longer one of the herd. */
+.entity-tile-realized {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+  font-size: calc(0.75rem * var(--tile-text-scale));
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* And the card itself steps back: it is a record of an animal the farm kept, not one it works
+   with. Nothing on it is clickable any more. */
+.entity-tile.realized .entity-tile-media {
+  opacity: 0.65;
 }

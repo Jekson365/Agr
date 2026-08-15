@@ -13,6 +13,11 @@ public enum ProductionMovementSource
 /// collections (<see cref="AnimalProduction"/>) are append-only and always add; sales and other
 /// deductions are logged here instead, keyed by production type and unit — the same pair the
 /// balance itself is computed per, since a type collected in litres and pieces can't be summed.
+///
+/// The meat a realized animal was taken for is not one of these. It is an
+/// <see cref="AnimalProduction"/> collection like any other and adds through its own row, so an
+/// entry here beside it would count the same meat twice — see
+/// <see cref="AnimalProduction.IsRealization"/>.
 /// </summary>
 public class ProductionMovement
 {

@@ -15,7 +15,6 @@ import { Brand } from '@/constants/theme';
 import { isAtLimit, isOverLimit } from '@/constants/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
-import { getUsedTreeStockIds } from '@/services/land-plot-service';
 import { deleteTreeStock, getTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 
@@ -32,8 +31,6 @@ export default function FruitsScreen() {
   const [formVisible, setFormVisible] = useState(false);
   const [editingStock, setEditingStock] = useState<TreeStock | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
-  /** Which fruits are planted on a plot — deleting one of those takes its plot with it. */
-  const [plantedIds, setPlantedIds] = useState<Set<number>>(new Set());
 
   useFocusEffect(
     useCallback(() => {
@@ -45,9 +42,7 @@ export default function FruitsScreen() {
     if (!opts?.silent) setLoading(true);
     setError(null);
     try {
-      const [list, planted] = await Promise.all([getTreeStock(), getUsedTreeStockIds()]);
-      setTreeStock(list);
-      setPlantedIds(new Set(planted));
+      setTreeStock(await getTreeStock());
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -106,11 +101,6 @@ export default function FruitsScreen() {
 
   function handleSaved(item: TreeStock, isNew: boolean) {
     setTreeStock((prev) => (isNew ? [...prev, item] : prev.map((i) => (i.id === item.id ? item : i))));
-  }
-
-  /** What else goes with the fruit: the product it yields always, its plot when it has one. */
-  function deleteBody(id: number): string {
-    return t(plantedIds.has(id) ? 'treeStock.deletePlanted' : 'treeStock.deleteProduct');
   }
 
   return (
@@ -188,7 +178,7 @@ export default function FruitsScreen() {
       <ConfirmDeleteModal
         visible={!!confirmDelete}
         name={confirmDelete?.name ?? ''}
-        body={confirmDelete ? deleteBody(confirmDelete.id) : undefined}
+        body={t('treeStock.deleteKept')}
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteItem}
       />

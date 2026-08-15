@@ -5,8 +5,6 @@ import { Modal } from '@/components/ui/modal';
 import { isPlanLimitError } from '@/config/plan-benefits';
 import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY, STOCK_UNIT_OPTIONS } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
-import { ApiError } from '@/services/api-client';
-import { getRecordedStockIds } from '@/services/harvest-service';
 import { createStockWithSeed, updateStock } from '@/services/stock-service';
 import type { Stock } from '@/types/stock';
 import { isFormComplete, makeInitialValues, parseAmount, type StockFormValues } from './stock-form';
@@ -29,13 +27,6 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
   const { t } = useLanguage();
 
   const [values, setValues] = useState<StockFormValues>(() => makeInitialValues(editingStock));
-  /**
-   * Whether a harvest already records this stock — planned or picked. Such a harvest is written in
-   * the good's own terms: its plan reads back the stock's unit, and its results moved the balance
-   * by that many of them. Both are settled from then on. Read when the form opens rather than taken
-   * from the list behind it, since a harvest may have been recorded since that was loaded.
-   */
-  const [kindLocked, setKindLocked] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -45,25 +36,8 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
     if (!open) return;
     setValues(makeInitialValues(editingStock));
     setFormError(null);
-    setKindLocked(false);
-    loadRecordedState(editingStock);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingStock]);
-
-  /**
-   * Whether this stock is already recorded by a harvest. Only an existing row can be — a new one
-   * has no history — and a failed read leaves the fields open, since the server refuses the change
-   * anyway if it turns out there is one.
-   */
-  async function loadRecordedState(stock: Stock | null) {
-    if (stock == null) return;
-    try {
-      const recorded = await getRecordedStockIds();
-      setKindLocked(recorded.includes(stock.id));
-    } catch {
-      setKindLocked(false);
-    }
-  }
 
   const setField = <K extends keyof StockFormValues>(key: K, value: StockFormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -81,14 +55,8 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
       const amount = parseAmount(values.amount);
 
       if (isEditing) {
-        // A recorded row keeps the kind and unit it came in with — those fields only show them back.
-        const updated: Stock = {
-          ...editingStock,
-          type: kindLocked ? editingStock.type : values.type,
-          name,
-          amount,
-          unit: kindLocked ? editingStock.unit : values.unit,
-        };
+        // Nothing an existing stock shows is on offer, so the row goes back as it came.
+        const updated: Stock = { ...editingStock, name, amount };
         await updateStock(updated.id, updated);
         onSaved(updated, false);
         onClose();
@@ -111,14 +79,6 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
         onLimitReached(err.message);
         return;
       }
-      // The only thing the server refuses with a 409 here: a harvest recorded this stock while the
-      // form sat open. Lock the fields and put the recorded kind and unit back.
-      if (err instanceof ApiError && err.status === 409 && editingStock != null) {
-        setKindLocked(true);
-        setValues((prev) => ({ ...prev, type: editingStock.type, unit: editingStock.unit }));
-        setFormError(t('farm.stockHarvestedFixed'));
-        return;
-      }
       setFormError(err instanceof Error ? err.message : t('farm.saveError'));
     } finally {
       setSaving(false);
@@ -130,9 +90,11 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
       <h2 className="form-title">{isEditing ? t('farm.editStock') : t('farm.addStock')}</h2>
 
       <div className="form-fields">
-        {/* What a recorded harvest collected is this kind, counted in this unit — see kindLocked.
-            Both are shown back rather than offered, with the reason under the unit. */}
-        {kindLocked ? (
+        {/* An existing stock is settled: a harvest that recorded it is written in the good's own
+            terms — its plan reads back this kind and unit, and its results moved the balance by
+            that many of them — and the seed it was created with grows into this crop. So an edit
+            shows the row back rather than offering to move it under all of that. */}
+        {isEditing ? (
           <div className="field">
             <label>{t('farm.type')}</label>
             <span className="limit-hint field-fixed-value">
@@ -159,35 +121,45 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
           />
         )}
 
+        {/* The label is how this stock is named everywhere it appears — its plots, its history,
+            the harvests that recorded it — so it is settled with the row. */}
         <div className="field">
           <label>{t('farm.name')}</label>
-          <input
-            value={values.name}
-            onChange={(e) => setField('name', e.target.value)}
-            placeholder={t('farm.stockNamePlaceholder')}
-          />
+          {isEditing ? (
+            <span className="limit-hint field-fixed-value">{values.name.trim() || '—'}</span>
+          ) : (
+            <input
+              value={values.name}
+              onChange={(e) => setField('name', e.target.value)}
+              placeholder={t('farm.stockNamePlaceholder')}
+            />
+          )}
         </div>
 
+        {/* How much is on hand is the sum of the movements logged against the stock, so it is
+            recorded on its history page rather than typed over here — an edit straight to the
+            figure would leave the page and the ledger telling two different stories. */}
         <div className="field">
           <label>{t('farm.amount')}</label>
-          <input
-            type="number"
-            step="0.01"
-            value={values.amount}
-            onChange={(e) => setField('amount', e.target.value)}
-            placeholder={t('farm.amountPlaceholder')}
-          />
+          {isEditing ? (
+            <span className="limit-hint field-fixed-value">{values.amount}</span>
+          ) : (
+            <input
+              type="number"
+              step="0.01"
+              value={values.amount}
+              onChange={(e) => setField('amount', e.target.value)}
+              placeholder={t('farm.amountPlaceholder')}
+            />
+          )}
         </div>
 
         <div className="field">
           <label>{t('farm.unit')}</label>
-          {kindLocked ? (
-            <>
-              <span className="limit-hint field-fixed-value">
-                {t(STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitKg')}
-              </span>
-              <span className="limit-hint">{t('farm.stockHarvestedFixed')}</span>
-            </>
+          {isEditing ? (
+            <span className="limit-hint field-fixed-value">
+              {t(STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitKg')}
+            </span>
           ) : (
             <UnitChips options={STOCK_UNIT_OPTIONS} selected={values.unit} onSelect={(unit) => setField('unit', unit)} />
           )}
@@ -206,13 +178,19 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
         {formError && <div className="error-banner">{formError}</div>}
       </div>
 
+      {/* Every field an existing stock shows is settled at this point, so there is nothing for a
+          Save to write — it reads as what it is, a look at the row. Amounts are recorded on its
+          history page. Should a field become editable again, the Add button below covers both
+          cases as it did before. */}
       <div className="modal-actions">
         <button type="button" className="btn btn-secondary" onClick={onClose}>
-          {t('common.cancel')}
+          {isEditing ? t('common.close') : t('common.cancel')}
         </button>
-        <button type="button" className="btn" onClick={handleSubmit} disabled={!canSubmit}>
-          {isEditing ? t('common.save') : t('common.add')}
-        </button>
+        {!isEditing && (
+          <button type="button" className="btn" onClick={handleSubmit} disabled={!canSubmit}>
+            {t('common.add')}
+          </button>
+        )}
       </div>
     </Modal>
   );

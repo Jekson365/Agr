@@ -6,9 +6,7 @@ import '@/components/farm/kind-picker.css';
 import '@/components/farm/record-list.css';
 import '@/components/farm/search-filter.css';
 import '@/pages/report-page.css';
-import { meatProductionTypeName } from '@/config/production';
 import { useLanguage } from '@/contexts/language-context';
-import { ApiError } from '@/services/api-client';
 import {
   createAnimalProduction,
   deleteAnimalProduction,
@@ -18,9 +16,9 @@ import {
   updateAnimalProduction,
 } from '@/services/animal-production-service';
 import { getLivestockDetails } from '@/services/livestock-detail-service';
-import { getLivestockItem, updateLivestock } from '@/services/livestock-service';
+import { getLivestockItem } from '@/services/livestock-service';
 import { deleteProductionMovement, getProductionMovements } from '@/services/production-movement-service';
-import { createProductionType, getProductionTypes } from '@/services/production-type-service';
+import { getProductionTypes } from '@/services/production-type-service';
 import { getUnits } from '@/services/unit-service';
 import type { AnimalProduction } from '@/types/animal-production';
 import type { Livestock } from '@/types/livestock';
@@ -50,9 +48,6 @@ type Props =
       livestockId: number;
       /** The group's current head count, used to prefill the "animals counted" field. */
       animalCount: number;
-      /** Called when a realization has marked the group — or removing one has unmarked it — so the
-       *  page holding it can read it back; this view refreshes its own copy, not the caller's. */
-      onGroupChange?: () => void;
     };
 
 /**
@@ -88,7 +83,7 @@ export function AnimalProductionView(props: Props) {
    * first record, which is why adding is closed off until it does.
    */
   const [producedTypeId, setProducedTypeId] = useState<number | null>(null);
-  /** The group itself, kept for its animal kind and the meat type a realization is filed under. */
+  /** The group itself, kept for the head count a new record is prefilled with. */
   const [group, setGroup] = useState<Livestock | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -150,15 +145,6 @@ export function AnimalProductionView(props: Props) {
     }
   }
 
-  /** Tells the page above that the group itself changed — it was realized, or a realization was
-   *  removed. Group pages only: the prop is theirs, and a single animal's page has no group of
-   *  its own to correct. */
-  function groupChanged() {
-    if (props.target === 'livestock') {
-      props.onGroupChange?.();
-    }
-  }
-
   function openAdd() {
     if (producedTypeId == null) return;
     setEditingRecord(null);
@@ -173,55 +159,6 @@ export function AnimalProductionView(props: Props) {
     });
     setFormError(null);
     setFormOpen(true);
-  }
-
-  /**
-   * A realization: the same form and the same save path as a record, with two things settled for
-   * it. It is filed under the group's own meat rather than what the group produces, and it says
-   * so on the way out, which is what has the server mark the group realized.
-   *
-   * The count defaults to 1 rather than the whole herd — the add form covers every animal because
-   * they all contributed to a milking, but realizing the entire group by pressing a button once
-   * is not a default anyone wants.
-   */
-  async function openRealization() {
-    // Also guarded on the button. Checked again here because the group can have emptied or been
-    // realized elsewhere since this page loaded.
-    if (!group || group.count < 1 || group.isRealized) return;
-
-    const meatTypeId = group.meatProductionTypeId ?? (await createMeatTypeForGroup());
-    if (meatTypeId == null) {
-      setError(t('production.saveError'));
-      return;
-    }
-
-    setEditingRecord(null);
-    setForm({
-      ...makeEmptyForm(1),
-      productionTypeId: meatTypeId,
-      unitId: units[0]?.id ?? null,
-      isRealization: true,
-    });
-    setFormError(null);
-    setFormOpen(true);
-  }
-
-  /**
-   * The meat type for a group that has none — every group made before realization existed. Named
-   * after the group in the current language, the same as a new group's, and linked to the group
-   * so the next realization finds it rather than making a second one.
-   */
-  async function createMeatTypeForGroup(): Promise<number | null> {
-    if (!group) return null;
-    try {
-      const created = await createProductionType(meatProductionTypeName(group.name, t));
-      await updateLivestock(group.id, { ...group, meatProductionTypeId: created.id });
-      setGroup({ ...group, meatProductionTypeId: created.id });
-      setProductionTypes((prev) => (prev.some((pt) => pt.id === created.id) ? prev : [...prev, created]));
-      return created.id;
-    } catch {
-      return null;
-    }
   }
 
   function openEdit(record: AnimalProduction) {
@@ -257,23 +194,8 @@ export function AnimalProductionView(props: Props) {
         setRecords((prev) => [...prev, created]);
       }
       setFormOpen(false);
-
-      // A realization marked the group on the server. Read the page back rather than setting the
-      // mark here — removing the last one takes it off again, and one place that re-reads is
-      // easier to trust than three that each keep their own copy in step.
-      if (input.isRealization) {
-        await load();
-        groupChanged();
-      }
     } catch (err) {
-      // The group can be short of animals if it was realized elsewhere since this page loaded.
-      setFormError(
-        err instanceof ApiError && err.status === 409 && input.isRealization
-          ? t('production.realizationTooMany')
-          : err instanceof Error
-            ? err.message
-            : t('production.saveError')
-      );
+      setFormError(err instanceof Error ? err.message : t('production.saveError'));
     } finally {
       setSaving(false);
     }
@@ -296,17 +218,10 @@ export function AnimalProductionView(props: Props) {
   async function confirmDeleteRecord() {
     if (!confirmDelete) return;
     const { id } = confirmDelete;
-    // Read before it is gone: deleting the group's last realization takes the mark off it, and
-    // what is on screen has to follow.
-    const wasRealization = [...records, ...singleRecords].some((r) => r.id === id && r.isRealization);
     try {
       await deleteAnimalProduction(id);
       setRecords((prev) => prev.filter((r) => r.id !== id));
       setSingleRecords((prev) => prev.filter((r) => r.id !== id));
-      if (wasRealization) {
-        await load();
-        groupChanged();
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -374,6 +289,9 @@ export function AnimalProductionView(props: Props) {
 
       {/* A record is collected under what the group produces, so there is nothing to record until
           the group says what that is — see producedTypeId. */}
+      {/* Realizing the group is not offered here: it is started from the group's own animals page,
+          where each animal's card carries the button. This view keeps the records a realization
+          leaves behind — they are shown, edited and deleted with the rest. */}
       <div className="production-actions">
         {producedTypeId == null ? (
           <p className="limit-hint">{t('production.producesMissing')}</p>
@@ -381,37 +299,6 @@ export function AnimalProductionView(props: Props) {
           <button type="button" className="add-button" onClick={openAdd}>
             + {t('production.addRecord')}
           </button>
-        )}
-
-        {/* Realization stands apart from what the group produces: a herd can be realized whether
-            or not it has declared an output, so this is not behind the check above. Group pages
-            only — it marks a group, which a single animal's page has none of. */}
-        {isGroup && group && (
-          <>
-            {/* A group is realized once, and an emptied one has nothing to realize. Both are said
-                back next to the button rather than only greying it out, since a button that does
-                nothing when pressed explains nothing. */}
-            <button
-              type="button"
-              className="secondary-button"
-              onClick={openRealization}
-              disabled={group.isRealized || group.count < 1}
-              title={
-                group.isRealized
-                  ? t('production.realizedAlready')
-                  : group.count < 1
-                    ? t('production.realizationNoAnimals')
-                    : undefined
-              }
-            >
-              {t('production.realization')}
-            </button>
-            {group.isRealized ? (
-              <span className="limit-hint">{t('production.realizedAlready')}</span>
-            ) : (
-              group.count < 1 && <span className="limit-hint">{t('production.realizationNoAnimals')}</span>
-            )}
-          </>
         )}
       </div>
 

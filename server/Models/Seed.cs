@@ -28,4 +28,12 @@ public class Seed
 
     public decimal Amount { get; set; }
     public SeedUnit Unit { get; set; }
+
+    /// <summary>
+    /// Set when the stock this seed grows into is removed (see <see cref="Stock.IsDeleted"/>) —
+    /// the pair is created together by <c>POST /api/stocks/with-seed</c> and goes together. Like a
+    /// deleted stock the row stays, so harvests that record it as sown still read back; it is just
+    /// left out of the seed list and of the sowing picker.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

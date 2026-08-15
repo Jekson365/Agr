@@ -97,7 +97,8 @@ export default function ReportScreen() {
         await Promise.all([
           getHarvests(),
           getFarms(),
-          getStock(),
+          // Reported harvests can name a good that has since been removed, so include those rows.
+          getStock(true),
           getTreeStock(),
           getLivestock(),
           getAllAnimalProductions(),

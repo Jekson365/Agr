@@ -76,7 +76,12 @@ export function StockHistoryPage() {
       </Link>
 
       <div className="page-header">
-        <h1 className="page-title">{title}</h1>
+        <div className="page-header-left">
+          <h1 className="page-title">{title}</h1>
+          {/* Removed stock is off the stock list, but its history is still reachable by link —
+              say why it isn't there any more rather than leaving the page looking ordinary. */}
+          {stock?.isDeleted && <span className="page-header-removed">{t('stockHistory.removed')}</span>}
+        </div>
       </div>
 
       <div className="history-columns">

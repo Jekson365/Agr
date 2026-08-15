@@ -19,6 +19,11 @@ public class LivestockMovementRepository(AppDbContext context) : ILivestockMovem
             .ToListAsync();
     }
 
+    public async Task<LivestockMovement?> GetByIdAsync(int id)
+    {
+        return await context.LivestockMovements.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
+    }
+
     /// <summary>
     /// Moves the group's count with the movement, in the caller's own SaveChanges so the two land
     /// together. Clamped at zero: a herd stuck there is recoverable, a negative one is not.

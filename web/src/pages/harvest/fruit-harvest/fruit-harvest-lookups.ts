@@ -12,7 +12,9 @@ type Translate = (key: string) => string;
 /** How a harvested tree is shown: its label, the unit the trees are counted in and its icon. */
 export type TreeInfo = { label: string; unitLabel: string; icon: string };
 
-/** Resolves a harvest row's tree stock for display. Null when the stock has since been deleted. */
+/** Resolves a harvest row's tree stock for display. Null only when the caller loaded the orchards
+ *  without the removed ones — a harvest can name one, so its page asks for them (see
+ *  {@link getTreeStock}'s `includeDeleted`). */
 export function treeInfoFor(treeStocks: TreeStock[], treeStockId: number, t: Translate): TreeInfo | null {
   const treeStock = treeStocks.find((s) => s.id === treeStockId);
   if (!treeStock) return null;

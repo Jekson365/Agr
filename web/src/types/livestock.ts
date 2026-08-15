@@ -16,11 +16,12 @@ export type Livestock = {
    *  produces day to day. Created with the group and named after its animal, so rabbit meat and
    *  cow meat are not the same output. Null for a group recorded before this existed. */
   meatProductionTypeId: number | null;
-  /** The group has been realized — it has a realization record. A mark on the group, not a
-   *  deduction from it: the count stays where it is, and the herd stays whole beside its history.
-   *  Owned by the server, which sets it with the realization record and clears it with the last
-   *  one; sent back on an edit and ignored there. */
-  isRealized: boolean;
+  // No realized-or-not here: realization is one animal's, and which of a group's animals have been
+  // realized is told by its records — see AnimalProduction.isRealization.
+  /** Whether the group has been removed from the livestock page. Removing marks rather than drops,
+   *  so everything collected from it still reads back; it is left out of the list and of the
+   *  balance until the removed holdings are asked for. */
+  isDeleted: boolean;
 };
 
-export type LivestockInput = Omit<Livestock, 'id'>;
+export type LivestockInput = Omit<Livestock, 'id' | 'isDeleted'>;

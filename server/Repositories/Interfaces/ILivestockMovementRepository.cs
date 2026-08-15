@@ -7,6 +7,9 @@ public interface ILivestockMovementRepository
     /// <summary>One group's ledger, newest first.</summary>
     Task<IEnumerable<LivestockMovement>> GetByLivestockAsync(int livestockId);
 
+    /// <summary>One entry, for a caller that has to know what it is before acting on it.</summary>
+    Task<LivestockMovement?> GetByIdAsync(int id);
+
     /// <summary>
     /// Records a change and moves the group's head count by the same amount, in one write. Every
     /// caller goes through here — the ledger is only worth reading if nothing moves the count

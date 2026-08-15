@@ -15,10 +15,9 @@ public enum LivestockMovementSource
     /// <summary>Bought in.</summary>
     Purchase,
 
-    /// <summary>Slaughtered. Kept for the entries written while a realization took its animals
-    /// off the group; it no longer does — it marks the group instead (see
-    /// <see cref="Livestock.IsRealized"/>) — so nothing writes this any more and the rows that
-    /// carry it are history.</summary>
+    /// <summary>Slaughtered: one animal realized, and so no longer part of the herd. Written with
+    /// the realization record (see <see cref="AnimalProduction.IsRealization"/>) and taken back
+    /// with it, which is what moves the group's head count.</summary>
     Realization,
 }
 

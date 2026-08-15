@@ -6,10 +6,6 @@ public interface IHarvestSeedRepository
 {
     Task<IEnumerable<HarvestSeed>> GetByHarvestAsync(int harvestId);
 
-    /// <summary>Whether any harvest still records this seed as sown. Those rows cascade away
-    /// with the seed, so deleting it would erase the usage from harvests that reference it.</summary>
-    Task<bool> ExistsForSeedAsync(int seedId);
-
     /// <summary>Records seed sown for a harvest: deducts the amount from the seed and logs the
     /// matching <see cref="SeedMovement"/>.</summary>
     Task<HarvestSeed> AddAsync(HarvestSeed harvestSeed);

@@ -23,6 +23,14 @@ public class StockMovementReportRow
     public decimal Delta { get; set; }
     public StockMovementSource Source { get; set; }
 
+    /// <summary>
+    /// Whether the good this movement belongs to has been removed — see <see cref="Stock.IsDeleted"/>
+    /// and <see cref="TreeStock.IsDeleted"/>; both are marked rather than dropped, so both report it
+    /// here. The movement still happened, so a report of a period keeps showing it; a balance of what
+    /// the farm holds now leaves it out until the removed holdings are asked for.
+    /// </summary>
+    public bool IsDeleted { get; set; }
+
     /// <summary>The harvest this movement came from, for rows with
     /// <see cref="StockMovementSource.Harvest"/>; null for manual edits and market sales.</summary>
     public string? HarvestTitle { get; set; }

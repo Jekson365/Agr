@@ -16,6 +16,11 @@ public interface IAnimalProductionRepository
 
     /// <summary>Whether any production is recorded against a single animal.</summary>
     Task<bool> ExistsForAnimalAsync(int animalId);
+
+    /// <summary>Whether this animal has been realized — it carries a realization record. The
+    /// record is the mark: the animal is realized for as long as it is there, and is not once it
+    /// is removed.</summary>
+    Task<bool> ExistsRealizationForAnimalAsync(int animalId);
     Task<AnimalProduction> AddAsync(AnimalProduction production);
     Task<bool> UpdateAsync(AnimalProduction production);
     Task<bool> DeleteAsync(int id);

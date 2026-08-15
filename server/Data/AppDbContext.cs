@@ -458,6 +458,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(s => s.TreeProductId)
             .OnDelete(DeleteBehavior.SetNull);
+        // ...and that product comes off no other orchard: the row yielding it *is* that orchard.
+        // TreeStocksController is what reports the clash readably, but two writes racing would both
+        // pass its check, so the pairing is unique in the table as well. Filtered to the rows that
+        // name a product — fruit recorded before one was required carries none, and the filter is
+        // also what keeps this index addable to a live database.
+        modelBuilder.Entity<TreeStock>()
+            .HasIndex(s => s.TreeProductId)
+            .IsUnique()
+            .HasFilter("\"TreeProductId\" IS NOT NULL");
         // A harvest's recorded produce belongs to the harvest (cascades with it) and to a
         // catalog product (Restrict — a product still referenced by harvest history can't be
         // deleted, which the controller reports as a conflict rather than a 500).

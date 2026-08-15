@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
-import { TREE_PRODUCT_UNIT_OPTIONS } from '@/config/fruit-kinds';
+import { TREE_PRODUCT_DEFAULT_UNIT } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { createTreeProduct, updateTreeProduct } from '@/services/tree-product-service';
-import type { TreeProduct, TreeProductUnit } from '@/types/tree-product';
+import type { TreeProduct } from '@/types/tree-product';
 
 type Props = {
   open: boolean;
@@ -13,12 +13,12 @@ type Props = {
   onSaved: (product: TreeProduct, isNew: boolean) => void;
 };
 
-/** Add or edit a catalog product a tree can yield — name plus how it's measured. */
+/** Add or edit a catalog product a tree can yield. Only the name is asked for: produce is weighed,
+ *  so the unit isn't a choice — an older product keeps whatever it was created under. */
 export function TreeProductFormModal({ open, editingProduct, onClose, onSaved }: Props) {
   const { t } = useLanguage();
 
   const [nameInput, setNameInput] = useState('');
-  const [unit, setUnit] = useState<TreeProductUnit>('Kilogram');
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -27,7 +27,6 @@ export function TreeProductFormModal({ open, editingProduct, onClose, onSaved }:
   useEffect(() => {
     if (!open) return;
     setNameInput(editingProduct?.name ?? '');
-    setUnit(editingProduct?.unit ?? 'Kilogram');
     setFormError(null);
   }, [open, editingProduct]);
 
@@ -41,11 +40,13 @@ export function TreeProductFormModal({ open, editingProduct, onClose, onSaved }:
     try {
       const name = nameInput.trim();
       if (isEditing) {
-        const updated: TreeProduct = { ...editingProduct, name, unit };
+        // Only the name is editable, so the product keeps the unit it already carries — its
+        // recorded amounts were entered in it.
+        const updated: TreeProduct = { ...editingProduct, name };
         await updateTreeProduct(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createTreeProduct({ name, unit });
+        const created = await createTreeProduct({ name, unit: TREE_PRODUCT_DEFAULT_UNIT });
         onSaved(created, true);
       }
       onClose();
@@ -64,22 +65,6 @@ export function TreeProductFormModal({ open, editingProduct, onClose, onSaved }:
         <div className="field">
           <label>{t('treeProduct.name')}</label>
           <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} placeholder={t('treeProduct.producesPlaceholder')} />
-        </div>
-
-        <div className="field">
-          <label>{t('farm.unit')}</label>
-          <div className="kind-row">
-            {TREE_PRODUCT_UNIT_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                className={unit === opt.value ? 'kind-chip active' : 'kind-chip'}
-                onClick={() => setUnit(opt.value as TreeProductUnit)}
-              >
-                <span>{t(opt.labelKey)}</span>
-              </button>
-            ))}
-          </div>
         </div>
 
         {formError && <div className="error-banner">{formError}</div>}

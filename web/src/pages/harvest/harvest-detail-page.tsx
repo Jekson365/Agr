@@ -114,10 +114,12 @@ export function HarvestDetailPage() {
         getHarvest(harvestId),
         getHarvestItems(harvestId),
         getHarvestResults(harvestId),
-        getStock(),
-        getTreeStock(),
+        // Removed goods included: this harvest's rows still name the stock, orchard and seed they
+        // were recorded against, and a row whose good is gone from the list would read as blank.
+        getStock(true),
+        getTreeStock(true),
         getHarvestSeeds(harvestId),
-        getSeeds(),
+        getSeeds(true),
         getHarvestTrees(harvestId),
       ]);
       setHarvest(item);
@@ -223,7 +225,7 @@ export function HarvestDetailPage() {
   // Seed amounts on hand changed, so reload rather than patching them in by hand.
   function handleSeedSaved(harvestSeed: HarvestSeed, isNew: boolean) {
     setHarvestSeeds((prev) => (isNew ? [...prev, harvestSeed] : prev.map((s) => (s.id === harvestSeed.id ? harvestSeed : s))));
-    getSeeds().then(setSeeds).catch(() => {});
+    getSeeds(true).then(setSeeds).catch(() => {});
   }
 
   async function confirmDeleteSeedAction() {
@@ -232,7 +234,7 @@ export function HarvestDetailPage() {
     try {
       await deleteHarvestSeed(id);
       setHarvestSeeds((prev) => prev.filter((s) => s.id !== id));
-      getSeeds().then(setSeeds).catch(() => {});
+      getSeeds(true).then(setSeeds).catch(() => {});
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {

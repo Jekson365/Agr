@@ -19,11 +19,6 @@ public class HarvestSeedRepository(
             .ToListAsync();
     }
 
-    public async Task<bool> ExistsForSeedAsync(int seedId)
-    {
-        return await context.HarvestSeeds.AnyAsync(s => s.SeedId == seedId);
-    }
-
     public async Task<HarvestSeed> AddAsync(HarvestSeed harvestSeed)
     {
         context.HarvestSeeds.Add(harvestSeed);

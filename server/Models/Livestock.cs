@@ -36,17 +36,16 @@ public class Livestock
     /// </summary>
     public int? MeatProductionTypeId { get; set; }
 
+    // A group has no realized-or-not of its own. Realization is one animal's — see
+    // AnimalProduction.IsRealization — and a group that has had animals realized is told by the
+    // records that say so, not by a mark on the herd standing for all of it at once.
+
     /// <summary>
-    /// The group has been realized: an <see cref="AnimalProduction"/> with
-    /// <see cref="AnimalProduction.IsRealization"/> was recorded against it.
-    ///
-    /// A mark, not a deduction — <see cref="Count"/> is left where it stands. The group is the
-    /// farm's record of what it kept and of everything that group produced, and taking its animals
-    /// off it to say they were slaughtered spends that record to store one fact. So the fact is
-    /// stored as itself, and the herd stays whole and legible beside its history.
-    ///
-    /// Set by the realization record and cleared when the last one is removed (see
-    /// AnimalProductionRepository), so the mark and the records that justify it cannot disagree.
+    /// Whether this group has been removed from the Livestock page. Marked rather than dropped:
+    /// every <see cref="AnimalProduction"/> collected from it, its animals' own records and their
+    /// movements cascade off it (see <see cref="Server.Data.AppDbContext"/>), so a real delete
+    /// destroys everything the herd ever produced. A deleted group is left out of the livestock
+    /// list and of the plan's count, and no longer takes edits.
     /// </summary>
-    public bool IsRealized { get; set; }
+    public bool IsDeleted { get; set; }
 }

@@ -46,14 +46,13 @@ export function LivestockProductionPage() {
             {t('production.title')}
             {livestock ? ` · ${livestock.name}` : ''}
           </h1>
-          {/* The head count stands through a realization — the group is marked, not emptied — so
-              the two are shown side by side: what the farm still keeps, and that it was realized. */}
+          {/* The head count stands through a realization — the record says what became of an
+              animal, it doesn't empty the herd — so what the farm keeps is shown as it is. */}
           {livestock && (
             <span className="page-header-count">
               {t('farm.count')}: {livestock.count}
             </span>
           )}
-          {livestock?.isRealized && <span className="page-header-realized">{t('production.realizedBadge')}</span>}
         </div>
       </div>
 
@@ -67,14 +66,7 @@ export function LivestockProductionPage() {
           </button>
         </div>
       ) : (
-        <AnimalProductionView
-          target="livestock"
-          livestockId={livestockId}
-          animalCount={livestock.count}
-          // A realization marked the group, or removing one unmarked it; read it back so the
-          // header above follows.
-          onGroupChange={load}
-        />
+        <AnimalProductionView target="livestock" livestockId={livestockId} animalCount={livestock.count} />
       )}
     </div>
   );

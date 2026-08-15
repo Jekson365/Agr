@@ -47,12 +47,19 @@ export function HarvestResultFormModal({ open, harvestId, editingResult, planned
   async function loadTargets() {
     setTargetsLoading(true);
     try {
-      const [stockList, treeStockList] = await Promise.all([getStock(), getTreeStock()]);
+      const [stockList, treeStockList] = await Promise.all([getStock(true), getTreeStock(true)]);
       // Picked fruit is weighed into plant stock, so an orchard isn't a result target. Only a
-      // row already pointing at tree stock keeps that option, so it stays editable.
+      // row already pointing at tree stock keeps that option, so it stays editable — a removed
+      // orchard included, since dropping it would retarget that row on the next save.
       const editingTreeId = editingResult?.treeStockId ?? null;
       const allowedTreeStocks = treeStockList.filter((s) => s.id === editingTreeId);
-      setStocks(stockList);
+
+      // A removed good takes no more yield, and only stays on the list for the row already
+      // recorded against it — dropping it there would retarget that row on the next save.
+      const editingStockId = editingResult?.stockId ?? null;
+      const allowedStocks = stockList.filter((s) => !s.isDeleted || s.id === editingStockId);
+
+      setStocks(allowedStocks);
       setTreeStocks(allowedTreeStocks);
 
       // What actually came off the field doesn't have to match the plan — a crop can yield
@@ -61,7 +68,7 @@ export function HarvestResultFormModal({ open, harvestId, editingResult, planned
       const plannedKeys = new Set(plannedItems.map((item) => harvestTargetKey(item.stockId, item.treeStockId)));
       const editingKey = editingResult ? harvestTargetKey(editingResult.stockId, editingResult.treeStockId) : null;
 
-      const options = buildHarvestTargetOptions(stockList, allowedTreeStocks, t);
+      const options = buildHarvestTargetOptions(allowedStocks, allowedTreeStocks, t);
       const preset =
         editingKey && options.some((o) => o.key === editingKey)
           ? editingKey

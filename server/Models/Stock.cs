@@ -14,4 +14,12 @@ public class Stock
     public string Name { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public StockUnit Unit { get; set; }
+
+    /// <summary>
+    /// Set when the stock is removed from the stock page. The row stays — harvest plans, results,
+    /// movements and photos all point at it, and removing it would take that history with them
+    /// (see the cascades in <see cref="Server.Data.AppDbContext"/>). A deleted stock is left out
+    /// of the stock list and of everywhere a good is picked, and no longer takes edits or sales.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

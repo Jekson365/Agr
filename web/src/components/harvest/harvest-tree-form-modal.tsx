@@ -52,16 +52,21 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTre
   async function loadTreeStocks() {
     setLoading(true);
     try {
-      const [list, productList] = await Promise.all([getTreeStock(), getTreeProducts()]);
-      setHadAnyTrees(list.length > 0);
+      // Removed orchards come back too, but only so an existing row that names one keeps naming it
+      // (filtered below) — a picking can't be recorded against fruit that is out of use.
+      const [list, productList] = await Promise.all([getTreeStock(true), getTreeProducts()]);
+      setHadAnyTrees(list.some((stock) => !stock.isDeleted));
       setTreeProducts(productList);
 
       // An orchard is picked once per harvest, so the ones already recorded are off the list. The
-      // row being edited doesn't count against itself — its own orchard has to stay pickable.
+      // row being edited doesn't count against itself — its own orchard has to stay pickable, even
+      // once removed, since dropping it would silently repoint that row at another orchard.
       const picked = new Set(
         existingTrees.filter((tree) => tree.id !== editingTree?.id).map((tree) => tree.treeStockId)
       );
-      const free = list.filter((stock) => !picked.has(stock.id));
+      const free = list.filter(
+        (stock) => !picked.has(stock.id) && (!stock.isDeleted || stock.id === editingTree?.treeStockId)
+      );
 
       setTreeStocks(free);
       setSelectedId(editingTree?.treeStockId ?? free[0]?.id ?? null);

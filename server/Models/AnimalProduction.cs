@@ -17,7 +17,8 @@ public class AnimalProduction
     public int? LivestockId { get; set; }
 
     /// <summary>How many animals this record covers: 1 for a single-animal record, or the number
-    /// of animals in the group that contributed (usually the group's full count) for a group record.</summary>
+    /// of animals in the group that contributed (usually the group's full count) for a group
+    /// record. Always 1 for a realization, which is one animal's — see <see cref="IsRealization"/>.</summary>
     public int AnimalCount { get; set; } = 1;
 
     public int ProductionTypeId { get; set; }
@@ -32,14 +33,16 @@ public class AnimalProduction
     public string? Notes { get; set; }
 
     /// <summary>
-    /// A realization: the animals this record covers were slaughtered and their meat taken off
-    /// them. It is an ordinary production record in every other respect — same fields, same save
-    /// path — but it marks its group as realized (see <see cref="Livestock.IsRealized"/>), and
-    /// unmarks it again when it is the last such record removed. The group's
-    /// <see cref="Livestock.Count"/> is deliberately left alone: the herd is not taken apart to
-    /// say it was realized. Recorded under the group's own meat type, not the type it declares it
-    /// produces, so a herd that yields milk can still be realized without its milk history
-    /// changing meaning.
+    /// A realization: the animal this record covers was slaughtered and its meat taken off it. One
+    /// animal per record — a herd is realized by recording each of its animals as it goes, never
+    /// as a single entry standing for all of them (<see cref="AnimalCount"/> is 1; rows naming
+    /// more are from when it could).
+    ///
+    /// An ordinary production record in every other respect — same fields, same save path. The
+    /// group's <see cref="Livestock.Count"/> is deliberately left alone: the herd is not taken
+    /// apart to say what became of it. Recorded under the group's own meat type, not the type it
+    /// declares it produces, so a herd that yields milk can still be realized without its milk
+    /// history changing meaning.
     /// </summary>
     public bool IsRealization { get; set; }
 

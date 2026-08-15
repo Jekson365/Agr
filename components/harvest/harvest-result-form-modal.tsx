@@ -66,7 +66,9 @@ export function HarvestResultFormModal({
   async function loadTargets() {
     setTargetsLoading(true);
     try {
-      const [stockList, treeStockList] = await Promise.all([getStock(), getTreeStock()]);
+      // Removed goods included: the filter below keeps only what this harvest planned or the row
+      // being edited, and a plan whose good has since been removed still has yield to record.
+      const [stockList, treeStockList] = await Promise.all([getStock(true), getTreeStock()]);
 
       const plannedKeys = new Set(plannedItems.map((item) => harvestTargetKey(item.stockId, item.treeStockId)));
       const editingKey = editingResult ? harvestTargetKey(editingResult.stockId, editingResult.treeStockId) : null;

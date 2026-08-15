@@ -11,13 +11,12 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class LivestockController(
     ILivestockRepository livestockRepository,
-    IAnimalProductionRepository animalProductionRepository,
-    IProductionTypeRepository productionTypeRepository,
     ILivestockMovementRepository livestockMovementRepository,
     ILivestockDetailRepository livestockDetailRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
     private const string ProduceSettledMessage = "What this group produces is already set and can no longer change.";
+    private const string DeletedMessage = "This livestock group was removed.";
 
     /// <summary>
     /// What a group is made of is settled when it is created: its animals, its production history
@@ -27,9 +26,9 @@ public class LivestockController(
     private const string TypeSettledMessage = "A livestock group keeps the type it was created with.";
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Livestock>>> GetAll()
+    public async Task<ActionResult<IEnumerable<Livestock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
-        return Ok(await livestockRepository.GetAllAsync());
+        return Ok(await livestockRepository.GetAllAsync(includeDeleted));
     }
 
     [HttpGet("{id:int}")]
@@ -112,6 +111,13 @@ public class LivestockController(
             return NotFound();
         }
 
+        // A removed group is kept only so the history collected from it still reads back; it is out
+        // of use, so it takes no more edits.
+        if (existing.IsDeleted)
+        {
+            return Conflict(DeletedMessage);
+        }
+
         if (!string.Equals(existing.Type.Trim(), livestock.Type.Trim(), StringComparison.Ordinal))
         {
             return Conflict(TypeSettledMessage);
@@ -152,40 +158,27 @@ public class LivestockController(
     private ObjectResult PlanLimitReached(string message) =>
         StatusCode(StatusCodes.Status402PaymentRequired, message);
 
+    /// <summary>
+    /// Removes a group from the Livestock page. The row is marked deleted rather than dropped:
+    /// every production collected from it, its animals and their records all cascade off it, so a
+    /// real delete would erase that history from every past report while any sales deducted from it
+    /// survive — leaving balances negative with no way to correct them. Hidden and out of use is all
+    /// "removed" has to mean, which is also why production records no longer stand in the way.
+    /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        // Production records cascade with the group, which would erase that history from every
-        // past report while any sales deducted from it survive — leaving balances negative with
-        // no way to correct them. Refuse instead, so the records are removed deliberately.
-        if (await animalProductionRepository.ExistsForLivestockAsync(id))
-        {
-            return Conflict("This group still has production records. Remove them first.");
-        }
-
-        // Read before the group goes: its meat is the one production type that exists only
-        // because this group did, so it leaves with it rather than sitting in the catalog as an
-        // output for an animal the farm no longer keeps.
-        var meatProductionTypeId = (await livestockRepository.GetByIdAsync(id))?.MeatProductionTypeId;
-
-        var deleted = await livestockRepository.DeleteAsync(id);
-        if (!deleted)
+        var existing = await livestockRepository.GetByIdAsync(id);
+        if (existing is null)
         {
             return NotFound();
         }
 
-        if (meatProductionTypeId is int meatTypeId)
-        {
-            // After the group, never before: the FK from Livestock to ProductionType is Restrict,
-            // so while the group is still there its meat cannot go anywhere.
-            //
-            // A realization recorded before the group was emptied still points at its meat, and
-            // another group could have been pointed at the same row. DeleteAsync already refuses
-            // in both cases and reports InUse rather than throwing, so this asks and accepts the
-            // answer.
-            await productionTypeRepository.DeleteAsync(meatTypeId);
-        }
+        await livestockRepository.SoftDeleteAsync(id);
 
+        // Its meat production type stays, as does everything collected under it. The group is still
+        // there to reference it, so the Restrict FK would refuse anyway — and the realizations
+        // recorded against it need it named to read back on the balance's removed holdings.
         return NoContent();
     }
 }

@@ -50,7 +50,9 @@ export function HarvestItemFormModal({ open, harvestId, editingItem, sownTypes, 
   async function loadTargets() {
     setTargetsLoading(true);
     try {
-      const [stockList, treeStockList] = await Promise.all([getStock(), getTreeStock()]);
+      // Removed goods come back too, but only so an existing row that names one keeps naming it
+      // (filtered below) — a plan can't be written against a good that is out of use.
+      const [stockList, treeStockList] = await Promise.all([getStock(true), getTreeStock(true)]);
       // Yield is measured by weight into plant stock; an orchard is picked, not filled. Only a
       // row already pointing at tree stock keeps that option, so it stays editable.
       const editingTreeId = editingItem?.treeStockId ?? null;
@@ -59,7 +61,9 @@ export function HarvestItemFormModal({ open, harvestId, editingItem, sownTypes, 
       // A plan can only cover what was actually sown. An existing row's own good stays on the
       // list either way, so editing one recorded before its seed was removed isn't stranded.
       const editingStockId = editingItem?.stockId ?? null;
-      const allowedStocks = stockList.filter((s) => sownTypes.includes(s.type) || s.id === editingStockId);
+      const allowedStocks = stockList.filter(
+        (s) => (!s.isDeleted && sownTypes.includes(s.type)) || s.id === editingStockId
+      );
 
       setStocks(allowedStocks);
       setTreeStocks(allowedTreeStocks);

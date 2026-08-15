@@ -59,12 +59,16 @@ export function LandPlotFormModal({ open, farmId, editingPlot, onClose, onSaved 
   async function loadOptions() {
     setOptionsLoading(true);
     try {
-      const [fruits, usedFruits, stocks, usedStocks] = await Promise.all([
+      const [fruits, usedFruits, allStocks, usedStocks] = await Promise.all([
         getTreeStock(),
         getUsedTreeStockIds(farmId),
-        getStock(),
+        getStock(true),
         getUsedStockIds(farmId),
       ]);
+
+      // A removed good can't be planted, but the plot already growing one keeps it on the list —
+      // otherwise editing that plot's area would quietly move it to another crop.
+      const stocks = allStocks.filter((stock) => !stock.isDeleted || stock.id === editingPlot?.stockId);
       setHadAny(fruits.length > 0 || stocks.length > 0);
 
       // An entry gets one plot per piece of land, so anything this land already grows is off the

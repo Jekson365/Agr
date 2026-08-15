@@ -18,7 +18,18 @@ public class TreeStock
     /// <summary>The land plot these trees are planted on, if assigned yet.</summary>
     public int? LandPlotId { get; set; }
 
-    /// <summary>The <see cref="TreeProduct"/> these trees yield, chosen from the catalog when the
-    /// row is added. Null until one is assigned.</summary>
+    /// <summary>The one <see cref="TreeProduct"/> these trees yield, chosen from the catalog when
+    /// the row is added and required from then on — no two stocks may name the same product, which
+    /// the table enforces with a unique index. Nullable only for fruit recorded before a product
+    /// was asked for; those rows keep producing nothing until one is assigned.</summary>
     public int? TreeProductId { get; set; }
+
+    /// <summary>
+    /// Whether this fruit has been removed from the Fruit page. Marked rather than dropped: its
+    /// movement log, the harvest rows recording these trees as picked, and its land plot all point
+    /// at it, and removing it would take that history with them (see the cascades in
+    /// <see cref="Server.Data.AppDbContext"/>). A deleted fruit is left out of the fruit list and
+    /// of the plan's count, and no longer takes edits or sales.
+    /// </summary>
+    public bool IsDeleted { get; set; }
 }

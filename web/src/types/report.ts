@@ -12,6 +12,9 @@ export type StockMovementReportRow = {
   unit: string;
   delta: number;
   source: StockMovementSource;
+  /** Whether the good has since been removed from stock. The movement still happened, so a report
+   *  of a period keeps it; a balance of what is held now leaves it out. Always false for fruit. */
+  isDeleted: boolean;
   /** The harvest a Harvest-sourced movement came from; null for manual edits and market sales. */
   harvestTitle: string | null;
   createdAt: string;

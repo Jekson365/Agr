@@ -7,9 +7,13 @@ namespace Server.Repositories;
 
 public class StockRepository(AppDbContext context, IStockMovementRepository stockMovementRepository) : IStockRepository
 {
-    public async Task<IEnumerable<Stock>> GetAllAsync()
+    public async Task<IEnumerable<Stock>> GetAllAsync(bool includeDeleted = false)
     {
-        return await context.Stocks.AsNoTracking().OrderBy(s => s.Id).ToListAsync();
+        return await context.Stocks
+            .AsNoTracking()
+            .Where(s => includeDeleted || !s.IsDeleted)
+            .OrderBy(s => s.Id)
+            .ToListAsync();
     }
 
     public async Task<Stock?> GetByIdAsync(int id)
@@ -55,7 +59,7 @@ public class StockRepository(AppDbContext context, IStockMovementRepository stoc
         return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> SoftDeleteAsync(int id)
     {
         var existing = await context.Stocks.FindAsync(id);
         if (existing is null)
@@ -63,7 +67,7 @@ public class StockRepository(AppDbContext context, IStockMovementRepository stoc
             return false;
         }
 
-        context.Stocks.Remove(existing);
+        existing.IsDeleted = true;
         await context.SaveChangesAsync();
         return true;
     }
