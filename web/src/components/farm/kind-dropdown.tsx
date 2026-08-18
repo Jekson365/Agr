@@ -12,7 +12,8 @@ type Props = {
   options: KindOption[];
   selected: string;
   onSelect: (value: string) => void;
-  onAddNew: (name: string) => Promise<KindOption | null>;
+  /** The icon is whatever file the user picked, or null when they added a name alone. */
+  onAddNew: (name: string, icon: File | null) => Promise<KindOption | null>;
   addPlaceholder: string;
   loading?: boolean;
   /** As on the chip picker: the dropdown only reports the intent, the parent owns the delete. */
@@ -21,6 +22,9 @@ type Props = {
   /** Whether the catalog may be added to from here — see the same prop on {@link KindPicker}.
    *  With it off the popover is a search over a settled list, and both ways in are gone. */
   allowAdd?: boolean;
+  /** Names the icon input for screen readers and its tooltip. Only read while `allowAdd`
+   *  is on, so a picker that only picks may leave it out. */
+  iconLabel?: string;
 };
 
 /**
@@ -42,6 +46,7 @@ export function KindDropdown({
   selected,
   onSelect,
   onAddNew,
+  iconLabel,
   addPlaceholder,
   loading,
   onRemove,
@@ -56,6 +61,22 @@ export function KindDropdown({
   /** The button beside the field is up, showing its name input. */
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
+  /** The picture for the kind being added. Added without one, a kind falls back to the
+   *  catalog's generic artwork exactly as before. */
+  const [newIcon, setNewIcon] = useState<File | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+
+  // Object URLs are held by the document until revoked, so the preview owns its lifetime
+  // rather than being minted fresh on every render.
+  useEffect(() => {
+    if (!newIcon) {
+      setIconPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(newIcon);
+    setIconPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [newIcon]);
   /** Which row Enter would take. Counts the add row as the one past the last option. */
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -158,11 +179,11 @@ export function KindDropdown({
 
   /** Shared by the two ways in: the row under a fruitless search, and the button beside the field.
    *  Returns whether the catalog took the name. */
-  async function addKind(name: string): Promise<boolean> {
+  async function addKind(name: string, icon: File | null): Promise<boolean> {
     if (saving) return false;
     setSaving(true);
     try {
-      const created = await onAddNew(name);
+      const created = await onAddNew(name, icon);
       // A rejected name (duplicate, or a server that refused) leaves what was typed where it is,
       // with the reason showing under the field, so it can be corrected without retyping.
       if (!created) return false;
@@ -175,14 +196,16 @@ export function KindDropdown({
 
   async function addFromSearch() {
     if (!canAdd) return;
-    await addKind(trimmed);
+    // Added straight from the search box, so there was nowhere to choose a picture.
+    await addKind(trimmed, null);
   }
 
   async function addFromField() {
     const name = newName.trim();
     if (!name) return;
-    if (await addKind(name)) {
+    if (await addKind(name, newIcon)) {
       setNewName('');
+      setNewIcon(null);
       setAdding(false);
     }
   }
@@ -333,6 +356,21 @@ export function KindDropdown({
 
       {allowAdd && adding && (
         <div className="kind-add-row kind-dropdown-new-row">
+          {/* Picture first, so the row being built reads the way the options it joins do. */}
+          <label className="kind-add-icon" title={iconLabel}>
+            {iconPreview ? (
+              <img src={iconPreview} alt="" className="kind-chip-icon" />
+            ) : (
+              <span aria-hidden="true">🖼</span>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="kind-add-icon-input"
+              onChange={(e) => setNewIcon(e.target.files?.[0] ?? null)}
+            />
+            <span className="sr-only">{iconLabel}</span>
+          </label>
           <input
             className="kind-add-input"
             value={newName}

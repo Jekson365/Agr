@@ -18,7 +18,7 @@ export function DashboardPage() {
       <h2 className="dashboard-section-title">{t('dashboard.quickAccess')}</h2>
       <div className="quick-access-grid">
         {/* Same gating as the sidebar — a tile for an area the user can't reach would be a dead end. */}
-        {QUICK_ACCESS_ITEMS.filter((item) => isNavItemVisible(item, user?.plan, isOn)).map(({ to, labelKey, icon }) => (
+        {QUICK_ACCESS_ITEMS.filter((item) => isNavItemVisible(item, user, isOn)).map(({ to, labelKey, icon }) => (
           <Link key={to} to={to} className="quick-access-item">
             <span className="quick-access-icon">
               <img src={icon} alt="" />

@@ -8,5 +8,8 @@ public interface IFarmRepository
     Task<Farm?> GetByIdAsync(int id);
     Task<Farm> AddAsync(Farm farm);
     Task<bool> UpdateAsync(Farm farm);
-    Task<bool> DeleteAsync(int id);
+
+    /// <summary>Marks land removed, or puts it back. Land is never hard-deleted — see
+    /// <see cref="Farm.IsRemoved"/>.</summary>
+    Task<bool> SetRemovedAsync(int id, bool removed);
 }

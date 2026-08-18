@@ -103,7 +103,7 @@ export function GreenhouseStockFormModal({
     }
 
     try {
-      const created = await createStockKind({ name });
+      const created = await createStockKind({ name, imagePath: '' });
       setKinds((prev) => (prev.some((k) => k.name === created.name) ? prev : [...prev, created]));
       return { value: created.name, label: stockTypeLabel(created.name, t) };
     } catch (err) {

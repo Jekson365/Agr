@@ -25,7 +25,9 @@ public interface ILivestockKindRepository
 
     /// <summary>Adds a kind, or returns the existing one if a kind with that name (compared
     /// case-insensitively) already exists.</summary>
-    Task<LivestockKind> AddAsync(string name);
+    /// <summary>Adds a kind, or returns the one already carrying this name.
+    /// <paramref name="imagePath"/> is blank for a kind drawn from bundled artwork.</summary>
+    Task<LivestockKind> AddAsync(string name, string imagePath);
 
     Task<DeleteLivestockKindResult> DeleteAsync(int id);
 }

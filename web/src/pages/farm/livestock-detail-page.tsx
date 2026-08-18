@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
 import { CardMenu } from '@/components/farm/card-menu';
-import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LivestockRealizationModal } from '@/components/farm/livestock/animal-production/livestock-realization-modal';
 import { LivestockDetailFormModal } from '@/components/farm/livestock/livestock-detail-form-modal';
@@ -12,8 +11,8 @@ import { formatAge } from '@/config/age';
 import { livestockImage } from '@/config/livestock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { getAllAnimalProductions } from '@/services/animal-production-service';
-import { ApiError, resolveAssetUrl } from '@/services/api-client';
-import { deleteLivestockDetail, getLivestockDetails } from '@/services/livestock-detail-service';
+import { resolveAssetUrl } from '@/services/api-client';
+import { getLivestockDetails } from '@/services/livestock-detail-service';
 import { getLivestockItem } from '@/services/livestock-service';
 import type { Livestock } from '@/types/livestock';
 import type { LivestockDetail } from '@/types/livestock-detail';
@@ -30,7 +29,6 @@ export function LivestockDetailPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingDetail, setEditingDetail] = useState<LivestockDetail | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ id: number; code: string } | null>(null);
   /** The animal whose realization window is open, or null. One window for the page, opened from
    *  whichever card asked for it. */
   const [realizationFor, setRealizationFor] = useState<LivestockDetail | null>(null);
@@ -40,9 +38,6 @@ export function LivestockDetailPage() {
    * without anything having to be kept in step.
    */
   const [realizedIds, setRealizedIds] = useState<Set<number>>(new Set());
-  /** A refused delete. Kept apart from `error`, which stands for "the list didn't load" and
-   *  replaces the list with a retry — no use for an animal that is simply not deletable. */
-  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!livestockId) return;
@@ -96,27 +91,6 @@ export function LivestockDetailPage() {
     setDetails((prev) => (isNew ? [...prev, detail] : prev.map((d) => (d.id === detail.id ? detail : d))));
   }
 
-  async function confirmDeleteDetail() {
-    if (!confirmDelete) return;
-    const { id } = confirmDelete;
-    setDeleteError(null);
-    try {
-      await deleteLivestockDetail(id);
-      setDetails((prev) => prev.filter((d) => d.id !== id));
-    } catch (err) {
-      // The server refuses while the animal still has production records — deleting it would take
-      // that history with it.
-      setDeleteError(
-        err instanceof ApiError && err.status === 409
-          ? t('farm.deleteHasProduction')
-          : err instanceof Error
-            ? err.message
-            : String(err)
-      );
-    } finally {
-      setConfirmDelete(null);
-    }
-  }
 
   return (
     <div>
@@ -138,8 +112,6 @@ export function LivestockDetailPage() {
           <StockFeedRow livestockId={livestockId} />
         </>
       )}
-
-      {deleteError && <div className="error-banner">{deleteError}</div>}
 
       {loading ? (
         <div className="state-box">…</div>
@@ -183,12 +155,9 @@ export function LivestockDetailPage() {
                 )}
 
                 <div className="entity-tile-menu">
-                  {/* A realized animal keeps its record as it stands; deleting it is refused by
-                      the server anyway, since its realization is production history. */}
-                  <CardMenu
-                    onEdit={realized ? undefined : () => openEdit(detail)}
-                    onDelete={() => setConfirmDelete({ id: detail.id, code: detail.code })}
-                  />
+                  {/* Edit only, and a realized animal keeps its record as it stands — so that one
+                      has no menu at all. */}
+                  <CardMenu onEdit={realized ? undefined : () => openEdit(detail)} />
                 </div>
 
                 <div className="entity-tile-body">
@@ -256,13 +225,6 @@ export function LivestockDetailPage() {
         editingDetail={editingDetail}
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
-      />
-
-      <ConfirmDeleteModal
-        open={!!confirmDelete}
-        name={confirmDelete?.code ?? ''}
-        onCancel={() => setConfirmDelete(null)}
-        onConfirm={confirmDeleteDetail}
       />
 
       {/* Keyed by animal so the window starts fresh for each one it is opened from, rather than

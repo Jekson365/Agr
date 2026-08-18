@@ -125,10 +125,13 @@ export function ReportHarvestPage() {
   function productTargetFor(treeProductId: number): { label: string; icon: string; unitLabel: string } | null {
     const product = treeProducts.find((p) => p.id === treeProductId);
     if (!product) return null;
+    // Produce has no artwork of its own, but it is assigned to at most one orchard — so show the
+    // fruit that orchard grows, the way the stock rows above show their good. Falls back to the
+    // generic tree while no orchard has claimed the product yet.
+    const tree = treeStocks.find((s) => s.treeProductId === treeProductId);
     return {
       label: product.name,
-      // Tree products have no artwork of their own, so fall back to the generic tree icon.
-      icon: fruitKindImage(''),
+      icon: fruitKindImage(tree?.type ?? ''),
       unitLabel: t(TREE_PRODUCT_UNIT_LABEL_KEY[product.unit] ?? 'farm.unitKg'),
     };
   }

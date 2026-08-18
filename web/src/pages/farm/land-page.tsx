@@ -10,11 +10,11 @@ import { PacketsModal } from '@/components/farm/packets-modal';
 import { ChevronRightIcon, LeafIcon, LocationIcon, SquareIcon } from '@/components/icons/misc-icons';
 import { cropImage, cropLabel } from '@/config/crop';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
-import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
+import { isAtLimit, isOverLimit, isPlanLimitError } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
-import { deleteFarm, getFarms } from '@/services/farm-service';
+import { deleteFarm, getFarms, restoreFarm } from '@/services/farm-service';
 import { getAllLandPlots } from '@/services/land-plot-service';
 import { getLivestock } from '@/services/livestock-service';
 import type { Farm } from '@/types/farm';
@@ -72,9 +72,12 @@ export function LandPage() {
     }
   }
 
-  const atLimit = isAtLimit(user?.maxLand, farms.length);
+  /* Removed land is out of use, so it doesn't count against the plan — which is also what the
+     server counts, and what makes restoring a piece worth refusing when there is no room. */
+  const activeCount = farms.filter((farm) => !farm.isRemoved).length;
+  const atLimit = isAtLimit(user?.maxLand, activeCount);
   // Only a downgrade can leave the count past the cap; that is also where the server stops edits.
-  const overLimit = isOverLimit(user?.maxLand, farms.length);
+  const overLimit = isOverLimit(user?.maxLand, activeCount);
 
   function openAdd() {
     if (atLimit) {
@@ -101,16 +104,34 @@ export function LandPage() {
     setPacketsMessage(message);
   }
 
+  /* Removing land marks it rather than dropping it, so the card stays put and turns disabled —
+     everything recorded on this land still points at it, and a card that vanished would take the
+     explanation for all of it with it. */
   async function confirmDeleteItem() {
     if (!confirmDelete) return;
     const { id } = confirmDelete;
     try {
       await deleteFarm(id);
-      setFarms((prev) => prev.filter((f) => f.id !== id));
+      setFarms((prev) => prev.map((f) => (f.id === id ? { ...f, isRemoved: true } : f)));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setConfirmDelete(null);
+    }
+  }
+
+  async function handleRestore(farm: Farm) {
+    try {
+      await restoreFarm(farm.id);
+      setFarms((prev) => prev.map((f) => (f.id === farm.id ? { ...f, isRemoved: false } : f)));
+    } catch (err) {
+      // The server refuses when the plan has no room for it any more, which is the packets case
+      // rather than an error to print over the page.
+      if (isPlanLimitError(err)) {
+        setPacketsMessage(t('plans.limitReached', { resource: t('farm.land') }));
+        return;
+      }
+      setError(err instanceof Error ? err.message : String(err));
     }
   }
 
@@ -182,7 +203,9 @@ export function LandPage() {
             const hidden = contents.length - shown.length;
 
             return (
-            <div key={item.id} className="land-tile">
+            /* Removed land keeps its card and turns disabled — see Farm.isRemoved. It is still
+               readable, and still opens, so the plots and herds recorded on it can be reached. */
+            <div key={item.id} className={item.isRemoved ? 'land-tile is-removed' : 'land-tile'}>
               {/* Photo first: it is what tells one piece of land from another at a glance, and
                   the name underneath reads as its caption. */}
               <Link to={`/farm/land/${item.id}`} className="land-tile-media">
@@ -197,13 +220,23 @@ export function LandPage() {
               </Link>
 
               {/* Sits over the photo rather than in the text, so the body below stays a clean
-                  column. Editing the land itself stays on this menu. */}
+                  column. Removed land takes no edits, so its menu offers putting it back instead. */}
               <div className="land-tile-menu">
-                <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: item.name })} />
+                {item.isRemoved ? (
+                  <CardMenu extra={{ labelKey: 'farm.restoreLand', onSelect: () => handleRestore(item) }} />
+                ) : (
+                  <CardMenu
+                    onEdit={() => openEdit(item)}
+                    onDelete={() => setConfirmDelete({ id: item.id, name: item.name })}
+                  />
+                )}
               </div>
 
               <div className="land-tile-body">
-                <h2 className="land-tile-title">{item.name}</h2>
+                <h2 className="land-tile-title">
+                  {item.name}
+                  {item.isRemoved && <span className="removed-chip">{t('balance.removed')}</span>}
+                </h2>
 
                 <div className="land-tile-meta">
                   <div className="land-tile-row">
@@ -263,9 +296,12 @@ export function LandPage() {
         onClose={() => setPacketsMessage(null)}
       />
 
+      {/* Removing land disables it rather than dropping it — say so, since the standard "cannot be
+          undone" line overstates what happens to the plots, herds and harvests on it. */}
       <ConfirmDeleteModal
         open={!!confirmDelete}
         name={confirmDelete?.name ?? ''}
+        body={t('farm.removeLandBody')}
         onCancel={() => setConfirmDelete(null)}
         onConfirm={confirmDeleteItem}
       />

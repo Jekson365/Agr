@@ -44,6 +44,7 @@ export function HarvestTreeList({ trees, treeStocks, products, onEdit, onDelete,
                     <br />
                     <span className="list-card-subtitle">
                       {t('harvestTree.amountPicked')}: {tree.amount} {info?.unitLabel ?? ''}
+                      {info?.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                     </span>
                     {tree.harvestedAmount > 0 && (
                       <>

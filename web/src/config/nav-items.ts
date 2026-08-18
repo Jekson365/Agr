@@ -30,6 +30,8 @@ export type NavItem = {
   restricted?: boolean;
   /** Shown only while the named configuration is switched on for this tenant. */
   requiresConfig?: string;
+  /** Shown only to the account with this email — see {@link CATALOG_ADMIN_EMAIL}. */
+  requiresEmail?: string;
   /**
    * Sidebar-only: the row is a plain heading rather than a link, because a child already covers
    * `to`. The destination itself stays — the dashboard's quick-access tile still links to it, and
@@ -40,6 +42,16 @@ export type NavItem = {
    * while a sibling drill-down is open. */
   end?: boolean;
 };
+
+/**
+ * The one account the type catalogs are offered to.
+ *
+ * A convenience gate on the entry point, **not a permission**: every signed-in user can already
+ * add and remove kinds from the stock, fruit and livestock forms, and the API behind this page is
+ * open to all of them. It keeps a page that is only useful to one person out of everyone else's
+ * sidebar — nothing more. Restricting the capability itself would take a server-side check.
+ */
+export const CATALOG_ADMIN_EMAIL = 'jeko.erg@gmail.com';
 
 /** Mirrors the Quick Access grid on the mobile app's home screen (app/(tabs)/index.tsx), reusing its icon assets. */
 export const QUICK_ACCESS_ITEMS: NavItem[] = [
@@ -61,7 +73,9 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         children: [
           { to: '/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
           { to: '/farm/seeds', labelKey: 'seed.title', icon: seedIcon },
-          { to: '/farm/stock', labelKey: 'farm.plantStock', icon: plantsIcon },
+          // `end` so the stock link doesn't stay lit while its own balance is open below it.
+          { to: '/farm/stock', labelKey: 'farm.plantStock', icon: plantsIcon, end: true },
+          { to: '/farm/stock/balance', labelKey: 'farm.balance', icon: balanceIcon },
         ],
       },
       {
@@ -72,15 +86,29 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         icon: fruitsIcon,
         requiresConfig: FRUIT_STOCK_CONFIG,
         children: [
-          { to: '/farm/fruits', labelKey: 'fruits.trees', icon: fruitsIcon },
+          { to: '/farm/fruits', labelKey: 'fruits.trees', icon: fruitsIcon, end: true },
           { to: '/farm/fruits/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
+          { to: '/farm/fruits/balance', labelKey: 'farm.balance', icon: balanceIcon },
           // { to: '/farm/fruits/products', labelKey: 'treeProduct.title', icon: fruitsIcon },
         ],
       },
-      { to: '/farm/livestock', labelKey: 'farm.livestock', icon: animalsIcon, requiresConfig: LIVESTOCK_CONFIG },
-      // Crop farming bundles the three plant-side areas; its own link lands on the harvest page.
-      { to: '/farm/balance', labelKey: 'farm.balance', icon: balanceIcon },
+      {
+        // The group's own row is still the list of herds; only the balance hangs off it, so it
+        // stays a link rather than becoming a heading. No `end` on the header, matching the
+        // greenhouse group: it lights for anywhere in the area, including a herd's own pages.
+        to: '/farm/livestock',
+        labelKey: 'farm.livestock',
+        icon: animalsIcon,
+        requiresConfig: LIVESTOCK_CONFIG,
+        children: [{ to: '/farm/livestock/balance', labelKey: 'farm.balance', icon: balanceIcon }],
+      },
       { to: '/farm/equipment', labelKey: 'equipment.title', icon: equipmentIcon, restricted: true },
+      {
+        to: '/farm/types',
+        labelKey: 'kindTypes.title',
+        icon: plantsIcon,
+        requiresEmail: CATALOG_ADMIN_EMAIL,
+      },
     ],
   },
   // Covered growing stands beside the farm rather than inside it, and only appears once the
@@ -96,6 +124,7 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
       { to: '/farm/greenhouse/stock', labelKey: 'farm.plantStock', icon: plantsIcon },
       { to: '/farm/greenhouse/seeds', labelKey: 'seed.title', icon: seedIcon },
       { to: '/farm/greenhouse/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
+      { to: '/farm/greenhouse/balance', labelKey: 'farm.balance', icon: balanceIcon },
     ],
   },
   // Every outlined field on one map — the user's own and their neighbourhood's.
@@ -125,10 +154,13 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
  */
 export function isNavItemVisible(
   item: NavItem,
-  plan: StoragePlan | undefined,
+  user: { plan?: StoragePlan; email?: string } | null | undefined,
   isConfigOn: (name: string) => boolean
 ): boolean {
-  if (item.restricted && plan === 'Free') return false;
+  if (item.restricted && user?.plan === 'Free') return false;
   if (item.requiresConfig && !isConfigOn(item.requiresConfig)) return false;
+  // Compared case-insensitively: the server lower-cases an email on write, but a session read
+  // back from storage is whatever was stored when it was written.
+  if (item.requiresEmail && user?.email?.toLowerCase() !== item.requiresEmail.toLowerCase()) return false;
   return true;
 }

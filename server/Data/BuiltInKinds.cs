@@ -26,6 +26,9 @@ public static class BuiltInKinds
         new() { Id = 7, Name = "Potato" },
         new() { Id = 8, Name = "Pumpkin" },
         new() { Id = 9, Name = "Tomato" },
+        new() { Id = 10, Name = "Carrot" },
+        new() { Id = 11, Name = "Corn" },
+        new() { Id = 12, Name = "Onion" },
     ];
 
     public static readonly FruitKind[] Fruit =
@@ -48,6 +51,7 @@ public static class BuiltInKinds
         new() { Id = 8, Name = "Duck" },
         new() { Id = 9, Name = "Goat" },
         new() { Id = 10, Name = "Rabbit" },
+        new() { Id = 11, Name = "Rooster" },
     ];
 
     /* Matched by name, not by id: a name is what the rest of the schema references a kind by, and

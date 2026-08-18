@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 
 import animalsIcon from '@/assets/properties/animals.png';
-import balanceIcon from '@/assets/properties/balance.png';
 import equipmentIcon from '@/assets/properties/equipment.png';
 import fruitsIcon from '@/assets/properties/fruits.png';
 import landIcon from '@/assets/properties/land.png';
@@ -38,7 +37,7 @@ const SECTIONS: {
     requiresConfig: CROP_FARMING_CONFIG,
   },
   { key: 'fruits', labelKey: 'farm.fruits', icon: fruitsIcon, to: '/farm/fruits', requiresConfig: FRUIT_STOCK_CONFIG },
-  { key: 'balance', labelKey: 'farm.balance', icon: balanceIcon, to: '/farm/balance' },
+  // No balance tile: each holding now carries its own, reached from that holding's area.
   { key: 'equipment', labelKey: 'equipment.title', icon: equipmentIcon, to: '/farm/equipment' },
 ];
 

@@ -141,6 +141,9 @@ export function HarvestItemFormModal({ open, harvestId, editingItem, sownTypes, 
                 >
                   <img src={option.icon} className="kind-chip-icon" alt="" />
                   <span>{option.label}</span>
+                  {/* Only a row already recorded against it keeps a removed good on this list —
+                      say so, or it reads as an ordinary choice. */}
+                  {option.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                 </button>
               ))}
             </div>

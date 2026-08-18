@@ -8,7 +8,9 @@ export type AnimalType =
   | 'Dog'
   | 'Duck'
   | 'Goat'
-  | 'Rabbit';
+  | 'Rabbit'
+  | 'Rooster'
+;
 
 export type Livestock = {
   id: number;

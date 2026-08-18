@@ -41,9 +41,14 @@ export function HarvestSeedFormModal({ open, harvestId, editingSeed, onClose, on
   async function loadSeeds() {
     setSeedsLoading(true);
     try {
-      const list = await getSeeds();
-      setSeeds(list);
-      setSelectedId(editingSeed?.seedId ?? list[0]?.id ?? null);
+      // Removed seed comes back too, but only stays on the list for the row already recorded
+      // against it: without it that row's seed resolves to nothing, which leaves the form with
+      // no selection and its save button permanently disabled. Sowing more of it is over.
+      const list = await getSeeds(true);
+      const editingSeedId = editingSeed?.seedId ?? null;
+      const allowed = list.filter((s) => !s.isDeleted || s.id === editingSeedId);
+      setSeeds(allowed);
+      setSelectedId(editingSeedId ?? allowed[0]?.id ?? null);
     } catch {
       setSeeds([]);
       setSelectedId(null);
@@ -107,6 +112,9 @@ export function HarvestSeedFormModal({ open, harvestId, editingSeed, onClose, on
                 >
                   <img src={stockKindImage(seed.type)} className="kind-chip-icon" alt="" />
                   <span>{labelFor(seed)}</span>
+                  {/* Only the row already recorded against it keeps a removed seed on this list —
+                      say so, or it reads as an ordinary choice. */}
+                  {seed.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                 </button>
               ))}
             </div>

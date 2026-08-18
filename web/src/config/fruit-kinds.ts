@@ -1,11 +1,15 @@
-import defaultFruitIcon from '@/assets/goods/default.png';
 import appleIcon from '@/assets/trees/apple.png';
 import bananaIcon from '@/assets/trees/banana.png';
+// The stand-in that belongs with the tree artwork, not the goods one: at icon size the goods
+// logo is a pale outline that all but disappears on a light row, and a fruitless tree reads as
+// a tree even at 20px. Mirrors the mobile app, which falls back to the same image.
+import defaultFruitIcon from '@/assets/trees/empty.png';
 import orangeIcon from '@/assets/trees/orange.png';
+import { customKindIcon } from '@/config/kind-icons';
 
-// Built-in fruit kinds get dedicated artwork and a translated label; any other kind (a custom
-// type a user added via the Tree Stock form) falls back to the same goods stand-in the stock and
-// livestock catalogs use, and its raw name — see fruitKindImage/fruitTypeLabel below.
+// Built-in fruit kinds get bundled artwork and a translated label. A kind a user added carries
+// its own picture instead (see config/kind-icons.ts) and shows the name it was created with —
+// see fruitKindImage/fruitTypeLabel below.
 
 export const FRUIT_KIND_IMAGE: Record<string, string> = {
   Apple: appleIcon,
@@ -45,14 +49,16 @@ export function fruitTypeLabel(type: string, t: (key: string) => string): string
   return key ? t(key) : type;
 }
 
-/** A fruit type's icon: its dedicated artwork if it's a known built-in, otherwise a generic
- * empty-tree default — custom types added through the app don't have artwork of their own. */
+/** A fruit type's icon: the bundled artwork if it's a known built-in, otherwise the picture the
+ * user gave the kind when they added it, and a generic bare tree for a kind with neither. */
 export function fruitKindImage(type: string): string {
-  return FRUIT_KIND_IMAGE[type] ?? defaultFruitIcon;
+  // Built-in first, then the kind's own uploaded artwork, then the generic stand-in.
+  // A user-added kind is drawn like a built-in — see config/kind-icons.ts.
+  return FRUIT_KIND_IMAGE[type] ?? customKindIcon('fruit', type) ?? defaultFruitIcon;
 }
 
 /** Whether this is one of the kinds every tenant is seeded with, as opposed to one a user added.
- * Built-ins can't be deleted from the catalog — see isBuiltInStockKind. */
+ * See isBuiltInStockKind — no kind is removable from the app either way. */
 export function isBuiltInFruitKind(type: string): boolean {
   return type in FRUIT_TYPE_LABEL_KEY;
 }

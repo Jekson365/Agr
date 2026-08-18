@@ -449,6 +449,32 @@
   }
 }
 
+/* Land the owner has taken out of use. It keeps its card — the plots, herds and harvests on it are
+   still there and still reachable through it — so it reads as switched off rather than missing:
+   the photo and the figures go quiet, and the card no longer lifts under the cursor. The menu and
+   the title (which carries the removed chip) stay at full strength, since putting the land back is
+   the one thing still worth doing from here. */
+.land-tile.is-removed {
+  border-style: dashed;
+  background: var(--color-surface-sunken);
+}
+
+.land-tile.is-removed .land-tile-media,
+.land-tile.is-removed .land-tile-meta,
+.land-tile.is-removed .land-tile-contents,
+.land-tile.is-removed .land-tile-details {
+  opacity: 0.55;
+  filter: grayscale(0.8);
+}
+
+@media (hover: hover) {
+  .land-tile.is-removed:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--color-border);
+  }
+}
+
 /* No overflow clipping: the badge below deliberately hangs past the bottom edge. */
 .land-tile-media {
   position: relative;
@@ -782,62 +808,8 @@ button.entity-tile-details:disabled:hover {
 }
 
 /* Balance table */
-/* Four holdings — plant stock, livestock production, fruit trees, greenhouse — one open at a
-   time. The tab row names them; the panel below holds whichever is open. */
-.balance-tabs .tab-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Four tabs carrying artwork and a count run wider than four words do, so on a narrow screen the
-   row scrolls rather than squeezing its labels. The active tab's underline is lifted onto the
-   row's own border, since a scroll container would clip the 1px it otherwise hangs below. */
-.balance-tabs {
-  overflow-x: auto;
-}
-
-.balance-tabs .tab-item.active::after {
-  bottom: 0;
-}
-
-@media (max-width: 720px) {
-  .balance-tabs {
-    gap: 18px;
-  }
-
-  .balance-tab-icon {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-/* The artwork the sidebar and the farm page already use for this holding, so a tab is recognised
-   before it is read. */
-.balance-tab-icon {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-/* How many products the table behind the tab reports. Quiet while the tab is closed — it is a
-   reason to open it, not a figure to read from here — and takes the accent once it is open. */
-.balance-tab-count {
-  padding: 1px 8px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-sunken);
-  color: var(--color-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.tab-item.active .balance-tab-count {
-  border-color: transparent;
-  background: var(--color-green-muted);
-  color: var(--color-green);
-}
+/* One holding per page, filed under that holding in the sidebar — the tab row that used to switch
+   between four of them is gone, and with it the tab, icon and count rules it needed. */
 
 /* One table has the whole page to spread into, and reads worse for taking it: these are four
    short columns, and a row pulled to the width of a desk monitor breaks the tie between a product
@@ -976,8 +948,11 @@ button.entity-tile-details:disabled:hover {
   font-weight: 600;
 }
 
-/* Marks a holding the farm has removed, on the rows that only appear once those are asked for.
-   Beside the name rather than in the figures: what is in question is the holding, not its amount. */
+/* Marks a holding the farm has removed — on the balance rows that only appear once those are asked
+   for, and on the harvest rows and pickers that keep offering one so an existing record stays
+   editable. Beside the name rather than in the figures: what is in question is the holding, not its
+   amount. */
+.removed-chip,
 .balance-removed-chip {
   display: inline-flex;
   align-items: center;
@@ -990,6 +965,15 @@ button.entity-tile-details:disabled:hover {
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* Inside a picker chip the pill-in-a-pill reads as noise, and the option is already only offered
+   to the row that needs it — so there it drops to a plain muted word. */
+.kind-chip .removed-chip {
+  margin-left: 2px;
+  padding: 0;
+  border: none;
+  background: none;
 }
 
 /* A switch, not an action: it reads as pressed while the removed holdings are on show. */
@@ -1153,4 +1137,12 @@ button.entity-tile-details:disabled:hover {
    with. Nothing on it is clickable any more. */
 .entity-tile.realized .entity-tile-media {
   opacity: 0.65;
+}
+
+/* One kind catalog on the types page. The field inside already carries a label and its own error
+   line, so the section only has to keep the three of them apart. */
+.kind-types-section + .kind-types-section {
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
 }

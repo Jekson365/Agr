@@ -212,7 +212,8 @@
     "loadErrorLivestock": "Couldn't load livestock.",
     "loadErrorStock": "Couldn't load stock.",
     "saveError": "Couldn't save. Please try again.",
-    "areaUnit": "ha"
+    "areaUnit": "ha",
+    "rooster": "Rooster"
   },
   "livestockDetail": {
     "add": "Add Animal",

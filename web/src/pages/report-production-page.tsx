@@ -58,6 +58,9 @@ type ProductionGroup = {
   animals: AnimalSubgroup[];
   totals: ProductionTotalRow[];
   totalValue: number;
+  /** Whether the group has been removed from the livestock page. Its records stay in the report —
+   *  they are what the farm produced — so the header says the group is gone instead. */
+  isDeleted: boolean;
 };
 
 const PERIOD_OPTIONS: { value: PeriodMode; labelKey: string }[] = [
@@ -130,7 +133,10 @@ export function ReportProductionPage() {
     try {
       const [farmList, livestockList, productionList, movementList, productionTypeList, unitList] = await Promise.all([
         getFarms(),
-        getLivestock(),
+        // Removed groups included: what they produced is still part of the record, and without
+        // them those rows lose their name and their animals are never fetched — the report falls
+        // back to raw ids. They are marked as removed where they appear.
+        getLivestock(true),
         getAllAnimalProductions(),
         getProductionMovements(),
         getProductionTypes(),
@@ -218,6 +224,9 @@ export function ReportProductionPage() {
     animalType: AnimalType | null;
     farmName: string | null;
     livestockGroupId: number | null;
+    /** Whether the group behind this record has been removed from the livestock page. What it
+     *  produced stays in the report, marked, rather than dropping out of the totals. */
+    isDeleted: boolean;
   } {
     if (record.animalId != null) {
       const detail = livestockDetails.find((d) => d.id === record.animalId);
@@ -228,6 +237,7 @@ export function ReportProductionPage() {
         animalType: group?.type ?? null,
         farmName: group ? farmNameFor(group.farmId) : null,
         livestockGroupId: group?.id ?? null,
+        isDeleted: group?.isDeleted ?? false,
       };
     }
     if (record.livestockId != null) {
@@ -238,9 +248,10 @@ export function ReportProductionPage() {
         animalType: group?.type ?? null,
         farmName: group ? farmNameFor(group.farmId) : null,
         livestockGroupId: group?.id ?? record.livestockId,
+        isDeleted: group?.isDeleted ?? false,
       };
     }
-    return { label: '', shortLabel: '', animalType: null, farmName: null, livestockGroupId: null };
+    return { label: '', shortLabel: '', animalType: null, farmName: null, livestockGroupId: null, isDeleted: false };
   }
 
   function productionHref(record: AnimalProduction, livestockGroupId: number | null): string | null {
@@ -460,6 +471,7 @@ export function ReportProductionPage() {
           animals: [],
           totals: [],
           totalValue: 0,
+          isDeleted: stockGroup?.isDeleted ?? false,
         };
         groups.set(key, group);
       }
@@ -616,6 +628,9 @@ export function ReportProductionPage() {
                 onClick={() => setLivestockFilter(l.id)}
               >
                 <span>{l.name}</span>
+                {/* Removed groups stay filterable — they still have records to look at — so the
+                    chip says which ones the farm no longer keeps. */}
+                {l.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
               </button>
             ))}
           </div>
@@ -692,7 +707,10 @@ export function ReportProductionPage() {
               <>
                 <span className="report-group-icon">{groupIcon && <img src={groupIcon} alt="" />}</span>
                 <div className="report-group-info">
-                  <span className="report-group-name">{group.name}</span>
+                  <span className="report-group-name">
+                    {group.name}
+                    {group.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
+                  </span>
                   {group.farmName && <span className="report-group-meta">{group.farmName}</span>}
                 </div>
                 <span className={`${HARVEST_STATUS_BADGE_CLASS.Harvested} report-count-badge`}>

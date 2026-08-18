@@ -96,7 +96,9 @@ export function LandFormModal({ open, editingItem, onClose, onSaved, onLimitReac
       const boundary = serializeTerritory(territory);
 
       if (isEditing) {
-        const updated: Farm = { id: editingItem!.id, name: trimmedName, imagePath, area, location, boundary };
+        // isRemoved is carried through rather than rebuilt: the form never sets it, and the server
+        // ignores it on update — putting land back is its own call.
+        const updated: Farm = { ...editingItem!, name: trimmedName, imagePath, area, location, boundary };
         await updateFarm(updated.id, updated);
         onSaved(updated, false);
       } else {

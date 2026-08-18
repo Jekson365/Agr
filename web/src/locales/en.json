@@ -239,6 +239,9 @@
     "stockPotato": "Potato",
     "stockPumpkin": "Pumpkin",
     "stockTomato": "Tomato",
+    "stockCarrot": "Carrot",
+    "stockCorn": "Corn",
+    "stockOnion": "Onion",
     "farm": "farm",
     "location": "Location",
     "farmland": "Farmland",
@@ -280,7 +283,11 @@
     "addGreenhouse": "Add Greenhouse",
     "editGreenhouse": "Edit Greenhouse",
     "establishDate": "Establish date",
-    "namePlaceholderGreenhouse": "e.g. North greenhouse"
+    "namePlaceholderGreenhouse": "e.g. North greenhouse",
+    "restoreLand": "Put back into use",
+    "removeLandBody": "The land is disabled and stays on this page. Its plots, herds and harvests are kept, and it can be put back into use.",
+    "typeIcon": "Type picture",
+    "rooster": "Rooster"
   },
   "livestockDetail": {
     "add": "Add Animal",
@@ -862,7 +869,7 @@
     "stockHistory": "Changes to this stock item over time, with photos.",
     "fruits": "Your fruit trees. Open an item to see its history and record new amounts.",
     "fruitsHistory": "Changes to this tree stock over time.",
-    "balance": "Balances of your plant stock and livestock production in one place.",
+    "balance": "What this holding has on hand now, and how much of it is already on the marketplace.",
     "equipment": "Machines and tools you own. Add equipment with a photo and quantity.",
     "harvest": "Planned and finished harvests. Create a harvest with an expected date and the items to gather; overdue harvests are highlighted. Open one to record the actual results.",
     "harvestDetail": "The plan and results of this harvest. While planning, add the items to gather; once harvested, record the actual amounts.",
@@ -873,7 +880,8 @@
     "reportProduction": "Totals of your livestock production over a period.",
     "reportStock": "How your stock changed over a period.",
     "calendar": "Your farm calendar: tasks and expected harvests by day. Pick a day to add a task.",
-    "profile": "Your account: photo, contact details, private info and subscription plan."
+    "profile": "Your account: photo, contact details, private info and subscription plan.",
+    "kindTypes": "The types stock, fruit and livestock can be recorded under, and the picture each is drawn with."
   },
   "seed": {
     "title": "Seeds",
@@ -1362,5 +1370,9 @@
     "saveError": "Couldn't save. Please try again.",
     "tooMany": "The group doesn't have that many animals left.",
     "total": "Total"
+  },
+  "kindTypes": {
+    "title": "Types",
+    "intro": "The types stock, fruit and livestock can be recorded under, with the picture each is drawn with across the app. Adding one here is the same as adding it from a form."
   }
 }

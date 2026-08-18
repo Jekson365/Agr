@@ -5,7 +5,6 @@ import { LoginPage } from '@/pages/auth/login-page';
 import { CalendarPage } from '@/pages/calendar-page';
 import { DashboardPage } from '@/pages/dashboard-page';
 import { AnimalHistoryPage } from '@/pages/farm/animal-history-page';
-// import { BalancePage } from '@/pages/farm/balance-page';
 import { EquipmentPage } from '@/pages/farm/equipment-page';
 import { FarmPage } from '@/pages/farm/farm-page';
 import { FruitsPage } from '@/pages/farm/fruits-page';
@@ -16,8 +15,8 @@ import { GreenhousePage } from '@/pages/farm/greenhouse-page';
 import { GreenhouseSeedsPage } from '@/pages/farm/greenhouse-seeds-page';
 import { GreenhouseStockPage } from '@/pages/farm/greenhouse-stock-page';
 import { LandDetailPage } from '@/pages/farm/land-detail-page';
+import { KindTypesPage } from '@/pages/farm/kind-types-page';
 import { LandPage } from '@/pages/farm/land-page';
-// import { LivestockBalancePage } from '@/pages/farm/livestock-balance-page';
 import { LivestockBreedingPage } from '@/pages/farm/livestock-breeding-page';
 import { LivestockDetailPage } from '@/pages/farm/livestock-detail-page';
 import { LivestockMovementPage } from '@/pages/farm/livestock-movement-page';
@@ -43,7 +42,9 @@ import { ReportHarvestPage } from '@/pages/report-harvest-page';
 import { ReportPage } from '@/pages/report-page';
 import { ReportProductionPage } from '@/pages/report-production-page';
 import { ReportStockPage } from '@/pages/report-stock-page';
+import { CATALOG_ADMIN_EMAIL } from '@/config/nav-items';
 import { ConfigRoute } from '@/routes/config-route';
+import { OwnerRoute } from '@/routes/owner-route';
 import { ProtectedRoute } from '@/routes/protected-route';
 import { PublicOnlyRoute } from '@/routes/public-route';
 import {
@@ -54,7 +55,10 @@ import {
   LIVESTOCK_CONFIG,
   MARKETPLACE_CONFIG,
 } from '@/types/configuration';
-import { BalancePage } from './pages/farm/balance/balance-page';
+import { FruitsBalancePage } from './pages/farm/balance/fruits-balance-page';
+import { GreenhouseBalancePage } from './pages/farm/balance/greenhouse-balance-page';
+import { LivestockBalancePage } from './pages/farm/balance/livestock-balance-page';
+import { StockBalancePage } from './pages/farm/balance/stock-balance-page';
 import { GreenhouseHarvestDetailPage } from './pages/farm/greenhouse-harvest/greenhouse-harvest-detail-page';
 
 function App() {
@@ -79,7 +83,11 @@ function App() {
               alone would leave the paths reachable by URL, bookmark or an old link. */}
           <Route element={<ConfigRoute name={LIVESTOCK_CONFIG} />}>
             <Route path="/farm/livestock" element={<LivestockPage />} />
-            {/* <Route path="/farm/livestock/balance" element={<LivestockBalancePage />} /> */}
+            {/* Each holding's balance sits inside that holding's own area, behind the same
+                setting — a balance is a reading of the holding, so it is gated with it. Static
+                before the id route: React Router ranks it higher, the way the sibling groups
+                already rely on for /farm/fruits/harvest and /farm/greenhouse/stock. */}
+            <Route path="/farm/livestock/balance" element={<LivestockBalancePage />} />
             <Route path="/farm/livestock/:id" element={<LivestockDetailPage />} />
             <Route path="/farm/livestock/:livestockId/production" element={<LivestockProductionPage />} />
             <Route path="/farm/livestock/:livestockId/breeding" element={<LivestockBreedingPage />} />
@@ -91,6 +99,7 @@ function App() {
               stock it holds. The harvest routes live here too — they are the group's own page. */}
           <Route element={<ConfigRoute name={CROP_FARMING_CONFIG} />}>
             <Route path="/farm/stock" element={<StockPage />} />
+            <Route path="/farm/stock/balance" element={<StockBalancePage />} />
             <Route path="/farm/stock/:id" element={<StockHistoryPage />} />
             <Route path="/farm/seeds" element={<SeedsPage />} />
             <Route path="/farm/seeds/:id" element={<SeedHistoryPage />} />
@@ -100,6 +109,7 @@ function App() {
 
           <Route element={<ConfigRoute name={FRUIT_STOCK_CONFIG} />}>
             <Route path="/farm/fruits" element={<FruitsPage />} />
+            <Route path="/farm/fruits/balance" element={<FruitsBalancePage />} />
             <Route path="/farm/fruits/harvest" element={<HarvestPage kind="Fruit" />} />
             <Route path="/farm/fruits/harvest/:id" element={<FruitHarvestDetailPage />} />
             <Route path="/farm/fruits/products" element={<TreeProductsPage />} />
@@ -109,6 +119,7 @@ function App() {
 
           <Route element={<ConfigRoute name={GREENHOUSE_CONFIG} />}>
             <Route path="/farm/greenhouse" element={<GreenhousePage />} />
+            <Route path="/farm/greenhouse/balance" element={<GreenhouseBalancePage />} />
             <Route path="/farm/greenhouse/:id" element={<GreenhouseDetailPage />} />
             <Route path="/farm/greenhouse/stock" element={<GreenhouseStockPage />} />
             <Route path="/farm/greenhouse/seeds" element={<GreenhouseSeedsPage />} />
@@ -118,8 +129,15 @@ function App() {
 
           {/* Every outlined field on one map — the user's own land and their neighbourhood's. */}
           <Route path="/map" element={<MapPage />} />
-          <Route path="/farm/balance" element={<BalancePage />} />
+          {/* The balance used to be one page with four tabs; each holding now carries its own,
+              filed under it. Kept as a redirect so old links and bookmarks still land somewhere. */}
+          <Route path="/farm/balance" element={<Navigate to="/farm/stock/balance" replace />} />
           <Route path="/farm/equipment" element={<EquipmentPage />} />
+          {/* Hiding the sidebar entry alone would leave the path reachable by URL, so the page
+              sits behind the same email. Neither is a permission — see OwnerRoute. */}
+          <Route element={<OwnerRoute email={CATALOG_ADMIN_EMAIL} />}>
+            <Route path="/farm/types" element={<KindTypesPage />} />
+          </Route>
           {/* <Route path="/scanner" element={<PlaceholderPage titleKey="dashboard.aiPlantScanner" />} /> */}
           <Route element={<ConfigRoute name={MARKETPLACE_CONFIG} />}>
             <Route path="/market" element={<MarketPage />} />

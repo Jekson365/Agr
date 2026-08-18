@@ -16,4 +16,14 @@ public class Farm
     /// the field); an empty array is a territory the owner deliberately cleared.
     /// </summary>
     public string? Boundary { get; set; }
+
+    /// <summary>
+    /// Set when the owner removes this land. Unlike the marked-deleted rows elsewhere
+    /// (<see cref="Stock.IsDeleted"/> and its siblings), removed land is <b>not</b> hidden: the
+    /// plots, herds and harvests recorded on it are still there, and a piece of land that vanished
+    /// from the page would take the explanation for all of them with it. It stays on the land page
+    /// as a disabled card instead — no edits, out of every picker, and not counted against the
+    /// plan's land limit. Restoring it puts it back into use.
+    /// </summary>
+    public bool IsRemoved { get; set; }
 }

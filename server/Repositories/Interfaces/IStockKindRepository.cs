@@ -25,7 +25,9 @@ public interface IStockKindRepository
 
     /// <summary>Adds a new kind, or returns the existing one if a kind with that name (compared
     /// case-insensitively) already exists.</summary>
-    Task<StockKind> AddAsync(string name);
+    /// <summary>Adds a kind, or returns the one already carrying this name.
+    /// <paramref name="imagePath"/> is blank for a kind drawn from bundled artwork.</summary>
+    Task<StockKind> AddAsync(string name, string imagePath);
 
     Task<DeleteStockKindResult> DeleteAsync(int id);
 }

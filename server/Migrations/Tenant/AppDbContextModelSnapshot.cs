@@ -271,6 +271,9 @@ namespace Server.Migrations.Tenant
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("IsRemoved")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("text");
@@ -292,6 +295,10 @@ namespace Server.Migrations.Tenant
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -307,16 +314,19 @@ namespace Server.Migrations.Tenant
                         new
                         {
                             Id = 1,
+                            ImagePath = "",
                             Name = "Apple"
                         },
                         new
                         {
                             Id = 2,
+                            ImagePath = "",
                             Name = "Orange"
                         },
                         new
                         {
                             Id = 3,
+                            ImagePath = "",
                             Name = "Banana"
                         });
                 });
@@ -1025,6 +1035,10 @@ namespace Server.Migrations.Tenant
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1040,52 +1054,68 @@ namespace Server.Migrations.Tenant
                         new
                         {
                             Id = 1,
+                            ImagePath = "",
                             Name = "Cow"
                         },
                         new
                         {
                             Id = 2,
+                            ImagePath = "",
                             Name = "Sheep"
                         },
                         new
                         {
                             Id = 3,
+                            ImagePath = "",
                             Name = "Chicken"
                         },
                         new
                         {
                             Id = 4,
+                            ImagePath = "",
                             Name = "Turkey"
                         },
                         new
                         {
                             Id = 5,
+                            ImagePath = "",
                             Name = "Pig"
                         },
                         new
                         {
                             Id = 6,
+                            ImagePath = "",
                             Name = "Cat"
                         },
                         new
                         {
                             Id = 7,
+                            ImagePath = "",
                             Name = "Dog"
                         },
                         new
                         {
                             Id = 8,
+                            ImagePath = "",
                             Name = "Duck"
                         },
                         new
                         {
                             Id = 9,
+                            ImagePath = "",
                             Name = "Goat"
                         },
                         new
                         {
                             Id = 10,
+                            ImagePath = "",
                             Name = "Rabbit"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            ImagePath = "",
+                            Name = "Rooster"
                         });
                 });
 
@@ -1526,6 +1556,10 @@ namespace Server.Migrations.Tenant
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -1541,47 +1575,74 @@ namespace Server.Migrations.Tenant
                         new
                         {
                             Id = 1,
+                            ImagePath = "",
                             Name = "Weat"
                         },
                         new
                         {
                             Id = 2,
+                            ImagePath = "",
                             Name = "Beans"
                         },
                         new
                         {
                             Id = 3,
+                            ImagePath = "",
                             Name = "Milk"
                         },
                         new
                         {
                             Id = 4,
+                            ImagePath = "",
                             Name = "Cabbage"
                         },
                         new
                         {
                             Id = 5,
+                            ImagePath = "",
                             Name = "Cucumber"
                         },
                         new
                         {
                             Id = 6,
+                            ImagePath = "",
                             Name = "Eggplant"
                         },
                         new
                         {
                             Id = 7,
+                            ImagePath = "",
                             Name = "Potato"
                         },
                         new
                         {
                             Id = 8,
+                            ImagePath = "",
                             Name = "Pumpkin"
                         },
                         new
                         {
                             Id = 9,
+                            ImagePath = "",
                             Name = "Tomato"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            ImagePath = "",
+                            Name = "Carrot"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            ImagePath = "",
+                            Name = "Corn"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            ImagePath = "",
+                            Name = "Onion"
                         });
                 });
 

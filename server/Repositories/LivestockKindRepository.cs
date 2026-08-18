@@ -17,7 +17,7 @@ public class LivestockKindRepository(AppDbContext context) : ILivestockKindRepos
         return await context.LivestockKinds.AnyAsync(k => k.Name.ToLower() == name.ToLower());
     }
 
-    public async Task<LivestockKind> AddAsync(string name)
+    public async Task<LivestockKind> AddAsync(string name, string imagePath)
     {
         // Matching StockKindRepository: adding a name that already exists is a no-op returning
         // the existing row, so a double submit can't produce two "Cow" kinds.
@@ -27,7 +27,7 @@ public class LivestockKindRepository(AppDbContext context) : ILivestockKindRepos
             return existing;
         }
 
-        var kind = new LivestockKind { Name = name };
+        var kind = new LivestockKind { Name = name, ImagePath = imagePath };
         context.LivestockKinds.Add(kind);
         await context.SaveChangesAsync();
         return kind;

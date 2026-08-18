@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CardMenu } from '@/components/farm/card-menu';
-import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form/tree-stock-form-modal';
@@ -11,7 +10,7 @@ import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { fruitKindImage, fruitTypeLabel, treeStockLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
-import { deleteTreeStock, getTreeStock } from '@/services/tree-stock-service';
+import { getTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 
 export function FruitsPage() {
@@ -24,7 +23,6 @@ export function FruitsPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TreeStock | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
   /** Non-null while the packet list is up; holds the cap message that raised it. */
   const [packetsMessage, setPacketsMessage] = useState<string | null>(null);
 
@@ -73,19 +71,6 @@ export function FruitsPage() {
     setPacketsMessage(message);
   }
 
-  async function confirmDeleteItem() {
-    if (!confirmDelete) return;
-    const { id } = confirmDelete;
-    try {
-      await deleteTreeStock(id);
-      setItems((prev) => prev.filter((i) => i.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setConfirmDelete(null);
-    }
-  }
-
   function handleSaved(item: TreeStock, isNew: boolean) {
     setItems((prev) => (isNew ? [...prev, item] : prev.map((i) => (i.id === item.id ? item : i))));
   }
@@ -126,7 +111,8 @@ export function FruitsPage() {
                 </Link>
 
                 <div className="entity-tile-menu">
-                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
+                  {/* Edit only: fruit is no longer removed from its card. */}
+                  <CardMenu onEdit={() => openEdit(item)} />
                 </div>
 
                 <div className="entity-tile-body">
@@ -178,13 +164,6 @@ export function FruitsPage() {
         onClose={() => setPacketsMessage(null)}
       />
 
-      <ConfirmDeleteModal
-        open={!!confirmDelete}
-        name={confirmDelete?.name ?? ''}
-        body={t('treeStock.deleteKept')}
-        onCancel={() => setConfirmDelete(null)}
-        onConfirm={confirmDeleteItem}
-      />
     </div>
   );
 }

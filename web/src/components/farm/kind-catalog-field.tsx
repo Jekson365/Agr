@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 
-import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
-import { kindDeleteMessage } from '@/components/farm/kind-delete-message';
 import { KindDropdown } from '@/components/farm/kind-dropdown';
 import { KindPicker, type KindOption } from '@/components/farm/kind-picker';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 
-/** A row of one of the kind catalogs (stock kinds, fruit kinds) — both are just an id and a name. */
-export type CatalogKind = { id: number; name: string };
+/** A row of one of the kind catalogs. `imagePath` is the picture a user gave their own kind;
+ *  it is empty on the built-ins, which are drawn from artwork bundled with the app. */
+export type CatalogKind = { id: number; name: string; imagePath: string };
 
 /**
  * Everything that differs between one kind catalog and the next: where its rows come from, and how
@@ -17,14 +16,14 @@ export type CatalogKind = { id: number; name: string };
  */
 export type KindCatalog = {
   list: () => Promise<CatalogKind[]>;
-  create: (name: string) => Promise<CatalogKind>;
-  remove: (id: number) => Promise<void>;
+  /** Uploads the picture, if one was chosen, then creates the kind carrying it. */
+  create: (name: string, icon: File | null) => Promise<CatalogKind>;
   /** Built-in kinds are stored under an English key and shown translated; a user-added one shows
    *  the name it was created with. */
   label: (name: string, t: (key: string) => string) => string;
-  icon: (name: string) => string;
-  /** Whether a kind is one of the seeded built-ins. Those are offered but never deletable. */
-  isBuiltIn: (name: string) => boolean;
+  /** Resolved from the kind rather than its name alone, so a kind added in this very form is
+   *  drawn with its own picture before the icon registry has seen it. */
+  icon: (kind: CatalogKind) => string;
 };
 
 type Props = {
@@ -50,10 +49,14 @@ type Props = {
 };
 
 /**
- * The "what kind is it?" field shared by the stock and fruit forms: a picker over a catalog that
- * can also be added to and deleted from without leaving the form. The two catalogs behave
- * identically — same duplicate rules, same conflict handling, same "don't leave the form pointing
- * at a deleted kind" — so they differ only by the {@link KindCatalog} passed in.
+ * The "what kind is it?" field shared by the stock, fruit and livestock forms: a picker over a
+ * catalog that can also be added to without leaving the form. The catalogs behave identically —
+ * same duplicate rules, same conflict handling — so they differ only by the {@link KindCatalog}
+ * passed in.
+ *
+ * **A kind is never removed from here.** Everything recorded against one refers to it by name, so
+ * a catalog only ever grows: what was once recorded stays nameable. The API still has a delete —
+ * this field simply does not offer it.
  */
 export function KindCatalogField({
   open,
@@ -71,7 +74,6 @@ export function KindCatalogField({
   const [kinds, setKinds] = useState<CatalogKind[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ id: number; label: string } | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -95,7 +97,7 @@ export function KindCatalogField({
     }
   }
 
-  async function handleAdd(name: string): Promise<KindOption | null> {
+  async function handleAdd(name: string, icon: File | null): Promise<KindOption | null> {
     setError(null);
 
     // A name is a duplicate if it matches an existing kind's raw name OR its localized label —
@@ -112,34 +114,13 @@ export function KindCatalogField({
     }
 
     try {
-      const created = await catalog.create(name);
+      const created = await catalog.create(name, icon);
       setKinds((prev) => (prev.some((kind) => kind.name === created.name) ? prev : [...prev, created]));
-      return { value: created.name, label: catalog.label(created.name, t) };
+      return { value: created.name, label: catalog.label(created.name, t), icon: catalog.icon(created) };
     } catch (err) {
       // The server rejects names that already exist (e.g. added from another session).
       setError(err instanceof ApiError && err.status === 409 ? t('farm.typeDuplicate') : t('farm.typeSaveError'));
       return null;
-    }
-  }
-
-  async function confirmDeleteNow() {
-    if (!confirmDelete) return;
-    const { id } = confirmDelete;
-
-    setError(null);
-    try {
-      await catalog.remove(id);
-      const deleted = kinds.find((kind) => kind.id === id);
-      const next = kinds.filter((kind) => kind.id !== id);
-      setKinds(next);
-      // Don't leave the form pointing at a kind that no longer exists.
-      if (deleted && deleted.name === value) {
-        onChange(next[0]?.name ?? '');
-      }
-    } catch (err) {
-      setError(kindDeleteMessage(err, t));
-    } finally {
-      setConfirmDelete(null);
     }
   }
 
@@ -154,29 +135,17 @@ export function KindCatalogField({
         options={kinds.map((kind) => ({
           value: kind.name,
           label: catalog.label(kind.name, t),
-          icon: catalog.icon(kind.name),
-          removable: !catalog.isBuiltIn(kind.name),
+          icon: catalog.icon(kind),
         }))}
         selected={value}
         onSelect={onChange}
         onAddNew={handleAdd}
         addPlaceholder={addPlaceholder}
+        iconLabel={t('farm.typeIcon')}
         allowAdd={allowAdd}
         loading={loading}
-        onRemove={(name) => {
-          const kind = kinds.find((k) => k.name === name);
-          if (kind) setConfirmDelete({ id: kind.id, label: catalog.label(kind.name, t) });
-        }}
-        removeLabel={t('common.delete')}
       />
       {error && <div className="error-banner">{error}</div>}
-
-      <ConfirmDeleteModal
-        open={!!confirmDelete}
-        name={confirmDelete?.label ?? ''}
-        onCancel={() => setConfirmDelete(null)}
-        onConfirm={confirmDeleteNow}
-      />
     </div>
   );
 }

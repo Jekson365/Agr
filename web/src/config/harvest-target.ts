@@ -13,6 +13,11 @@ export type HarvestTargetOption = {
   icon: string;
   /** The raw unit this good is stocked in (e.g. 'Kilogram') — the default a plan is written in. */
   unit: string;
+  /** Whether the good behind this option has been removed from the farm. Removed goods are still
+   *  offered, but only to the row already recorded against one — dropping them would retarget that
+   *  row on the next save. Marked wherever they are shown so the choice is not mistaken for a
+   *  live good. */
+  isDeleted: boolean;
 };
 
 export function buildHarvestTargetOptions(
@@ -28,6 +33,7 @@ export function buildHarvestTargetOptions(
       label: s.name.trim() || stockTypeLabel(s.type, t),
       icon: stockKindImage(s.type),
       unit: s.unit,
+      isDeleted: s.isDeleted,
     })),
     ...treeStocks.map((s) => ({
       key: `tree:${s.id}`,
@@ -36,6 +42,7 @@ export function buildHarvestTargetOptions(
       label: s.name.trim() || fruitTypeLabel(s.type, t),
       icon: fruitKindImage(s.type),
       unit: s.unit,
+      isDeleted: s.isDeleted,
     })),
   ];
 }

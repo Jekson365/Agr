@@ -13,6 +13,7 @@ export const LIVESTOCK_KIND_IMAGE: Record<AnimalType, number> = {
   Duck: require('@/assets/animals/duck.png'),
   Goat: require('@/assets/animals/goat.png'),
   Rabbit: require('@/assets/animals/rabbit.png'),
+  Rooster: require('@/assets/animals/rooster.png'),
 };
 
 export const LIVESTOCK_KIND_OPTIONS: { value: AnimalType; labelKey: string }[] = [
@@ -26,4 +27,5 @@ export const LIVESTOCK_KIND_OPTIONS: { value: AnimalType; labelKey: string }[] =
   { value: 'Duck', labelKey: 'farm.duck' },
   { value: 'Goat', labelKey: 'farm.goat' },
   { value: 'Rabbit', labelKey: 'farm.rabbit' },
+  { value: 'Rooster', labelKey: 'farm.rooster' },
 ];

@@ -143,6 +143,9 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTre
                 >
                   <img src={fruitKindImage(treeStock.type)} className="kind-chip-icon" alt="" />
                   <span>{labelFor(treeStock)}</span>
+                  {/* Only the row already recorded against it keeps a removed orchard on this
+                      list — say so, or it reads as an ordinary choice. */}
+                  {treeStock.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                 </button>
               ))}
             </div>

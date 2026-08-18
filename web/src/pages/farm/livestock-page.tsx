@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CardMenu } from '@/components/farm/card-menu';
-import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LivestockFormModal } from '@/components/farm/livestock/livestock-form-modal';
 import { ChevronRightIcon, LocationIcon, PawIcon } from '@/components/icons/misc-icons';
@@ -11,7 +10,7 @@ import { isAtLimit } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { getFarms } from '@/services/farm-service';
-import { deleteLivestock, getLivestock } from '@/services/livestock-service';
+import { getLivestock } from '@/services/livestock-service';
 import type { Farm } from '@/types/farm';
 import type { Livestock } from '@/types/livestock';
 
@@ -26,7 +25,6 @@ export function LivestockPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Livestock | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     load();
@@ -57,19 +55,6 @@ export function LivestockPage() {
   function openEdit(item: Livestock) {
     setEditingItem(item);
     setFormOpen(true);
-  }
-
-  async function confirmDeleteItem() {
-    if (!confirmDelete) return;
-    const { id } = confirmDelete;
-    try {
-      await deleteLivestock(id);
-      setLivestock((prev) => prev.filter((i) => i.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setConfirmDelete(null);
-    }
   }
 
   function handleSaved(item: Livestock, isNew: boolean) {
@@ -114,7 +99,8 @@ export function LivestockPage() {
                 </Link>
 
                 <div className="entity-tile-menu">
-                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: item.name })} />
+                  {/* Edit only: a group is no longer removed from its card. */}
+                  <CardMenu onEdit={() => openEdit(item)} />
                 </div>
 
                 <div className="entity-tile-body">
@@ -176,12 +162,6 @@ export function LivestockPage() {
         onSaved={handleSaved}
       />
 
-      <ConfirmDeleteModal
-        open={!!confirmDelete}
-        name={confirmDelete?.name ?? ''}
-        onCancel={() => setConfirmDelete(null)}
-        onConfirm={confirmDeleteItem}
-      />
     </div>
   );
 }

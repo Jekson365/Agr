@@ -68,7 +68,7 @@ function SidebarNavItem({ item, groupKey, collapsed, onToggle }: NavItemProps) {
   const { isOn } = useConfiguration();
   const { pathname } = useLocation();
 
-  const children = item.children?.filter((child) => isNavItemVisible(child, user?.plan, isOn));
+  const children = item.children?.filter((child) => isNavItemVisible(child, user, isOn));
   const hasChildren = !!children?.length;
   const isCollapsed = hasChildren && collapsed.has(groupKey);
   const label = t(item.labelKey);
@@ -189,7 +189,7 @@ export function Sidebar() {
       </div>
 
       <nav className="sidebar-nav">
-        {QUICK_ACCESS_ITEMS.filter((item) => isNavItemVisible(item, user?.plan, isOn)).map((item) => (
+        {QUICK_ACCESS_ITEMS.filter((item) => isNavItemVisible(item, user, isOn)).map((item) => (
           <SidebarNavItem
             key={item.to}
             item={item}

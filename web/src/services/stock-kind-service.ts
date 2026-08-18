@@ -1,4 +1,4 @@
-import { apiFetch } from '@/services/api-client';
+import { apiFetch, uploadImage } from '@/services/api-client';
 import type { StockKind, StockKindInput } from '@/types/stock-kind';
 
 export function getStockKinds() {
@@ -17,4 +17,10 @@ export function deleteStockKind(id: number) {
   return apiFetch<void>(`/api/stockkinds/${id}`, {
     method: 'DELETE',
   });
+}
+
+/** The artwork for a kind about to be added. Uploaded first, then passed as `imagePath` on the
+ *  create — the row does not exist yet when the picture is chosen. */
+export function uploadStockKindImage(file: File): Promise<string> {
+  return uploadImage(file, '/api/stockkinds/upload-image');
 }

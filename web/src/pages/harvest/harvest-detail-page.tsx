@@ -51,7 +51,9 @@ import type { LandPlot } from '@/types/land-plot';
 import type { Stock } from '@/types/stock';
 import type { TreeStock } from '@/types/tree-stock';
 
-type TargetInfo = { label: string; icon: string; unitLabel: string };
+/** `isDeleted`: the good behind this row has been removed from the farm. The row is still shown
+ *  and still editable — the harvest is a record of what happened — but it is marked as removed. */
+type TargetInfo = { label: string; icon: string; unitLabel: string; isDeleted: boolean };
 
 /** Trims derived ratios to 2 decimals without printing trailing zeros (12.5, not 12.50). */
 function round2(value: number): string {
@@ -187,6 +189,7 @@ export function HarvestDetailPage() {
         label: stock.name.trim() || stockTypeLabel(stock.type, t),
         icon: stockKindImage(stock.type),
         unitLabel: t(STOCK_UNIT_LABEL_KEY[stock.unit]),
+        isDeleted: stock.isDeleted,
       };
     }
     if (treeStockId != null) {
@@ -196,19 +199,21 @@ export function HarvestDetailPage() {
         label: treeStock.name.trim() || fruitTypeLabel(treeStock.type, t),
         icon: fruitKindImage(treeStock.type),
         unitLabel: t(TREE_STOCK_UNIT_LABEL_KEY[treeStock.unit]),
+        isDeleted: treeStock.isDeleted,
       };
     }
     return null;
   }
 
   /** A seed row's label and unit, for display in the "seeds used" list. */
-  function seedInfoFor(seedId: number): { label: string; unitLabel: string; icon: string } | null {
+  function seedInfoFor(seedId: number): TargetInfo | null {
     const seed = seeds.find((s) => s.id === seedId);
     if (!seed) return null;
     return {
       label: seedTitle(seed, t),
       unitLabel: t(SEED_UNIT_LABEL_KEY[seed.unit]),
       icon: stockKindImage(seed.type),
+      isDeleted: seed.isDeleted,
     };
   }
 
@@ -243,7 +248,7 @@ export function HarvestDetailPage() {
   }
 
   /** An orchard row's label, unit and icon for the "trees picked" list. */
-  function treeInfoFor(treeStockId: number): { label: string; unitLabel: string; icon: string } | null {
+  function treeInfoFor(treeStockId: number): TargetInfo | null {
     const treeStock = treeStocks.find((s) => s.id === treeStockId);
     if (!treeStock) return null;
     const fruit = fruitTypeLabel(treeStock.type, t);
@@ -251,6 +256,7 @@ export function HarvestDetailPage() {
       label: treeStock.name.trim() ? `${fruit} · ${treeStock.name}` : fruit,
       unitLabel: t(TREE_STOCK_UNIT_LABEL_KEY[treeStock.unit] ?? 'farm.unitPlant'),
       icon: fruitKindImage(treeStock.type),
+      isDeleted: treeStock.isDeleted,
     };
   }
 
@@ -642,6 +648,7 @@ export function HarvestDetailPage() {
                         <br />
                         <span className="list-card-subtitle">
                           {harvestTree.amount} {info?.unitLabel ?? ''}
+                          {info?.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                         </span>
                       </span>
                     </div>
@@ -685,6 +692,7 @@ export function HarvestDetailPage() {
                         <br />
                         <span className="list-card-subtitle">
                           {harvestSeed.amount} {info?.unitLabel ?? ''}
+                          {info?.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                         </span>
                       </span>
                     </div>
@@ -734,6 +742,7 @@ export function HarvestDetailPage() {
                         <br />
                         <span className="list-card-subtitle">
                           {item.amount} {unitLabelFor(item.unit) || (target?.unitLabel ?? '')}
+                          {target?.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                         </span>
                       </span>
                     </div>
@@ -778,6 +787,7 @@ export function HarvestDetailPage() {
                             <br />
                             <span className="list-card-subtitle">
                               {result.amount} {target?.unitLabel ?? ''}
+                              {target?.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                             </span>
                           </span>
                         </div>

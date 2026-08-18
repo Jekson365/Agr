@@ -7,6 +7,11 @@ namespace Server.Repositories;
 
 public class FarmRepository(AppDbContext context) : IFarmRepository
 {
+    /// <summary>
+    /// Every piece of land, removed ones included — see <see cref="Farm.IsRemoved"/>: removed land
+    /// stays on the page as a disabled card, so there is no variant of this that leaves it out.
+    /// Callers that must not offer it (pickers, the plan count) filter on the flag themselves.
+    /// </summary>
     public async Task<IEnumerable<Farm>> GetAllAsync()
     {
         return await context.Farms.AsNoTracking().ToListAsync();
@@ -49,7 +54,12 @@ public class FarmRepository(AppDbContext context) : IFarmRepository
         return true;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    /// <summary>
+    /// Marks land removed, or puts it back. Never a real delete: the plots, herds and harvests on
+    /// this land all cascade off it (see <see cref="Server.Data.AppDbContext"/>), so dropping the
+    /// row would take that history with it.
+    /// </summary>
+    public async Task<bool> SetRemovedAsync(int id, bool removed)
     {
         var existing = await context.Farms.FindAsync(id);
         if (existing is null)
@@ -57,7 +67,7 @@ public class FarmRepository(AppDbContext context) : IFarmRepository
             return false;
         }
 
-        context.Farms.Remove(existing);
+        existing.IsRemoved = removed;
         await context.SaveChangesAsync();
         return true;
     }

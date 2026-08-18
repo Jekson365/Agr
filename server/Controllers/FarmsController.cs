@@ -32,8 +32,7 @@ public class FarmsController(
     {
         try
         {
-            var currentCount = (await farmRepository.GetAllAsync()).Count();
-            await planLimitService.EnsureCanAddLandAsync(currentCount);
+            await planLimitService.EnsureCanAddLandAsync(await ActiveLandCountAsync());
         }
         catch (InvalidOperationException ex)
         {
@@ -54,8 +53,7 @@ public class FarmsController(
 
         try
         {
-            var currentCount = (await farmRepository.GetAllAsync()).Count();
-            await planLimitService.EnsureLandWithinLimitAsync(currentCount);
+            await planLimitService.EnsureLandWithinLimitAsync(await ActiveLandCountAsync());
         }
         catch (InvalidOperationException ex)
         {
@@ -67,6 +65,14 @@ public class FarmsController(
         {
             return NotFound();
         }
+
+        // Removed land is out of use, so it takes no more edits — restoring it is what puts it
+        // back within reach.
+        if (existing.IsRemoved)
+        {
+            return Conflict(RemovedMessage);
+        }
+
         var oldImagePath = existing.ImagePath;
 
         var updated = await farmRepository.UpdateAsync(farm);
@@ -83,6 +89,12 @@ public class FarmsController(
         return NoContent();
     }
 
+    /// <summary>
+    /// Takes land out of use. It is marked, never dropped — the plots, herds and harvests recorded
+    /// on it cascade off the row, and it stays on the land page as a disabled card so all of them
+    /// still have their explanation. Its picture is kept for the same reason: the card still shows
+    /// it, and restoring is meant to give the land back as it was.
+    /// </summary>
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -92,14 +104,40 @@ public class FarmsController(
             return NotFound();
         }
 
-        var deleted = await farmRepository.DeleteAsync(id);
-        if (!deleted)
+        if (existing.IsRemoved)
+        {
+            return Conflict(RemovedMessage);
+        }
+
+        return await farmRepository.SetRemovedAsync(id, true) ? NoContent() : NotFound();
+    }
+
+    /// <summary>Puts removed land back into use. Refused when that would take the owner past the
+    /// land their plan allows, since a removed piece stopped counting while it was out.</summary>
+    [HttpPost("{id:int}/restore")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var existing = await farmRepository.GetByIdAsync(id);
+        if (existing is null)
         {
             return NotFound();
         }
 
-        await fileStorageService.DeleteImageAsync(existing.ImagePath);
-        return NoContent();
+        if (!existing.IsRemoved)
+        {
+            return Conflict("This land is already in use.");
+        }
+
+        try
+        {
+            await planLimitService.EnsureCanAddLandAsync(await ActiveLandCountAsync());
+        }
+        catch (InvalidOperationException ex)
+        {
+            return PlanLimitReached(ex.Message);
+        }
+
+        return await farmRepository.SetRemovedAsync(id, false) ? NoContent() : NotFound();
     }
 
     [HttpPost("upload-image")]
@@ -116,8 +154,7 @@ public class FarmsController(
         // over-quota user would otherwise burn storage on an image no write can attach.
         try
         {
-            var currentCount = (await farmRepository.GetAllAsync()).Count();
-            await planLimitService.EnsureLandWithinLimitAsync(currentCount);
+            await planLimitService.EnsureLandWithinLimitAsync(await ActiveLandCountAsync());
         }
         catch (InvalidOperationException ex)
         {
@@ -134,6 +171,15 @@ public class FarmsController(
             return BadRequest(ex.Message);
         }
     }
+
+    private const string RemovedMessage = "This land has been removed and is no longer in use.";
+
+    /// <summary>
+    /// The land that counts against the plan. Removed land is out of use, so it does not — the same
+    /// rule the other marked-removed rows follow, and what makes restoring worth checking.
+    /// </summary>
+    private async Task<int> ActiveLandCountAsync() =>
+        (await farmRepository.GetAllAsync()).Count(farm => !farm.IsRemoved);
 
     /// <summary>
     /// 402 is the plan-limit signal the clients watch for: it lets them answer with the list of

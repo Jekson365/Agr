@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import './kind-picker.css';
 
@@ -15,7 +15,8 @@ type Props = {
   options: KindOption[];
   selected: string;
   onSelect: (value: string) => void;
-  onAddNew: (name: string) => Promise<KindOption | null>;
+  /** The icon is whatever file the user picked, or null when they added a name alone. */
+  onAddNew: (name: string, icon: File | null) => Promise<KindOption | null>;
   addPlaceholder: string;
   loading?: boolean;
   /**
@@ -32,6 +33,9 @@ type Props = {
    * site back on is the one prop.
    */
   allowAdd?: boolean;
+  /** Names the icon input for screen readers and its tooltip. Only read while `allowAdd`
+   *  is on, so a picker that only picks may leave it out. */
+  iconLabel?: string;
 };
 
 /** A chip-row picker that also lets the user type a new name and add it to the catalog on the
@@ -47,10 +51,27 @@ export function KindPicker({
   onRemove,
   removeLabel,
   allowAdd = true,
+  iconLabel,
 }: Props) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
+  /** The picture for the kind being added, and a local preview of it. A kind added without one
+   *  falls back to the catalog's generic artwork, exactly as before. */
+  const [newIcon, setNewIcon] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
+  const [iconPreview, setIconPreview] = useState<string | null>(null);
+
+  // Object URLs are held by the document until revoked, so the preview owns its lifetime
+  // rather than being minted fresh on every render.
+  useEffect(() => {
+    if (!newIcon) {
+      setIconPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(newIcon);
+    setIconPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [newIcon]);
 
   async function handleAdd() {
     const trimmed = newName.trim();
@@ -58,15 +79,20 @@ export function KindPicker({
 
     setSaving(true);
     try {
-      const created = await onAddNew(trimmed);
+      const created = await onAddNew(trimmed, newIcon);
       if (created) {
         onSelect(created.value);
       }
-      setNewName('');
-      setAdding(false);
+      resetAdd();
     } finally {
       setSaving(false);
     }
+  }
+
+  function resetAdd() {
+    setNewName('');
+    setNewIcon(null);
+    setAdding(false);
   }
 
   if (loading) {
@@ -112,6 +138,21 @@ export function KindPicker({
       {allowAdd &&
         (adding ? (
           <div className="kind-add-row">
+            {/* Picture first, so the row being built reads the way the chips it joins do. */}
+            <label className="kind-add-icon" title={iconLabel}>
+              {iconPreview ? (
+                <img src={iconPreview} alt="" className="kind-chip-icon" />
+              ) : (
+                <span aria-hidden>🖼</span>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="kind-add-icon-input"
+                onChange={(e) => setNewIcon(e.target.files?.[0] ?? null)}
+              />
+              <span className="sr-only">{iconLabel}</span>
+            </label>
             <input
               className="kind-add-input"
               value={newName}
@@ -128,10 +169,7 @@ export function KindPicker({
             <button
               type="button"
               className="kind-add-cancel"
-              onClick={() => {
-                setAdding(false);
-                setNewName('');
-              }}
+              onClick={resetAdd}
               aria-label="Cancel"
             >
               ✕

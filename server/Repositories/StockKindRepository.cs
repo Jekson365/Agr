@@ -17,7 +17,7 @@ public class StockKindRepository(AppDbContext context) : IStockKindRepository
         return await context.StockKinds.AnyAsync(k => k.Name.ToLower() == name.ToLower());
     }
 
-    public async Task<StockKind> AddAsync(string name)
+    public async Task<StockKind> AddAsync(string name, string imagePath)
     {
         var existing = await context.StockKinds.FirstOrDefaultAsync(k => k.Name.ToLower() == name.ToLower());
         if (existing is not null)
@@ -25,7 +25,7 @@ public class StockKindRepository(AppDbContext context) : IStockKindRepository
             return existing;
         }
 
-        var kind = new StockKind { Name = name };
+        var kind = new StockKind { Name = name, ImagePath = imagePath };
         context.StockKinds.Add(kind);
         await context.SaveChangesAsync();
         return kind;

@@ -17,7 +17,7 @@ public class FruitKindRepository(AppDbContext context) : IFruitKindRepository
         return await context.FruitKinds.AnyAsync(k => k.Name.ToLower() == name.ToLower());
     }
 
-    public async Task<FruitKind> AddAsync(string name)
+    public async Task<FruitKind> AddAsync(string name, string imagePath)
     {
         var existing = await context.FruitKinds.FirstOrDefaultAsync(k => k.Name.ToLower() == name.ToLower());
         if (existing is not null)
@@ -25,7 +25,7 @@ public class FruitKindRepository(AppDbContext context) : IFruitKindRepository
             return existing;
         }
 
-        var kind = new FruitKind { Name = name };
+        var kind = new FruitKind { Name = name, ImagePath = imagePath };
         context.FruitKinds.Add(kind);
         await context.SaveChangesAsync();
         return kind;

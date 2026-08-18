@@ -9,8 +9,10 @@ import type { TreeStock } from '@/types/tree-stock';
 
 type Translate = (key: string) => string;
 
-/** How a harvested tree is shown: its label, the unit the trees are counted in and its icon. */
-export type TreeInfo = { label: string; unitLabel: string; icon: string };
+/** How a harvested tree is shown: its label, the unit the trees are counted in and its icon.
+ *  `isDeleted` marks an orchard the farm has removed — the picking still reads and stays editable,
+ *  but the row says the orchard is gone. */
+export type TreeInfo = { label: string; unitLabel: string; icon: string; isDeleted: boolean };
 
 /** Resolves a harvest row's tree stock for display. Null only when the caller loaded the orchards
  *  without the removed ones — a harvest can name one, so its page asks for them (see
@@ -23,6 +25,7 @@ export function treeInfoFor(treeStocks: TreeStock[], treeStockId: number, t: Tra
     label: treeStock.name.trim() ? `${fruit} · ${treeStock.name}` : fruit,
     unitLabel: t(TREE_STOCK_UNIT_LABEL_KEY[treeStock.unit] ?? 'farm.unitPlant'),
     icon: fruitKindImage(treeStock.type),
+    isDeleted: treeStock.isDeleted,
   };
 }
 

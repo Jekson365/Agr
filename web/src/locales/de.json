@@ -239,6 +239,9 @@
     "stockPotato": "Kartoffel",
     "stockPumpkin": "Kürbis",
     "stockTomato": "Tomate",
+    "stockCarrot": "Karotte",
+    "stockCorn": "Mais",
+    "stockOnion": "Zwiebel",
     "farm": "Hof",
     "location": "Ort",
     "farmland": "Land",
@@ -280,7 +283,11 @@
     "addGreenhouse": "Gewächshaus hinzufügen",
     "editGreenhouse": "Gewächshaus bearbeiten",
     "establishDate": "Anlagedatum",
-    "namePlaceholderGreenhouse": "z. B. Gewächshaus Nord"
+    "namePlaceholderGreenhouse": "z. B. Gewächshaus Nord",
+    "restoreLand": "Wieder in Betrieb nehmen",
+    "removeLandBody": "Das Land wird deaktiviert und bleibt auf dieser Seite. Seine Parzellen, Herden und Ernten bleiben erhalten und es kann wieder in Betrieb genommen werden.",
+    "typeIcon": "Bild des Typs",
+    "rooster": "Hahn"
   },
   "livestockDetail": {
     "add": "Tier hinzufügen",
@@ -862,7 +869,7 @@
     "stockHistory": "Veränderungen dieses Bestandspostens im Zeitverlauf, mit Fotos.",
     "fruits": "Deine Obstbäume. Öffne einen Posten, um seinen Verlauf zu sehen und neue Mengen zu erfassen.",
     "fruitsHistory": "Veränderungen dieses Baumbestands im Zeitverlauf.",
-    "balance": "Die Bestände deines Pflanzenbestands und deiner Tierproduktion an einem Ort.",
+    "balance": "Was dieser Bereich derzeit vorrätig hat und wie viel davon bereits auf dem Markt ist.",
     "equipment": "Maschinen und Werkzeuge, die dir gehören. Füge Geräte mit Foto und Anzahl hinzu.",
     "harvest": "Geplante und abgeschlossene Ernten. Lege eine Ernte mit voraussichtlichem Datum und den zu erntenden Posten an; überfällige Ernten werden hervorgehoben. Öffne eine, um die tatsächlichen Ergebnisse zu erfassen.",
     "harvestDetail": "Plan und Ergebnisse dieser Ernte. Füge während der Planung die zu erntenden Posten hinzu; nach der Ernte erfasse die tatsächlichen Mengen.",
@@ -873,7 +880,8 @@
     "reportProduction": "Summen deiner Tierproduktion über einen Zeitraum.",
     "reportStock": "Wie sich dein Bestand über einen Zeitraum verändert hat.",
     "calendar": "Dein Hofkalender: Aufgaben und erwartete Ernten nach Tag. Wähle einen Tag, um eine Aufgabe hinzuzufügen.",
-    "profile": "Dein Konto: Foto, Kontaktdaten, private Angaben und Tarif."
+    "profile": "Dein Konto: Foto, Kontaktdaten, private Angaben und Tarif.",
+    "kindTypes": "Die Typen, unter denen Bestand, Obst und Tiere erfasst werden, und das Bild für jeden."
   },
   "seed": {
     "title": "Saatgut",
@@ -1362,5 +1370,9 @@
     "saveError": "Speichern fehlgeschlagen.",
     "tooMany": "Die Gruppe hat nicht mehr so viele Tiere.",
     "total": "Gesamt"
+  },
+  "kindTypes": {
+    "title": "Typen",
+    "intro": "Die Typen, unter denen Bestand, Obst und Tiere erfasst werden, mit dem Bild, mit dem jeder in der App dargestellt wird. Hier hinzufügen ist dasselbe wie in einem Formular."
   }
 }

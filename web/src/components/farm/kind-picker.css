@@ -125,3 +125,49 @@
   background: var(--color-danger-bg);
   color: var(--color-danger);
 }
+
+/* The picture for a kind being added, sitting where that kind's icon will sit once it is in the
+   row. A label wrapping a hidden file input, the same shape as ImageField: the whole square is
+   the target, so the tiny input never has to be hit. */
+.kind-add-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px dashed var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.kind-add-icon:hover {
+  border-color: var(--color-green);
+}
+
+.kind-add-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kind-add-icon-input {
+  display: none;
+}
+
+/* Names the icon input for a screen reader without putting a second label on screen — the square
+   itself carries the meaning visually. */
+.kind-add-icon .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

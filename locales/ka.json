@@ -212,7 +212,8 @@
     "loadErrorLivestock": "ვერ ჩაიტვირთა.",
     "loadErrorStock": "ვერ ჩაიტვირთა.",
     "saveError": "ვერ შეინახა. სცადეთ ხელახლა.",
-    "areaUnit": "ჰექტარი"
+    "areaUnit": "ჰექტარი",
+    "rooster": "მამალი"
   },
   "livestockDetail": {
     "add": "დამატება",

@@ -61,7 +61,11 @@ export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, onClose,
   async function initializeLand() {
     setFarmsLoading(true);
     try {
-      const farmList = await getFarms();
+      // Removed land takes no new harvests, and only stays on the list for the one already
+      // recorded on it — dropping it there would move that harvest to another piece on the next
+      // save.
+      const all = await getFarms();
+      const farmList = all.filter((farm) => !farm.isRemoved || farm.id === editingHarvest?.farmId);
       setFarms(farmList);
 
       const farmId = editingHarvest?.farmId ?? farmList[0]?.id ?? null;
