@@ -5,7 +5,6 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/search-filter.css';
-import '@/components/farm/tabs.css';
 import { EquipmentIcon, FilterIcon, ImagesIcon, SearchIcon, TagIcon } from '@/components/icons/misc-icons';
 import { ListingFormModal } from '@/components/market/listing-form-modal';
 import { RecordSaleModal } from '@/components/market/record-sale-modal';
@@ -18,19 +17,10 @@ import { deleteMarketListing, getMarketListings, updateMarketListing } from '@/s
 import type { ListingCategory, MarketListing } from '@/types/market-listing';
 import './market-page.css';
 
-type Tab = 'buy' | 'rent' | 'mine';
-
-const TAB_LABEL_KEY: Record<Tab, string> = {
-  buy: 'market.tabBuy',
-  rent: 'market.tabRent',
-  mine: 'market.tabMine',
-};
-
 export function MarketPage() {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  const [tab, setTab] = useState<Tab>('buy');
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -47,16 +37,17 @@ export function MarketPage() {
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, category]);
+  }, [category]);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
+      // Always the signed-in user's own listings. Browsing what everyone else is offering lives
+      // in the standalone marketplace app now; this page is where you manage your own.
       const result = await getMarketListings({
-        type: tab === 'rent' ? 'Rent' : tab === 'buy' ? 'Sale' : undefined,
         category: category ?? undefined,
-        mine: tab === 'mine',
+        mine: true,
       });
       setListings(result);
     } catch (err) {
@@ -142,7 +133,7 @@ export function MarketPage() {
     <div className="page-fill market-page">
       <div className="page-fill-header">
         <div className="page-header">
-          <h1 className="page-title">{t('market.title')}</h1>
+          <h1 className="page-title">{t('market.tabMine')}</h1>
           <div className="page-header-actions">
             <CurrencyToggle />
             <button type="button" className="add-button" onClick={openAdd}>
@@ -184,13 +175,6 @@ export function MarketPage() {
           </div>
         )}
 
-        <div className="tab-row">
-          {(['buy', 'rent', 'mine'] as Tab[]).map((key) => (
-            <button key={key} type="button" className={tab === key ? 'tab-item active' : 'tab-item'} onClick={() => setTab(key)}>
-              {t(TAB_LABEL_KEY[key])}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="page-fill-scroll">
@@ -204,7 +188,7 @@ export function MarketPage() {
             </button>
           </div>
         ) : visibleListings.length === 0 ? (
-          <p className="empty-state">{tab === 'mine' ? t('market.emptyMine') : t('market.empty')}</p>
+          <p className="empty-state">{t('market.emptyMine')}</p>
         ) : (
           <div className="product-grid listing-grid">
             {visibleListings.map((item) => {
@@ -249,7 +233,7 @@ export function MarketPage() {
                         {item.priceUnit ? ` / ${item.priceUnit}` : ''}
                       </div>
                       {item.location && <div className="list-card-subtitle">{item.location}</div>}
-                      {tab === 'mine' && !isCompleted && item.quantity != null && item.quantity > 0 && (
+                      {!isCompleted && item.quantity != null && item.quantity > 0 && (
                         <div className="listing-balance">
                           {t('market.balanceLeft', { amount: item.quantity, unit: item.priceUnit })}
                         </div>
@@ -257,25 +241,21 @@ export function MarketPage() {
                     </div>
                   </Link>
 
-                  {tab === 'mine' && (
-                    <button
-                      type="button"
-                      className={isCompleted ? 'listing-sold-badge checked' : 'listing-sold-badge'}
-                      onClick={() => handleSoldClick(item)}
-                      aria-label={isCompleted ? t('market.markActive') : t('market.markCompleted')}
-                    >
-                      {isCompleted ? t('market.sold') : t('market.markSold')}
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className={isCompleted ? 'listing-sold-badge checked' : 'listing-sold-badge'}
+                    onClick={() => handleSoldClick(item)}
+                    aria-label={isCompleted ? t('market.markActive') : t('market.markCompleted')}
+                  >
+                    {isCompleted ? t('market.sold') : t('market.markSold')}
+                  </button>
 
-                  {tab === 'mine' && (
-                    <div className="listing-menu">
-                      <CardMenu
-                        onEdit={() => openEdit(item)}
-                        onDelete={() => setConfirmDelete({ id: item.id, name: title })}
-                      />
-                    </div>
-                  )}
+                  <div className="listing-menu">
+                    <CardMenu
+                      onEdit={() => openEdit(item)}
+                      onDelete={() => setConfirmDelete({ id: item.id, name: title })}
+                    />
+                  </div>
                 </div>
               );
             })}
