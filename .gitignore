@@ -49,3 +49,6 @@ server/obj/
 # runtime-uploaded images (not source)
 server/wwwroot/uploads/*/*
 !server/wwwroot/uploads/*/.gitkeep
+
+# The marketplace SPA is its own repo (Jekson365/agr-marketplace), nested here for convenience.
+marketplace/

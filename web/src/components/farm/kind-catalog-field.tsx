@@ -46,6 +46,9 @@ type Props = {
   /** Whether the catalog may be added to from the form. Defaults to true; the stock form passes
    *  false, leaving the field a picker over a settled list. */
   allowAdd?: boolean;
+  /** How large the picker is drawn. Handed to whichever of the two it renders; the add forms pass
+   *  'large', the catalog page keeps the default. */
+  size?: 'default' | 'large';
 };
 
 /**
@@ -68,6 +71,7 @@ export function KindCatalogField({
   addPlaceholder,
   variant = 'chips',
   allowAdd = true,
+  size = 'default',
 }: Props) {
   const { t } = useLanguage();
 
@@ -143,6 +147,7 @@ export function KindCatalogField({
         addPlaceholder={addPlaceholder}
         iconLabel={t('farm.typeIcon')}
         allowAdd={allowAdd}
+        size={size}
         loading={loading}
       />
       {error && <div className="error-banner">{error}</div>}

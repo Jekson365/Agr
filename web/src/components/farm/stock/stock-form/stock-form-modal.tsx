@@ -116,6 +116,7 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
             labelText={t('farm.type')}
             addPlaceholder={t('farm.newStockTypePlaceholder')}
             variant="dropdown"
+            size="large"
             /* Adding a crop type from here is switched off — the catalog is settled, and a type
                invented mid-form lands as a near-duplicate of one already in it. Flip to true to
                bring back both the "New type" button and the add row under a fruitless search. */

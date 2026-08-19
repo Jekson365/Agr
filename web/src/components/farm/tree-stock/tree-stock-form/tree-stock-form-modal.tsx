@@ -129,7 +129,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} className="tree-stock-form-modal">
       <h2 className="form-title">{isEditing ? t('treeStock.edit') : t('treeStock.add')}</h2>
 
       <div className="form-fields">
@@ -157,6 +157,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
             labelText={t('farm.type')}
             addPlaceholder={t('treeStock.newFruitTypePlaceholder')}
             variant="dropdown"
+            size="large"
             /* Adding a fruit from here is switched off — the catalog is settled, and a fruit
                invented mid-form lands as a near-duplicate of one already in it. Flip to true to
                bring back both the "New type" button and the add row under a fruitless search. */

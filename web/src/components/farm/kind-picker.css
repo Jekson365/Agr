@@ -159,6 +159,72 @@
   display: none;
 }
 
+/* The large row, for the add forms. Chip text goes up a step and the kind icons to 56px, three
+   times what they were: at 18px the picture read as a stamp beside the label rather than as the
+   thing being picked.
+
+   The chip takes its height from what it holds rather than a fixed one. This same row is also the
+   unit picker on the stock form, whose chips are a word with no picture at all, and a height set
+   for a 56px icon would leave those as tall empty pills. So min-height sets the floor, the padding
+   frames the icon, and the pill radius holds at either height.
+   See the matching `.kind-dropdown-lg` in kind-dropdown.css. */
+.kind-row-lg {
+  gap: 10px;
+}
+
+.kind-row-lg.kind-loading {
+  font-size: 1rem;
+}
+
+.kind-row-lg .kind-chip {
+  gap: 10px;
+  height: auto;
+  min-height: 48px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 1rem;
+}
+
+.kind-row-lg .kind-chip-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.kind-row-lg .kind-chip-add {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  font-size: 1.25rem;
+}
+
+.kind-row-lg .kind-chip-select {
+  gap: 10px;
+}
+
+.kind-row-lg .kind-chip-remove {
+  width: 24px;
+  height: 24px;
+  font-size: 0.8125rem;
+}
+
+.kind-row-lg .kind-add-icon {
+  width: 64px;
+  height: 64px;
+  font-size: 1.375rem;
+}
+
+.kind-row-lg .kind-add-input {
+  height: 56px;
+  font-size: 1rem;
+}
+
+.kind-row-lg .kind-add-confirm,
+.kind-row-lg .kind-add-cancel {
+  width: 44px;
+  height: 44px;
+  font-size: 1.125rem;
+}
+
 /* Names the icon input for a screen reader without putting a second label on screen — the square
    itself carries the meaning visually. */
 .kind-add-icon .sr-only {

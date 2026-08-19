@@ -7,12 +7,15 @@ type Props<T extends string> = {
 };
 
 /** A row of unit chips. The stock's own unit and its seed's are picked the same way from two
- * different lists, so the row is written once and given whichever list applies. */
+ * different lists, so the row is written once and given whichever list applies.
+ *
+ * Always the large row: this lives inside the add-stock form, which is drawn at that size
+ * throughout, and it is used nowhere else. */
 export function UnitChips<T extends string>({ options, selected, onSelect }: Props<T>) {
   const { t } = useLanguage();
 
   return (
-    <div className="kind-row">
+    <div className="kind-row kind-row-lg">
       {options.map((option) => (
         <button
           key={option.value}

@@ -25,6 +25,13 @@ type Props = {
   /** Names the icon input for screen readers and its tooltip. Only read while `allowAdd`
    *  is on, so a picker that only picks may leave it out. */
   iconLabel?: string;
+  /**
+   * How large the control is drawn. 'large' is what the add forms use — text a step up and the
+   * kind icons at double size, since the picture is how a crop, a fruit or an animal is picked
+   * out. Kept a prop rather than read off the modal around it: the popover is portalled to
+   * <body>, so no scope the form sets can reach it.
+   */
+  size?: 'default' | 'large';
 };
 
 /**
@@ -41,6 +48,9 @@ type Props = {
  */
 const POPOVER_MAX_HEIGHT = 300;
 
+/** The same sum for the large form: a 380px list, its 44px search box and the 6px margin. */
+const POPOVER_MAX_HEIGHT_LARGE = 460;
+
 export function KindDropdown({
   options,
   selected,
@@ -52,6 +62,7 @@ export function KindDropdown({
   onRemove,
   removeLabel,
   allowAdd = true,
+  size = 'default',
 }: Props) {
   const { t } = useLanguage();
 
@@ -88,6 +99,10 @@ export function KindDropdown({
   const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
 
   const selectedOption = options.find((opt) => opt.value === selected) ?? null;
+
+  /* Put on the field, the add row under it and the popover separately — the three are siblings
+     once the popover is portalled, so none of them can inherit it from another. */
+  const sizeClass = size === 'large' ? ' kind-dropdown-lg' : '';
 
   const trimmed = query.trim();
 
@@ -139,7 +154,8 @@ export function KindDropdown({
 
       // Flip above the field when there is not room under it.
       const below = window.innerHeight - box.bottom;
-      const top = below < POPOVER_MAX_HEIGHT && box.top > below ? box.top - POPOVER_MAX_HEIGHT - 6 : box.bottom + 6;
+      const maxHeight = size === 'large' ? POPOVER_MAX_HEIGHT_LARGE : POPOVER_MAX_HEIGHT;
+      const top = below < maxHeight && box.top > below ? box.top - maxHeight - 6 : box.bottom + 6;
       setRect({ top: Math.max(8, top), left: box.left, width: box.width });
     }
 
@@ -151,7 +167,7 @@ export function KindDropdown({
       window.removeEventListener('scroll', place, true);
       window.removeEventListener('resize', place);
     };
-  }, [open]);
+  }, [open, size]);
 
   // Opening starts on the selected kind, so Enter without touching anything is a no-op rather
   // than a silent jump to whatever sorts first.
@@ -235,7 +251,7 @@ export function KindDropdown({
 
   return (
     <>
-      <div className="kind-dropdown-field">
+      <div className={`kind-dropdown-field${sizeClass}`}>
         <div className="kind-dropdown" ref={rootRef}>
           <button
             type="button"
@@ -260,7 +276,7 @@ export function KindDropdown({
             createPortal(
               <div
                 ref={popoverRef}
-                className="kind-dropdown-popover"
+                className={`kind-dropdown-popover${sizeClass}`}
                 style={{ top: rect.top, left: rect.left, width: rect.width }}
               >
               <input
@@ -355,7 +371,7 @@ export function KindDropdown({
       </div>
 
       {allowAdd && adding && (
-        <div className="kind-add-row kind-dropdown-new-row">
+        <div className={`kind-add-row kind-dropdown-new-row${sizeClass}`}>
           {/* Picture first, so the row being built reads the way the options it joins do. */}
           <label className="kind-add-icon" title={iconLabel}>
             {iconPreview ? (

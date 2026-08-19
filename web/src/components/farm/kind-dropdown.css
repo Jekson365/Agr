@@ -271,3 +271,98 @@
   font-size: 0.8125rem;
   text-align: center;
 }
+
+/* The large form, for the add forms — text a step up and the kind icons at 56px, three times what
+   they were, so the picture is what the eye lands on rather than a stamp beside the label.
+
+   The trigger and the option rows take their height from what they hold rather than a fixed one.
+   Not every catalog offered through this dropdown has pictures — what a herd produces is a list
+   of words — and a row sized for a 56px icon would leave those lists a column of gaps. With
+   min-height as the floor and the padding framing the icon, a picture list is tall and a word list
+   stays compact, without the call site having to say which it is.
+
+   The modifier is carried by the field, the add row and the popover separately rather than
+   scoped from one of them: the popover is portalled to <body>, so it is a sibling of the form
+   it belongs to and inherits nothing from it. */
+.kind-dropdown-lg .kind-dropdown-trigger {
+  gap: 12px;
+  height: auto;
+  min-height: 56px;
+  padding: 8px 14px;
+  font-size: 1.0625rem;
+}
+
+/* Stretched rather than centred, so it stands as tall as whatever the trigger beside it became. */
+.kind-dropdown-lg .kind-dropdown-new {
+  gap: 8px;
+  align-self: stretch;
+  height: auto;
+  min-height: 56px;
+  padding: 0 16px;
+  font-size: 1rem;
+}
+
+.kind-dropdown-lg .kind-dropdown-caret {
+  font-size: 0.875rem;
+}
+
+.kind-dropdown-lg .kind-dropdown-icon {
+  width: 56px;
+  height: 56px;
+}
+
+/* Taller rows in the same 220px would show barely a third of the kinds the standard list does.
+   Kept in step with POPOVER_MAX_HEIGHT_LARGE in kind-dropdown.tsx, which is what decides whether
+   the popover opens below the trigger or flips above it. */
+.kind-dropdown-lg .kind-dropdown-list {
+  max-height: 380px;
+}
+
+.kind-dropdown-lg .kind-dropdown-search {
+  height: 44px;
+  padding: 0 12px;
+  font-size: 1rem;
+}
+
+.kind-dropdown-lg .kind-dropdown-option {
+  gap: 12px;
+  padding: 8px 10px;
+  font-size: 1rem;
+}
+
+.kind-dropdown-lg .kind-dropdown-check {
+  width: 20px;
+  font-size: 1.0625rem;
+}
+
+.kind-dropdown-lg .kind-dropdown-remove {
+  width: 32px;
+  height: 32px;
+  font-size: 0.875rem;
+}
+
+.kind-dropdown-lg .kind-dropdown-add,
+.kind-dropdown-lg .kind-dropdown-empty {
+  font-size: 1rem;
+}
+
+/* The add row is the chip picker's, so it takes that row's large sizes — see `.kind-row-lg` in
+   kind-picker.css. Spelled out here because the row sits outside the field, carrying the
+   dropdown's modifier rather than the picker's. */
+.kind-dropdown-lg.kind-add-row .kind-add-icon {
+  width: 64px;
+  height: 64px;
+  font-size: 1.375rem;
+}
+
+.kind-dropdown-lg.kind-add-row .kind-add-input {
+  height: 56px;
+  font-size: 1rem;
+}
+
+.kind-dropdown-lg.kind-add-row .kind-add-confirm,
+.kind-dropdown-lg.kind-add-row .kind-add-cancel {
+  width: 44px;
+  height: 44px;
+  font-size: 1.125rem;
+}

@@ -36,6 +36,9 @@ type Props = {
   /** Names the icon input for screen readers and its tooltip. Only read while `allowAdd`
    *  is on, so a picker that only picks may leave it out. */
   iconLabel?: string;
+  /** How large the row is drawn — 'large' is the add forms' size, with the kind icons at double
+   *  size. Same prop and same meaning as on {@link KindDropdown}, so the two stay swappable. */
+  size?: 'default' | 'large';
 };
 
 /** A chip-row picker that also lets the user type a new name and add it to the catalog on the
@@ -52,6 +55,7 @@ export function KindPicker({
   removeLabel,
   allowAdd = true,
   iconLabel,
+  size = 'default',
 }: Props) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
@@ -60,6 +64,8 @@ export function KindPicker({
   const [newIcon, setNewIcon] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
+
+  const rowClass = size === 'large' ? 'kind-row kind-row-lg' : 'kind-row';
 
   // Object URLs are held by the document until revoked, so the preview owns its lifetime
   // rather than being minted fresh on every render.
@@ -96,11 +102,11 @@ export function KindPicker({
   }
 
   if (loading) {
-    return <div className="kind-row kind-loading">…</div>;
+    return <div className={`${rowClass} kind-loading`}>…</div>;
   }
 
   return (
-    <div className="kind-row">
+    <div className={rowClass}>
       {options.map((opt) =>
         // Without removal a chip is a single button, as it has always been. With removal it
         // becomes a wrapper holding two buttons, since a button can't be nested inside a button.

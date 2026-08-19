@@ -1097,6 +1097,85 @@ button.entity-tile-details:disabled:hover {
   max-width: 880px;
 }
 
+/* Adding stock, livestock or an orchard, drawn a size up. These three are the forms a farm meets
+   first and most often, frequently on a phone held at arm's length in a field, and at the app's
+   standard form sizes the labels and the settled values read as small print. Every text size here
+   goes up one step and the kind icons to 56px, three times what they were — the picture is how a
+   crop, an animal or a fruit is recognised, and at 18px it was a stamp beside the label rather
+   than the thing being named.
+
+   Scoped to the three overlays, so every other form on the site keeps the standard sizes. The
+   kind dropdown carries its own `.kind-dropdown-lg` (kind-dropdown.css) instead: its popover is
+   portalled to <body> and so is never a descendant of any of these. */
+.stock-form-modal .form-title,
+.livestock-form-modal .form-title,
+.tree-stock-form-modal .form-title {
+  margin-bottom: 22px;
+  font-size: 1.375rem;
+}
+
+.stock-form-modal .form-fields,
+.tree-stock-form-modal .form-fields {
+  gap: 18px;
+}
+
+.livestock-form-modal .modal-form-grid {
+  gap: 18px 20px;
+}
+
+.stock-form-modal .field label,
+.livestock-form-modal .field label,
+.tree-stock-form-modal .field label {
+  font-size: 1rem;
+}
+
+.stock-form-modal .field input,
+.livestock-form-modal .field input,
+.tree-stock-form-modal .field input {
+  height: 54px;
+  font-size: 1.0625rem;
+}
+
+.stock-form-modal .limit-hint,
+.livestock-form-modal .limit-hint,
+.tree-stock-form-modal .limit-hint {
+  font-size: 0.875rem;
+}
+
+/* A settled value is the row itself, not a note about it, so it reads at the size the input it
+   replaced did. Must stay below the .limit-hint rule above: the two land on the same element
+   with the same specificity, and the later one is what wins. */
+.stock-form-modal .field-fixed-value,
+.livestock-form-modal .field-fixed-value,
+.tree-stock-form-modal .field-fixed-value {
+  gap: 10px;
+  font-size: 1.0625rem;
+}
+
+/* The picture beside a settled value, on the forms that show a row back rather than offering it. */
+.stock-form-modal .kind-chip-icon,
+.livestock-form-modal .kind-chip-icon,
+.tree-stock-form-modal .kind-chip-icon {
+  width: 56px;
+  height: 56px;
+}
+
+.stock-form-modal .error-banner,
+.livestock-form-modal .error-banner,
+.tree-stock-form-modal .error-banner {
+  font-size: 0.9375rem;
+}
+
+/* Direct children only: the livestock form nests a delete confirmation, and that dialog is a
+   modal in its own right rather than part of this form. */
+.stock-form-modal > .modal-card > .modal-actions .btn,
+.livestock-form-modal > .modal-card > .modal-actions .btn,
+.tree-stock-form-modal > .modal-card > .modal-actions .btn {
+  height: 50px;
+  padding: 0 22px;
+  font-size: 1.0625rem;
+}
+
 /* The head count beside a page title, for a page that changes it. */
 .page-header-count {
   padding: 4px 12px;

@@ -294,6 +294,7 @@ export function LivestockFormModal({
             labelText={t('farm.type')}
             addPlaceholder={t('farm.newLivestockTypePlaceholder')}
             variant="dropdown"
+            size="large"
             /* Adding an animal kind from here stays switched off, as it was on the chip row. */
             allowAdd={false}
           />
@@ -321,6 +322,7 @@ export function LivestockFormModal({
                 onSelect={(value) => setProductionTypeId(value ? Number(value) : null)}
                 onAddNew={handleAddProductionType}
                 addPlaceholder={t('production.typePlaceholder')}
+                size="large"
                 /* Adding an output from here is switched off, as it is for the animal kind above:
                    the catalog is settled, and one invented mid-form lands as a near-duplicate of
                    an entry already in it. Flip to true to bring back both the "New type" button
