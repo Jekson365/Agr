@@ -15,6 +15,15 @@ public class MarketListingsController(
     IFileStorageService fileStorageService)
     : ControllerBase
 {
+    /// <summary>
+    /// Browsing the market is open to anyone — a shop window nobody has to sign in to look at.
+    /// Overriding the class-level [Authorize] is safe on this controller specifically because it is
+    /// one of the few that never touches AppDbContext: MarketListingRepository takes
+    /// MasterDbContext, so there is no tenant to resolve and no CurrentTenant.UserId == 0 for it to
+    /// throw on. Everything that writes below still needs a token, and still stamps the seller from
+    /// it rather than trusting the body.
+    /// </summary>
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MarketListingDto>>> GetAll(
         [FromQuery] ListingType? type,
@@ -22,10 +31,19 @@ public class MarketListingsController(
         [FromQuery] string? search,
         [FromQuery] bool mine = false)
     {
+        // "Mine" only means something to a caller the token identifies. Anonymously it would read
+        // as seller 0 and quietly answer with an empty market, which looks like a market with
+        // nothing in it rather than a question that cannot be asked. So it is refused outright.
+        if (mine && currentTenant.UserId == 0)
+        {
+            return Unauthorized();
+        }
+
         var sellerId = mine ? currentTenant.UserId : (int?)null;
         return Ok(await marketListingRepository.GetAllAsync(type, category, search, sellerId));
     }
 
+    [AllowAnonymous]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<MarketListingDto>> GetById(int id)
     {
