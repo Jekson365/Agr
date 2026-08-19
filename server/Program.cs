@@ -8,6 +8,7 @@ using Server.Data;
 using Server.Integrations.OpenAi;
 using Server.Integrations.SmsService;
 using Server.Integrations.WeatherApi;
+using Server.Models.Bog;
 using Server.Repositories;
 using Server.Repositories.Interfaces;
 using Server.Services;
@@ -124,6 +125,23 @@ builder.Services.AddHttpClient<IPlantScanClient, OpenAiPlantScanClient>((sp, cli
     client.BaseAddress = new Uri(openAiOptions.BaseUrl);
     client.Timeout = TimeSpan.FromSeconds(60);
 });
+
+// Bank of Georgia e-commerce integration, behind buying a marketplace listing. The merchant secret
+// never leaves the server: the marketplace SPA bakes its entire config into the bundle, so every
+// call to the bank is made from here.
+//
+// A named client plus a singleton service, rather than the typed-client shorthand the three above
+// use. The service caches the bank's access token — good for the best part of an hour — and a
+// scoped service would throw that away on every checkout. A singleton cannot take a typed
+// HttpClient, so it takes the factory and asks for this client by name.
+builder.Services.Configure<BogOptions>(builder.Configuration.GetSection(BogOptions.SectionName));
+builder.Services.AddHttpClient(BogPaymentService.HttpClientName, (sp, client) =>
+{
+    var bogOptions = sp.GetRequiredService<IOptions<BogOptions>>().Value;
+    client.BaseAddress = new Uri(bogOptions.ApiBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+builder.Services.AddSingleton<IBogPaymentService, BogPaymentService>();
 
 var jwt = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

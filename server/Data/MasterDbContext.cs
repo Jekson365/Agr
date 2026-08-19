@@ -11,6 +11,7 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
 {
     public DbSet<User> Users => Set<User>();
     public DbSet<MarketListing> MarketListings => Set<MarketListing>();
+    public DbSet<MarketOrder> MarketOrders => Set<MarketOrder>();
     public DbSet<Neighbour> Neighbours => Set<Neighbour>();
     public DbSet<NeighbourCoinAward> NeighbourCoinAwards => Set<NeighbourCoinAward>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
@@ -18,6 +19,20 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // Stored by name, like the other enums here, so the column stays readable in the database
+        // and adding a status later cannot renumber the existing rows.
+        modelBuilder.Entity<MarketOrder>()
+            .Property(o => o.Status)
+            .HasConversion<string>();
+
+        // The bank's own id, used to find an order again from its side. Not unique-indexed: it is
+        // null until the bank accepts the order, and orders that never got that far all share it.
+        modelBuilder.Entity<MarketOrder>()
+            .HasIndex(o => o.BogOrderId);
+
+        modelBuilder.Entity<MarketOrder>()
+            .HasIndex(o => o.ListingId);
 
         modelBuilder.Entity<User>()
             .Property(u => u.Role)
