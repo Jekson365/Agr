@@ -25,9 +25,20 @@ public class MarketOrdersController(
     MasterDbContext context,
     IBogPaymentService bogPaymentService,
     IOptions<BogOptions> bogOptions,
+    IHostEnvironment environment,
     ILogger<MarketOrdersController> logger)
     : ControllerBase
 {
+    /// <summary>
+    /// Whether this server may pretend a payment happened.
+    ///
+    /// Both conditions matter. No merchant credentials is not on its own a safe test for
+    /// "nobody is watching": a production box whose BOG settings have not been filled in yet is
+    /// exactly that, and there the simulated endpoints are a public way for a stranger to mark
+    /// other people's listings sold and empty their stock. So simulation additionally requires a
+    /// development environment, and production without credentials simply cannot take payments.
+    /// </summary>
+    private bool SimulationAllowed => !bogPaymentService.IsConfigured && environment.IsDevelopment();
     /// <summary>
     /// Starts a checkout: prices it from the listing, records a pending order, registers it with
     /// the bank, and answers with the page to send the buyer to.
@@ -35,6 +46,13 @@ public class MarketOrdersController(
     [HttpPost]
     public async Task<ActionResult<CreateMarketOrderResponse>> Create(CreateMarketOrderRequest request)
     {
+        if (!bogPaymentService.IsConfigured && !SimulationAllowed)
+        {
+            // A production server with no merchant credentials. It cannot charge anyone, and it
+            // must not pretend to, so it says so plainly rather than failing at the bank.
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Card payment is not configured on this server.");
+        }
+
         var listing = await context.MarketListings.AsNoTracking().FirstOrDefaultAsync(l => l.Id == request.ListingId);
         if (listing is null)
         {
@@ -92,10 +110,11 @@ public class MarketOrdersController(
         context.MarketOrders.Add(order);
         await context.SaveChangesAsync();
 
-        // No merchant credentials: price it, split it, and send the buyer back into this app
-        // instead of out to a bank. Nothing is charged and nothing is paid out — the point is that
-        // the rest of the flow, commission included, can be walked through before BOG is real.
-        if (!bogPaymentService.IsConfigured)
+        // Development without merchant credentials: price it, split it, and send the buyer back
+        // into this app instead of out to a bank. Nothing is charged and nothing is paid out — the
+        // point is that the rest of the flow, commission included, can be walked through before
+        // BOG is real.
+        if (SimulationAllowed)
         {
             logger.LogInformation(
                 "SIMULATED checkout for order {OrderId}: no BOG credentials configured, so nothing was charged.",
@@ -263,14 +282,15 @@ public class MarketOrdersController(
     /// Marks an order paid without a bank, so the whole flow — quantity coming off the listing, the
     /// commission split, the return page — can be exercised end to end.
     ///
-    /// **Refused the moment real merchant credentials exist.** An endpoint that declares any order
-    /// paid is exactly what must not be reachable on a server that takes real cards, so it disables
-    /// itself rather than relying on anyone remembering to remove it.
+    /// **Development only, and only without merchant credentials.** An endpoint that declares any
+    /// order paid — decrementing real listings and completing them — is exactly what must never be
+    /// reachable in production, so it disables itself rather than relying on anyone remembering to
+    /// remove it. See <see cref="SimulationAllowed"/>.
     /// </summary>
     [HttpPost("{id:int}/simulate-payment")]
     public async Task<ActionResult<MarketOrderDto>> SimulatePayment(int id)
     {
-        if (bogPaymentService.IsConfigured)
+        if (!SimulationAllowed)
         {
             return NotFound();
         }
