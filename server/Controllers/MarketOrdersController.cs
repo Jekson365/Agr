@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Server.Data;
 using Server.Models;
 using Server.Models.Bog;
@@ -24,7 +23,6 @@ namespace Server.Controllers;
 public class MarketOrdersController(
     MasterDbContext context,
     IBogPaymentService bogPaymentService,
-    IOptions<BogOptions> bogOptions,
     IHostEnvironment environment,
     ILogger<MarketOrdersController> logger)
     : ControllerBase
@@ -39,6 +37,9 @@ public class MarketOrdersController(
     /// development environment, and production without credentials simply cannot take payments.
     /// </summary>
     private bool SimulationAllowed => !bogPaymentService.IsConfigured && environment.IsDevelopment();
+
+    private bool DummyPaymentsEnabled => !bogPaymentService.IsConfigured;
+
     /// <summary>
     /// Starts a checkout: prices it from the listing, records a pending order, registers it with
     /// the bank, and answers with the page to send the buyer to.
@@ -46,13 +47,6 @@ public class MarketOrdersController(
     [HttpPost]
     public async Task<ActionResult<CreateMarketOrderResponse>> Create(CreateMarketOrderRequest request)
     {
-        if (!bogPaymentService.IsConfigured && !SimulationAllowed)
-        {
-            // A production server with no merchant credentials. It cannot charge anyone, and it
-            // must not pretend to, so it says so plainly rather than failing at the bank.
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Card payment is not configured on this server.");
-        }
-
         var listing = await context.MarketListings.AsNoTracking().FirstOrDefaultAsync(l => l.Id == request.ListingId);
         if (listing is null)
         {
@@ -123,14 +117,17 @@ public class MarketOrdersController(
         context.MarketOrders.Add(order);
         await context.SaveChangesAsync();
 
-        // Development without merchant credentials: price it, split it, and send the buyer back
-        // into this app instead of out to a bank. Nothing is charged and nothing is paid out — the
-        // point is that the rest of the flow, commission included, can be walked through before
-        // BOG is real.
-        if (SimulationAllowed)
+        if (DummyPaymentsEnabled)
         {
+            order.Status = MarketOrderStatus.Paid;
+            order.PaidAt = DateTime.UtcNow;
+            order.BogStatusDetail = "dummy";
+            await ApplyPaidQuantityAsync(order);
+            RecordSimulatedSettlement(order);
+            await context.SaveChangesAsync();
+
             logger.LogInformation(
-                "SIMULATED checkout for order {OrderId}: no BOG credentials configured, so nothing was charged.",
+                "DUMMY checkout for order {OrderId}: no BOG credentials configured, so nothing was charged.",
                 order.Id);
 
             return Ok(new CreateMarketOrderResponse
@@ -138,7 +135,7 @@ public class MarketOrdersController(
                 OrderId = order.Id,
                 Amount = order.Amount,
                 Currency = order.Currency,
-                RedirectUrl = $"{bogOptions.Value.SuccessUrl}?order={order.Id}&simulate=1",
+                RedirectUrl = $"/checkout/success?order={order.Id}&simulate=1",
                 Simulated = true,
             });
         }
