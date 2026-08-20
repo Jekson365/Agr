@@ -21,11 +21,28 @@ export type MarketListing = {
   location: string;
   imagePaths: string[];
   status: ListingStatus;
+  /** A promoted listing: the server sorts these first and the card is bordered gold. Read-only
+   *  here — the update endpoint deliberately ignores it, so a seller cannot promote themselves. */
+  isPremium: boolean;
+  /** Set once the seller has asked for promotion, so the card can say the request is in rather
+   *  than offering the action again. Null until they ask. */
+  premiumRequestedAt: string | null;
   createdAt: string;
 };
 
-// Fields the server stamps itself or joins live are omitted.
+// Fields the server stamps itself or joins live are omitted. `isPremium` is among them: the update
+// endpoint deliberately does not copy it across, so sending it would be a value the server throws
+// away — and a promotion a seller can award themselves is not a promotion.
 export type MarketListingInput = Omit<
   MarketListing,
-  'id' | 'sellerId' | 'sellerName' | 'sellerSurname' | 'sellerPhoneNumber' | 'sellerImagePath' | 'status' | 'createdAt'
+  | 'id'
+  | 'sellerId'
+  | 'sellerName'
+  | 'sellerSurname'
+  | 'sellerPhoneNumber'
+  | 'sellerImagePath'
+  | 'status'
+  | 'isPremium'
+  | 'premiumRequestedAt'
+  | 'createdAt'
 >;

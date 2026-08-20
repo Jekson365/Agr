@@ -13,6 +13,7 @@ import { LISTING_CATEGORY_OPTIONS, listingImage, listingItemLabel } from '@/conf
 import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
+import { requestPremium } from '@/services/admin-service';
 import { deleteMarketListing, getMarketListings, updateMarketListing } from '@/services/market-listing-service';
 import type { ListingCategory, MarketListing } from '@/types/market-listing';
 import './market-page.css';
@@ -72,6 +73,20 @@ export function MarketPage() {
   function openEdit(item: MarketListing) {
     setEditingListing(item);
     setFormOpen(true);
+  }
+
+  /** Asks an operator to promote a listing. Recorded, not granted — approval happens in /manager. */
+  async function askForPremium(id: number) {
+    try {
+      await requestPremium(id);
+      // Patched rather than refetched, like every other mutation on this page. Only the presence
+      // of the timestamp is read, never its value, so the client's clock is honest enough.
+      setListings((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, premiumRequestedAt: new Date().toISOString() } : l))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   }
 
   async function confirmDeleteListing() {
@@ -216,6 +231,11 @@ export function MarketPage() {
                         </div>
                       )}
 
+                      {item.isPremium && <span className="listing-premium">★ {t('market.premium')}</span>}
+                      {!item.isPremium && item.premiumRequestedAt && (
+                        <span className="listing-premium pending">{t('market.premiumPending')}</span>
+                      )}
+
                       <span className="listing-seller-badge">
                         {item.sellerImagePath && <img src={resolveAssetUrl(item.sellerImagePath)} alt="" />}
                       </span>
@@ -254,6 +274,13 @@ export function MarketPage() {
                     <CardMenu
                       onEdit={() => openEdit(item)}
                       onDelete={() => setConfirmDelete({ id: item.id, name: title })}
+                      /* Offered only while there is nothing to say: a listing already promoted, or
+                         already waiting on a decision, has nothing to ask for. */
+                      extra={
+                        item.isPremium || item.premiumRequestedAt
+                          ? undefined
+                          : { labelKey: 'market.requestPremium', onSelect: () => askForPremium(item.id) }
+                      }
                     />
                   </div>
                 </div>

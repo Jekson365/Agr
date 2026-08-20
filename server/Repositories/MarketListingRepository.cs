@@ -35,7 +35,13 @@ public class MarketListingRepository(MasterDbContext context) : IMarketListingRe
             query = query.Where(l => l.Title.ToLower().Contains(term) || l.ItemType.ToLower().Contains(term));
         }
 
-        var listings = await query.OrderByDescending(l => l.CreatedAt).ToListAsync();
+        // Promoted listings come first, newest-first within each group. Sorted in the database
+        // rather than in the clients, so every caller — the marketplace grid, the SPA, anything
+        // later — gets the same order without having to know the rule.
+        var listings = await query
+            .OrderByDescending(l => l.IsPremium)
+            .ThenByDescending(l => l.CreatedAt)
+            .ToListAsync();
         return await AttachSellersAsync(listings);
     }
 
@@ -75,6 +81,20 @@ public class MarketListingRepository(MasterDbContext context) : IMarketListingRe
         });
     }
 
+    public async Task RequestPremiumAsync(int id)
+    {
+        var listing = await context.MarketListings.FirstOrDefaultAsync(l => l.Id == id);
+        // Already asked, or already promoted: leave the original timestamp where it is so a repeat
+        // request does not send the seller to the back of a queue ordered by when they joined it.
+        if (listing is null || listing.PremiumRequestedAt is not null || listing.IsPremium)
+        {
+            return;
+        }
+
+        listing.PremiumRequestedAt = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+    }
+
     public async Task<bool> UpdateAsync(MarketListing listing)
     {
         var existing = await context.MarketListings.FindAsync(listing.Id);
@@ -94,7 +114,9 @@ public class MarketListingRepository(MasterDbContext context) : IMarketListingRe
         existing.Location = listing.Location;
         existing.ImagePaths = listing.ImagePaths;
         existing.Status = listing.Status;
-        // SellerId, SellerName, and CreatedAt are fixed once created.
+        // SellerId, SellerName, CreatedAt and IsPremium are fixed once created. Premium especially:
+        // this method is reachable by the listing's own seller, and a promotion a seller can award
+        // themselves is not a promotion.
 
         await context.SaveChangesAsync();
         return true;

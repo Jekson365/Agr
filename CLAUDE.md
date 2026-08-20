@@ -1,7 +1,9 @@
 @AGENTS.md
+@server/CLAUDE.md
+@web/CLAUDE.md
 
-Backend work (API, EF Core, database schema, multi-tenancy): read `server/CLAUDE.md` first.
-Web SPA work (React/Vite client in `web/`): read `web/CLAUDE.md` first.
-Note there are two independent frontends — the Expo app at this root and the React SPA in `web/` —
-which share no code and are not feature-equivalent.
 
+# rules
+1. do not use any comments
+2. add only georgian languge translations
+3. no file should be more than 200 lines. ( create different components file if file is to large)

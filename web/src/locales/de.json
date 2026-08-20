@@ -114,7 +114,10 @@
     "recordSaleRemaining": "Nach dem Verkauf übrig: {amount} {unit}",
     "recordSaleQuantity": "Verkaufte Menge",
     "recordSaleConfirm": "Verkauf erfassen",
-    "recordSaleError": "Der Bestand konnte nicht aktualisiert werden. Bitte erneut versuchen."
+    "recordSaleError": "Der Bestand konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+    "premium": "Premium",
+    "requestPremium": "Premium anfragen",
+    "premiumPending": "Premium angefragt"
   },
   "auth": {
     "appName": "Mtabari",
@@ -1374,5 +1377,23 @@
   "kindTypes": {
     "title": "Typen",
     "intro": "Die Typen, unter denen Bestand, Obst und Tiere erfasst werden, mit dem Bild, mit dem jeder in der App dargestellt wird. Hier hinzufügen ist dasselbe wie in einem Formular."
+  },
+  "manager": {
+    "title": "Verwaltung",
+    "tabUsers": "Benutzer",
+    "tabPremium": "Premium-Anfragen",
+    "searchUsers": "Nach Name, E-Mail oder Telefon suchen…",
+    "noUsers": "Keine Benutzer entsprechen der Suche.",
+    "noPremiumRequests": "Keine Anzeigen warten auf Freigabe.",
+    "colUser": "Benutzer",
+    "colContact": "Kontakt",
+    "colPlan": "Paket",
+    "colListings": "Anzeigen",
+    "colJoined": "Registriert",
+    "superAdmin": "Admin",
+    "requestedOn": "Angefragt",
+    "approve": "Freigeben",
+    "reject": "Ablehnen",
+    "view": "Ansehen"
   }
 }

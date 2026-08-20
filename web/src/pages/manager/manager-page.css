@@ -1,0 +1,206 @@
+.manager-search {
+  width: 100%;
+  max-width: 360px;
+  height: 42px;
+  padding: 0 14px;
+  margin-bottom: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.manager-search:focus {
+  outline: 2px solid var(--color-green);
+  outline-offset: -1px;
+}
+
+/* A user table is wider than a phone. Scrolling it inside its own box keeps the page itself from
+   scrolling sideways, which would take the header and nav with it. */
+.manager-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.manager-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.manager-table th {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.manager-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-dark);
+  vertical-align: top;
+}
+
+.manager-table tr:last-child td {
+  border-bottom: none;
+}
+
+.manager-table .numeric {
+  text-align: right;
+}
+
+.manager-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.manager-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.manager-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.manager-user-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.manager-user-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.manager-user-sub {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+
+.manager-verified {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.manager-badge.admin {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-gold);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* The approval queue. Cards rather than table rows: each one carries a photo and three actions,
+   which a table cell holds badly. */
+.manager-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.manager-request {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.manager-request-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.manager-request-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.manager-request-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.manager-request-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.manager-request-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.manager-request-actions .btn {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 0.8125rem;
+}
+
+.manager-view {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* Granting a promotion is the affirmative action here, so it wears the gold it grants rather than
+   the app's green — the button and its result say the same thing. */
+.manager-approve {
+  background: var(--color-gold);
+  color: #fff;
+}
+
+@media (max-width: 720px) {
+  .manager-request {
+    flex-wrap: wrap;
+  }
+
+  .manager-request-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

@@ -51,6 +51,30 @@ public class MarketListingsController(
         return listing is null ? NotFound() : Ok(listing);
     }
 
+    /// <summary>
+    /// The seller asking for their listing to be promoted. Records the request and nothing more —
+    /// granting it is an operator's decision, in AdminController.
+    ///
+    /// Only the listing's own seller may ask, and asking twice is not an error: the first request
+    /// stands, so a double click does not push anyone back down the queue.
+    /// </summary>
+    [HttpPost("{id:int}/request-premium")]
+    public async Task<IActionResult> RequestPremium(int id)
+    {
+        var listing = await marketListingRepository.GetByIdAsync(id);
+        if (listing is null)
+        {
+            return NotFound();
+        }
+        if (listing.SellerId != currentTenant.UserId)
+        {
+            return Forbid();
+        }
+
+        await marketListingRepository.RequestPremiumAsync(id);
+        return NoContent();
+    }
+
     [HttpPost]
     public async Task<ActionResult<MarketListingDto>> Create(MarketListing listing)
     {

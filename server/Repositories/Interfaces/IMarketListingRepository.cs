@@ -15,6 +15,9 @@ public interface IMarketListingRepository
     Task<MarketListingDto> AddAsync(MarketListing listing);
     Task<bool> UpdateAsync(MarketListing listing);
 
+    /// <summary>Stamps a promotion request, leaving an existing one alone.</summary>
+    Task RequestPremiumAsync(int id);
+
     /// <summary>Puts a listing back the way it was before a sale was recorded against it: the
     /// quantity is returned and the listing goes active again, whether the sale had completed it
     /// or just reduced what was left.</summary>

@@ -45,5 +45,29 @@ public class MarketListing
     public List<string> ImagePaths { get; set; } = [];
 
     public ListingStatus Status { get; set; } = ListingStatus.Active;
+
+    /// <summary>
+    /// A promoted listing: sorted above everything else and drawn with a gold border.
+    ///
+    /// Not the seller's to set. <see cref="Repositories.MarketListingRepository.UpdateAsync"/>
+    /// deliberately does not copy this across, alongside SellerId and CreatedAt, so a seller
+    /// PUTting `isPremium: true` on their own listing changes nothing — a promotion anyone can
+    /// award themselves is not a promotion.
+    /// </summary>
+    public bool IsPremium { get; set; }
+
+    /// <summary>
+    /// When the seller asked for this listing to be promoted. Null means they never have.
+    ///
+    /// Together with <see cref="IsPremium"/> this is the whole state machine: no request is a
+    /// normal listing, a request without the flag is waiting on an operator, and the flag is a
+    /// granted promotion. Kept as a timestamp rather than a bool so the queue can be worked
+    /// oldest-first, which is the only fair order for a queue people are waiting in.
+    /// </summary>
+    public DateTime? PremiumRequestedAt { get; set; }
+
+    /// <summary>When an operator granted it. Null on a listing that was never promoted.</summary>
+    public DateTime? PremiumGrantedAt { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

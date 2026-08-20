@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Data;
@@ -12,9 +13,11 @@ using Server.Data;
 namespace Server.Migrations.Master
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260819195100_AddMarketListingPremium")]
+    partial class AddMarketListingPremium
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,12 +58,6 @@ namespace Server.Migrations.Master
                     b.Property<string>("Location")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<DateTime?>("PremiumGrantedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("PremiumRequestedAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("numeric");
@@ -296,9 +293,6 @@ namespace Server.Migrations.Master
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("IsSuperAdmin")
-                        .HasColumnType("boolean");
 
                     b.Property<DateOnly?>("LastDailyBonusOn")
                         .HasColumnType("date");

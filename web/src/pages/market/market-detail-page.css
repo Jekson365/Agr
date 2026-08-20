@@ -194,3 +194,38 @@
   text-decoration: none;
   flex-shrink: 0;
 }
+
+/* The seller's own promotion controls, under the price. One row, three exclusive states. */
+.listing-premium-row {
+  display: flex;
+  align-items: center;
+  margin-top: 14px;
+}
+
+/* Gold rather than the app's green: the button and the thing it grants say the same colour. */
+.listing-premium-button {
+  height: 42px;
+  padding: 0 18px;
+  background: var(--color-gold);
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.listing-premium-state {
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.listing-premium-state.granted {
+  background: var(--color-gold);
+  color: #fff;
+}
+
+/* Outlined, not filled — a request waiting on a decision must not look like one already granted. */
+.listing-premium-state.pending {
+  border: 1px solid var(--color-gold);
+  background: var(--color-surface);
+  color: var(--color-gold);
+}

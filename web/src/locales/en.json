@@ -114,7 +114,10 @@
     "recordSaleRemaining": "Left after sale: {amount} {unit}",
     "recordSaleQuantity": "Sold quantity",
     "recordSaleConfirm": "Record sale",
-    "recordSaleError": "Couldn't update the stock. Please try again."
+    "recordSaleError": "Couldn't update the stock. Please try again.",
+    "premium": "Premium",
+    "requestPremium": "Request premium",
+    "premiumPending": "Premium requested"
   },
   "auth": {
     "appName": "Mtabari",
@@ -1374,5 +1377,23 @@
   "kindTypes": {
     "title": "Types",
     "intro": "The types stock, fruit and livestock can be recorded under, with the picture each is drawn with across the app. Adding one here is the same as adding it from a form."
+  },
+  "manager": {
+    "title": "Manager",
+    "tabUsers": "Users",
+    "tabPremium": "Premium requests",
+    "searchUsers": "Search by name, email or phone…",
+    "noUsers": "No users match that search.",
+    "noPremiumRequests": "No listings are waiting for approval.",
+    "colUser": "User",
+    "colContact": "Contact",
+    "colPlan": "Plan",
+    "colListings": "Listings",
+    "colJoined": "Joined",
+    "superAdmin": "Admin",
+    "requestedOn": "Requested",
+    "approve": "Approve",
+    "reject": "Reject",
+    "view": "View"
   }
 }

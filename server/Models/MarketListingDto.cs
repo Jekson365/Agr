@@ -25,6 +25,14 @@ public class MarketListingDto
     public string Location { get; set; } = string.Empty;
     public List<string> ImagePaths { get; set; } = [];
     public ListingStatus Status { get; set; }
+
+    /// <summary>Promoted: shown first and bordered in gold.</summary>
+    public bool IsPremium { get; set; }
+
+    /// <summary>Set once the seller has asked for promotion, so their own listing page can say the
+    /// request is in rather than offering the button again.</summary>
+    public DateTime? PremiumRequestedAt { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public static MarketListingDto From(MarketListing listing, User? seller) => new()
@@ -46,6 +54,8 @@ public class MarketListingDto
         Location = listing.Location,
         ImagePaths = listing.ImagePaths,
         Status = listing.Status,
+        IsPremium = listing.IsPremium,
+        PremiumRequestedAt = listing.PremiumRequestedAt,
         CreatedAt = listing.CreatedAt,
     };
 }

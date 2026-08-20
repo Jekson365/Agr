@@ -5,10 +5,12 @@ import '@/components/farm/farm-crud.css';
 import { BoxIcon, CalendarIcon, CallIcon, EquipmentIcon, LeafIcon, LocationIcon, PawIcon, PersonIcon, TagIcon } from '@/components/icons/misc-icons';
 import { ImageSlider } from '@/components/market/image-slider';
 import { LISTING_CATEGORY_LABEL_KEY, listingImage, listingItemLabel } from '@/config/market-listing';
+import { useAuth } from '@/contexts/auth-context';
 import { useCurrency } from '@/contexts/currency-context';
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
+import { requestPremium } from '@/services/admin-service';
 import { getMarketListing } from '@/services/market-listing-service';
 import type { ListingCategory, MarketListing } from '@/types/market-listing';
 import './market-detail-page.css';
@@ -30,10 +32,12 @@ function CategoryIcon({ category, ...props }: { category: ListingCategory; width
 export function MarketDetailPage() {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
+  const { user } = useAuth();
   const { id: idParam } = useParams<{ id: string }>();
   const listingId = Number(idParam);
 
   const [listing, setListing] = useState<MarketListing | null>(null);
+  const [requestingPremium, setRequestingPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,6 +56,29 @@ export function MarketDetailPage() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
+    }
+  }
+
+  /**
+   * Asks an operator to promote this listing. Recorded, not granted — see AdminController.
+   *
+   * Offered on this page as well as from the card menu on /market because this is where a seller
+   * looks at a listing and decides it deserves promoting; making them go back to the grid to act
+   * on that thought is a step for nothing.
+   */
+  async function askForPremium() {
+    if (!listing || requestingPremium) return;
+    setRequestingPremium(true);
+    setError(null);
+    try {
+      await requestPremium(listing.id);
+      // Patched rather than refetched, as everywhere else. Only the presence of the timestamp is
+      // read, never its value, so the client's clock is honest enough here.
+      setListing({ ...listing, premiumRequestedAt: new Date().toISOString() });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRequestingPremium(false);
     }
   }
 
@@ -112,6 +139,28 @@ export function MarketDetailPage() {
             <span className="listing-detail-price">{formatPrice(listing.price)}</span>
             {listing.priceUnit && <span className="listing-detail-price-unit">/ {listing.priceUnit}</span>}
           </div>
+
+          {/* Only the seller sees this row: promotion is theirs to ask for, and a buyer has no use
+              for the state of someone else's request. The three states are exclusive — promoted,
+              waiting, or free to ask. */}
+          {user?.id === listing.sellerId && (
+            <div className="listing-premium-row">
+              {listing.isPremium ? (
+                <span className="listing-premium-state granted">★ {t('market.premium')}</span>
+              ) : listing.premiumRequestedAt ? (
+                <span className="listing-premium-state pending">{t('market.premiumPending')}</span>
+              ) : (
+                <button
+                  type="button"
+                  className="btn listing-premium-button"
+                  onClick={askForPremium}
+                  disabled={requestingPremium}
+                >
+                  {requestingPremium ? '…' : t('market.requestPremium')}
+                </button>
+              )}
+            </div>
+          )}
 
           <div className="listing-meta-row">
             {kindLabel && (

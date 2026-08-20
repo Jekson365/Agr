@@ -45,6 +45,8 @@ import { ReportStockPage } from '@/pages/report-stock-page';
 import { CATALOG_ADMIN_EMAIL } from '@/config/nav-items';
 import { ConfigRoute } from '@/routes/config-route';
 import { OwnerRoute } from '@/routes/owner-route';
+import { SuperAdminRoute } from '@/routes/super-admin-route';
+import { ManagerPage } from '@/pages/manager/manager-page';
 import { ProtectedRoute } from '@/routes/protected-route';
 import { PublicOnlyRoute } from '@/routes/public-route';
 import {
@@ -142,6 +144,11 @@ function App() {
           <Route element={<ConfigRoute name={MARKETPLACE_CONFIG} />}>
             <Route path="/market" element={<MarketPage />} />
             <Route path="/market/:id" element={<MarketDetailPage />} />
+          </Route>
+          {/* The platform operator's page. Unlike OwnerRoute above, this guard asks the server and
+              every endpoint behind it checks again — it is a permission, not a convenience. */}
+          <Route element={<SuperAdminRoute />}>
+            <Route path="/manager" element={<ManagerPage />} />
           </Route>
           <Route path="/report" element={<ReportPage />} />
           <Route path="/report/harvest" element={<ReportHarvestPage />} />

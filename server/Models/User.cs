@@ -7,6 +7,16 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.Member;
+
+    /// <summary>
+    /// Platform operator: sees the manager page, and approves premium listing requests.
+    ///
+    /// Distinct from <see cref="Role"/>, which is a role *within a tenant* (Owner/Member) and says
+    /// nothing about the platform. Checked against this column on every admin request rather than
+    /// carried in the JWT: tokens last a week, so a claim would leave a revoked operator with
+    /// access for days after the column was cleared.
+    /// </summary>
+    public bool IsSuperAdmin { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>

@@ -6,6 +6,10 @@ public class UserDto
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public UserRole Role { get; set; }
+
+    /// <summary>Platform operator. Only ever used by the client to decide whether to offer the
+    /// manager page — every admin endpoint checks the database itself.</summary>
+    public bool IsSuperAdmin { get; set; }
     public string Surname { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
 
@@ -43,6 +47,7 @@ public class UserDto
         Name = user.Name,
         Email = user.Email,
         Role = user.Role,
+        IsSuperAdmin = user.IsSuperAdmin,
         Surname = user.Surname,
         PhoneNumber = user.PhoneNumber,
         PhoneVerified = user.PhoneVerifiedAt is not null,
