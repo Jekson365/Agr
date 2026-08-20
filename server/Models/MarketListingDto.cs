@@ -26,6 +26,10 @@ public class MarketListingDto
     public List<string> ImagePaths { get; set; } = [];
     public ListingStatus Status { get; set; }
 
+    public ListingSourceKind? SourceKind { get; set; }
+    public int? SourceId { get; set; }
+    public int? SourceUnitId { get; set; }
+
     /// <summary>Promoted: shown first and bordered in gold.</summary>
     public bool IsPremium { get; set; }
 
@@ -54,6 +58,9 @@ public class MarketListingDto
         Location = listing.Location,
         ImagePaths = listing.ImagePaths,
         Status = listing.Status,
+        SourceKind = listing.SourceKind,
+        SourceId = listing.SourceId,
+        SourceUnitId = listing.SourceUnitId,
         IsPremium = listing.IsPremium,
         PremiumRequestedAt = listing.PremiumRequestedAt,
         CreatedAt = listing.CreatedAt,

@@ -114,6 +114,9 @@ public class MarketListingRepository(MasterDbContext context) : IMarketListingRe
         existing.Location = listing.Location;
         existing.ImagePaths = listing.ImagePaths;
         existing.Status = listing.Status;
+        existing.SourceKind = listing.SourceKind;
+        existing.SourceId = listing.SourceId;
+        existing.SourceUnitId = listing.SourceUnitId;
         // SellerId, SellerName, CreatedAt and IsPremium are fixed once created. Premium especially:
         // this method is reachable by the listing's own seller, and a promotion a seller can award
         // themselves is not a promotion.

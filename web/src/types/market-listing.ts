@@ -1,6 +1,13 @@
 export type ListingType = 'Sale' | 'Rent';
 export type ListingCategory = 'Stock' | 'TreeStock' | 'Livestock' | 'Equipment' | 'TreeProduct' | 'Other';
 export type ListingStatus = 'Active' | 'Completed';
+export type ListingSourceKind =
+  | 'Stock'
+  | 'TreeStock'
+  | 'TreeProduct'
+  | 'Livestock'
+  | 'Production'
+  | 'GreenhouseStock';
 
 export type MarketListing = {
   id: number;
@@ -21,6 +28,12 @@ export type MarketListing = {
   location: string;
   imagePaths: string[];
   status: ListingStatus;
+  /** Which of the seller's own holdings this listing was created from, or null when typed by hand.
+   *  `sourceId` is a row id in the seller's own tenant database — see server/Models/MarketListing.cs. */
+  sourceKind: ListingSourceKind | null;
+  sourceId: number | null;
+  /** Only for `Production`, whose balances are keyed by (productionTypeId, unitId). */
+  sourceUnitId: number | null;
   /** A promoted listing: the server sorts these first and the card is bordered gold. Read-only
    *  here — the update endpoint deliberately ignores it, so a seller cannot promote themselves. */
   isPremium: boolean;

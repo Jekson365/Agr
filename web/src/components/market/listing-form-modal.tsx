@@ -6,7 +6,9 @@ import { LISTING_CATEGORY_LABEL_KEY, LISTING_CATEGORY_OPTIONS, LISTING_TYPE_OPTI
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { createMarketListing, updateMarketListing, uploadMarketListingImage } from '@/services/market-listing-service';
-import type { ListingCategory, ListingType, MarketListing } from '@/types/market-listing';
+import type { ListingCategory, ListingSourceKind, ListingType, MarketListing } from '@/types/market-listing';
+import type { ListingSource } from './listing-source-options';
+import { ListingSourcePicker } from './listing-source-picker';
 
 /**
  * Seed values for a listing created from somewhere else in the app — e.g. selling a batch of
@@ -47,6 +49,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
   const [locationInput, setLocationInput] = useState('');
   const [newImages, setNewImages] = useState<PickedFile[]>([]);
   const [existingImagePaths, setExistingImagePaths] = useState<string[]>([]);
+  const [source, setSource] = useState<ListingSource | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -59,7 +62,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
    * category is only open to be chosen on a listing started from scratch here; otherwise it is
    * shown back rather than offered, so it can't be moved out from under the item it describes.
    */
-  const categoryFixed = isEditing || preset != null;
+  const categoryFixed = isEditing || preset != null || source != null;
 
   // Initialize the fields whenever opened.
   useEffect(() => {
@@ -80,8 +83,17 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
     setLocationInput(editingListing?.location ?? '');
     setNewImages([]);
     setExistingImagePaths(editingListing?.imagePaths ?? []);
+    setSource(null);
     setFormError(null);
   }, [open, editingListing, preset]);
+
+  function applySource(next: ListingSource | null) {
+    setSource(next);
+    if (!next) return;
+    setCategory(next.category);
+    if (titleInput.trim() === '') setTitleInput(next.label);
+    if (priceUnitInput.trim() === '') setPriceUnitInput(next.unitLabel);
+  }
 
   function pickImages(files: FileList | null) {
     if (!files) return;
@@ -103,7 +115,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
 
   // A preset can cap the quantity (you can't list more than the source record holds). The cap
   // only applies to new listings — editing an existing one isn't tied to a source record.
-  const maxQuantity = !isEditing ? preset?.maxQuantity : undefined;
+  const maxQuantity = !isEditing ? (source?.amount ?? preset?.maxQuantity) : undefined;
   const overMax = maxQuantity != null && quantity != null && quantity > maxQuantity;
   const missingQuantity = maxQuantity != null && (quantity == null || quantity <= 0);
 
@@ -120,7 +132,7 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
       const payload = {
         type: listingType,
         category,
-        itemType: editingListing?.itemType ?? preset?.itemType ?? '',
+        itemType: editingListing?.itemType ?? source?.itemType ?? preset?.itemType ?? '',
         title: trimmedTitle,
         description: descriptionInput.trim() || null,
         price,
@@ -128,6 +140,9 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
         quantity,
         location: locationInput.trim(),
         imagePaths,
+        sourceKind: (source?.kind ?? editingListing?.sourceKind ?? null) as ListingSourceKind | null,
+        sourceId: source?.id ?? editingListing?.sourceId ?? null,
+        sourceUnitId: source?.unitId ?? editingListing?.sourceUnitId ?? null,
       };
 
       if (isEditing) {
@@ -166,6 +181,10 @@ export function ListingFormModal({ open, editingListing, preset, onClose, onSave
             ))}
           </div>
         </div>
+
+        {!isEditing && preset == null && (
+          <ListingSourcePicker selected={source} onSelect={applySource} />
+        )}
 
         <div className="field">
           <label>{t('market.categoryLabel')}</label>

@@ -14,10 +14,29 @@ public class CreateMarketOrderRequest
     [StringLength(120, MinimumLength = 2)]
     public string BuyerName { get; set; } = string.Empty;
 
+    [Required]
+    [StringLength(120, MinimumLength = 2)]
+    public string BuyerSurname { get; set; } = string.Empty;
+
     /// <summary>The seller's only way to reach the buyer, so it is required.</summary>
     [Required]
     [StringLength(32, MinimumLength = 5)]
     public string BuyerPhone { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(200, MinimumLength = 2)]
+    public string BuyerAddress { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(120, MinimumLength = 2)]
+    public string BuyerCity { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(120, MinimumLength = 2)]
+    public string BuyerVillage { get; set; } = string.Empty;
+
+    [StringLength(300)]
+    public string? BuyerFacebookUrl { get; set; }
 
     /// <summary>How many units, in the listing's own price unit. Must be positive.</summary>
     [Range(0.0001, 1_000_000)]

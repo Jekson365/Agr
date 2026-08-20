@@ -32,7 +32,26 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .HasIndex(o => o.BogOrderId);
 
         modelBuilder.Entity<MarketOrder>()
+            .Property(o => o.Fulfillment)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<MarketOrder>()
+            .Property(o => o.ItemCategory)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<MarketOrder>()
             .HasIndex(o => o.ListingId);
+
+        modelBuilder.Entity<MarketOrder>()
+            .HasIndex(o => o.SellerId);
+
+        modelBuilder.Entity<MarketOrder>()
+            .Property(o => o.SourceKind)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<MarketListing>()
+            .Property(l => l.SourceKind)
+            .HasConversion<string>();
 
         modelBuilder.Entity<User>()
             .Property(u => u.Role)

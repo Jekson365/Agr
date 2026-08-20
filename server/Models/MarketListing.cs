@@ -47,6 +47,26 @@ public class MarketListing
     public ListingStatus Status { get; set; } = ListingStatus.Active;
 
     /// <summary>
+    /// Which of the seller's own holdings this listing was created from, or null for a listing
+    /// typed in by hand.
+    ///
+    /// <see cref="SourceId"/> is a row id in the *seller's* tenant database, so it is meaningful
+    /// only together with <see cref="SellerId"/> — and, like every other cross-database link here,
+    /// it is a bare int with no foreign key behind it. A holding that is later deleted leaves the
+    /// id dangling on purpose: what was sold still happened.
+    /// </summary>
+    public ListingSourceKind? SourceKind { get; set; }
+
+    public int? SourceId { get; set; }
+
+    /// <summary>
+    /// Only set for <see cref="ListingSourceKind.Production"/>, whose balances are keyed by
+    /// (ProductionTypeId, UnitId) rather than by a row of their own — litres and pieces of the
+    /// same output are separate balances. <see cref="SourceId"/> carries the production type.
+    /// </summary>
+    public int? SourceUnitId { get; set; }
+
+    /// <summary>
     /// A promoted listing: sorted above everything else and drawn with a gold border.
     ///
     /// Not the seller's to set. <see cref="Repositories.MarketListingRepository.UpdateAsync"/>

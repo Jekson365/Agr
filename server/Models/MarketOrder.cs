@@ -18,6 +18,12 @@ public enum MarketOrderStatus
     Refunded,
 }
 
+public enum MarketOrderFulfillment
+{
+    Ordered,
+    Sold,
+}
+
 /// <summary>
 /// One attempt to buy a <see cref="MarketListing"/> through Bank of Georgia.
 ///
@@ -34,11 +40,37 @@ public class MarketOrder
 
     public int ListingId { get; set; }
 
+    public int SellerId { get; set; }
+
+    public string ItemTitle { get; set; } = string.Empty;
+
+    public string ItemType { get; set; } = string.Empty;
+
+    public ListingCategory ItemCategory { get; set; }
+
+    public string PriceUnit { get; set; } = string.Empty;
+
+    public ListingSourceKind? SourceKind { get; set; }
+
+    public int? SourceId { get; set; }
+
+    public int? SourceUnitId { get; set; }
+
     /// <summary>Who to hand the goods to, as typed at checkout.</summary>
     public string BuyerName { get; set; } = string.Empty;
 
-    /// <summary>How the seller reaches the buyer. The only contact detail collected.</summary>
+    public string BuyerSurname { get; set; } = string.Empty;
+
+    /// <summary>How the seller reaches the buyer.</summary>
     public string BuyerPhone { get; set; } = string.Empty;
+
+    public string BuyerAddress { get; set; } = string.Empty;
+
+    public string BuyerCity { get; set; } = string.Empty;
+
+    public string BuyerVillage { get; set; } = string.Empty;
+
+    public string? BuyerFacebookUrl { get; set; }
 
     /// <summary>How many units were bought, in the listing's own <c>PriceUnit</c>.</summary>
     public decimal Quantity { get; set; }
@@ -76,6 +108,12 @@ public class MarketOrder
     public DateTime? SettledAt { get; set; }
 
     public MarketOrderStatus Status { get; set; } = MarketOrderStatus.Pending;
+
+    public MarketOrderFulfillment Fulfillment { get; set; } = MarketOrderFulfillment.Ordered;
+
+    public DateTime? StockAppliedAt { get; set; }
+
+    public int? StockMovementId { get; set; }
 
     /// <summary>The bank's own id for this order, used to look the payment up again and to match
     /// its callback back to this row.</summary>

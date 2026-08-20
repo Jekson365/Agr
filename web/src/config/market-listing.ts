@@ -1,7 +1,7 @@
 import { fruitKindImage, fruitTypeLabel } from '@/config/fruit-kinds';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
-import type { ListingCategory, ListingType } from '@/types/market-listing';
+import type { ListingCategory, ListingSourceKind, ListingType } from '@/types/market-listing';
 
 export const LISTING_TYPE_OPTIONS: { value: ListingType; labelKey: string }[] = [
   { value: 'Sale', labelKey: 'market.typeSale' },
@@ -16,6 +16,15 @@ export const LISTING_CATEGORY_OPTIONS: { value: ListingCategory; labelKey: strin
   { value: 'TreeProduct', labelKey: 'market.categoryTreeProduct' },
   { value: 'Other', labelKey: 'market.categoryOther' },
 ];
+
+export const LISTING_SOURCE_KIND_LABEL_KEY: Record<ListingSourceKind, string> = {
+  Stock: 'market.sourceStock',
+  Livestock: 'market.sourceLivestock',
+  TreeStock: 'market.sourceTreeStock',
+  TreeProduct: 'market.sourceTreeProduct',
+  Production: 'market.sourceProduction',
+  GreenhouseStock: 'market.sourceGreenhouseStock',
+};
 
 export const LISTING_CATEGORY_LABEL_KEY: Record<ListingCategory, string> = {
   Stock: 'market.categoryStock',

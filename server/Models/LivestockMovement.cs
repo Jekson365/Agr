@@ -19,6 +19,8 @@ public enum LivestockMovementSource
     /// the realization record (see <see cref="AnimalProduction.IsRealization"/>) and taken back
     /// with it, which is what moves the group's head count.</summary>
     Realization,
+
+    Market,
 }
 
 /// <summary>
