@@ -1,8 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { getMarketSales, getMarketSalesSummary } from '@/services/market-sale-service';
-import type { MarketSale, MarketSalesSummary, SalesPeriod } from '@/types/market-sale';
+import type { MarketSale, MarketSalesBucket, MarketSalesSummary, SalesPeriod } from '@/types/market-sale';
 import { bucketRange } from './sales-labels';
+
+function bucketIndexFor(buckets: MarketSalesBucket[], isoDate: string | null): number | null {
+  if (buckets.length === 0) return null;
+  if (!isoDate) return buckets.length - 1;
+  const match = buckets.findLastIndex((bucket) => bucket.start <= isoDate);
+  return match === -1 ? buckets.length - 1 : match;
+}
 
 export function useSalesData() {
   const [period, setPeriod] = useState<SalesPeriod>('Month');
@@ -17,6 +24,8 @@ export function useSalesData() {
   const [salesLoading, setSalesLoading] = useState(true);
 
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const focusDate = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -26,7 +35,8 @@ export function useSalesData() {
       .then((next) => {
         if (cancelled) return;
         setSummary(next);
-        setSelectedIndex(next.buckets.length > 0 ? next.buckets.length - 1 : null);
+        setSelectedIndex(bucketIndexFor(next.buckets, focusDate.current));
+        focusDate.current = null;
       })
       .catch((err) => {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err));
@@ -37,7 +47,7 @@ export function useSalesData() {
     return () => {
       cancelled = true;
     };
-  }, [period, from, to]);
+  }, [period, from, to, refreshKey]);
 
   const selectedBucket = summary && selectedIndex != null ? summary.buckets[selectedIndex] : undefined;
   const selectedStart = selectedBucket?.start;
@@ -67,10 +77,15 @@ export function useSalesData() {
     return () => {
       cancelled = true;
     };
-  }, [selectedStart, unit]);
+  }, [selectedStart, unit, refreshKey]);
 
   const patchSale = useCallback((saved: MarketSale) => {
     setSales((prev) => prev.map((row) => (row.id === saved.id ? saved : row)));
+  }, []);
+
+  const reload = useCallback((focusIsoDate?: string | null) => {
+    focusDate.current = focusIsoDate ?? null;
+    setRefreshKey((key) => key + 1);
   }, []);
 
   return {
@@ -90,5 +105,6 @@ export function useSalesData() {
     error,
     setError,
     patchSale,
+    reload,
   };
 }

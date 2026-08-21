@@ -8,6 +8,7 @@ import { ChemicalHistory } from '@/components/harvest/chemical-history';
 import { HarvestExpensesModal } from '@/components/harvest/harvest-expenses-modal';
 import { HarvestItemFormModal } from '@/components/harvest/harvest-item-form-modal';
 import { HarvestResultFormModal } from '@/components/harvest/harvest-result-form-modal';
+import { HarvestStatusColumn } from '@/components/harvest/harvest-status-column';
 import '@/components/harvest/harvest.css';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { cropLabel } from '@/config/crop';
@@ -21,7 +22,7 @@ import {
   stockMovingRows,
   type YieldRow,
 } from '@/config/harvest-analysis';
-import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/config/harvest-status';
+import { HARVEST_STATUS_LABEL_KEY } from '@/config/harvest-status';
 import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { stockKindImage, STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import { useCurrency } from '@/contexts/currency-context';
@@ -442,7 +443,15 @@ export function HarvestDetailPage() {
       ) : (
         <>
           {harvest && (
-            <div className="harvest-top-grid">
+            <div className="harvest-top-grid harvest-top-grid-status">
+              <HarvestStatusColumn
+                status={harvest.status}
+                saving={statusSaving}
+                error={statusError}
+                showExpenses={harvest.status === 'Harvested'}
+                onSelect={requestStatusChange}
+                onOpenExpenses={() => setExpensesOpen(true)}
+              />
               <div className="harvest-top-cell">
                 <div className="harvest-info-block">
               <p className="limit-hint">
@@ -531,37 +540,9 @@ export function HarvestDetailPage() {
               {economics && economics.unit == null && economics.totalYield > 0 && (
                 <p className="limit-hint">{t('harvest.kpiMixedUnitsHint')}</p>
               )}
-
-              <div className="field">
-                <label>{t('harvest.statusLabel')}</label>
-                <div className="kind-row">
-                  {HARVEST_STATUSES.map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      disabled={statusSaving}
-                      className={harvest.status === option ? 'kind-chip active' : 'kind-chip'}
-                      onClick={() => requestStatusChange(option)}
-                    >
-                      <span>{t(HARVEST_STATUS_LABEL_KEY[option])}</span>
-                    </button>
-                  ))}
-                  {harvest.status === 'Harvested' && (
-                    <button
-                      type="button"
-                      className="harvest-expenses-button"
-                      onClick={() => setExpensesOpen(true)}
-                      aria-label={t('harvest.expensesTitle')}
-                    >
-                      $
-                    </button>
-                  )}
-                </div>
-                {statusError && <div className="error-banner">{statusError}</div>}
-              </div>
                 </div>
               </div>
-              <div className="harvest-top-cell">
+              <div className="harvest-top-cell harvest-top-cell-chemicals">
                 <ChemicalHistory harvestId={harvestId} onTotalChange={setChemicalTotal} />
               </div>
             </div>

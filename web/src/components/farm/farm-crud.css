@@ -948,6 +948,44 @@ button.entity-tile-details:disabled:hover {
   font-weight: 600;
 }
 
+/* A removed livestock group, on show only while the page is asked for them. Same treatment as
+   removed land: the card reads as switched off rather than missing, since its animals, production
+   and movement ledger are all still reachable through it. It carries no menu, so unlike the land
+   tile nothing here needs to stay at full strength. */
+.entity-tile.is-removed {
+  border-style: dashed;
+  background: var(--color-surface-sunken);
+}
+
+.entity-tile.is-removed .entity-tile-media,
+.entity-tile.is-removed .entity-tile-meta,
+.entity-tile.is-removed .entity-tile-actions {
+  opacity: 0.55;
+  filter: grayscale(0.8);
+}
+
+@media (hover: hover) {
+  .entity-tile.is-removed:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--color-border);
+  }
+}
+
+/* The page-level switch that asks for them. Outside a .field, so the checkbox needs its own
+   sizing — the shared rule in index.css is scoped to one. */
+.livestock-removed-toggle {
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.livestock-removed-toggle input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-green);
+  cursor: pointer;
+}
+
 /* Marks a holding the farm has removed — on the balance rows that only appear once those are asked
    for, and on the harvest rows and pickers that keep offering one so an existing record stays
    editable. Beside the name rather than in the figures: what is in question is the holding, not its
@@ -1158,6 +1196,30 @@ button.entity-tile-details:disabled:hover {
 .tree-stock-form-modal .kind-chip-icon {
   width: 56px;
   height: 56px;
+}
+
+.livestock-form-modal .multi-select-trigger {
+  width: 100%;
+  max-width: none;
+  height: 54px;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 1.0625rem;
+}
+
+.livestock-form-modal .multi-select-trigger:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: -1px;
+}
+
+.livestock-form-modal .multi-select-value {
+  flex: 1;
+  max-width: none;
+}
+
+.livestock-form-modal .multi-select-caret {
+  font-size: 0.875rem;
 }
 
 .stock-form-modal .error-banner,

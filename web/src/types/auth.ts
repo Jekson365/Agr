@@ -15,6 +15,8 @@ export type User = {
   city: string;
   birthDate: string | null;
   imagePath: string;
+  farmName: string;
+  farmImagePath: string;
   latitude: number | null;
   longitude: number | null;
   plan: StoragePlan;
@@ -100,4 +102,6 @@ export type UpdateProfileRequest = {
   city: string;
   birthDate: string | null;
   imagePath: string;
+  farmName: string;
+  farmImagePath: string;
 };

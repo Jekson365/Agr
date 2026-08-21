@@ -1,5 +1,6 @@
 import { apiFetch } from '@/services/api-client';
 import type {
+  ManualSaleInput,
   MarketOrderFulfillment,
   MarketSale,
   MarketSalesSummary,
@@ -30,4 +31,15 @@ export function setMarketSaleFulfillment(id: number, fulfillment: MarketOrderFul
     method: 'PUT',
     body: JSON.stringify({ fulfillment }),
   });
+}
+
+export function createManualSale(input: ManualSaleInput): Promise<MarketSale> {
+  return apiFetch<MarketSale>('/api/marketsales/manual', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+}
+
+export function deleteManualSale(id: number): Promise<void> {
+  return apiFetch<void>(`/api/marketsales/${id}`, { method: 'DELETE' });
 }

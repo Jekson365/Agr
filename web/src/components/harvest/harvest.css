@@ -50,10 +50,139 @@
   margin-bottom: 0;
 }
 
+.harvest-top-grid-status {
+  grid-template-columns: minmax(0, 12.5rem) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+@media (max-width: 1400px) {
+  .harvest-top-grid-status {
+    grid-template-columns: minmax(0, 11.25rem) minmax(0, 1fr);
+  }
+
+  .harvest-top-grid-status .harvest-top-cell-chemicals {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 860px) {
   .harvest-top-grid {
     grid-template-columns: 1fr;
   }
+
+  .harvest-top-grid-status {
+    grid-template-columns: 1fr;
+  }
+}
+
+.harvest-status-column {
+  gap: 14px;
+}
+
+.harvest-status-heading {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.harvest-status-steps {
+  --status-marker: 1.375rem;
+  --status-step-pad: 0.5rem;
+  --status-step-gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--status-step-gap);
+}
+
+.harvest-status-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: var(--status-step-pad) 0.625rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: none;
+  color: var(--color-dark);
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.harvest-status-step:disabled {
+  cursor: default;
+}
+
+.harvest-status-step:not(:disabled):hover {
+  background: var(--color-surface-sunken);
+}
+
+.harvest-status-step.active {
+  border-color: var(--color-blue);
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+  font-weight: 600;
+}
+
+.harvest-status-step.active:not(:disabled):hover {
+  background: var(--color-blue-soft);
+}
+
+.harvest-status-step.done .harvest-status-name {
+  color: var(--color-muted);
+}
+
+.harvest-status-marker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--status-marker);
+  height: var(--status-marker);
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.harvest-status-marker::before {
+  content: '';
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 50%;
+  width: 2px;
+  height: calc(var(--status-step-pad) * 2 + var(--status-step-gap) + 2px);
+  margin-left: -1px;
+  background: var(--color-border);
+}
+
+.harvest-status-step:last-child .harvest-status-marker::before {
+  display: none;
+}
+
+.harvest-status-step.done .harvest-status-marker,
+.harvest-status-step.done .harvest-status-marker::before {
+  background: var(--color-blue);
+}
+
+.harvest-status-step.done .harvest-status-marker {
+  border-color: var(--color-blue);
+  color: var(--color-on-accent);
+}
+
+.harvest-status-step.active .harvest-status-marker {
+  border-color: var(--color-blue);
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+}
+
+.harvest-status-name {
+  min-width: 0;
+  line-height: var(--status-marker);
 }
 
 .harvest-info-block .field {

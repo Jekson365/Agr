@@ -55,13 +55,15 @@
   font-size: 0.75rem;
 }
 
+/* Fixed and portalled to <body>: inside the field it was absolute, and an ancestor card with
+   overflow-y:auto clipped it away the moment it opened. Top, left and width are measured from the
+   trigger in multi-select.tsx; the z-index clears the modal overlay (100), which it is now a
+   sibling of rather than inside. */
 .multi-select-popover {
-  position: absolute;
-  top: calc(100% + 6px);
-  right: 0;
-  z-index: 40;
-  width: 240px;
-  max-width: 80vw;
+  position: fixed;
+  z-index: 200;
+  min-width: 200px;
+  max-width: 90vw;
   padding: 8px;
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -146,4 +148,29 @@
   color: var(--color-muted);
   font-size: 0.8125rem;
   text-align: center;
+}
+
+/* The size-up the add forms use. Applied here rather than by the form, since the popover is not a
+   descendant of it. */
+.multi-select-popover-lg {
+  padding: 10px;
+}
+
+.multi-select-popover-lg .multi-select-search {
+  height: 44px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.multi-select-popover-lg .multi-select-list {
+  max-height: 260px;
+}
+
+.multi-select-popover-lg .multi-select-option {
+  padding: 10px;
+  font-size: 1rem;
+}
+
+.multi-select-popover-lg .multi-select-empty {
+  font-size: 1rem;
 }

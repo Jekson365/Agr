@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import '@/components/farm/kind-picker.css';
 import { useLanguage } from '@/contexts/language-context';
 import type { ListingSourceKind } from '@/types/market-listing';
 import { loadSources, SOURCE_KIND_OPTIONS, type ListingSource } from './listing-source-options';

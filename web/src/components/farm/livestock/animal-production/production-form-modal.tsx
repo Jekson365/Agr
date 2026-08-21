@@ -1,3 +1,4 @@
+import '@/components/farm/kind-picker.css';
 import { DateField } from '@/components/ui/date-field';
 import { todayIsoDate } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
@@ -15,6 +16,9 @@ type Props = {
   form: ProductionForm;
   onFormChange: (form: ProductionForm) => void;
   productionTypes: ProductionType[];
+  /** What the owning group declares it produces. A batch names one of these, so with more than
+   *  one on offer the form asks; with a single one it is shown back rather than chosen. */
+  producedTypeIds: number[];
   units: Unit[];
   saving: boolean;
   error: string | null;
@@ -31,6 +35,7 @@ export function ProductionFormModal({
   form,
   onFormChange,
   productionTypes,
+  producedTypeIds,
   units,
   saving,
   error,
@@ -52,6 +57,12 @@ export function ProductionFormModal({
   /** A realization already recorded: which ledgers it moved, and on what day, is settled — so
    *  those fields are read back rather than edited. How much it moved is not; see below. */
   const settledRealization = form.isRealization && editingRecord != null;
+  /** Offered only while adding an ordinary batch: a realization is filed under the group's meat,
+   *  and an existing record keeps the output it was collected as. */
+  const offeredTypes =
+    form.isRealization || editingRecord != null
+      ? []
+      : productionTypes.filter((productionType) => producedTypeIds.includes(productionType.id));
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -68,16 +79,32 @@ export function ProductionFormModal({
         {isNewRealization && <p className="limit-hint">{t('production.realizationHint')}</p>}
 
         <div className="form-fields modal-form-grid">
-          {/* What the batch is collected under comes from the group — declared once, on the group
-              itself — so it is shown back here rather than chosen again per record. */}
+          {/* What the batch is collected under is one of the group's own outputs. A realization
+              names the group's meat instead, and an edit keeps whatever the record was collected
+              as — both are shown back rather than offered. */}
           <div className="field field-full">
             <label>{t('production.type')}</label>
-            <span className="limit-hint field-fixed-value">
-              {productionTypeLabel(
-                productionTypes.find((productionType) => productionType.id === form.productionTypeId),
-                t
-              ) || '—'}
-            </span>
+            {offeredTypes.length > 1 ? (
+              <div className="kind-row">
+                {offeredTypes.map((productionType) => (
+                  <button
+                    key={productionType.id}
+                    type="button"
+                    className={form.productionTypeId === productionType.id ? 'kind-chip active' : 'kind-chip'}
+                    onClick={() => setField('productionTypeId', productionType.id)}
+                  >
+                    <span>{productionTypeLabel(productionType, t)}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span className="limit-hint field-fixed-value">
+                {productionTypeLabel(
+                  productionTypes.find((productionType) => productionType.id === form.productionTypeId),
+                  t
+                ) || '—'}
+              </span>
+            )}
           </div>
 
           {/* What a realization settled once it was recorded: the day the herd lost the animal,

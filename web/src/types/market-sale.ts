@@ -1,12 +1,13 @@
 import type { ListingCategory, ListingSourceKind } from '@/types/market-listing';
 
-export type MarketOrderStatus = 'Pending' | 'Paid' | 'Failed' | 'Refunded';
+export type MarketOrderStatus = 'Pending' | 'Paid' | 'Failed' | 'Refunded' | 'Manual';
 
 export type MarketOrderFulfillment = 'Ordered' | 'Sold';
 
 export type MarketSale = {
   id: number;
-  listingId: number;
+  listingId: number | null;
+  isManual: boolean;
   itemTitle: string;
   itemType: string;
   itemCategory: ListingCategory;
@@ -30,6 +31,22 @@ export type MarketSale = {
   stockApplied: boolean;
   createdAt: string;
   paidAt: string | null;
+};
+
+export type ManualSaleInput = {
+  sourceKind: ListingSourceKind | null;
+  sourceId: number | null;
+  sourceUnitId: number | null;
+  itemTitle: string;
+  itemType: string;
+  itemCategory: ListingCategory;
+  priceUnit: string;
+  quantity: number;
+  price: number;
+  soldOn: string | null;
+  buyerName: string;
+  buyerSurname: string;
+  buyerPhone: string;
 };
 
 export type SalesPeriod = 'Week' | 'Month' | 'Year' | 'Custom';

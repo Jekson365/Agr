@@ -1,6 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import './multi-select.css';
+
+/** Roughly how tall the popover gets — search box plus a full list. Only used to decide whether
+ *  it still fits under the trigger, so an approximation is enough. */
+const POPOVER_MAX_HEIGHT = 290;
 
 export type MultiSelectOption = { value: string; label: string; icon?: string };
 
@@ -11,18 +16,36 @@ type Props = {
   placeholder: string;
   searchPlaceholder: string;
   emptyText: string;
+  /** 'large' matches the add forms, whose fields are drawn a size up. The popover is portalled to
+   *  <body>, so no scope the form sets can reach it — it has to be told. */
+  size?: 'default' | 'large';
 };
 
 /** A searchable dropdown that lets the user pick several options at once (checkbox list). */
-export function MultiSelect({ options, selected, onChange, placeholder, searchPlaceholder, emptyText }: Props) {
+export function MultiSelect({
+  options,
+  selected,
+  onChange,
+  placeholder,
+  searchPlaceholder,
+  emptyText,
+  size = 'default',
+}: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (event: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      // The popover is portalled out of the control, so it is no longer inside rootRef and has to
+      // be asked about separately — without this, clicking an option would close the list first.
+      if (rootRef.current?.contains(target) || popoverRef.current?.contains(target)) return;
+      setOpen(false);
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setOpen(false);
@@ -32,6 +55,37 @@ export function MultiSelect({ options, selected, onChange, placeholder, searchPl
     return () => {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
+  /*
+   * Portalled to <body> and positioned from the trigger's box, so a modal card with
+   * overflow-y:auto cannot clip it — the same treatment kind-dropdown.tsx needed, and for the
+   * same reason. Placed on layout rather than in an effect, so it never paints at the wrong spot
+   * first.
+   */
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    function place() {
+      const trigger = triggerRef.current;
+      if (!trigger) return;
+      const box = trigger.getBoundingClientRect();
+
+      // Flip above the field when there is not room under it.
+      const below = window.innerHeight - box.bottom;
+      const top =
+        below < POPOVER_MAX_HEIGHT && box.top > below ? box.top - POPOVER_MAX_HEIGHT - 6 : box.bottom + 6;
+      setRect({ top: Math.max(8, top), left: box.left, width: box.width });
+    }
+
+    place();
+    // Capture phase, so it follows the trigger when an ancestor scrolls rather than only the page.
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    return () => {
+      window.removeEventListener('scroll', place, true);
+      window.removeEventListener('resize', place);
     };
   }, [open]);
 
@@ -57,6 +111,7 @@ export function MultiSelect({ options, selected, onChange, placeholder, searchPl
   return (
     <div className="multi-select" ref={rootRef}>
       <button
+        ref={triggerRef}
         type="button"
         className="multi-select-trigger"
         onClick={() => setOpen((prev) => !prev)}
@@ -69,8 +124,14 @@ export function MultiSelect({ options, selected, onChange, placeholder, searchPl
         </span>
       </button>
 
-      {open && (
-        <div className="multi-select-popover">
+      {open &&
+        rect &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            className={size === 'large' ? 'multi-select-popover multi-select-popover-lg' : 'multi-select-popover'}
+            style={{ top: rect.top, left: rect.left, width: rect.width }}
+          >
           <input
             className="multi-select-search"
             value={query}
@@ -98,8 +159,9 @@ export function MultiSelect({ options, selected, onChange, placeholder, searchPl
               ))
             )}
           </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

@@ -8,10 +8,13 @@ export type Livestock = {
   count: number;
   name: string;
   farmId: number;
-  /** What the group produces — the type every one of its production records is collected under.
-   *  Chosen when the group is added and settled from then on. Null only for a group recorded
-   *  before the choice moved here that has collected nothing. */
+  /** The first of {@link productionTypeIds}, kept for older clients that know only one output.
+   *  Null for a group that declares none. */
   productionTypeId: number | null;
+  /** Everything the group produces — every record it collects is filed under one of these. An
+   *  output can be added at any time; one the group has already collected under cannot be dropped
+   *  (the server answers 409). Empty for a group that declares none. */
+  productionTypeIds: number[];
   /** This group's meat — the type a realization of it is recorded under, separate from what it
    *  produces day to day. Created with the group and named after its animal, so rabbit meat and
    *  cow meat are not the same output. Null for a group recorded before this existed. */

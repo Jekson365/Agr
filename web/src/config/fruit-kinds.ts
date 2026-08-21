@@ -1,10 +1,26 @@
 import appleIcon from '@/assets/trees/apple.png';
+import avocadoIcon from '@/assets/trees/avocado.png';
 import bananaIcon from '@/assets/trees/banana.png';
+import cherryIcon from '@/assets/trees/cherry.png';
 // The stand-in that belongs with the tree artwork, not the goods one: at icon size the goods
 // logo is a pale outline that all but disappears on a light row, and a fruitless tree reads as
 // a tree even at 20px. Mirrors the mobile app, which falls back to the same image.
 import defaultFruitIcon from '@/assets/trees/empty.png';
+import figIcon from '@/assets/trees/fig.png';
+import kiwiIcon from '@/assets/trees/kiwi.png';
+import lemonIcon from '@/assets/trees/lemon.png';
+// The catalog name is spelled properly even where the artwork file is not — the name is what the
+// database and every TreeStock.Type reference, the filename reaches no further than this import.
+import melonIcon from '@/assets/trees/malon.png';
+import mandarinIcon from '@/assets/trees/mandarin.png';
+import nutIcon from '@/assets/trees/nuts.png';
 import orangeIcon from '@/assets/trees/orange.png';
+import peachIcon from '@/assets/trees/peach.png';
+import pearIcon from '@/assets/trees/pear.png';
+import pineappleIcon from '@/assets/trees/pineapple.png';
+import plumIcon from '@/assets/trees/plum.png';
+import strawberryIcon from '@/assets/trees/strawberries.png';
+import watermelonIcon from '@/assets/trees/watermalon.png';
 import { customKindIcon } from '@/config/kind-icons';
 
 // Built-in fruit kinds get bundled artwork and a translated label. A kind a user added carries
@@ -15,12 +31,40 @@ export const FRUIT_KIND_IMAGE: Record<string, string> = {
   Apple: appleIcon,
   Orange: orangeIcon,
   Banana: bananaIcon,
+  Avocado: avocadoIcon,
+  Kiwi: kiwiIcon,
+  Melon: melonIcon,
+  Nut: nutIcon,
+  Peach: peachIcon,
+  Pear: pearIcon,
+  Pineapple: pineappleIcon,
+  Plum: plumIcon,
+  Strawberry: strawberryIcon,
+  Watermelon: watermelonIcon,
+  Cherry: cherryIcon,
+  Fig: figIcon,
+  Lemon: lemonIcon,
+  Mandarin: mandarinIcon,
 };
 
 export const FRUIT_TYPE_LABEL_KEY: Record<string, string> = {
   Apple: 'farm.fruitApple',
   Orange: 'farm.fruitOrange',
   Banana: 'farm.fruitBanana',
+  Avocado: 'farm.fruitAvocado',
+  Kiwi: 'farm.fruitKiwi',
+  Melon: 'farm.fruitMelon',
+  Nut: 'farm.fruitNut',
+  Peach: 'farm.fruitPeach',
+  Pear: 'farm.fruitPear',
+  Pineapple: 'farm.fruitPineapple',
+  Plum: 'farm.fruitPlum',
+  Strawberry: 'farm.fruitStrawberry',
+  Watermelon: 'farm.fruitWatermelon',
+  Cherry: 'farm.fruitCherry',
+  Fig: 'farm.fruitFig',
+  Lemon: 'farm.fruitLemon',
+  Mandarin: 'farm.fruitMandarin',
 };
 
 /** The unit every new fruit entry is created with — an orchard is counted in trees. */

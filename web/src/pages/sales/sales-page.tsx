@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/tabs.css';
+import { ManualSaleModal } from '@/components/market/manual-sale-modal';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
-import { setMarketSaleFulfillment } from '@/services/market-sale-service';
+import { deleteManualSale, setMarketSaleFulfillment } from '@/services/market-sale-service';
 import type { MarketOrderFulfillment, MarketSale } from '@/types/market-sale';
 import { SalesChart } from './sales-chart';
 import { bucketTooltip } from './sales-labels';
@@ -21,6 +23,8 @@ export function SalesPage() {
 
   const [filter, setFilter] = useState<Filter>('all');
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [deleting, setDeleting] = useState<MarketSale | null>(null);
 
   async function toggle(sale: MarketSale) {
     const next: MarketOrderFulfillment = sale.fulfillment === 'Sold' ? 'Ordered' : 'Sold';
@@ -34,6 +38,22 @@ export function SalesPage() {
       } else {
         data.setError(err instanceof Error ? err.message : String(err));
       }
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function confirmDelete() {
+    const target = deleting;
+    if (!target) return;
+    setDeleting(null);
+    setBusyId(target.id);
+    data.setError(null);
+    try {
+      await deleteManualSale(target.id);
+      data.reload(target.createdAt.slice(0, 10));
+    } catch (err) {
+      data.setError(err instanceof Error ? err.message : String(err));
     } finally {
       setBusyId(null);
     }
@@ -56,6 +76,9 @@ export function SalesPage() {
 
       <div className="page-header">
         <h1 className="page-title">{t('sales.title')}</h1>
+        <button type="button" className="add-button" onClick={() => setAddOpen(true)}>
+          + {t('sales.manualAdd')}
+        </button>
       </div>
 
       {data.error && <div className="error-banner">{data.error}</div>}
@@ -104,8 +127,24 @@ export function SalesPage() {
       ) : visible.length === 0 ? (
         <p className="empty-state">{t('sales.empty')}</p>
       ) : (
-        <SalesTable sales={visible} busyId={busyId} onToggle={toggle} />
+        <SalesTable sales={visible} busyId={busyId} onToggle={toggle} onDelete={setDeleting} />
       )}
+
+      <ManualSaleModal
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        onSaved={(sale) => data.reload(sale.createdAt.slice(0, 10))}
+      />
+
+      <ConfirmModal
+        open={deleting != null}
+        title={t('sales.manualDeleteTitle')}
+        body={t('sales.manualDeleteBody')}
+        confirmLabel={t('common.delete')}
+        destructive
+        onCancel={() => setDeleting(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

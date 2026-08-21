@@ -166,6 +166,7 @@ export function LivestockRealizationModal({ open, animalId, livestockId, onClose
       form={form}
       onFormChange={setForm}
       productionTypes={productionTypes}
+      producedTypeIds={[]}
       units={units}
       saving={saving}
       error={formError}

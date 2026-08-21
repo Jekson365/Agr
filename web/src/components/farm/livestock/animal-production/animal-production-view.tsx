@@ -82,7 +82,7 @@ export function AnimalProductionView(props: Props) {
    * Null for a group that predates that and has collected nothing: it declares one before its
    * first record, which is why adding is closed off until it does.
    */
-  const [producedTypeId, setProducedTypeId] = useState<number | null>(null);
+  const [producedTypeIds, setProducedTypeIds] = useState<number[]>([]);
   /** The group itself, kept for the head count a new record is prefilled with. */
   const [group, setGroup] = useState<Livestock | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -124,7 +124,7 @@ export function AnimalProductionView(props: Props) {
       setRecords(recordList);
       setProductionTypes(typeList);
       setUnits(unitList);
-      setProducedTypeId(groupItem.productionTypeId);
+      setProducedTypeIds(groupItem.productionTypeIds ?? []);
       setGroup(groupItem);
       if (isGroup) {
         const codeById = new Map(detailList.map((d) => [d.id, d.code]));
@@ -146,15 +146,15 @@ export function AnimalProductionView(props: Props) {
   }
 
   function openAdd() {
-    if (producedTypeId == null) return;
+    if (producedTypeIds.length === 0) return;
     setEditingRecord(null);
     setForm({
       // The group as last read, not the count this view was mounted with: animals can have been
       // added or taken off it since, and prefilling a herd that no longer exists is how a milking
       // ends up recorded against more animals than the farm has.
       ...makeEmptyForm(isGroup ? (group?.count ?? defaultAnimalCount) : 1),
-      // Not a choice here: the batch is collected under what the group produces.
-      productionTypeId: producedTypeId,
+      // One of the group's own outputs — the first, until the form says otherwise.
+      productionTypeId: producedTypeIds[0],
       unitId: units[0]?.id ?? null,
     });
     setFormError(null);
@@ -287,13 +287,13 @@ export function AnimalProductionView(props: Props) {
 
       {error && <div className="error-banner">{t('production.loadError')}</div>}
 
-      {/* A record is collected under what the group produces, so there is nothing to record until
-          the group says what that is — see producedTypeId. */}
+      {/* A record is collected under one of the group's outputs, so there is nothing to record
+          until the group declares at least one — see producedTypeIds. */}
       {/* Realizing the group is not offered here: it is started from the group's own animals page,
           where each animal's card carries the button. This view keeps the records a realization
           leaves behind — they are shown, edited and deleted with the rest. */}
       <div className="production-actions">
-        {producedTypeId == null ? (
+        {producedTypeIds.length === 0 ? (
           <p className="limit-hint">{t('production.producesMissing')}</p>
         ) : (
           <button type="button" className="add-button" onClick={openAdd}>
@@ -309,6 +309,7 @@ export function AnimalProductionView(props: Props) {
         form={form}
         onFormChange={setForm}
         productionTypes={productionTypes}
+        producedTypeIds={producedTypeIds}
         units={units}
         saving={saving}
         error={formError}

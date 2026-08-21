@@ -10,9 +10,10 @@ type Props = {
   sales: MarketSale[];
   busyId: number | null;
   onToggle: (sale: MarketSale) => void;
+  onDelete: (sale: MarketSale) => void;
 };
 
-export function SalesTable({ sales, busyId, onToggle }: Props) {
+export function SalesTable({ sales, busyId, onToggle, onDelete }: Props) {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -57,9 +58,14 @@ export function SalesTable({ sales, busyId, onToggle }: Props) {
                 <td>{sale.buyerVillage || '—'}</td>
                 <td>{sale.buyerAddress || '—'}</td>
                 <td>
-                  <Link to={`/market/${sale.listingId}`} className="sales-item-link">
-                    {itemName}
-                  </Link>
+                  {sale.listingId != null ? (
+                    <Link to={`/market/${sale.listingId}`} className="sales-item-link">
+                      {itemName}
+                    </Link>
+                  ) : (
+                    itemName
+                  )}
+                  {sale.isManual && <div className="sales-sub">{t('sales.manualBadge')}</div>}
                   {sale.sourceKind && (
                     <div className="sales-sub">
                       {t(LISTING_SOURCE_KIND_LABEL_KEY[sale.sourceKind])} #{sale.sourceId}
@@ -79,9 +85,13 @@ export function SalesTable({ sales, busyId, onToggle }: Props) {
                     type="button"
                     className="sales-toggle"
                     disabled={busyId === sale.id}
-                    onClick={() => onToggle(sale)}
+                    onClick={() => (sale.isManual ? onDelete(sale) : onToggle(sale))}
                   >
-                    {busyId === sale.id ? '…' : t(isSold ? 'sales.markOrdered' : 'sales.markSold')}
+                    {busyId === sale.id
+                      ? '…'
+                      : sale.isManual
+                        ? t('common.delete')
+                        : t(isSold ? 'sales.markOrdered' : 'sales.markSold')}
                   </button>
                 </td>
                 <td>
