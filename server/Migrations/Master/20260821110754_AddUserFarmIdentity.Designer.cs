@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Data;
@@ -12,9 +13,11 @@ using Server.Data;
 namespace Server.Migrations.Master
 {
     [DbContext(typeof(MasterDbContext))]
-    partial class MasterDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821110754_AddUserFarmIdentity")]
+    partial class AddUserFarmIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -177,7 +180,7 @@ namespace Server.Migrations.Master
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("ListingId")
+                    b.Property<int>("ListingId")
                         .HasColumnType("integer");
 
                     b.Property<DateTime?>("PaidAt")

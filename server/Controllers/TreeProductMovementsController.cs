@@ -19,18 +19,26 @@ public class TreeProductMovementsController(ITreeProductMovementRepository treeP
     /// <summary>Records a manual adjustment to a product's balance — positive to add, negative to
     /// draw down (e.g. produce sold or spoiled).</summary>
     [HttpPost]
-    public async Task<ActionResult<TreeProductMovement>> Create(TreeProductMovement movement)
+    public async Task<ActionResult<TreeProductMovement>> Create(TreeProductAdjustmentRequest request)
     {
-        if (movement.Delta == 0)
+        if (request.Delta == 0)
         {
             return BadRequest("Delta must be non-zero.");
         }
 
+        var available = await treeProductMovementRepository.GetBalanceAsync(request.TreeProductId);
+        if (available + request.Delta < 0)
+        {
+            return Conflict($"Only {available} of this product is available.");
+        }
+
         var created = await treeProductMovementRepository.AddAsync(new TreeProductMovement
         {
-            TreeProductId = movement.TreeProductId,
-            Delta = movement.Delta,
+            TreeProductId = request.TreeProductId,
+            Delta = request.Delta,
             Source = TreeProductMovementSource.Manual,
+            Note = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
+            Date = request.Date,
         });
         return Ok(created);
     }

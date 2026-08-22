@@ -1026,6 +1026,18 @@ button.entity-tile-details:disabled:hover {
   border-color: var(--color-dark);
 }
 
+.balance-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.balance-adjust-row {
+  margin-bottom: 0;
+}
+
 /* Form */
 .form-title {
   margin: 0 0 18px;

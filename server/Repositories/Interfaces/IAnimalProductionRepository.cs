@@ -14,6 +14,11 @@ public interface IAnimalProductionRepository
     /// wiping history (and stranding the sales that were deducted from it).</summary>
     Task<bool> ExistsForLivestockAsync(int livestockId);
 
+    /// <summary>Whether a group has collected anything under one particular production type —
+    /// asked before that type is taken off what the group declares, since the records already
+    /// counted under it would be left naming an output the group no longer claims.</summary>
+    Task<bool> ExistsForLivestockAndTypeAsync(int livestockId, int productionTypeId);
+
     /// <summary>Whether any production is recorded against a single animal.</summary>
     Task<bool> ExistsForAnimalAsync(int animalId);
 

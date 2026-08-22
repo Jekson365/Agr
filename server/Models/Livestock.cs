@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Server.Models;
 
 public class Livestock
@@ -23,6 +25,19 @@ public class Livestock
     /// before its first record.
     /// </summary>
     public int? ProductionTypeId { get; set; }
+
+    [NotMapped]
+    public List<int>? ProductionTypeIds { get; set; }
+
+    public List<int>? DeclaredProduceIds()
+    {
+        if (ProductionTypeIds is { } ids)
+        {
+            return [.. ids.Where(id => id > 0).Distinct()];
+        }
+
+        return ProductionTypeId is int single ? [single] : null;
+    }
 
     /// <summary>
     /// This group's meat — the <see cref="ProductionType"/> a realization of it is recorded under,

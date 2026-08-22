@@ -5,9 +5,11 @@ import { getMarketListings } from '@/services/market-listing-service';
 import { getStockMovementReport } from '@/services/report-service';
 import type { MarketListing } from '@/types/market-listing';
 import type { StockMovementReportRow } from '@/types/report';
+import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
-import { balancesByProduct, listedFor, listedTotals, type ProductBalance } from './product-balance';
+import { balancesByProduct } from './balance-sources';
+import { listedFor, listedTotals, type ProductBalance } from './product-balance';
 
 /**
  * What the farm holds of each plant-stock good, summed from its movements, beside how much of it
@@ -23,6 +25,7 @@ export function StockBalancePage() {
    * was real and is still recorded, so it can be asked for.
    */
   const [showRemoved, setShowRemoved] = useState(false);
+  const [adjustOpen, setAdjustOpen] = useState(false);
 
   const [rows, setRows] = useState<StockMovementReportRow[]>([]);
   const [listings, setListings] = useState<MarketListing[]>([]);
@@ -67,6 +70,11 @@ export function StockBalancePage() {
         showing: showRemoved,
         onToggle: () => setShowRemoved((prev) => !prev),
       }}
+      actions={
+        <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
+          + {t('balance.adjust')}
+        </button>
+      }
     >
       <BalanceColumn
         productHeader={t('balance.colPlant')}
@@ -76,6 +84,8 @@ export function StockBalancePage() {
         rows={balances}
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
       />
+
+      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

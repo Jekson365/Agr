@@ -36,6 +36,20 @@ public static class BuiltInKinds
         new() { Id = 1, Name = "Apple" },
         new() { Id = 2, Name = "Orange" },
         new() { Id = 3, Name = "Banana" },
+        new() { Id = 4, Name = "Avocado" },
+        new() { Id = 5, Name = "Kiwi" },
+        new() { Id = 6, Name = "Melon" },
+        new() { Id = 7, Name = "Nut" },
+        new() { Id = 8, Name = "Peach" },
+        new() { Id = 9, Name = "Pear" },
+        new() { Id = 10, Name = "Pineapple" },
+        new() { Id = 11, Name = "Plum" },
+        new() { Id = 12, Name = "Strawberry" },
+        new() { Id = 13, Name = "Watermelon" },
+        new() { Id = 14, Name = "Cherry" },
+        new() { Id = 15, Name = "Fig" },
+        new() { Id = 16, Name = "Lemon" },
+        new() { Id = 17, Name = "Mandarin" },
     ];
 
     // The former AnimalType enum members, now an editable catalog like the stock kinds.

@@ -13,4 +13,6 @@ public class UpdateProfileRequest
     public string City { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }
     public string ImagePath { get; set; } = string.Empty;
+    public string? FarmName { get; set; }
+    public string? FarmImagePath { get; set; }
 }

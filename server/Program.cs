@@ -50,6 +50,7 @@ builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
 builder.Services.AddScoped<IGreenhouseRepository, GreenhouseRepository>();
 builder.Services.AddScoped<IGreenhouseHarvestRepository, GreenhouseHarvestRepository>();
 builder.Services.AddScoped<IGreenhouseStockRepository, GreenhouseStockRepository>();
+builder.Services.AddScoped<IGreenhouseStockMovementRepository, GreenhouseStockMovementRepository>();
 builder.Services.AddScoped<IGreenhouseSeedRepository, GreenhouseSeedRepository>();
 builder.Services.AddScoped<IGreenhouseHarvestItemRepository, GreenhouseHarvestItemRepository>();
 builder.Services.AddScoped<IGreenhouseHarvestSeedRepository, GreenhouseHarvestSeedRepository>();

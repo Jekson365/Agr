@@ -13,15 +13,11 @@ import type { MarketListing } from '@/types/market-listing';
 import type { ProductionMovement } from '@/types/production-movement';
 import type { ProductionType } from '@/types/production-type';
 import type { Unit } from '@/types/unit';
+import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
-import {
-  balancesByProductionType,
-  listedFor,
-  listedTotals,
-  removedLivestockBalances,
-  type ProductBalance,
-} from './product-balance';
+import { balancesByProductionType, removedLivestockBalances } from './balance-sources';
+import { listedFor, listedTotals, type ProductBalance } from './product-balance';
 
 /**
  * What the herds have collected and how much of it is left, keyed by production type and unit —
@@ -33,6 +29,7 @@ export function LivestockBalancePage() {
   const { t } = useLanguage();
 
   const [showRemoved, setShowRemoved] = useState(false);
+  const [adjustOpen, setAdjustOpen] = useState(false);
 
   const [productions, setProductions] = useState<AnimalProduction[]>([]);
   const [productionMovements, setProductionMovements] = useState<ProductionMovement[]>([]);
@@ -92,6 +89,11 @@ export function LivestockBalancePage() {
         showing: showRemoved,
         onToggle: () => setShowRemoved((prev) => !prev),
       }}
+      actions={
+        <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
+          + {t('balance.adjust')}
+        </button>
+      }
     >
       <BalanceColumn
         productHeader={t('balance.colProduct')}
@@ -101,6 +103,8 @@ export function LivestockBalancePage() {
         rows={balances}
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
       />
+
+      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

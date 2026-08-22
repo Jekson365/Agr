@@ -89,6 +89,16 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         user.BirthDate = request.BirthDate;
         user.ImagePath = request.ImagePath;
 
+        if (request.FarmName is not null)
+        {
+            user.FarmName = request.FarmName.Trim();
+        }
+
+        if (request.FarmImagePath is not null)
+        {
+            user.FarmImagePath = request.FarmImagePath;
+        }
+
         await context.SaveChangesAsync();
         return user;
     }

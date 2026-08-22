@@ -19,6 +19,7 @@ public interface ILivestockRepository
     /// unchanged isn't reported as a clash with itself. A removed group is listed nowhere, so it
     /// holds no claim on its name.</summary>
     Task<bool> ExistsByNameAsync(string name, int? excludeId = null);
+    Task<List<int>> GetProduceIdsAsync(int livestockId);
     Task<Livestock> AddAsync(Livestock livestock);
     Task<bool> UpdateAsync(Livestock livestock);
 

@@ -55,7 +55,8 @@ public class ProductionTypeRepository(AppDbContext context) : IProductionTypeRep
         // would throw either way.
         var inUse = await context.AnimalProductions.AnyAsync(p => p.ProductionTypeId == id)
             || await context.ProductionMovements.AnyAsync(m => m.ProductionTypeId == id)
-            || await context.Livestock.AnyAsync(l => l.ProductionTypeId == id || l.MeatProductionTypeId == id);
+            || await context.Livestock.AnyAsync(l => l.ProductionTypeId == id || l.MeatProductionTypeId == id)
+            || await context.LivestockProduces.AnyAsync(p => p.ProductionTypeId == id);
         if (inUse)
         {
             return DeleteProductionTypeResult.InUse;

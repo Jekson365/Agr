@@ -7,9 +7,11 @@ import { getTreeProductMovements, getTreeProducts } from '@/services/tree-produc
 import type { MarketListing } from '@/types/market-listing';
 import type { StockMovementReportRow } from '@/types/report';
 import type { TreeProduct, TreeProductMovement } from '@/types/tree-product';
+import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
-import { balancesByProduct, balancesByTreeProduct, listedFor, listedTotals, type ProductBalance } from './product-balance';
+import { balancesByProduct, balancesByTreeProduct } from './balance-sources';
+import { listedFor, listedTotals, type ProductBalance } from './product-balance';
 
 /**
  * What the orchards have yielded and how much of it is left, by product. This table reports what
@@ -21,6 +23,7 @@ export function FruitsBalancePage() {
   const { t } = useLanguage();
 
   const [showRemoved, setShowRemoved] = useState(false);
+  const [adjustOpen, setAdjustOpen] = useState(false);
 
   const [treeProducts, setTreeProducts] = useState<TreeProduct[]>([]);
   const [treeProductMovements, setTreeProductMovements] = useState<TreeProductMovement[]>([]);
@@ -73,6 +76,11 @@ export function FruitsBalancePage() {
         showing: showRemoved,
         onToggle: () => setShowRemoved((prev) => !prev),
       }}
+      actions={
+        <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
+          + {t('balance.adjust')}
+        </button>
+      }
     >
       <BalanceColumn
         productHeader={t('balance.colProduct')}
@@ -82,6 +90,8 @@ export function FruitsBalancePage() {
         rows={balances}
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
       />
+
+      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

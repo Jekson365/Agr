@@ -33,6 +33,8 @@ public class TreeProductMovementRepository(AppDbContext context) : ITreeProductM
                 HarvestProductId = movement.HarvestProductId,
                 Delta = movement.Delta,
                 Source = movement.Source,
+                Note = movement.Note,
+                Date = movement.Date,
                 CreatedAt = movement.CreatedAt,
                 HarvestDate = harvest != null ? harvest.Date : null,
             }).ToListAsync();

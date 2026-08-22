@@ -13,9 +13,10 @@ public class LivestockController(
     ILivestockRepository livestockRepository,
     ILivestockMovementRepository livestockMovementRepository,
     ILivestockDetailRepository livestockDetailRepository,
+    IAnimalProductionRepository animalProductionRepository,
     IPlanLimitService planLimitService) : ControllerBase
 {
-    private const string ProduceSettledMessage = "What this group produces is already set and can no longer change.";
+    private const string ProduceInUseMessage = "This group has already collected records under that output, so it cannot be dropped.";
     private const string DeletedMessage = "This livestock group was removed.";
 
     /// <summary>
@@ -123,18 +124,24 @@ public class LivestockController(
             return Conflict(TypeSettledMessage);
         }
 
-        // What a group produces is settled when it is created, declared or not. The records it has
-        // collected are counted under it, so pointing it at another output would recount them as
-        // something they were never collected as — and a group created without one stays without
-        // one rather than acquiring a history retrospectively.
+        // A group may take on another output at any time — a flock that starts yielding wool as
+        // well as milk is still the same flock, and nothing already collected is recounted by it.
+        // Dropping one is the direction that rewrites history, so it is refused for any output the
+        // group has actually collected under.
         //
-        // A request that omits the field leaves whatever is there standing rather than clearing
-        // it, so a client that predates it can still edit the name.
-        if (livestock.ProductionTypeId is int requested && requested != existing.ProductionTypeId)
+        // A request naming no output at all leaves the set standing, so a client that predates it
+        // can still edit the group.
+        if (livestock.DeclaredProduceIds() is { } declared)
         {
-            return Conflict(ProduceSettledMessage);
+            foreach (var typeId in await livestockRepository.GetProduceIdsAsync(id))
+            {
+                if (!declared.Contains(typeId)
+                    && await animalProductionRepository.ExistsForLivestockAndTypeAsync(id, typeId))
+                {
+                    return Conflict(ProduceInUseMessage);
+                }
+            }
         }
-        livestock.ProductionTypeId = existing.ProductionTypeId;
 
         try
         {

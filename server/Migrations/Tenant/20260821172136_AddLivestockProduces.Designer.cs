@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Server.Data;
@@ -12,9 +13,11 @@ using Server.Data;
 namespace Server.Migrations.Tenant
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260821172136_AddLivestockProduces")]
+    partial class AddLivestockProduces
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -328,90 +331,6 @@ namespace Server.Migrations.Tenant
                             Id = 3,
                             ImagePath = "",
                             Name = "Banana"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ImagePath = "",
-                            Name = "Avocado"
-                        },
-                        new
-                        {
-                            Id = 5,
-                            ImagePath = "",
-                            Name = "Kiwi"
-                        },
-                        new
-                        {
-                            Id = 6,
-                            ImagePath = "",
-                            Name = "Melon"
-                        },
-                        new
-                        {
-                            Id = 7,
-                            ImagePath = "",
-                            Name = "Nut"
-                        },
-                        new
-                        {
-                            Id = 8,
-                            ImagePath = "",
-                            Name = "Peach"
-                        },
-                        new
-                        {
-                            Id = 9,
-                            ImagePath = "",
-                            Name = "Pear"
-                        },
-                        new
-                        {
-                            Id = 10,
-                            ImagePath = "",
-                            Name = "Pineapple"
-                        },
-                        new
-                        {
-                            Id = 11,
-                            ImagePath = "",
-                            Name = "Plum"
-                        },
-                        new
-                        {
-                            Id = 12,
-                            ImagePath = "",
-                            Name = "Strawberry"
-                        },
-                        new
-                        {
-                            Id = 13,
-                            ImagePath = "",
-                            Name = "Watermelon"
-                        },
-                        new
-                        {
-                            Id = 14,
-                            ImagePath = "",
-                            Name = "Cherry"
-                        },
-                        new
-                        {
-                            Id = 15,
-                            ImagePath = "",
-                            Name = "Fig"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            ImagePath = "",
-                            Name = "Lemon"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            ImagePath = "",
-                            Name = "Mandarin"
                         });
                 });
 
@@ -761,40 +680,6 @@ namespace Server.Migrations.Tenant
                     b.HasIndex("GreenhouseId");
 
                     b.ToTable("GreenhouseStocks");
-                });
-
-            modelBuilder.Entity("Server.Models.GreenhouseStockMovement", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateOnly?>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<decimal>("Delta")
-                        .HasColumnType("numeric");
-
-                    b.Property<int>("GreenhouseStockId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GreenhouseStockId");
-
-                    b.ToTable("GreenhouseStockMovements");
                 });
 
             modelBuilder.Entity("Server.Models.Harvest", b =>
@@ -1471,17 +1356,11 @@ namespace Server.Migrations.Tenant
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly?>("Date")
-                        .HasColumnType("date");
-
                     b.Property<decimal>("Delta")
                         .HasColumnType("numeric");
 
                     b.Property<int?>("MarketListingId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
 
                     b.Property<int>("ProductionTypeId")
                         .HasColumnType("integer");
@@ -1805,9 +1684,6 @@ namespace Server.Migrations.Tenant
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly?>("Date")
-                        .HasColumnType("date");
-
                     b.Property<decimal>("Delta")
                         .HasColumnType("numeric");
 
@@ -1819,9 +1695,6 @@ namespace Server.Migrations.Tenant
 
                     b.Property<int?>("MarketListingId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -1901,17 +1774,11 @@ namespace Server.Migrations.Tenant
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateOnly?>("Date")
-                        .HasColumnType("date");
-
                     b.Property<decimal>("Delta")
                         .HasColumnType("numeric");
 
                     b.Property<int?>("HarvestProductId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("text");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -2220,15 +2087,6 @@ namespace Server.Migrations.Tenant
                         .WithMany()
                         .HasForeignKey("GreenhouseId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Server.Models.GreenhouseStockMovement", b =>
-                {
-                    b.HasOne("Server.Models.GreenhouseStock", null)
-                        .WithMany()
-                        .HasForeignKey("GreenhouseStockId")
-                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

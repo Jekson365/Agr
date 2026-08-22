@@ -14,10 +14,10 @@ public class AnimalProductionsController(
     ILivestockDetailRepository livestockDetailRepository) : ControllerBase
 {
     /// <summary>
-    /// A batch is collected under what its group produces — that is declared once on the group
-    /// (see <see cref="Livestock.ProductionTypeId"/>), not chosen again per record.
+    /// A batch is collected under one of the outputs its group declares (see
+    /// <see cref="Livestock.ProductionTypeIds"/>) — an open choice among those, never outside them.
     /// </summary>
-    private const string ProduceMismatchMessage = "A record is collected under what its group produces.";
+    private const string ProduceMismatchMessage = "A record is collected under one of the outputs its group produces.";
 
     /// <summary>
     /// A realization is one animal's: it is recorded from that animal, for the meat taken off it.
@@ -86,7 +86,8 @@ public class AnimalProductionsController(
         }
         // A realization is collected under the group's meat, not under what it produces day to
         // day, so it is the one record that is allowed to name a different type.
-        else if (await DeclaredProductionTypeAsync(production) is int declared && production.ProductionTypeId != declared)
+        else if (await DeclaredProduceIdsAsync(production) is { Count: > 0 } declared
+            && !declared.Contains(production.ProductionTypeId))
         {
             return Conflict(ProduceMismatchMessage);
         }
@@ -125,8 +126,8 @@ public class AnimalProductionsController(
         // type, so editing its quantity doesn't turn into a fight over what it was collected as.
         if (!existing.IsRealization
             && production.ProductionTypeId != existing.ProductionTypeId
-            && await DeclaredProductionTypeAsync(existing) is int declared
-            && production.ProductionTypeId != declared)
+            && await DeclaredProduceIdsAsync(existing) is { Count: > 0 } declared
+            && !declared.Contains(production.ProductionTypeId))
         {
             return Conflict(ProduceMismatchMessage);
         }
@@ -140,11 +141,11 @@ public class AnimalProductionsController(
     }
 
     /// <summary>
-    /// What the group behind this record produces, or null when it hasn't declared one — a group
+    /// What the group behind this record produces, as ids. Empty when it declares nothing — a group
     /// recorded before the choice moved onto the group, which is free to keep collecting whatever
     /// its records name until it does. A single animal answers to its own group.
     /// </summary>
-    private async Task<int?> DeclaredProductionTypeAsync(AnimalProduction production)
+    private async Task<List<int>> DeclaredProduceIdsAsync(AnimalProduction production)
     {
         var livestockId = production.LivestockId;
         if (livestockId is null && production.AnimalId is int animalId)
@@ -152,9 +153,7 @@ public class AnimalProductionsController(
             livestockId = (await livestockDetailRepository.GetByIdAsync(animalId))?.LivestockId;
         }
 
-        return livestockId is int groupId
-            ? (await livestockRepository.GetByIdAsync(groupId))?.ProductionTypeId
-            : null;
+        return livestockId is int groupId ? await livestockRepository.GetProduceIdsAsync(groupId) : [];
     }
 
     [HttpDelete("{id:int}")]

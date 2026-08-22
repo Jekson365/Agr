@@ -19,6 +19,41 @@ public class StockMovementsController(
         return Ok(await stockMovementRepository.GetByStockAsync(stockId));
     }
 
+    [HttpPost]
+    public async Task<ActionResult<StockMovement>> Create(StockAdjustmentRequest request)
+    {
+        if (request.Delta == 0)
+        {
+            return BadRequest("Delta must be non-zero.");
+        }
+
+        var stock = await stockRepository.GetByIdAsync(request.StockId);
+        if (stock is null)
+        {
+            return NotFound();
+        }
+        if (stock.IsDeleted)
+        {
+            return Conflict("This stock has been removed.");
+        }
+        if (stock.Amount + request.Delta < 0)
+        {
+            return Conflict($"Only {stock.Amount} of this stock is available.");
+        }
+
+        await stockRepository.AdjustAmountRawAsync(request.StockId, request.Delta);
+
+        var created = await stockMovementRepository.AddAsync(new StockMovement
+        {
+            StockId = request.StockId,
+            Delta = request.Delta,
+            Source = StockMovementSource.Manual,
+            Note = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
+            Date = request.Date,
+        });
+        return Ok(created);
+    }
+
     /// <summary>Deletes a movement and reverses its effect on the stock's amount, so the
     /// remaining history still explains the balance. A sale also puts the marketplace listing it
     /// came from back the way it was, leaving nothing behind that still says it sold. Harvest

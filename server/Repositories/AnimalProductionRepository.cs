@@ -48,6 +48,17 @@ public class AnimalProductionRepository(AppDbContext context) : IAnimalProductio
             .AnyAsync(p => p.LivestockId == livestockId || (p.AnimalId != null && animalIds.Contains(p.AnimalId.Value)));
     }
 
+    public async Task<bool> ExistsForLivestockAndTypeAsync(int livestockId, int productionTypeId)
+    {
+        var animalIds = context.LivestockDetails
+            .Where(d => d.LivestockId == livestockId)
+            .Select(d => d.Id);
+
+        return await context.AnimalProductions
+            .AnyAsync(p => p.ProductionTypeId == productionTypeId
+                && (p.LivestockId == livestockId || (p.AnimalId != null && animalIds.Contains(p.AnimalId.Value))));
+    }
+
     public async Task<bool> ExistsForAnimalAsync(int animalId)
     {
         return await context.AnimalProductions.AnyAsync(p => p.AnimalId == animalId);

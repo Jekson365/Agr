@@ -11,7 +11,7 @@ namespace Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class MarketSalesController(
+public partial class MarketSalesController(
     MasterDbContext context,
     ICurrentTenant currentTenant,
     IMarketSaleInventoryService inventory) : ControllerBase

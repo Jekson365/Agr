@@ -16,6 +16,8 @@ public enum MarketOrderStatus
 
     /// <summary>Refunded after the fact, through the bank's own tooling.</summary>
     Refunded,
+
+    Manual,
 }
 
 public enum MarketOrderFulfillment
@@ -38,7 +40,7 @@ public class MarketOrder
 {
     public int Id { get; set; }
 
-    public int ListingId { get; set; }
+    public int? ListingId { get; set; }
 
     public int SellerId { get; set; }
 

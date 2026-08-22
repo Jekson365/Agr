@@ -12,6 +12,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Farm> Farms => Set<Farm>();
     public DbSet<Livestock> Livestock => Set<Livestock>();
+    public DbSet<LivestockProduce> LivestockProduces => Set<LivestockProduce>();
     public DbSet<LivestockDetail> LivestockDetails => Set<LivestockDetail>();
     public DbSet<BreedingEvent> BreedingEvents => Set<BreedingEvent>();
     public DbSet<LivestockMovement> LivestockMovements => Set<LivestockMovement>();
@@ -30,6 +31,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Greenhouse> Greenhouses => Set<Greenhouse>();
     public DbSet<GreenhouseHarvest> GreenhouseHarvests => Set<GreenhouseHarvest>();
     public DbSet<GreenhouseStock> GreenhouseStocks => Set<GreenhouseStock>();
+    public DbSet<GreenhouseStockMovement> GreenhouseStockMovements => Set<GreenhouseStockMovement>();
     public DbSet<GreenhouseSeed> GreenhouseSeeds => Set<GreenhouseSeed>();
     public DbSet<GreenhouseHarvestItem> GreenhouseHarvestItems => Set<GreenhouseHarvestItem>();
     public DbSet<GreenhouseHarvestSeed> GreenhouseHarvestSeeds => Set<GreenhouseHarvestSeed>();
@@ -145,6 +147,22 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(l => l.ProductionTypeId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<LivestockProduce>()
+            .HasOne<Livestock>()
+            .WithMany()
+            .HasForeignKey(p => p.LivestockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<LivestockProduce>()
+            .HasOne<ProductionType>()
+            .WithMany()
+            .HasForeignKey(p => p.ProductionTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<LivestockProduce>()
+            .HasIndex(p => new { p.LivestockId, p.ProductionTypeId })
+            .IsUnique();
 
         // The group's own meat, under the same rule — reference data the group points at, which
         // deleting has to be refused while it is pointed at.
@@ -414,6 +432,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<GreenhouseStock>()
             .WithMany()
             .HasForeignKey(s => s.GreenhouseStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<GreenhouseStockMovement>()
+            .Property(m => m.Source)
+            .HasConversion<string>();
+        modelBuilder.Entity<GreenhouseStockMovement>()
+            .HasOne<GreenhouseStock>()
+            .WithMany()
+            .HasForeignKey(m => m.GreenhouseStockId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Each movement belongs to a stock; deleting the stock removes its movement log.

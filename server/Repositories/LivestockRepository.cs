@@ -9,15 +9,43 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
 {
     public async Task<IEnumerable<Livestock>> GetAllAsync(bool includeDeleted = false)
     {
-        return await context.Livestock
+        var groups = await context.Livestock
             .AsNoTracking()
             .Where(l => includeDeleted || !l.IsDeleted)
             .ToListAsync();
+
+        var ids = groups.Select(l => l.Id).ToList();
+        var produces = await context.LivestockProduces
+            .AsNoTracking()
+            .Where(p => ids.Contains(p.LivestockId))
+            .ToListAsync();
+
+        foreach (var group in groups)
+        {
+            group.ProductionTypeIds = [.. produces.Where(p => p.LivestockId == group.Id).Select(p => p.ProductionTypeId)];
+        }
+
+        return groups;
     }
 
     public async Task<Livestock?> GetByIdAsync(int id)
     {
-        return await context.Livestock.FindAsync(id);
+        var group = await context.Livestock.FindAsync(id);
+        if (group is not null)
+        {
+            group.ProductionTypeIds = await GetProduceIdsAsync(id);
+        }
+
+        return group;
+    }
+
+    public async Task<List<int>> GetProduceIdsAsync(int livestockId)
+    {
+        return await context.LivestockProduces
+            .AsNoTracking()
+            .Where(p => p.LivestockId == livestockId)
+            .Select(p => p.ProductionTypeId)
+            .ToListAsync();
     }
 
     public async Task<bool> ExistsByNameAsync(string name, int? excludeId = null)
@@ -29,8 +57,20 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
 
     public async Task<Livestock> AddAsync(Livestock livestock)
     {
+        var declared = livestock.DeclaredProduceIds() ?? [];
+        livestock.ProductionTypeId = declared.Count > 0 ? declared[0] : null;
+
         context.Livestock.Add(livestock);
         await context.SaveChangesAsync();
+
+        if (declared.Count > 0)
+        {
+            context.LivestockProduces.AddRange(
+                declared.Select(typeId => new LivestockProduce { LivestockId = livestock.Id, ProductionTypeId = typeId }));
+            await context.SaveChangesAsync();
+        }
+
+        livestock.ProductionTypeIds = declared;
         return livestock;
     }
 
@@ -54,9 +94,20 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         // that account for it. Ignored rather than refused: callers legitimately PUT the whole
         // group to change something else — linking its meat, renaming it — and carry the count
         // along without meaning anything by it.
-        // Only ever the first declaration or the value it already has — the controller refuses
-        // anything else, so what arrives here is what the group produces either way.
-        existing.ProductionTypeId = livestock.ProductionTypeId;
+        var declared = livestock.DeclaredProduceIds();
+        if (declared is not null)
+        {
+            var current = await context.LivestockProduces
+                .Where(p => p.LivestockId == livestock.Id)
+                .ToListAsync();
+
+            context.LivestockProduces.RemoveRange(current.Where(p => !declared.Contains(p.ProductionTypeId)));
+            context.LivestockProduces.AddRange(declared
+                .Where(typeId => current.All(p => p.ProductionTypeId != typeId))
+                .Select(typeId => new LivestockProduce { LivestockId = livestock.Id, ProductionTypeId = typeId }));
+
+            existing.ProductionTypeId = declared.Count > 0 ? declared[0] : null;
+        }
         // Only ever set: the group's meat is created with the group, or on its first realization
         // for one that predates it. A payload that omits it — an older client, or the mobile app
         // before it knows the field — must not unlink what a realization is already filed under.

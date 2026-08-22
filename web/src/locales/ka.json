@@ -40,7 +40,20 @@
     "hideRemoved": "წაშლილების დამალვა",
     "removed": "წაშლილი",
     "unitHead": "სული",
-    "title": "ბალანსი"
+    "title": "ბალანსი",
+    "adjust": "ბალანსის კორექცია",
+    "adjustTitle": "ბალანსის კორექცია",
+    "adjustProduct": "პროდუქტი",
+    "adjustDirection": "ოპერაცია",
+    "adjustAdd": "შევსება",
+    "adjustRemove": "გამოკლება",
+    "adjustQuantity": "რაოდენობა",
+    "adjustDate": "თარიღი",
+    "adjustNote": "აღწერა",
+    "adjustNotePlaceholder": "რისთვის ან რატომ",
+    "adjustAvailable": "ნაშთი: {amount} {unit}",
+    "adjustNoOptions": "ამ გვერდზე ხელით კორექტირებადი პროდუქტი ჯერ არ არის.",
+    "adjustError": "კორექცია ვერ შესრულდა."
   },
   "equipment": {
     "title": "ინვენტარი",

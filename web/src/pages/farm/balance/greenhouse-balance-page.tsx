@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/language-context';
 import { getGreenhouseStock } from '@/services/greenhouse-stock-service';
 import type { GreenhouseStock } from '@/types/greenhouse-stock';
+import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
-import { balancesByGreenhouseStock } from './product-balance';
+import { balancesByGreenhouseStock } from './balance-sources';
 
 /**
  * What the greenhouses hold. The plainest of the four: greenhouse stock carries its own amount, so
@@ -15,6 +16,7 @@ import { balancesByGreenhouseStock } from './product-balance';
 export function GreenhouseBalancePage() {
   const { t } = useLanguage();
 
+  const [adjustOpen, setAdjustOpen] = useState(false);
   const [stock, setStock] = useState<GreenhouseStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +38,8 @@ export function GreenhouseBalancePage() {
     }
   }
 
+  const balances = balancesByGreenhouseStock(stock, t);
+
   return (
     <BalanceLayout
       backTo="/farm/greenhouse"
@@ -43,13 +47,20 @@ export function GreenhouseBalancePage() {
       loading={loading}
       error={error}
       onRetry={load}
+      actions={
+        <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
+          + {t('balance.adjust')}
+        </button>
+      }
     >
       <BalanceColumn
         productHeader={t('balance.colPlant')}
         amountHeader={t('balance.colBalance')}
         emptyLabel={t('balance.emptyGreenhouse')}
-        rows={balancesByGreenhouseStock(stock, t)}
+        rows={balances}
       />
+
+      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

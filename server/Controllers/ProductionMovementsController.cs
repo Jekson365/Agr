@@ -18,6 +18,32 @@ public class ProductionMovementsController(
         return Ok(await productionMovementRepository.GetAllAsync());
     }
 
+    [HttpPost]
+    public async Task<ActionResult<ProductionMovement>> Create(ProductionAdjustmentRequest request)
+    {
+        if (request.Delta == 0)
+        {
+            return BadRequest("Delta must be non-zero.");
+        }
+
+        var available = await productionMovementRepository.GetBalanceAsync(request.ProductionTypeId, request.UnitId);
+        if (available + request.Delta < 0)
+        {
+            return Conflict($"Only {available} of this product is available.");
+        }
+
+        var created = await productionMovementRepository.AddAsync(new ProductionMovement
+        {
+            ProductionTypeId = request.ProductionTypeId,
+            UnitId = request.UnitId,
+            Delta = request.Delta,
+            Source = ProductionMovementSource.Manual,
+            Note = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
+            Date = request.Date,
+        });
+        return Ok(created);
+    }
+
     /// <summary>Records a marketplace sale of livestock production: logs a movement with a
     /// negative delta tagged <see cref="ProductionMovementSource.Market"/> against the
     /// type/unit balance, mirroring the stock sale endpoint.</summary>

@@ -14,6 +14,11 @@ public class TreeProductMovementDto
     public int? HarvestProductId { get; set; }
     public decimal Delta { get; set; }
     public TreeProductMovementSource Source { get; set; }
+
+    public string? Note { get; set; }
+
+    public DateOnly? Date { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     /// <summary>The date of the harvest this came from; null for manual and market movements,

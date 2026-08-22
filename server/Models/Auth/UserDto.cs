@@ -23,6 +23,8 @@ public class UserDto
     public string City { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }
     public string ImagePath { get; set; } = string.Empty;
+    public string FarmName { get; set; } = string.Empty;
+    public string FarmImagePath { get; set; } = string.Empty;
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public StoragePlan Plan { get; set; }
@@ -55,6 +57,8 @@ public class UserDto
         City = user.City,
         BirthDate = user.BirthDate,
         ImagePath = user.ImagePath,
+        FarmName = user.FarmName,
+        FarmImagePath = user.FarmImagePath,
         Latitude = user.Latitude,
         Longitude = user.Longitude,
         Plan = user.Plan,

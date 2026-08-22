@@ -24,6 +24,7 @@ type Props = {
     showing: boolean;
     onToggle: () => void;
   };
+  actions?: ReactNode;
   children: ReactNode;
 };
 
@@ -32,7 +33,7 @@ type Props = {
  * for the holdings the farm has removed. The table itself is the caller's — each holding derives
  * its balances differently (see product-balance.ts) and fetches only what its own table needs.
  */
-export function BalanceLayout({ backTo, backLabel, loading, error, onRetry, removed, children }: Props) {
+export function BalanceLayout({ backTo, backLabel, loading, error, onRetry, removed, actions, children }: Props) {
   const { t } = useLanguage();
 
   return (
@@ -43,15 +44,22 @@ export function BalanceLayout({ backTo, backLabel, loading, error, onRetry, remo
 
       <div className="page-header">
         <h1 className="page-title">{t('farm.balance')}</h1>
-        {!loading && !error && removed?.has && (
-          <button
-            type="button"
-            className={removed.showing ? 'add-button balance-removed-toggle active' : 'add-button balance-removed-toggle'}
-            onClick={removed.onToggle}
-            aria-pressed={removed.showing}
-          >
-            {t(removed.showing ? 'balance.hideRemoved' : 'balance.showRemoved')}
-          </button>
+        {!loading && !error && (
+          <div className="balance-header-actions">
+            {removed?.has && (
+              <button
+                type="button"
+                className={
+                  removed.showing ? 'add-button balance-removed-toggle active' : 'add-button balance-removed-toggle'
+                }
+                onClick={removed.onToggle}
+                aria-pressed={removed.showing}
+              >
+                {t(removed.showing ? 'balance.hideRemoved' : 'balance.showRemoved')}
+              </button>
+            )}
+            {actions}
+          </div>
         )}
       </div>
 

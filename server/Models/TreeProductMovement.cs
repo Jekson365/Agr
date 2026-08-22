@@ -29,5 +29,10 @@ public class TreeProductMovement
     /// <summary>Signed change to the balance — positive when harvested, negative when drawn down.</summary>
     public decimal Delta { get; set; }
     public TreeProductMovementSource Source { get; set; }
+
+    public string? Note { get; set; }
+
+    public DateOnly? Date { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

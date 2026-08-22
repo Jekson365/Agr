@@ -310,6 +310,7 @@ public class AuthController(
     {
         var existing = await userRepository.GetByIdAsync(currentTenant.UserId);
         var oldImagePath = existing?.ImagePath;
+        var oldFarmImagePath = existing?.FarmImagePath;
 
         var user = await userRepository.UpdateProfileAsync(currentTenant.UserId, request);
         if (user is null)
@@ -320,6 +321,11 @@ public class AuthController(
         if (oldImagePath != request.ImagePath)
         {
             await fileStorageService.DeleteImageAsync(oldImagePath);
+        }
+
+        if (request.FarmImagePath is not null && oldFarmImagePath != request.FarmImagePath)
+        {
+            await fileStorageService.DeleteImageAsync(oldFarmImagePath);
         }
 
         return Ok(UserDto.From(user));

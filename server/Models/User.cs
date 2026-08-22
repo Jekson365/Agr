@@ -45,6 +45,9 @@ public class User
     public DateOnly? BirthDate { get; set; }
     public string ImagePath { get; set; } = string.Empty;
 
+    public string FarmName { get; set; } = string.Empty;
+    public string FarmImagePath { get; set; } = string.Empty;
+
     /// <summary>Precise farm location the user pinned on the map, if any.</summary>
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
