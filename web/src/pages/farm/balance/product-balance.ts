@@ -1,5 +1,5 @@
 import type { ListingCategory, MarketListing } from '@/types/market-listing';
-import type { BalanceAdjustTarget } from '@/types/balance-adjustment';
+import type { BalanceAdjustOption, BalanceAdjustTarget } from '@/types/balance-adjustment';
 
 export type Translate = (key: string) => string;
 
@@ -58,6 +58,14 @@ export function listedFor(row: ProductBalance, listed: Map<string, number>): num
   return row.market ? (listed.get(`${row.market.category}:${row.market.itemType}`) ?? 0) : 0;
 }
 
-export function adjustableRows(rows: ProductBalance[]): ProductBalance[] {
-  return rows.filter((row) => row.adjust != null);
+export function adjustOptions(rows: ProductBalance[]): BalanceAdjustOption[] {
+  return rows
+    .filter((row) => row.adjust != null)
+    .map((row) => ({
+      key: row.key,
+      title: row.title,
+      unitLabel: row.unitLabel,
+      balance: row.balance,
+      target: row.adjust!,
+    }));
 }

@@ -113,6 +113,19 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
       },
     ],
   },
+  {
+    to: '/report',
+    labelKey: 'dashboard.report',
+    icon: reportIcon,
+    // The overview sits in the list as its own entry, so the group header is just a group.
+    expandOnly: true,
+    children: [
+      { to: '/report', labelKey: 'report.overviewTab', icon: reportIcon, end: true },
+      { to: '/report/harvest', labelKey: 'report.harvestTab', icon: harvestIcon },
+      { to: '/report/production', labelKey: 'report.productionTab', icon: animalsIcon },
+      { to: '/report/stock', labelKey: 'report.stockTab', icon: plantsIcon },
+    ],
+  },
   // Covered growing stands beside the farm rather than inside it, and only appears once the
   // greenhouse configuration is switched on. Its stock and harvests hang off it, the way the
   // plant-farming group gathers the field's.
@@ -129,24 +142,13 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
       { to: '/farm/greenhouse/balance', labelKey: 'farm.balance', icon: balanceIcon },
     ],
   },
-  // Every outlined field on one map — the user's own and their neighbourhood's.
-  { to: '/map', labelKey: 'map.title', icon: mapIcon },
   { to: '/sales', labelKey: 'sales.title', icon: marketIcon, requiresConfig: MARKETPLACE_CONFIG },
   // { to: '/scanner', labelKey: 'dashboard.aiPlantScanner', icon: cameraIcon },
   // The marketplace is reached from the topbar button beside the neighbours one, not from here.
-  {
-    to: '/report',
-    labelKey: 'dashboard.report',
-    icon: reportIcon,
-    // The overview sits in the list as its own entry, so the group header is just a group.
-    expandOnly: true,
-    children: [
-      { to: '/report', labelKey: 'report.overviewTab', icon: reportIcon, end: true },
-      { to: '/report/harvest', labelKey: 'report.harvestTab', icon: harvestIcon },
-      { to: '/report/production', labelKey: 'report.productionTab', icon: animalsIcon },
-      { to: '/report/stock', labelKey: 'report.stockTab', icon: plantsIcon },
-    ],
-  },
+  // Buying in: the tab lands on the documents, and a new one is entered from there.
+  { to: '/purchases', labelKey: 'purchase.title', icon: marketIcon },
+  // Every outlined field on one map — the user's own and their neighbourhood's.
+  { to: '/map', labelKey: 'map.title', icon: mapIcon },
   { to: '/calendar', labelKey: 'dashboard.calendar', icon: calendarIcon, requiresConfig: CALENDAR_CONFIG },
 ];
 

@@ -6,19 +6,21 @@ import { Modal } from '@/components/ui/modal';
 import { todayIsoDate } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
 import { adjustBalance } from '@/services/balance-adjustment-service';
-import { adjustableRows, round2, type ProductBalance } from './product-balance';
+import type { BalanceAdjustOption } from '@/types/balance-adjustment';
 
 type Props = {
   open: boolean;
-  rows: ProductBalance[];
+  options: BalanceAdjustOption[];
   onClose: () => void;
   onSaved: () => void;
 };
 
-export function AdjustBalanceModal({ open, rows, onClose, onSaved }: Props) {
-  const { t } = useLanguage();
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
+}
 
-  const options = adjustableRows(rows);
+export function AdjustBalanceModal({ open, options, onClose, onSaved }: Props) {
+  const { t } = useLanguage();
 
   const [selectedKey, setSelectedKey] = useState('');
   const [direction, setDirection] = useState<'add' | 'remove'>('add');
@@ -39,17 +41,17 @@ export function AdjustBalanceModal({ open, rows, onClose, onSaved }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const selected = options.find((row) => row.key === selectedKey) ?? null;
+  const selected = options.find((option) => option.key === selectedKey) ?? null;
   const amount = parseFloat(amountInput) || 0;
   const overBalance = selected != null && direction === 'remove' && amount > selected.balance;
   const canSave = selected != null && amount > 0 && !overBalance && !saving;
 
   async function handleSave() {
-    if (!selected?.adjust || !canSave) return;
+    if (!selected || !canSave) return;
     setSaving(true);
     setError(null);
     try {
-      await adjustBalance(selected.adjust, {
+      await adjustBalance(selected.target, {
         delta: direction === 'add' ? amount : -amount,
         note: note.trim() || null,
         date,
@@ -73,13 +75,17 @@ export function AdjustBalanceModal({ open, rows, onClose, onSaved }: Props) {
         <div className="form-fields">
           <div className="field">
             <label>{t('balance.adjustProduct')}</label>
-            <select value={selectedKey} onChange={(e) => setSelectedKey(e.target.value)}>
-              {options.map((row) => (
-                <option key={row.key} value={row.key}>
-                  {row.title} — {round2(row.balance)} {row.unitLabel}
-                </option>
-              ))}
-            </select>
+            {options.length === 1 ? (
+              <span className="limit-hint field-fixed-value">{options[0].title}</span>
+            ) : (
+              <select value={selectedKey} onChange={(e) => setSelectedKey(e.target.value)}>
+                {options.map((option) => (
+                  <option key={option.key} value={option.key}>
+                    {option.title} — {round2(option.balance)} {option.unitLabel}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className="field">

@@ -10,7 +10,8 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class LivestockMovementsController(
     ILivestockMovementRepository livestockMovementRepository,
-    ILivestockRepository livestockRepository) : ControllerBase
+    ILivestockRepository livestockRepository,
+    ILivestockDetailRepository livestockDetailRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<LivestockMovement>>> Get([FromQuery] int livestockId)
@@ -47,7 +48,17 @@ public class LivestockMovementsController(
             return Conflict("The group does not have that many animals left.");
         }
 
-        return Ok(await livestockMovementRepository.AddAsync(movement));
+        var created = await livestockMovementRepository.AddAsync(movement);
+
+        // Head arriving gets a row each, so the group's animal list keeps up with its count and
+        // the per-animal pages have something to show. A removal takes none back: which animals
+        // left is the owner's to say, and the ones still recorded are what the history hangs off.
+        if (created.Delta > 0)
+        {
+            await livestockDetailRepository.AddForGroupAsync(created.LivestockId, created.Delta);
+        }
+
+        return Ok(created);
     }
 
     [HttpDelete("{id:int}")]
@@ -61,8 +72,21 @@ public class LivestockMovementsController(
             return Conflict(RealizationEntryMessage);
         }
 
+        var movement = await livestockMovementRepository.GetByIdAsync(id);
         var deleted = await livestockMovementRepository.DeleteAsync(id);
-        return deleted ? NoContent() : NotFound();
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        // Undoing an arrival takes its animals with it — the ones nothing has been recorded
+        // against yet, since an entry made against an animal is what keeps it.
+        if (movement is not null && movement.Delta > 0)
+        {
+            await livestockDetailRepository.RemoveUnreferencedAsync(movement.LivestockId, movement.Delta);
+        }
+
+        return NoContent();
     }
 
     /// <summary>

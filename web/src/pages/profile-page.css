@@ -157,43 +157,6 @@
 
 /* A settings row is the limits row plus its checkbox: the label takes the slack so the on/off
    word stays right-aligned with the plan limits listed above it. */
-.profile-config-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-  border-top: 1px solid var(--color-border);
-  cursor: pointer;
-}
-
-.profile-config-row input {
-  flex-shrink: 0;
-  width: 15px;
-  height: 15px;
-  accent-color: var(--color-green);
-  cursor: pointer;
-}
-
-.profile-config-row input:disabled {
-  cursor: progress;
-}
-
-.profile-config-row:has(input:disabled) {
-  cursor: progress;
-  opacity: 0.7;
-}
-
-.profile-config-row .profile-limit-label {
-  flex: 1;
-  min-width: 0;
-}
-
-.profile-config-error {
-  padding: 6px 0;
-  font-size: 0.75rem;
-  color: var(--color-danger);
-}
-
 /* Edit form */
 .profile-form {
   display: flex;

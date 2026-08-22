@@ -23,6 +23,19 @@ public class SeedMovementRepository(AppDbContext context) : ISeedMovementReposit
         return movement;
     }
 
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var existing = await context.SeedMovements.FindAsync(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        context.SeedMovements.Remove(existing);
+        await context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<bool> UpdateForHarvestSeedAsync(int harvestSeedId, int seedId, decimal delta)
     {
         var existing = await context.SeedMovements.FirstOrDefaultAsync(m => m.HarvestSeedId == harvestSeedId);

@@ -6,6 +6,7 @@ import logo from '@/assets/logo.png';
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
+import { homePathFor } from '@/routes/home-path';
 import { ApiError } from '@/services/api-client';
 import { sendPhoneCode } from '@/services/auth-service';
 import { loadGoogleIdentity, type GoogleCredentialResponse } from '@/services/google-identity';
@@ -96,7 +97,7 @@ function IconInput({ icon, children }: { icon: ReactNode; children: ReactNode })
 }
 
 export function LoginPage() {
-  const { signIn, signUp, signInWithPhone, signUpWithPhone, signInWithGoogle, isAuthenticated } = useAuth();
+  const { signIn, signUp, signInWithPhone, signUpWithPhone, signInWithGoogle, isAuthenticated, user } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
   // The landing page's "Start Free" links ask for the register tab, so a visitor who came to sign
@@ -187,7 +188,7 @@ export function LoginPage() {
   }, []);
 
   if (isAuthenticated) {
-    return <Navigate to="/main" replace />;
+    return <Navigate to={homePathFor(user)} replace />;
   }
 
   /** Back to the details, e.g. after switching tabs or to correct the number. */
@@ -550,6 +551,7 @@ export function LoginPage() {
               </>
             )}
           </form>
+
         </div>
       </div>
     </div>

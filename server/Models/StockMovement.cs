@@ -7,6 +7,9 @@ public enum StockMovementSource
 
     /// <summary>The amount was sold via a marketplace listing (see <see cref="MarketListing"/>).</summary>
     Market,
+
+    /// <summary>The amount was bought in, recorded on a <see cref="PurchaseDocument"/>.</summary>
+    Purchase,
 }
 
 /// <summary>A single change to a <see cref="Stock"/>'s amount, tagged with what caused it.</summary>

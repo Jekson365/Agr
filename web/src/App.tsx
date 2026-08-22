@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/app-shell';
 import { LoginPage } from '@/pages/auth/login-page';
 import { CalendarPage } from '@/pages/calendar-page';
-import { DashboardPage } from '@/pages/dashboard-page';
 import { AnimalHistoryPage } from '@/pages/farm/animal-history-page';
 import { EquipmentPage } from '@/pages/farm/equipment-page';
 import { FarmPage } from '@/pages/farm/farm-page';
@@ -42,12 +41,14 @@ import { ReportHarvestPage } from '@/pages/report-harvest-page';
 import { ReportPage } from '@/pages/report-page';
 import { ReportProductionPage } from '@/pages/report-production-page';
 import { ReportStockPage } from '@/pages/report-stock-page';
+import { PurchasesPage } from '@/pages/purchases-page';
 import { SalesPage } from '@/pages/sales/sales-page';
 import { CATALOG_ADMIN_EMAIL } from '@/config/nav-items';
 import { ConfigRoute } from '@/routes/config-route';
 import { OwnerRoute } from '@/routes/owner-route';
 import { SuperAdminRoute } from '@/routes/super-admin-route';
 import { ManagerPage } from '@/pages/manager/manager-page';
+import { ManagementRoute } from '@/routes/management-route';
 import { ProtectedRoute } from '@/routes/protected-route';
 import { PublicOnlyRoute } from '@/routes/public-route';
 import {
@@ -69,7 +70,8 @@ function App() {
     <Routes>
       {/* The marketing page is public in both directions: a signed-in visitor can still read it,
           so it sits outside both guards. It holds the root because that is the one URL strangers
-          and search engines arrive at — the app itself lives under /main. */}
+          and search engines arrive at — a signed-in one goes on to their own start (see
+          routes/home-path.ts). */}
       <Route path="/" element={<LandingPage />} />
 
       <Route element={<PublicOnlyRoute />}>
@@ -78,7 +80,17 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
-          <Route path="/main" element={<DashboardPage />} />
+          {/* The marketplace and the account's own profile are open to every signed-in account,
+              including one registered from the marketplace with no farm behind it. */}
+          <Route element={<ConfigRoute name={MARKETPLACE_CONFIG} />}>
+            <Route path="/market" element={<MarketPage />} />
+            <Route path="/market/:id" element={<MarketDetailPage />} />
+          </Route>
+          <Route path="/profile" element={<ProfilePage />} />
+
+          {/* Everything below is the farm software. An account without access to it is sent to
+              the marketplace instead; the server refuses those requests as well. */}
+          <Route element={<ManagementRoute />}>
           <Route path="/farm" element={<FarmPage />} />
           <Route path="/farm/land" element={<LandPage />} />
           <Route path="/farm/land/:id" element={<LandDetailPage />} />
@@ -143,8 +155,7 @@ function App() {
           </Route>
           {/* <Route path="/scanner" element={<PlaceholderPage titleKey="dashboard.aiPlantScanner" />} /> */}
           <Route element={<ConfigRoute name={MARKETPLACE_CONFIG} />}>
-            <Route path="/market" element={<MarketPage />} />
-            <Route path="/market/:id" element={<MarketDetailPage />} />
+            <Route path="/purchases" element={<PurchasesPage />} />
             <Route path="/sales" element={<SalesPage />} />
           </Route>
           {/* The platform operator's page. Unlike OwnerRoute above, this guard asks the server and
@@ -159,7 +170,7 @@ function App() {
           <Route element={<ConfigRoute name={CALENDAR_CONFIG} />}>
             <Route path="/calendar" element={<CalendarPage />} />
           </Route>
-          <Route path="/profile" element={<ProfilePage />} />
+          </Route>
         </Route>
       </Route>
 

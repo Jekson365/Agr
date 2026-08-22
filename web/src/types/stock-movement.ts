@@ -1,4 +1,4 @@
-export type StockMovementSource = 'Manual' | 'Harvest' | 'Market';
+export type StockMovementSource = 'Manual' | 'Harvest' | 'Market' | 'Purchase';
 
 export type StockMovement = {
   id: number;

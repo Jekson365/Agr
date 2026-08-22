@@ -1551,6 +1551,73 @@ namespace Server.Migrations.Tenant
                         });
                 });
 
+            modelBuilder.Entity("Server.Models.PurchaseDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Seller")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PurchaseDocuments");
+                });
+
+            modelBuilder.Entity("Server.Models.PurchaseItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("MovementId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("PurchaseDocumentId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("TargetId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("UnitId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PurchaseDocumentId");
+
+                    b.ToTable("PurchaseItems");
+                });
+
             modelBuilder.Entity("Server.Models.Seed", b =>
                 {
                     b.Property<int>("Id")
@@ -1731,12 +1798,6 @@ namespace Server.Migrations.Tenant
                             Id = 2,
                             ImagePath = "",
                             Name = "Beans"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ImagePath = "",
-                            Name = "Milk"
                         },
                         new
                         {
@@ -1983,6 +2044,9 @@ namespace Server.Migrations.Tenant
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateOnly?>("Date")
+                        .HasColumnType("date");
+
                     b.Property<decimal>("Delta")
                         .HasColumnType("numeric");
 
@@ -1994,6 +2058,9 @@ namespace Server.Migrations.Tenant
 
                     b.Property<int?>("MarketListingId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
 
                     b.Property<string>("Source")
                         .IsRequired()
@@ -2434,6 +2501,15 @@ namespace Server.Migrations.Tenant
                         .WithMany()
                         .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.PurchaseItem", b =>
+                {
+                    b.HasOne("Server.Models.PurchaseDocument", null)
+                        .WithMany()
+                        .HasForeignKey("PurchaseDocumentId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

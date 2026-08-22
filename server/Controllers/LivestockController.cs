@@ -82,15 +82,8 @@ public class LivestockController(
             // and forty ear tags typed by hand is not a way anyone starts.
             //
             // The count is deliberately not touched here: the movement above already accounts for
-            // exactly these animals, and raising it again would count them twice. The codes are
-            // built from the kind's initial, so a chicken group starts at C-1.
-            var codePrefix = created.Type.Trim() is { Length: > 0 } type
-                ? char.ToUpperInvariant(type[0]).ToString()
-                : "A";
-            await livestockDetailRepository.AddOffspringAsync(
-                new LivestockDetail { LivestockId = created.Id },
-                openingCount,
-                codePrefix);
+            // exactly these animals, and raising it again would count them twice.
+            await livestockDetailRepository.AddForGroupAsync(created.Id, openingCount);
         }
 
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);

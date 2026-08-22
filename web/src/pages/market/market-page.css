@@ -167,3 +167,14 @@
   top: 8px;
   right: 8px;
 }
+
+/* What the account trades under, and the way back into the registration form. */
+.market-seller-button {
+  height: 40px;
+  padding: 0 14px;
+  font-size: 0.8125rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

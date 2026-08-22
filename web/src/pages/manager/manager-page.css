@@ -204,3 +204,70 @@
     justify-content: flex-end;
   }
 }
+
+/* One account's feature switches, opened from its row. The operator grants areas; the account
+   itself only reads them. */
+.manager-config-button {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.manager-config-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.manager-config-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.manager-config-row:hover {
+  background: var(--color-green-muted);
+}
+
+.manager-config-name {
+  flex: 1;
+  font-size: 0.875rem;
+  color: var(--color-dark);
+}
+
+.manager-config-state {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-green);
+}
+
+.manager-config-state.muted {
+  color: var(--color-muted);
+  font-weight: 400;
+}
+
+/* Whether an account may open the farm software. The operator's own row shows the state without
+   offering to change it — there would be no way back. */
+.manager-access {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.manager-access input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--color-green);
+  cursor: pointer;
+}
+
+.manager-access:has(input:disabled) {
+  cursor: default;
+  opacity: 0.6;
+}

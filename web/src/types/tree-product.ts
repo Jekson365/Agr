@@ -19,7 +19,7 @@ export type HarvestProduct = {
 
 export type HarvestProductInput = Omit<HarvestProduct, 'id'>;
 
-export type TreeProductMovementSource = 'Manual' | 'Harvest' | 'Market';
+export type TreeProductMovementSource = 'Manual' | 'Harvest' | 'Market' | 'Purchase';
 
 /** A single change to a product's balance — positive when harvested, negative when drawn down. */
 export type TreeProductMovement = {

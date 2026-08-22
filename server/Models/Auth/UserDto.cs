@@ -25,6 +25,19 @@ public class UserDto
     public string ImagePath { get; set; } = string.Empty;
     public string FarmName { get; set; } = string.Empty;
     public string FarmImagePath { get; set; } = string.Empty;
+
+    /// <summary>Whether this account may open the farm management software. False for an account
+    /// registered from the marketplace, which is a shop rather than a farm.</summary>
+    public bool HasManagementAccess { get; set; }
+
+    /// <summary>Whether this account may list on the marketplace. Buying needs no registration.</summary>
+    public bool IsSeller { get; set; }
+    public string SellerName { get; set; } = string.Empty;
+    public string SellerPhone { get; set; } = string.Empty;
+    public string SellerTelegram { get; set; } = string.Empty;
+    public string SellerWhatsapp { get; set; } = string.Empty;
+    public string SellerFacebook { get; set; } = string.Empty;
+    public string SellerLocation { get; set; } = string.Empty;
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     public StoragePlan Plan { get; set; }
@@ -59,6 +72,14 @@ public class UserDto
         ImagePath = user.ImagePath,
         FarmName = user.FarmName,
         FarmImagePath = user.FarmImagePath,
+        HasManagementAccess = user.HasManagementAccess,
+        IsSeller = user.IsSeller,
+        SellerName = user.SellerName,
+        SellerPhone = user.SellerPhone,
+        SellerTelegram = user.SellerTelegram,
+        SellerWhatsapp = user.SellerWhatsapp,
+        SellerFacebook = user.SellerFacebook,
+        SellerLocation = user.SellerLocation,
         Latitude = user.Latitude,
         Longitude = user.Longitude,
         Plan = user.Plan,

@@ -57,6 +57,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Unit> Units => Set<Unit>();
     public DbSet<AnimalProduction> AnimalProductions => Set<AnimalProduction>();
     public DbSet<ProductionMovement> ProductionMovements => Set<ProductionMovement>();
+    public DbSet<PurchaseDocument> PurchaseDocuments => Set<PurchaseDocument>();
+    public DbSet<PurchaseItem> PurchaseItems => Set<PurchaseItem>();
     public DbSet<CalendarEvent> CalendarEvents => Set<CalendarEvent>();
     public DbSet<PlantScanHistory> PlantScanHistories => Set<PlantScanHistory>();
 
@@ -630,6 +632,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<ProductionMovement>()
             .Property(m => m.Source)
             .HasConversion<string>();
+
+        modelBuilder.Entity<PurchaseItem>()
+            .Property(i => i.Kind)
+            .HasConversion<string>();
+        modelBuilder.Entity<PurchaseItem>()
+            .HasOne<PurchaseDocument>()
+            .WithMany()
+            .HasForeignKey(i => i.PurchaseDocumentId)
+            .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<ProductionMovement>()
             .HasOne<ProductionType>()
             .WithMany()

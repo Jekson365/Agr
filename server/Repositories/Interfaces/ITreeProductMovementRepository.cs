@@ -14,6 +14,8 @@ public interface ITreeProductMovementRepository
 
     Task<TreeProductMovement> AddAsync(TreeProductMovement movement);
 
+    Task<bool> DeleteAsync(int id);
+
     /// <summary>Updates the movement linked to <paramref name="harvestProductId"/> in place
     /// rather than logging a new one. Returns false when none is linked yet.</summary>
     Task<bool> UpdateForHarvestProductAsync(int harvestProductId, decimal delta);

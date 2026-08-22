@@ -18,6 +18,7 @@ const SOURCE_LABEL_KEY: Record<StockMovementSource, string> = {
   Manual: 'stockHistory.sourceManual',
   Harvest: 'stockHistory.sourceHarvest',
   Market: 'stockHistory.sourceMarket',
+  Purchase: 'stockHistory.sourcePurchase',
 };
 
 export function StockHistoryPage() {

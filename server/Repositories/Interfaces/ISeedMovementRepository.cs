@@ -7,6 +7,8 @@ public interface ISeedMovementRepository
     Task<IEnumerable<SeedMovement>> GetBySeedAsync(int seedId);
     Task<SeedMovement> AddAsync(SeedMovement movement);
 
+    Task<bool> DeleteAsync(int id);
+
     /// <summary>
     /// Updates the movement linked to <paramref name="harvestSeedId"/> in place rather than
     /// logging a new one, so editing how much seed a harvest used doesn't pile up duplicate

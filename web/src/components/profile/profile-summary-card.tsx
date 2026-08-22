@@ -1,10 +1,6 @@
-import { useState } from 'react';
-
 import { PersonIcon } from '@/components/icons/misc-icons';
 import { formatBytes } from '@/components/ui/format-bytes';
-import { CONFIGURATION_LABEL_KEY } from '@/config/configuration-labels';
 import { useAuth } from '@/contexts/auth-context';
-import { useConfiguration } from '@/contexts/configuration-context';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import type { StoragePlan } from '@/types/auth';
@@ -22,23 +18,7 @@ function countLabel(max: number | null, t: (key: string) => string): string {
 
 export function ProfileSummaryCard() {
   const { user } = useAuth();
-  const { configurations, setValue } = useConfiguration();
   const { t } = useLanguage();
-
-  const [savingConfig, setSavingConfig] = useState<string | null>(null);
-  const [configError, setConfigError] = useState<string | null>(null);
-
-  async function toggleConfiguration(name: string, on: boolean) {
-    setSavingConfig(name);
-    setConfigError(null);
-    try {
-      await setValue(name, on ? 1 : 0);
-    } catch {
-      setConfigError(t('profile.configurationSaveError'));
-    } finally {
-      setSavingConfig(null);
-    }
-  }
 
   const fullName = [user?.name, user?.surname].filter(Boolean).join(' ') || user?.name || '';
   const initials = fullName
@@ -122,30 +102,6 @@ export function ProfileSummaryCard() {
               <span className={row.muted ? 'profile-limit-value muted' : 'profile-limit-value'}>{row.value}</span>
             </div>
           ))}
-
-          {configurations.length > 0 && (
-            <>
-              <div className="profile-limits-title">{t('profile.configurationsTitle')}</div>
-              {configurations.map((config) => {
-                const on = config.value !== 0;
-                return (
-                  <label key={config.id} className="profile-config-row">
-                    <input
-                      type="checkbox"
-                      checked={on}
-                      disabled={savingConfig != null}
-                      onChange={(e) => toggleConfiguration(config.name, e.target.checked)}
-                    />
-                    <span className="profile-limit-label">{t(CONFIGURATION_LABEL_KEY[config.name] ?? config.name)}</span>
-                    <span className={on ? 'profile-limit-value' : 'profile-limit-value muted'}>
-                      {t(on ? 'profile.configurationOn' : 'profile.configurationOff')}
-                    </span>
-                  </label>
-                );
-              })}
-              {configError && <div className="profile-config-error">{configError}</div>}
-            </>
-          )}
         </div>
       )}
     </aside>

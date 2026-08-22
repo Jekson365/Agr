@@ -66,7 +66,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
     setValues((prev) => ({ ...prev, [key]: value }));
   };
 
-  const canSubmit = isFormComplete(values, isEditing) && !saving;
+  const canSubmit = isFormComplete(values) && !saving;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -80,7 +80,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
     setFormError(null);
     try {
       const name = values.name.trim();
-      const produce = values.produce.trim();
+      const produce = fruitTypeLabel(values.type, t);
       const amount = parseAmount(values.amount);
 
       if (isEditing) {
@@ -185,7 +185,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
             is recorded on its history page rather than typed over here — an edit straight to the
             figure would leave the page and the ledger telling two different stories. */}
         <div className="field">
-          <label>{t('farm.amount')}</label>
+          <label>{t('treeStock.treeCount')}</label>
           {isEditing ? (
             <span className="limit-hint field-fixed-value">{values.amount}</span>
           ) : (
@@ -205,23 +205,12 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
           <span className="limit-hint">{t(TREE_STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitPlant')}</span>
         </div>
 
-        {/* Typed, not picked: an orchard's produce is its own, so every entry already in the
-            catalog belongs to another orchard and offering them would only list choices that
-            can't be taken. Named once, with the row — what it yielded is booked against that
-            product from the first harvest on, so an existing orchard shows it back rather than
-            offering to rewrite it. */}
-        <div className="field">
-          <label>{t('treeProduct.producesLabel')}</label>
-          {isEditing ? (
+        {isEditing && (
+          <div className="field">
+            <label>{t('treeProduct.producesLabel')}</label>
             <span className="limit-hint field-fixed-value">{values.produce || '—'}</span>
-          ) : (
-            <input
-              value={values.produce}
-              onChange={(e) => setField('produce', e.target.value)}
-              placeholder={t('treeProduct.producesPlaceholder')}
-            />
-          )}
-        </div>
+          </div>
+        )}
 
         {formError && <div className="error-banner">{formError}</div>}
       </div>

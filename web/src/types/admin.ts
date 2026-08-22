@@ -19,6 +19,10 @@ export type AdminUser = {
   plan: StoragePlan;
   coins: number;
   isSuperAdmin: boolean;
+  /** Whether this account may open the farm software. A marketplace registration starts without
+   *  it; the manager page is where it is granted. */
+  hasManagementAccess: boolean;
+  isSeller: boolean;
   createdAt: string;
   /** How many listings this account has on the market. */
   listingCount: number;

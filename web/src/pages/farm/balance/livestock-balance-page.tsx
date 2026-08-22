@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { getAllAnimalProductions } from '@/services/animal-production-service';
 import { getLivestock } from '@/services/livestock-service';
@@ -13,11 +14,10 @@ import type { MarketListing } from '@/types/market-listing';
 import type { ProductionMovement } from '@/types/production-movement';
 import type { ProductionType } from '@/types/production-type';
 import type { Unit } from '@/types/unit';
-import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
 import { balancesByProductionType, removedLivestockBalances } from './balance-sources';
-import { listedFor, listedTotals, type ProductBalance } from './product-balance';
+import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './product-balance';
 
 /**
  * What the herds have collected and how much of it is left, keyed by production type and unit —
@@ -104,7 +104,7 @@ export function LivestockBalancePage() {
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
       />
 
-      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
+      <AdjustBalanceModal open={adjustOpen} options={adjustOptions(balances)} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

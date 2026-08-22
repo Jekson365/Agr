@@ -1,4 +1,4 @@
-export type ProductionMovementSource = 'Manual' | 'Market';
+export type ProductionMovementSource = 'Manual' | 'Market' | 'Purchase';
 
 /**
  * A single change to a livestock-production balance. Production records themselves are

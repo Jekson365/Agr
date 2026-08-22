@@ -70,8 +70,8 @@ export function SalesPage() {
 
   return (
     <div>
-      <Link to="/main" className="back-link">
-        ← {t('sales.back')}
+      <Link to="/farm/land" className="back-link">
+        ← {t('dashboard.myFarm')}
       </Link>
 
       <div className="page-header">

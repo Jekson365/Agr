@@ -16,15 +16,17 @@ namespace Server.Controllers;
 /// working access for days after the column was cleared. One indexed lookup per request is a small
 /// price for revocation that takes effect immediately.
 ///
-/// Works entirely against <see cref="MasterDbContext"/>, like the marketplace controllers — users
-/// and listings both live there, and nothing here touches a tenant database.
+/// Users and listings both live in <see cref="MasterDbContext"/>, so most of this works against
+/// master alone. The one exception is a user's feature switches, which live in their own tenant
+/// database — see AdminController.Configurations.cs, which opens it directly.
 /// </summary>
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class AdminController(
+public partial class AdminController(
     MasterDbContext context,
     ICurrentTenant currentTenant,
+    ITenantConnectionProvider connectionProvider,
     ILogger<AdminController> logger)
     : ControllerBase
 {

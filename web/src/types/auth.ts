@@ -17,6 +17,15 @@ export type User = {
   imagePath: string;
   farmName: string;
   farmImagePath: string;
+  /** Whether this account may open the farm management software. False for an account registered
+   *  from the marketplace, which is a shop rather than a farm. */
+  hasManagementAccess: boolean;
+  /** Whether this account has registered to sell. Buying needs no registration — a seller both
+   *  lists and orders, from the one account. */
+  isSeller: boolean;
+  /** What the seller trades under, stamped onto their listings. */
+  sellerName: string;
+  sellerPhone: string;
   latitude: number | null;
   longitude: number | null;
   plan: StoragePlan;

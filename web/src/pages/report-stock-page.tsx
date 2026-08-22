@@ -45,6 +45,7 @@ const SOURCE_LABEL_KEY: Record<StockMovementSource, string> = {
   Manual: 'stockHistory.sourceManual',
   Harvest: 'stockHistory.sourceHarvest',
   Market: 'stockHistory.sourceMarket',
+  Purchase: 'stockHistory.sourcePurchase',
 };
 
 const SOURCE_OPTIONS: { value: StockMovementSource | 'all'; labelKey: string }[] = [
@@ -52,6 +53,7 @@ const SOURCE_OPTIONS: { value: StockMovementSource | 'all'; labelKey: string }[]
   { value: 'Manual', labelKey: 'stockHistory.sourceManual' },
   { value: 'Harvest', labelKey: 'stockHistory.sourceHarvest' },
   { value: 'Market', labelKey: 'stockHistory.sourceMarket' },
+  { value: 'Purchase', labelKey: 'stockHistory.sourcePurchase' },
 ];
 
 /** A single movement in the stock report — a plant-stock movement from the server report, or a

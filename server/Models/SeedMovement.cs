@@ -6,6 +6,9 @@ public enum SeedMovementSource
 
     /// <summary>Seed consumed by sowing, recorded on a harvest (see <see cref="HarvestSeed"/>).</summary>
     Harvest,
+
+    /// <summary>Seed bought in, recorded on a <see cref="PurchaseDocument"/>.</summary>
+    Purchase,
 }
 
 /// <summary>A single change to a <see cref="Seed"/>'s amount, tagged with what caused it —

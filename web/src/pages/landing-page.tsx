@@ -29,6 +29,7 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrency } from '@/contexts/currency-context';
 import { LANGUAGES, useLanguage, type Language } from '@/contexts/language-context';
+import { homePathFor } from '@/routes/home-path';
 import './landing-page.css';
 
 /* ------------------------------------------------------------------ icons */
@@ -984,7 +985,7 @@ function MapPanel() {
 export function LandingPage() {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const rootRef = useRef<HTMLDivElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const scrolled = useScrolled();
@@ -1031,7 +1032,7 @@ export function LandingPage() {
             <ThemeToggle />
             <LanguageToggle />
             {isAuthenticated ? (
-              <Link to="/main" className="landing-btn landing-btn-primary landing-btn-sm">
+              <Link to={homePathFor(user)} className="landing-btn landing-btn-primary landing-btn-sm">
                 {t('landing.nav.openApp')}
               </Link>
             ) : (

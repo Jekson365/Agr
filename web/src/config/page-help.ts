@@ -4,7 +4,6 @@
  * segments (e.g. /farm/livestock/balance) must come before parameterized ones.
  */
 export const PAGE_HELP: Array<{ pattern: string; key: string }> = [
-  { pattern: '/main', key: 'dashboard' },
   { pattern: '/farm', key: 'farm' },
   { pattern: '/farm/land', key: 'land' },
   { pattern: '/farm/land/:id', key: 'landDetail' },

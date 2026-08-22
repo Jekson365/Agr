@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { useAuth } from '@/contexts/auth-context';
-import { getConfigurations, setConfiguration } from '@/services/configuration-service';
+import { getConfigurations } from '@/services/configuration-service';
 import type { Configuration } from '@/types/configuration';
 
 type ConfigurationContextValue = {
@@ -21,16 +21,15 @@ type ConfigurationContextValue = {
   loadError: boolean;
   /** Whether a setting is switched on. Unknown or unset names read as off. */
   isOn: (name: string) => boolean;
-  /** Switches a setting and keeps the shared copy in step, so the sidebar and guards react at once. */
-  setValue: (name: string, value: number) => Promise<void>;
 };
 
 const ConfigurationContext = createContext<ConfigurationContextValue | undefined>(undefined);
 
 /**
- * The tenant's settings, fetched once and shared. Both the sidebar (which hides areas a setting
- * turns off) and the profile (which lists them all) need them, and neither should pay for its own
- * request. Loaded per signed-in user, since the settings live in that user's own database.
+ * The tenant's settings, fetched once and shared — read-only, because which areas an account has
+ * is the platform operator's to decide (see the manager page). The sidebar and the route guards
+ * both read them, and neither should pay for its own request. Loaded per signed-in user, since the
+ * settings live in that user's own database.
  */
 export function ConfigurationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
@@ -73,23 +72,14 @@ export function ConfigurationProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
-  /* Writes through to the server first, then updates the shared copy, so a rejected change never
-     leaves the sidebar showing an area the server still has switched off. */
-  const setValue = useCallback(async (name: string, value: number) => {
-    const updated = await setConfiguration(name, value);
-    setConfigurations((current) =>
-      current.map((config) => (config.name === updated.name ? updated : config))
-    );
-  }, []);
-
   const isOn = useCallback(
     (name: string) => configurations.some((config) => config.name === name && config.value !== 0),
     [configurations]
   );
 
   const value = useMemo<ConfigurationContextValue>(
-    () => ({ configurations, loading, loaded, loadError, isOn, setValue }),
-    [configurations, loading, loaded, loadError, isOn, setValue]
+    () => ({ configurations, loading, loaded, loadError, isOn }),
+    [configurations, loading, loaded, loadError, isOn]
   );
 
   return <ConfigurationContext.Provider value={value}>{children}</ConfigurationContext.Provider>;

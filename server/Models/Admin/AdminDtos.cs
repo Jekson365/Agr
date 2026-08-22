@@ -21,6 +21,12 @@ public class AdminUserDto
     public StoragePlan Plan { get; set; }
     public int Coins { get; set; }
     public bool IsSuperAdmin { get; set; }
+
+    /// <summary>Whether this account may open the farm management software. An account registered
+    /// from the marketplace starts without it; granting it is what lets them in.</summary>
+    public bool HasManagementAccess { get; set; }
+    public bool IsSeller { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     /// <summary>How many listings this account has on the market. Cheap context for deciding
@@ -41,6 +47,8 @@ public class AdminUserDto
         Plan = user.Plan,
         Coins = user.Coins,
         IsSuperAdmin = user.IsSuperAdmin,
+        HasManagementAccess = user.HasManagementAccess,
+        IsSeller = user.IsSeller,
         CreatedAt = user.CreatedAt,
         ListingCount = listingCount,
     };

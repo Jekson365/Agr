@@ -12,10 +12,9 @@ export type TreeStockFormValues = {
   amount: string;
   unit: TreeStockUnit;
   /**
-   * What these trees produce, by name. Required. Not a pick from the catalog: a product belongs to
-   * the one orchard that yields it, so every entry already in the catalog is another orchard's and
-   * listing them would only offer choices that can't be taken. Typing here names this orchard's own
-   * — created with the row, and renamed in place afterwards.
+   * What these trees produce, by name. Not entered: a new orchard's product is created with the row
+   * and named after its fruit, since a product belongs to the one orchard that yields it. This
+   * carries an existing row's product back for display only.
    */
   produce: string;
 };
@@ -38,13 +37,9 @@ export function parseAmount(value: string): number {
   return Math.max(0, parseFloat(value) || 0);
 }
 
-/**
- * Trees must declare what they produce, so a name for it is required alongside the fruit kind — on
- * a new row. An existing one only shows its produce back rather than taking a new one, and a row
- * recorded before produce was asked for has none to show, so there is nothing there to require.
- */
-export function isFormComplete(values: TreeStockFormValues, isEditing: boolean): boolean {
-  return values.type.trim() !== '' && (isEditing || values.produce.trim() !== '');
+/** The fruit kind is the only thing asked for: the produce is named after it, not entered. */
+export function isFormComplete(values: TreeStockFormValues): boolean {
+  return values.type.trim() !== '';
 }
 
 /**

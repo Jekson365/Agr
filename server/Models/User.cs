@@ -48,6 +48,63 @@ public class User
     public string FarmName { get; set; } = string.Empty;
     public string FarmImagePath { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Whether this account may use the farm management software at all.
+    ///
+    /// True for anyone who signed up through it, and false for an account created from the
+    /// marketplace's own registration — a shop that sells here has no farm to manage, and giving
+    /// it a tenant database it will never open costs a database per seller. Turning it on later is
+    /// what grants access; nothing else does.
+    ///
+    /// Read on every management request rather than carried as a token claim, for the same reason
+    /// as <see cref="IsSeller"/>: a week-old token would outlive the change.
+    /// </summary>
+    public bool HasManagementAccess { get; set; } = true;
+
+    /// <summary>
+    /// Whether this account may list on the marketplace. One account, two sides: buying is open to
+    /// everyone signed in, and this adds the ability to sell without taking anything away.
+    ///
+    /// The two registrations are deliberately not symmetric. Signing up in the farm software gets
+    /// this for free — a farm has produce to sell, and making them ask again for something they
+    /// plainly came for is a step with no decision in it. Signing up on the marketplace gets the
+    /// reverse: a seller, and <see cref="HasManagementAccess"/> switched off until an operator
+    /// grants it, because a shop has no farm and the software would be empty.
+    ///
+    /// Kept on the user rather than in a table of its own: there is one seller per account and
+    /// nothing to record twice, and every marketplace read already has the user row to hand.
+    /// </summary>
+    public bool IsSeller { get; set; }
+
+    /// <summary>The name the seller trades under, stamped onto their listings. Distinct from
+    /// <see cref="FarmName"/>: a farm and the shop that sells its produce need not be called the
+    /// same thing.</summary>
+    public string SellerName { get; set; } = string.Empty;
+
+    /// <summary>How buyers reach this seller. Separate from <see cref="PhoneNumber"/>, which is an
+    /// identity for signing in rather than a number to publish.</summary>
+    public string SellerPhone { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The messaging apps a buyer can reach this seller on, each as the handle or number the
+    /// seller wants published. Empty means "not offered", which is why they are plain strings
+    /// rather than nullables — there is no difference here between unset and declined.
+    ///
+    /// Kept apart from <see cref="PhoneNumber"/> for the same reason as
+    /// <see cref="SellerPhone"/>: that one is an identity for signing in, these are contact
+    /// details meant to be shown to strangers.
+    /// </summary>
+    public string SellerTelegram { get; set; } = string.Empty;
+    public string SellerWhatsapp { get; set; } = string.Empty;
+    public string SellerFacebook { get; set; } = string.Empty;
+
+    /// <summary>Where the seller trades from, written the way they write it — free text, like
+    /// <see cref="MarketListing.Location"/>, rather than a place the app has to know.</summary>
+    public string SellerLocation { get; set; } = string.Empty;
+
+    /// <summary>When the account registered as a seller. Null until it does.</summary>
+    public DateTime? SellerRegisteredAt { get; set; }
+
     /// <summary>Precise farm location the user pinned on the map, if any.</summary>
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }

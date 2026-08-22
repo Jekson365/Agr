@@ -11,10 +11,27 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class MarketListingsController(
     IMarketListingRepository marketListingRepository,
+    IUserRepository userRepository,
     ICurrentTenant currentTenant,
     IFileStorageService fileStorageService)
     : ControllerBase
 {
+    private const string NotASellerMessage = "Register as a seller before listing anything.";
+
+    /// <summary>
+    /// The caller if they have registered to sell, otherwise null. Read from the database on every
+    /// write rather than carried as a token claim: tokens last a week here, so a claim would let a
+    /// registration that was since withdrawn keep working for days.
+    ///
+    /// Only the selling side asks this. Browsing needs no account at all and ordering needs only a
+    /// signed-in one, so registering adds the ability to list without gating anything a buyer does.
+    /// </summary>
+    private async Task<User?> GetSellerAsync()
+    {
+        var user = await userRepository.GetByIdAsync(currentTenant.UserId);
+        return user is { IsSeller: true } ? user : null;
+    }
+
     /// <summary>
     /// Browsing the market is open to anyone — a shop window nobody has to sign in to look at.
     /// Overriding the class-level [Authorize] is safe on this controller specifically because it is
@@ -61,6 +78,11 @@ public class MarketListingsController(
     [HttpPost("{id:int}/request-premium")]
     public async Task<IActionResult> RequestPremium(int id)
     {
+        if (await GetSellerAsync() is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, NotASellerMessage);
+        }
+
         var listing = await marketListingRepository.GetByIdAsync(id);
         if (listing is null)
         {
@@ -78,9 +100,17 @@ public class MarketListingsController(
     [HttpPost]
     public async Task<ActionResult<MarketListingDto>> Create(MarketListing listing)
     {
+        var seller = await GetSellerAsync();
+        if (seller is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, NotASellerMessage);
+        }
+
         // The seller identity is stamped from the caller's token, never trusted from the client.
-        listing.SellerId = currentTenant.UserId;
-        listing.SellerName = currentTenant.Name ?? string.Empty;
+        // The name is what they registered to trade under, falling back to their own for an
+        // account that registered before the trade name was asked for.
+        listing.SellerId = seller.Id;
+        listing.SellerName = seller.SellerName.Trim().Length > 0 ? seller.SellerName.Trim() : seller.Name;
         listing.Status = ListingStatus.Active;
         listing.CreatedAt = DateTime.UtcNow;
 
@@ -94,6 +124,10 @@ public class MarketListingsController(
         if (id != listing.Id)
         {
             return BadRequest();
+        }
+        if (await GetSellerAsync() is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, NotASellerMessage);
         }
 
         var existing = await marketListingRepository.GetByIdAsync(id);
@@ -157,6 +191,10 @@ public class MarketListingsController(
     [RequestSizeLimit(25_000_000)]
     public async Task<IActionResult> UploadImage(IFormFile file)
     {
+        if (await GetSellerAsync() is null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, NotASellerMessage);
+        }
         if (file is null || file.Length == 0)
         {
             return BadRequest("No file uploaded.");

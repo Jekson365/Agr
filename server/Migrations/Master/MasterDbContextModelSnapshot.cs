@@ -369,9 +369,15 @@ namespace Server.Migrations.Master
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("HasManagementAccess")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("ImagePath")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsSeller")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsSuperAdmin")
                         .HasColumnType("boolean");
@@ -413,6 +419,33 @@ namespace Server.Migrations.Master
 
                     b.Property<int>("ScanCount")
                         .HasColumnType("integer");
+
+                    b.Property<string>("SellerFacebook")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SellerLocation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SellerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SellerPhone")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("SellerRegisteredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SellerTelegram")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SellerWhatsapp")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<long>("StorageUsedBytes")
                         .HasColumnType("bigint");

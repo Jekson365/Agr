@@ -6,6 +6,9 @@ public enum ProductionMovementSource
 
     /// <summary>The amount was sold via a marketplace listing (see <see cref="MarketListing"/>).</summary>
     Market,
+
+    /// <summary>The amount was bought in, recorded on a <see cref="PurchaseDocument"/>.</summary>
+    Purchase,
 }
 
 /// <summary>

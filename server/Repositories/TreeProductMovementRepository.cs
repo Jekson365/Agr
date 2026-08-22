@@ -61,6 +61,19 @@ public class TreeProductMovementRepository(AppDbContext context) : ITreeProductM
         return movement;
     }
 
+    public async Task<bool> DeleteAsync(int id)
+    {
+        var existing = await context.TreeProductMovements.FindAsync(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        context.TreeProductMovements.Remove(existing);
+        await context.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<bool> UpdateForHarvestProductAsync(int harvestProductId, decimal delta)
     {
         var existing = await context.TreeProductMovements.FirstOrDefaultAsync(m => m.HarvestProductId == harvestProductId);

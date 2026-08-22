@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 
+import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { getMarketListings } from '@/services/market-listing-service';
 import { getStockMovementReport } from '@/services/report-service';
 import type { MarketListing } from '@/types/market-listing';
 import type { StockMovementReportRow } from '@/types/report';
-import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
 import { balancesByProduct } from './balance-sources';
-import { listedFor, listedTotals, type ProductBalance } from './product-balance';
+import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './product-balance';
 
 /**
  * What the farm holds of each plant-stock good, summed from its movements, beside how much of it
@@ -85,7 +85,7 @@ export function StockBalancePage() {
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
       />
 
-      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
+      <AdjustBalanceModal open={adjustOpen} options={adjustOptions(balances)} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

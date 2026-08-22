@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 
+import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { getGreenhouseStock } from '@/services/greenhouse-stock-service';
 import type { GreenhouseStock } from '@/types/greenhouse-stock';
-import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
 import { balancesByGreenhouseStock } from './balance-sources';
+import { adjustOptions } from './product-balance';
 
 /**
  * What the greenhouses hold. The plainest of the four: greenhouse stock carries its own amount, so
@@ -60,7 +61,7 @@ export function GreenhouseBalancePage() {
         rows={balances}
       />
 
-      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
+      <AdjustBalanceModal open={adjustOpen} options={adjustOptions(balances)} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

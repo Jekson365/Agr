@@ -103,6 +103,44 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         return user;
     }
 
+    public async Task<User?> UpdateSellerProfileAsync(int id, SellerProfileRequest request)
+    {
+        var existing = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (existing is null || !existing.IsSeller)
+        {
+            return null;
+        }
+
+        existing.SellerName = request.SellerName.Trim();
+        existing.Name = request.Name.Trim().Length > 0 ? request.Name.Trim() : existing.Name;
+        existing.Surname = request.Surname.Trim();
+        existing.SellerPhone = request.SellerPhone.Trim();
+        existing.SellerTelegram = request.SellerTelegram.Trim();
+        existing.SellerWhatsapp = request.SellerWhatsapp.Trim();
+        existing.SellerFacebook = request.SellerFacebook.Trim();
+        existing.SellerLocation = request.SellerLocation.Trim();
+
+        await context.SaveChangesAsync();
+        return existing;
+    }
+
+    public async Task<User?> RegisterSellerAsync(int id, string sellerName, string sellerPhone)
+    {
+        var existing = await context.Users.FirstOrDefaultAsync(u => u.Id == id);
+        if (existing is null)
+        {
+            return null;
+        }
+
+        existing.IsSeller = true;
+        existing.SellerName = sellerName;
+        existing.SellerPhone = sellerPhone;
+        existing.SellerRegisteredAt ??= DateTime.UtcNow;
+
+        await context.SaveChangesAsync();
+        return existing;
+    }
+
     public async Task<User?> UpdateLocationAsync(int id, UpdateLocationRequest request)
     {
         var user = await context.Users.FindAsync(id);

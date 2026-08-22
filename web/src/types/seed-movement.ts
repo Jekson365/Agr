@@ -1,4 +1,4 @@
-export type SeedMovementSource = 'Manual' | 'Harvest';
+export type SeedMovementSource = 'Manual' | 'Harvest' | 'Purchase';
 
 /** A single change to a seed's amount — negative when seed was sown for a harvest. */
 export type SeedMovement = {

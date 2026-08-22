@@ -1,5 +1,6 @@
 import { apiFetch } from '@/services/api-client';
 import type { AdminUser, PremiumRequest } from '@/types/admin';
+import type { Configuration } from '@/types/configuration';
 
 /**
  * Whether the signed-in account may open the manager page.
@@ -34,4 +35,27 @@ export function rejectPremiumRequest(listingId: number): Promise<void> {
 /** The seller's own side: asks for a listing of theirs to be promoted. */
 export function requestPremium(listingId: number): Promise<void> {
   return apiFetch<void>(`/api/marketlistings/${listingId}/request-premium`, { method: 'POST' });
+}
+
+/** One account's feature switches, read from that account's own database. Operator only. */
+export function getUserConfigurations(userId: number): Promise<Configuration[]> {
+  return apiFetch<Configuration[]>(`/api/admin/users/${userId}/configurations`);
+}
+
+/** Switches one of an account's areas on or off. The only way a switch is written — the account
+ *  itself can read them but not change them. */
+export function setUserConfiguration(userId: number, name: string, value: number): Promise<Configuration> {
+  return apiFetch<Configuration>(`/api/admin/users/${userId}/configurations/${encodeURIComponent(name)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ value }),
+  });
+}
+
+/** Grants or withdraws an account's access to the farm software. Operator only, and an operator
+ *  cannot change their own — there would be no way back. */
+export function setManagementAccess(userId: number, value: boolean): Promise<AdminUser> {
+  return apiFetch<AdminUser>(`/api/admin/users/${userId}/management-access`, {
+    method: 'PUT',
+    body: JSON.stringify({ value }),
+  });
 }

@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
+import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/record-list.css';
 import { fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
-import { formatLocalizedIsoDateTime } from '@/components/ui/date-utils';
+import { formatLocalizedIsoDateTime, formatLocalizedIsoDay } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteTreeStockMovement, getTreeStockMovements } from '@/services/tree-stock-movement-service';
 import { getTreeStockItem } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
+import type { BalanceAdjustOption } from '@/types/balance-adjustment';
 import type { TreeStockMovement } from '@/types/tree-stock-movement';
 
 export function TreeStockHistoryPage() {
@@ -22,6 +24,7 @@ export function TreeStockHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<TreeStockMovement | null>(null);
+  const [adjustOpen, setAdjustOpen] = useState(false);
 
   useEffect(() => {
     if (!treeStockId) return;
@@ -61,6 +64,11 @@ export function TreeStockHistoryPage() {
   const unitLabel = stock ? t(TREE_STOCK_UNIT_LABEL_KEY[stock.unit]) : '';
   const title = stock ? stock.name.trim() || fruitTypeLabel(stock.type, t) : t('treeStockHistory.title');
 
+  const adjustOptions: BalanceAdjustOption[] =
+    stock && !stock.isDeleted
+      ? [{ key: `tree:${stock.id}`, title, unitLabel, balance: stock.amount, target: { kind: 'treeStock', treeStockId: stock.id } }]
+      : [];
+
   return (
     <div>
       <Link to="/farm/fruits" className="back-link">
@@ -69,6 +77,11 @@ export function TreeStockHistoryPage() {
 
       <div className="page-header">
         <h1 className="page-title">{title}</h1>
+        {adjustOptions.length > 0 && (
+          <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
+            + {t('treeStockHistory.adjust')}
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -100,7 +113,12 @@ export function TreeStockHistoryPage() {
               {newestFirst.map((movement) => (
                 <div key={movement.id} className={movement.delta < 0 ? 'record-card record-card-down' : 'record-card record-card-up'}>
                   <div className="record-card-main">
-                    <span className="record-card-date">{formatLocalizedIsoDateTime(movement.createdAt, language)}</span>
+                    <span className="record-card-date">
+                      {movement.date
+                        ? formatLocalizedIsoDay(movement.date, language)
+                        : formatLocalizedIsoDateTime(movement.createdAt, language)}
+                    </span>
+                    {movement.note && <span className="record-card-note">{movement.note}</span>}
                   </div>
                   <span
                     className={movement.delta < 0 ? 'record-card-value record-card-value-down' : 'record-card-value record-card-value-up'}
@@ -124,6 +142,13 @@ export function TreeStockHistoryPage() {
           )}
         </>
       )}
+
+      <AdjustBalanceModal
+        open={adjustOpen}
+        options={adjustOptions}
+        onClose={() => setAdjustOpen(false)}
+        onSaved={load}
+      />
 
       <ConfirmDeleteModal
         open={!!confirmDelete}

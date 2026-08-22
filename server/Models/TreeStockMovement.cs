@@ -25,5 +25,10 @@ public class TreeStockMovement
 
     public decimal Delta { get; set; }
     public StockMovementSource Source { get; set; }
+
+    public string? Note { get; set; }
+
+    public DateOnly? Date { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

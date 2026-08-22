@@ -85,6 +85,7 @@ builder.Services.AddScoped<IProductionTypeRepository, ProductionTypeRepository>(
 builder.Services.AddScoped<IUnitRepository, UnitRepository>();
 builder.Services.AddScoped<IAnimalProductionRepository, AnimalProductionRepository>();
 builder.Services.AddScoped<IProductionMovementRepository, ProductionMovementRepository>();
+builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
 builder.Services.AddScoped<ICalendarEventRepository, CalendarEventRepository>();
 builder.Services.AddScoped<IPlantScanHistoryRepository, PlantScanHistoryRepository>();
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
@@ -195,6 +196,10 @@ app.UseCors("ExpoClient");
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// After authorization, so it has the caller's identity and only ever answers a request that was
+// already going to be served.
+app.UseMiddleware<Server.Services.ManagementAccessMiddleware>();
 
 app.MapControllers();
 

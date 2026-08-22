@@ -1,5 +1,5 @@
 /*
- * Public landing page (/main). It sits outside the app shell, so it brings its own header, its
+ * Public landing page (/). It sits outside the app shell, so it brings its own header, its
  * own scroll and its own spacing scale — but every colour comes from the same theme tokens as the
  * app, so light and dark stay in step with the rest of the product.
  */

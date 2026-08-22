@@ -9,6 +9,9 @@ public enum TreeProductMovementSource
 
     /// <summary>Produce sold — a negative movement drawing the balance down.</summary>
     Market,
+
+    /// <summary>Produce bought in, recorded on a <see cref="PurchaseDocument"/>.</summary>
+    Purchase,
 }
 
 /// <summary>A single change to a <see cref="TreeProduct"/>'s balance, tagged with what caused it

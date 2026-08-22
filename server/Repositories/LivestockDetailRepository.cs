@@ -79,6 +79,58 @@ public class LivestockDetailRepository(AppDbContext context) : ILivestockDetailR
         return offspring;
     }
 
+    public async Task<IReadOnlyList<LivestockDetail>> AddForGroupAsync(int livestockId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            return [];
+        }
+
+        var type = await context.Livestock
+            .Where(l => l.Id == livestockId)
+            .Select(l => l.Type)
+            .FirstOrDefaultAsync();
+
+        var prefix = type?.Trim() is { Length: > 0 } named ? char.ToUpperInvariant(named[0]).ToString() : "A";
+        return await AddOffspringAsync(new LivestockDetail { LivestockId = livestockId }, quantity, prefix);
+    }
+
+    public async Task<int> RemoveUnreferencedAsync(int livestockId, int quantity)
+    {
+        if (quantity <= 0)
+        {
+            return 0;
+        }
+
+        // The window is the last `quantity` animals of the group, and the removal happens inside
+        // it. Filtering first and taking after would reach past a kept animal into an older one
+        // that was never part of what is being taken back.
+        var newest = await context.LivestockDetails
+            .Where(d => d.LivestockId == livestockId)
+            .OrderByDescending(d => d.Id)
+            .Take(quantity)
+            .Select(d => d.Id)
+            .ToListAsync();
+
+        var free = await context.LivestockDetails
+            .Where(d => newest.Contains(d.Id))
+            .Where(d => !context.MedicalRecords.Any(m => m.StockId == d.Id))
+            .Where(d => !context.StockHistories.Any(h => h.StockId == d.Id))
+            .Where(d => !context.AnimalProductions.Any(p => p.AnimalId == d.Id))
+            .Where(d => !context.BreedingEvents.Any(b => b.MaleAnimalId == d.Id || b.FemaleAnimalId == d.Id))
+            .Where(d => !context.LivestockDetails.Any(c => c.ParentOneId == d.Id || c.ParentTwoId == d.Id))
+            .ToListAsync();
+
+        if (free.Count == 0)
+        {
+            return 0;
+        }
+
+        context.LivestockDetails.RemoveRange(free);
+        await context.SaveChangesAsync();
+        return free.Count;
+    }
+
     public async Task<bool> UpdateAsync(LivestockDetail detail)
     {
         var existing = await context.LivestockDetails.FindAsync(detail.Id);

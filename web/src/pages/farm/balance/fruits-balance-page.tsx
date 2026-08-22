@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { getMarketListings } from '@/services/market-listing-service';
 import { getStockMovementReport } from '@/services/report-service';
@@ -7,11 +8,10 @@ import { getTreeProductMovements, getTreeProducts } from '@/services/tree-produc
 import type { MarketListing } from '@/types/market-listing';
 import type { StockMovementReportRow } from '@/types/report';
 import type { TreeProduct, TreeProductMovement } from '@/types/tree-product';
-import { AdjustBalanceModal } from './adjust-balance-modal';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
 import { balancesByProduct, balancesByTreeProduct } from './balance-sources';
-import { listedFor, listedTotals, type ProductBalance } from './product-balance';
+import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './product-balance';
 
 /**
  * What the orchards have yielded and how much of it is left, by product. This table reports what
@@ -91,7 +91,7 @@ export function FruitsBalancePage() {
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
       />
 
-      <AdjustBalanceModal open={adjustOpen} rows={balances} onClose={() => setAdjustOpen(false)} onSaved={load} />
+      <AdjustBalanceModal open={adjustOpen} options={adjustOptions(balances)} onClose={() => setAdjustOpen(false)} onSaved={load} />
     </BalanceLayout>
   );
 }

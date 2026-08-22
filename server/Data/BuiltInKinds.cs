@@ -19,7 +19,6 @@ public static class BuiltInKinds
     [
         new() { Id = 1, Name = "Weat" },
         new() { Id = 2, Name = "Beans" },
-        new() { Id = 3, Name = "Milk" },
         new() { Id = 4, Name = "Cabbage" },
         new() { Id = 5, Name = "Cucumber" },
         new() { Id = 6, Name = "Eggplant" },
