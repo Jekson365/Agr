@@ -1,0 +1,156 @@
+/* The panels the section nav switches between: one card per part of the harvest, with rows and
+   controls at the same enlarged scale as the page chrome in harvest-detail.css. */
+
+.hd-panel {
+  padding: 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+}
+
+.hd-panel + .hd-panel {
+  margin-top: 1.25rem;
+}
+
+.hd-panel-title {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hd-note {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.hd-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hd-rows.scroll {
+  max-height: 26rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  scrollbar-gutter: stable;
+}
+
+.hd-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface-sunken);
+}
+
+.hd-row img {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hd-row-text {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.hd-row-title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hd-row-amount {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.9375rem;
+  color: var(--color-dark);
+}
+
+.hd-row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.hd-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: 0.875rem;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hd-button:hover:not(:disabled) {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.hd-button.danger:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.hd-button.primary {
+  width: 100%;
+  max-width: 26rem;
+  margin-top: 1.25rem;
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.hd-button.primary:hover:not(:disabled) {
+  color: var(--color-on-accent);
+  opacity: 0.92;
+}
+
+.hd-empty {
+  margin: 0;
+  padding: 1.5rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.hd-removed {
+  margin-left: 0.5rem;
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.hd-button:focus-visible {
+  outline: 3px solid var(--color-green);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .hd-row-actions {
+    width: 100%;
+  }
+
+  .hd-row-actions .hd-button {
+    flex: 1;
+  }
+}

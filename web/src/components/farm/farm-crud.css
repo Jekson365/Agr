@@ -6,6 +6,16 @@
   gap: 16px;
 }
 
+/* A page's own controls, right of its title: the guide button, a filter toggle, the add button.
+   Lives here rather than on any one page because every page's header uses it. */
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .page-header-left {
   display: flex;
   align-items: center;

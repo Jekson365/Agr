@@ -33,6 +33,18 @@
   gap: 10px;
 }
 
+.purchase-line .kind-dropdown-trigger {
+  height: 48px;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+}
+
+.purchase-add-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .purchase-line-narrow input {
   text-align: right;
 }

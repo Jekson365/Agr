@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { PlusIcon } from '@/components/icons/misc-icons';
 import { Modal } from '@/components/ui/modal';
 import { todayIsoDate } from '@/components/ui/date-utils';
 import { useAuth } from '@/contexts/auth-context';
@@ -155,8 +156,9 @@ export function PurchaseModal({ open, editing, onClose, onSaved }: Props) {
           {dropped > 0 && <div className="error-banner">{t('purchase.droppedLines', { count: dropped })}</div>}
 
           <div className="purchase-footer">
-            <button type="button" className="btn btn-secondary" onClick={addLine}>
-              + {t('purchase.addItem')}
+            <button type="button" className="btn btn-secondary purchase-add-item" onClick={addLine}>
+              <PlusIcon width={16} height={16} />
+              {t('purchase.addItem')}
             </button>
             <span className="purchase-total">
               {t('purchase.total')}: {formatPrice(total)}

@@ -1,32 +1,29 @@
 import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/config/harvest-status';
 import { useLanguage } from '@/contexts/language-context';
 import type { HarvestStatus } from '@/types/harvest';
-import './harvest.css';
+import './harvest-detail.css';
 
-type HarvestStatusColumnProps = {
+type Props = {
   status: HarvestStatus;
   saving: boolean;
   error: string | null;
-  showExpenses: boolean;
   onSelect: (status: HarvestStatus) => void;
-  onOpenExpenses: () => void;
 };
 
-export function HarvestStatusColumn({
-  status,
-  saving,
-  error,
-  showExpenses,
-  onSelect,
-  onOpenExpenses,
-}: HarvestStatusColumnProps) {
+/**
+ * The three stages as three full-height buttons rather than a compact stepper: where the harvest
+ * stands is readable at a glance, and moving it on is one large target with the stage named in
+ * words. The stage already reached is ticked, so the mark says which is which without relying on
+ * the fill colour alone.
+ */
+export function HarvestStageBar({ status, saving, error, onSelect }: Props) {
   const { t } = useLanguage();
   const currentIndex = HARVEST_STATUSES.indexOf(status);
 
   return (
-    <div className="harvest-top-cell harvest-status-column">
-      <span className="harvest-status-heading">{t('harvest.statusLabel')}</span>
-      <div className="harvest-status-steps">
+    <>
+      <h2 className="hd-block-title">{t('harvest.statusLabel')}</h2>
+      <div className="hd-stages">
         {HARVEST_STATUSES.map((option, index) => {
           const state = index < currentIndex ? 'done' : index === currentIndex ? 'active' : 'ahead';
           return (
@@ -35,26 +32,18 @@ export function HarvestStatusColumn({
               type="button"
               disabled={saving}
               aria-current={index === currentIndex ? 'step' : undefined}
-              className={`harvest-status-step ${state}`}
+              className={`hd-stage ${state}`}
               onClick={() => onSelect(option)}
             >
-              <span className="harvest-status-marker">{index + 1}</span>
-              <span className="harvest-status-name">{t(HARVEST_STATUS_LABEL_KEY[option])}</span>
+              <span className="hd-stage-mark" aria-hidden="true">
+                {index <= currentIndex ? '✓' : index + 1}
+              </span>
+              <span>{t(HARVEST_STATUS_LABEL_KEY[option])}</span>
             </button>
           );
         })}
       </div>
-      {showExpenses && (
-        <button
-          type="button"
-          className="harvest-expenses-button"
-          onClick={onOpenExpenses}
-          aria-label={t('harvest.expensesTitle')}
-        >
-          $
-        </button>
-      )}
       {error && <div className="error-banner">{error}</div>}
-    </div>
+    </>
   );
 }

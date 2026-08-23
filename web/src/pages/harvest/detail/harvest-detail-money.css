@@ -1,0 +1,96 @@
+/* The money section: the harvest's figures as cards, and planned-against-actual as one row per
+   good rather than a table. */
+
+.hd-money-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.hd-money-card {
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface-sunken);
+}
+
+.hd-money-label {
+  display: block;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
+.hd-money-value {
+  display: block;
+  margin-top: 0.375rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hd-money-value.positive {
+  color: var(--color-green);
+}
+
+.hd-money-value.negative {
+  color: var(--color-danger);
+}
+
+.hd-compare-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  padding: 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface-sunken);
+}
+
+.hd-compare-good {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 10rem;
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hd-compare-good img {
+  width: 3rem;
+  height: 3rem;
+  object-fit: contain;
+}
+
+.hd-compare-cell {
+  font-size: 0.9375rem;
+  color: var(--color-dark);
+}
+
+.hd-compare-cell strong {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.hd-compare-cell.up {
+  color: var(--color-green);
+}
+
+.hd-compare-cell.down {
+  color: var(--color-danger);
+}
+
+.hd-tag {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.625rem;
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}

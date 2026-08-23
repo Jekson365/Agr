@@ -17,6 +17,8 @@ export type MarketListing = {
   sellerSurname: string;
   sellerPhoneNumber: string;
   sellerImagePath: string;
+  /** The seller's farm, empty when they have not named one. Live from their profile. */
+  sellerFarmName: string;
   type: ListingType;
   category: ListingCategory;
   itemType: string;
@@ -54,6 +56,7 @@ export type MarketListingInput = Omit<
   | 'sellerSurname'
   | 'sellerPhoneNumber'
   | 'sellerImagePath'
+  | 'sellerFarmName'
   | 'status'
   | 'isPremium'
   | 'premiumRequestedAt'

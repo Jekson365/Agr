@@ -14,6 +14,7 @@ import { getTreeProducts } from '@/services/tree-product-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import { getUnits } from '@/services/unit-service';
 import type { PurchaseItemKind } from '@/types/purchase';
+import { PURCHASE_KIND_ICON, purchaseTargetIcon } from './purchase-icons';
 
 type Translate = (key: string) => string;
 
@@ -47,6 +48,7 @@ export type PurchaseTarget = {
   unitId: number | null;
   label: string;
   unitLabel: string;
+  icon: string;
 };
 
 export type PurchaseTargets = Record<PurchaseItemKind, PurchaseTarget[]>;
@@ -97,6 +99,7 @@ export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): P
       unitId,
       label: t(PRODUCTION_TYPE_LABEL_KEY[type.name] ?? type.name),
       unitLabel: t(UNIT_LABEL_KEY[unit.name] ?? unit.name),
+      icon: purchaseTargetIcon('LivestockProduction', type.name),
     });
   };
   for (const record of productions) addPair(record.productionTypeId, record.unitId);
@@ -108,6 +111,7 @@ export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): P
       unitId: null,
       label: group.name.trim() || livestockTypeLabel(group.type, t),
       unitLabel: t('balance.unitHead'),
+      icon: purchaseTargetIcon('Livestock', group.type),
     })),
     LivestockProduction: [...pairs.values()],
     TreeStock: orchards.map((orchard) => ({
@@ -115,30 +119,35 @@ export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): P
       unitId: null,
       label: orchard.name.trim() || fruitTypeLabel(orchard.type, t),
       unitLabel: t(TREE_STOCK_UNIT_LABEL_KEY[orchard.unit] ?? 'farm.unitPlant'),
+      icon: purchaseTargetIcon('TreeStock', orchard.type),
     })),
     TreeProduct: treeProducts.map((product) => ({
       targetId: product.id,
       unitId: null,
       label: product.name,
       unitLabel: t(TREE_PRODUCT_UNIT_LABEL_KEY[product.unit] ?? 'farm.unitKg'),
+      icon: PURCHASE_KIND_ICON.TreeProduct,
     })),
     Stock: stock.map((item) => ({
       targetId: item.id,
       unitId: null,
       label: item.name.trim() || stockTypeLabel(item.type, t),
       unitLabel: t(STOCK_UNIT_LABEL_KEY[item.unit] ?? item.unit),
+      icon: purchaseTargetIcon('Stock', item.type),
     })),
     Seed: seeds.map((seed) => ({
       targetId: seed.id,
       unitId: null,
       label: seed.name.trim() || stockTypeLabel(seed.type, t),
       unitLabel: t(SEED_UNIT_LABEL_KEY[seed.unit] ?? seed.unit),
+      icon: purchaseTargetIcon('Seed', seed.type),
     })),
     Equipment: equipment.map((item) => ({
       targetId: item.id,
       unitId: null,
       label: item.name,
       unitLabel: t('purchase.unitPiece'),
+      icon: PURCHASE_KIND_ICON.Equipment,
     })),
   };
 }

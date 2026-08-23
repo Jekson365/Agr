@@ -12,15 +12,17 @@ type Props = {
   options: KindOption[];
   selected: string;
   onSelect: (value: string) => void;
-  /** The icon is whatever file the user picked, or null when they added a name alone. */
-  onAddNew: (name: string, icon: File | null) => Promise<KindOption | null>;
-  addPlaceholder: string;
+  /** The icon is whatever file the user picked, or null when they added a name alone.
+   *  Left out by a caller that only picks — the catalog then has no way in from here. */
+  onAddNew?: (name: string, icon: File | null) => Promise<KindOption | null>;
+  addPlaceholder?: string;
   loading?: boolean;
   /** As on the chip picker: the dropdown only reports the intent, the parent owns the delete. */
   onRemove?: (value: string) => void;
   removeLabel?: string;
   /** Whether the catalog may be added to from here — see the same prop on {@link KindPicker}.
-   *  With it off the popover is a search over a settled list, and both ways in are gone. */
+   *  With it off, or with no `onAddNew` to call, the popover is a search over a settled list and
+   *  both ways in are gone. */
   allowAdd?: boolean;
   /** Names the icon input for screen readers and its tooltip. Only read while `allowAdd`
    *  is on, so a picker that only picks may leave it out. */
@@ -65,6 +67,8 @@ export function KindDropdown({
   size = 'default',
 }: Props) {
   const { t } = useLanguage();
+
+  const canAddKinds = allowAdd && onAddNew != null;
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -115,7 +119,7 @@ export function KindDropdown({
      checked, since a built-in kind is stored under an English key but shown translated and the
      search runs over the label. */
   const canAdd =
-    allowAdd &&
+    canAddKinds &&
     trimmed.length > 0 &&
     !options.some(
       (opt) => opt.label.toLowerCase() === trimmed.toLowerCase() || opt.value.toLowerCase() === trimmed.toLowerCase()
@@ -196,7 +200,7 @@ export function KindDropdown({
   /** Shared by the two ways in: the row under a fruitless search, and the button beside the field.
    *  Returns whether the catalog took the name. */
   async function addKind(name: string, icon: File | null): Promise<boolean> {
-    if (saving) return false;
+    if (saving || !onAddNew) return false;
     setSaving(true);
     try {
       const created = await onAddNew(name, icon);
@@ -356,7 +360,7 @@ export function KindDropdown({
 
         {/* The signposted way in, for someone who knows the kind isn't there yet and would rather
             not search for it first. Off with allowAdd, along with the row inside the popover. */}
-        {allowAdd && (
+        {canAddKinds && (
           <button
             type="button"
             className="kind-dropdown-new"
@@ -370,7 +374,7 @@ export function KindDropdown({
         )}
       </div>
 
-      {allowAdd && adding && (
+      {canAddKinds && adding && (
         <div className={`kind-add-row kind-dropdown-new-row${sizeClass}`}>
           {/* Picture first, so the row being built reads the way the options it joins do. */}
           <label className="kind-add-icon" title={iconLabel}>

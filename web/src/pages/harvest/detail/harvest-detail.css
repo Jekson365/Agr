@@ -1,0 +1,184 @@
+/* The harvest detail page is drawn larger and flatter than the rest of the app: one section at a
+   time, every control at least 3.5rem tall and labelled in words, so it can be worked without
+   fine aiming or hunting through a long scroll. Sizes are in rem, so the font-scale control in
+   settings enlarges the whole page along with the text. */
+
+.hd-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+  padding: 0 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: 0.875rem;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hd-back:hover {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.hd-title {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.25;
+}
+
+.hd-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  margin: 0 0 1.5rem;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
+.hd-fact strong {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+.hd-fact-warn {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.hd-block-title {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hd-stages {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.hd-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 4.5rem;
+  padding: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hd-stage-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-surface-sunken);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.hd-stage.done {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.hd-stage.done .hd-stage-mark {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.hd-stage.active {
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.hd-stage.active .hd-stage-mark {
+  background: var(--color-on-accent);
+  color: var(--color-green);
+}
+
+.hd-stage:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.hd-nav {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.hd-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 7rem;
+  padding: 1rem 0.5rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hd-nav-item img {
+  width: 2.75rem;
+  height: 2.75rem;
+  object-fit: contain;
+}
+
+.hd-nav-item[aria-pressed='true'] {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.hd-nav-count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.hd-nav-item[aria-pressed='true'] .hd-nav-count {
+  color: var(--color-green);
+}
+
+.hd-back:focus-visible,
+.hd-stage:focus-visible,
+.hd-nav-item:focus-visible {
+  outline: 3px solid var(--color-green);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .hd-stages {
+    grid-template-columns: 1fr;
+  }
+}
