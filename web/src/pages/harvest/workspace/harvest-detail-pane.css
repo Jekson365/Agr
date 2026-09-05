@@ -1,0 +1,76 @@
+.hw-pane {
+  min-width: 0;
+}
+
+.hw-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+}
+
+.hw-head-icon {
+  width: 4rem;
+  height: 4rem;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.hw-head-main {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.hw-head-main .harvest-status-badge {
+  margin-top: 0;
+}
+
+.hw-head-title {
+  margin: 0.5rem 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-dark);
+  overflow-wrap: anywhere;
+}
+
+.hw-head-facts {
+  margin-bottom: 0;
+}
+
+.hw-head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.hd-button.compact {
+  min-height: 2.75rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.hw-kpi {
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .hw-head {
+    padding: 1rem;
+  }
+
+  .hw-head-actions {
+    width: 100%;
+  }
+
+  .hw-head-actions .hd-button {
+    flex: 1;
+  }
+}

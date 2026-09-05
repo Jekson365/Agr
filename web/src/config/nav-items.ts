@@ -1,10 +1,12 @@
 import calendarIcon from '@/assets/icons/calendar.png';
+import financesIcon from '@/assets/icons/finances.png';
 import farmIcon from '@/assets/icons/farm.png';
 import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
 import mapIcon from '@/assets/icons/map.png';
-import marketIcon from '@/assets/icons/market.png';
+import purchasesIcon from '@/assets/icons/purchases.png';
 import reportIcon from '@/assets/icons/report.png';
+import sellsIcon from '@/assets/icons/sells.png';
 import animalsIcon from '@/assets/properties/animals.png';
 import balanceIcon from '@/assets/properties/balance.png';
 import equipmentIcon from '@/assets/properties/equipment.png';
@@ -73,10 +75,12 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         // The setting covers the whole group — the field's harvests, its seed and its stock.
         requiresConfig: CROP_FARMING_CONFIG,
         children: [
-          { to: '/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
-          { to: '/farm/seeds', labelKey: 'seed.title', icon: seedIcon },
+          // What the field holds comes before what is being grown on it: the stock page is the
+          // one read daily, the harvests are the record behind it.
           // `end` so the stock link doesn't stay lit while its own balance is open below it.
           { to: '/farm/stock', labelKey: 'farm.plantStock', icon: plantsIcon, end: true },
+          { to: '/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
+          { to: '/farm/seeds', labelKey: 'seed.title', icon: seedIcon },
           { to: '/farm/stock/balance', labelKey: 'farm.balance', icon: balanceIcon },
         ],
       },
@@ -89,6 +93,9 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         requiresConfig: FRUIT_STOCK_CONFIG,
         children: [
           { to: '/farm/fruits', labelKey: 'fruits.trees', icon: fruitsIcon, end: true },
+          { to: '/farm/fruits/nursery', labelKey: 'nursery.title', icon: seedIcon },
+          { to: '/farm/fruits/positioning', labelKey: 'positioning.title', icon: landIcon },
+          { to: '/farm/fruits/treatment', labelKey: 'treatment.title', icon: calendarIcon },
           { to: '/farm/fruits/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
           { to: '/farm/fruits/balance', labelKey: 'farm.balance', icon: balanceIcon },
           // { to: '/farm/fruits/products', labelKey: 'treeProduct.title', icon: fruitsIcon },
@@ -142,14 +149,24 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
       { to: '/farm/greenhouse/balance', labelKey: 'farm.balance', icon: balanceIcon },
     ],
   },
-  { to: '/sales', labelKey: 'sales.title', icon: marketIcon, requiresConfig: MARKETPLACE_CONFIG },
   // { to: '/scanner', labelKey: 'dashboard.aiPlantScanner', icon: cameraIcon },
   // The marketplace is reached from the topbar button beside the neighbours one, not from here.
-  // Buying in: the tab lands on the documents, and a new one is entered from there.
-  { to: '/purchases', labelKey: 'purchase.title', icon: marketIcon },
+  // What the farm sold and what it bought in, gathered under one heading.
+  {
+    to: '/sales',
+    labelKey: 'finances.title',
+    icon: financesIcon,
+    expandOnly: true,
+    children: [
+      { to: '/sales', labelKey: 'sales.title', icon: sellsIcon, requiresConfig: MARKETPLACE_CONFIG },
+      { to: '/purchases', labelKey: 'purchase.title', icon: purchasesIcon },
+    ],
+  },
   // Every outlined field on one map — the user's own and their neighbourhood's.
   { to: '/map', labelKey: 'map.title', icon: mapIcon },
-  { to: '/calendar', labelKey: 'dashboard.calendar', icon: calendarIcon, requiresConfig: CALENDAR_CONFIG },
+  // Every harvest the farm keeps — field, orchard and greenhouse — stretched over one timeline.
+  { to: '/harvest/timeline', labelKey: 'harvestTimeline.title', icon: harvestIcon },
+  { to: '/calendar', labelKey: 'harvestCalendar.title', icon: calendarIcon, requiresConfig: CALENDAR_CONFIG },
 ];
 
 /**

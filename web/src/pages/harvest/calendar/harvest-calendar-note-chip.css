@@ -1,0 +1,49 @@
+.hcal-note-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 3px 8px;
+  border: 0;
+  border-left: 3px solid var(--color-gold);
+  border-radius: 7px;
+  background: var(--color-gold-soft);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.hcal-note-chip:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 16px var(--color-shadow);
+  box-shadow:
+    0 0 0 1px var(--color-gold),
+    0 0 16px color-mix(in srgb, var(--color-gold) 55%, transparent);
+}
+
+.hcal-note-chip-time {
+  flex: 0 0 auto;
+  color: var(--color-gold);
+}
+
+.hcal-note-chip-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcal-note-chip {
+    transition: none;
+  }
+
+  .hcal-note-chip:hover {
+    transform: none;
+  }
+}

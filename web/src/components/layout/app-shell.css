@@ -1,7 +1,83 @@
 .app-shell {
+  position: relative;
   height: 100%;
   display: flex;
   overflow: hidden;
+}
+
+.app-shell-edge {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  z-index: 40;
+}
+
+.app-sidebar-handle {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 41;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 72px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.app-sidebar-handle:hover {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.app-sidebar-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  background: var(--color-overlay);
+}
+
+.app-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 45;
+  display: flex;
+  transform: translateX(-100%);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+
+.app-sidebar.open {
+  transform: translateX(0);
+  box-shadow: 0 0 48px var(--color-shadow-strong);
+}
+
+.app-shell.locked .app-shell-edge,
+.app-shell.locked .app-sidebar-handle {
+  display: none;
+}
+
+.app-shell.locked .app-sidebar {
+  position: relative;
+  z-index: auto;
+  flex-shrink: 0;
+  transform: none;
+  box-shadow: none;
+}
+
+.app-shell.locked .app-content {
+  padding-left: 24px;
 }
 
 .app-shell-body {
@@ -27,7 +103,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 24px;
+  padding: 24px 24px 24px 34px;
 }
 
 /* Pages that manage their own inner scroll region opt in with this class on
@@ -47,4 +123,11 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-sidebar,
+  .app-sidebar-handle {
+    transition: none;
+  }
 }

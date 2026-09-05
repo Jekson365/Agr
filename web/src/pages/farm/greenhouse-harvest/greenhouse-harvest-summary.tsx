@@ -1,6 +1,6 @@
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { daysUntilExpected, isOverdue, type HarvestEconomics } from '@/config/harvest-analysis';
-import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/config/harvest-status';
+import { GREENHOUSE_HARVEST_STATUSES, HARVEST_STATUS_LABEL_KEY } from '@/config/harvest-status';
 import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import type { GreenhouseHarvest } from '@/types/greenhouse-harvest';
@@ -113,7 +113,7 @@ export function GreenhouseHarvestSummary({
       <div className="field">
         <label>{t('harvest.statusLabel')}</label>
         <div className="kind-row">
-          {HARVEST_STATUSES.map((option) => (
+          {GREENHOUSE_HARVEST_STATUSES.map((option) => (
             <button
               key={option}
               type="button"

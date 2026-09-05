@@ -141,11 +141,28 @@ export function todayIsoDate(): string {
 }
 
 /**
+ * Whether the crop is off the field. True from Harvested onwards: the step after it books the
+ * yield into the balances, and a harvest already in the balances is no less picked for it.
+ */
+export function isPicked(status: HarvestStatus): boolean {
+  return status === 'Harvested' || status === 'TransferredToBalance';
+}
+
+/**
+ * Whether the harvest's recorded yield counts towards stock, the tree products and the reports.
+ * The single client-side statement of the server's rule in HarvestStockSync: Harvested records
+ * what was picked, and only TransferredToBalance books it.
+ */
+export function countsInBalance(status: HarvestStatus): boolean {
+  return status === 'TransferredToBalance';
+}
+
+/**
  * A harvest is overdue when its expected pick date has passed and it still hasn't been
  * harvested. Comparison is lexicographic, which is exact for `YYYY-MM-DD`.
  */
 export function isOverdue(harvest: Harvest, today: string = todayIsoDate()): boolean {
-  return harvest.status !== 'Harvested' && harvest.expectedHarvestDate != null && harvest.expectedHarvestDate < today;
+  return !isPicked(harvest.status) && harvest.expectedHarvestDate != null && harvest.expectedHarvestDate < today;
 }
 
 /** Days until the expected pick date; negative when overdue. Null without an expected date. */
@@ -157,14 +174,14 @@ export function daysUntilExpected(harvest: Harvest, today: string = todayIsoDate
 
 /**
  * Whether moving to `next` reverses stock that was already applied. Stock is only ever written
- * when a harvest reaches Harvested (see HarvestRepository), so leaving Harvested undoes it —
+ * when a harvest reaches TransferredToBalance (see HarvestRepository), so leaving it undoes it —
  * the one transition that silently rewrites data outside the harvest itself.
  */
 export function isDestructiveTransition(current: HarvestStatus, next: HarvestStatus): boolean {
-  return current === 'Harvested' && next !== 'Harvested';
+  return countsInBalance(current) && !countsInBalance(next);
 }
 
 /** Whether moving to `next` writes the recorded results into stock for the first time. */
 export function isApplyingTransition(current: HarvestStatus, next: HarvestStatus): boolean {
-  return current !== 'Harvested' && next === 'Harvested';
+  return !countsInBalance(current) && countsInBalance(next);
 }

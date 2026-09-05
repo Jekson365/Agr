@@ -95,7 +95,7 @@ public partial class ReportRepository
     {
         var kind = KindOf(category);
         var harvests = await context.Harvests.AsNoTracking()
-            .Where(h => h.Kind == kind && h.Status == HarvestStatus.Harvested)
+            .Where(h => h.Kind == kind && h.Status == HarvestStatus.TransferredToBalance)
             .ToListAsync();
         var harvestIds = harvests.Select(h => h.Id).ToHashSet();
 

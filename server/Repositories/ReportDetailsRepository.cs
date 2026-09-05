@@ -62,7 +62,7 @@ public partial class ReportRepository
         var isFruit = category == ReportCategory.Fruit;
 
         var harvests = await context.Harvests.AsNoTracking()
-            .Where(h => h.Kind == kind && h.Status == HarvestStatus.Harvested && h.Date == day)
+            .Where(h => h.Kind == kind && h.Status == HarvestStatus.TransferredToBalance && h.Date == day)
             .ToListAsync();
         if (harvests.Count == 0)
         {

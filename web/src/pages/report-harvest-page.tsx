@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { ChevronDownIcon } from '@/components/icons/nav-icons';
 import { monthNames as localizedMonthNames } from '@/components/ui/date-utils';
 import { fruitKindImage, fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
+import { countsInBalance } from '@/config/harvest-analysis';
 import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY } from '@/config/stock-kinds';
 import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -89,9 +90,10 @@ export function ReportHarvestPage() {
       }
       setProductsByHarvest(byHarvest);
 
-      // Results only ever exist for harvests already marked Harvested (the backend enforces this).
-      const harvestedIds = harvestList.filter((h) => h.status === 'Harvested').map((h) => h.id);
-      const entries = await Promise.all(harvestedIds.map(async (id) => [id, await getHarvestResults(id)] as const));
+      // Only a harvest whose pick has been booked into the balances is reported on, matching
+      // what the server's own report endpoints count.
+      const bookedIds = harvestList.filter((h) => countsInBalance(h.status)).map((h) => h.id);
+      const entries = await Promise.all(bookedIds.map(async (id) => [id, await getHarvestResults(id)] as const));
       setResultsByHarvest(Object.fromEntries(entries));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -166,7 +168,7 @@ export function ReportHarvestPage() {
 
   const rows = useMemo(() => {
     return harvests
-      .filter((h) => h.status === 'Harvested')
+      .filter((h) => countsInBalance(h.status))
       .map((h) => {
         const date = parseIsoDate(h.date);
         const cost = (h.equipmentCost ?? 0) + (h.workersCost ?? 0) + (h.fuelCost ?? 0) + (h.otherCost ?? 0);

@@ -1,0 +1,163 @@
+.hcal-card {
+  position: fixed;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: 0 18px 44px var(--color-shadow-strong);
+  animation: hcal-card-in 120ms ease-out;
+}
+
+.hcal-card-title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hcal-card-label {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* The stages as their colours, the way the chips carry them: eight names would not fit the card,
+   so only the stage the harvest is at spells itself out. */
+.hcal-card-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.hcal-card-status {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.hcal-card-status:hover:not(:disabled) {
+  transform: scale(1.18);
+}
+
+.hcal-card-status.active {
+  width: auto;
+  height: auto;
+  padding: 4px 10px;
+  cursor: default;
+}
+
+.hcal-card-status-name {
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--color-on-tone);
+  white-space: nowrap;
+}
+
+.hcal-card-status:disabled:not(.active) {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.hcal-card-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hcal-card-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hcal-card-empty {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.hcal-card-seeds {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+.hcal-card-seed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.hcal-card-seed img {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  object-fit: contain;
+}
+
+.hcal-card-seed-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+}
+
+.hcal-card-seed-amount {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-green);
+  white-space: nowrap;
+}
+
+@keyframes hcal-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcal-card {
+    animation: none;
+  }
+
+  .hcal-card-status {
+    transition: none;
+  }
+
+  .hcal-card-status:hover:not(:disabled) {
+    transform: none;
+  }
+}

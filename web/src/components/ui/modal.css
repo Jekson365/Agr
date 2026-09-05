@@ -1,3 +1,26 @@
+/* Every modal in the app is mounted only while it is open — the shared component returns null
+   when closed, and the hand-rolled overlays are rendered conditionally — so the entrance plays
+   on each open: the backdrop fades, the card slides down into place. */
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -7,17 +30,19 @@
   justify-content: center;
   padding: 20px;
   z-index: 100;
+  animation: modal-backdrop-in 160ms ease-out;
 }
 
 .modal-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 560px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   background: var(--color-surface);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 20px 40px var(--color-shadow-strong);
+  animation: modal-slide-down 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-title {
@@ -55,6 +80,12 @@
   max-width: 720px;
 }
 
+/* A step past `wide` for the two-column forms that still crowd at 720px, without going to the
+   near-fullscreen `full`. */
+.modal-card.xwide {
+  max-width: 1060px;
+}
+
 /* Near-fullscreen variant for editors that need real canvas space — the positioning editor's
    toolbar + side panel + drawing surface don't fit a centered form card. */
 .modal-card.full {
@@ -81,12 +112,79 @@
 }
 
 /* The chip rows already carry their own bottom margin; inside the grid the gap handles it. */
-.modal-form-grid .kind-row {
+.modal-form-grid .kind-row,
+.modal-form-split .kind-row {
   margin-bottom: 0;
+}
+
+/* Two stacks side by side, for a form with more fields than a card's height can hold: paired
+   columns would still run down the page, since a field that owns a whole row costs a row either
+   way. Each part keeps its own single column and the card carries two of them. */
+.modal-form-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+  align-items: start;
+}
+
+.modal-form-part {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  align-items: start;
+  min-width: 0;
+}
+
+.modal-form-part .field-full {
+  grid-column: 1 / -1;
+}
+
+/* Denser rows than a one-column form: two stacks of 48px fields still out-run a laptop's
+   viewport, and a card that does not scroll is the whole point of splitting them. */
+.modal-form-split .field {
+  gap: 4px;
+}
+
+.modal-form-split .field label {
+  font-size: 0.75rem;
+}
+
+.modal-form-split .field input,
+.modal-form-split .field select,
+.modal-form-split .field textarea {
+  height: 40px;
+}
+
+.modal-form-split .kind-chip {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
+.modal-form-split > .modal-form-span {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 860px) {
+  .modal-form-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .modal-form-part {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (max-width: 640px) {
   .modal-form-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-overlay,
+  .modal-card {
+    animation: none;
   }
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import './manual-sale-modal.css';
+
 import { DateField } from '@/components/ui/date-field';
 import { todayIsoDate } from '@/components/ui/date-utils';
 import { Modal } from '@/components/ui/modal';
@@ -93,13 +95,13 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} size="wide">
+    <Modal open={open} onClose={onClose} size="xwide" className="manual-sale-modal">
       <h2 className="form-title">{t('sales.manualTitle')}</h2>
 
-      <div className="form-fields modal-form-grid">
+      <div className="sale-form-grid">
         <ListingSourcePicker selected={source} onSelect={applySource} />
 
-        <div className="field field-full">
+        <div className="field field-wide">
           <label>{t('sales.manualItem')}</label>
           <input
             value={titleInput}
@@ -107,6 +109,11 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
             placeholder={t('sales.manualItemPlaceholder')}
           />
           <span className="limit-hint">{t('sales.manualItemHint')}</span>
+        </div>
+
+        <div className="field">
+          <label>{t('sales.manualDate')}</label>
+          <DateField value={soldOn} max={todayIsoDate()} onChange={(v) => setSoldOn(v ?? '')} />
         </div>
 
         <div className="field">
@@ -135,11 +142,6 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
         </div>
 
         <div className="field">
-          <label>{t('sales.manualDate')}</label>
-          <DateField value={soldOn} max={todayIsoDate()} onChange={(v) => setSoldOn(v ?? '')} />
-        </div>
-
-        <div className="field">
           <label>{t('sales.manualBuyerName')}</label>
           <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
         </div>
@@ -149,7 +151,7 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
           <input value={buyerSurname} onChange={(e) => setBuyerSurname(e.target.value)} />
         </div>
 
-        <div className="field field-full">
+        <div className="field">
           <label>{t('sales.manualBuyerPhone')}</label>
           <input type="tel" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} />
         </div>

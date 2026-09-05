@@ -11,9 +11,9 @@ namespace Server.Controllers;
 public class HarvestChemicalsController(IHarvestChemicalRepository harvestChemicalRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<HarvestChemical>>> GetByHarvest([FromQuery] int harvestId)
+    public async Task<ActionResult<IEnumerable<HarvestChemical>>> GetByHarvest([FromQuery] int? harvestId)
     {
-        return Ok(await harvestChemicalRepository.GetByHarvestAsync(harvestId));
+        return Ok(await harvestChemicalRepository.GetAsync(harvestId));
     }
 
     [HttpPost]

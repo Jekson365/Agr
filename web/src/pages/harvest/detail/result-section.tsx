@@ -26,6 +26,8 @@ export function ResultSection({ harvestId, results, items, catalogs, canEdit, on
   const [editing, setEditing] = useState<HarvestResult | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; label: string } | null>(null);
 
+  const canAdd = results.length === 0;
+
   const rows: EntryRow[] = results.map((result) => {
     const target = targetFor(catalogs, result.stockId, result.treeStockId, t);
     return {
@@ -56,6 +58,8 @@ export function ResultSection({ harvestId, results, items, catalogs, canEdit, on
         emptyText={canEdit ? t('harvestResult.empty') : t('harvestResult.needsHarvested')}
         addLabel={t('harvestResult.add')}
         canEdit={canEdit}
+        canAdd={canAdd}
+        capText={t('harvestResult.onlyOne')}
         scrollable
         onAdd={() => {
           setEditing(null);

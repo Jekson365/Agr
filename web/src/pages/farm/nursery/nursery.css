@@ -1,0 +1,170 @@
+/* The nursery reads as a run of batches rather than a table: a batch is a few figures and a
+   position along one short flow, and the flow is the thing being checked. */
+
+.nursery-intro {
+  margin: 0 0 1.25rem;
+  max-width: 46rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.nursery-section-title {
+  margin: 2rem 0 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+/* Three across at most: the track floor is a third of the row, so a wide screen stops at three
+   instead of filling with ever-narrower cards, while a container too small for three still drops
+   to two and then to one. Sized off the container rather than the viewport, since the sidebar
+   collapses and the viewport says nothing about how much room the page actually has. */
+.nursery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(17rem, (100% - 2rem) / 3), 1fr));
+  gap: 1rem;
+}
+
+.nursery-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.125rem;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px var(--color-shadow);
+}
+
+/* A batch that is out of the nursery: a record of what happened, so it steps back from the ones
+   still being raised. */
+.nursery-card.is-planted {
+  border-style: dashed;
+  background: var(--color-surface-sunken);
+}
+
+.nursery-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nursery-card-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-green-soft);
+}
+
+.nursery-card-icon img {
+  width: 1.875rem;
+  height: 1.875rem;
+  object-fit: contain;
+}
+
+.nursery-card-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.nursery-card-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.nursery-card-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+/* The flow itself. Every stage is listed whether or not it has been reached, so the batch's
+   position reads as a place along a known path rather than as a bare label. */
+.nursery-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  list-style: none;
+}
+
+.nursery-step {
+  display: grid;
+  grid-template-columns: 0.75rem 1fr auto;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.nursery-step.done {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+.nursery-step-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+}
+
+.nursery-step-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.nursery-step-date {
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}
+
+.nursery-card-line {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.nursery-card-line strong {
+  color: var(--color-dark);
+  font-weight: 600;
+}
+
+.nursery-card-note {
+  margin: 0;
+  padding: 0.625rem 0.75rem;
+  border-radius: 10px;
+  background: var(--color-surface-sunken);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.nursery-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.nursery-card-actions .btn {
+  flex: 1 1 8rem;
+}

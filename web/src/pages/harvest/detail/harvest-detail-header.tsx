@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { cropLabel } from '@/config/crop';
-import { daysUntilExpected, isOverdue } from '@/config/harvest-analysis';
+import { daysUntilExpected, isOverdue, isPicked } from '@/config/harvest-analysis';
 import { useLanguage } from '@/contexts/language-context';
 import type { Farm } from '@/types/farm';
 import type { Harvest } from '@/types/harvest';
@@ -41,7 +41,7 @@ export function HarvestDetailHeader({ harvest, farm, plot }: Props) {
             {t('harvest.expectedDate')}: <strong>{formatLocalizedIsoDate(harvest.expectedHarvestDate, language)}</strong>{' '}
             {overdue ? (
               <span className="hd-fact-warn">{t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}</span>
-            ) : harvest.status !== 'Harvested' && daysLeft != null ? (
+            ) : !isPicked(harvest.status) && daysLeft != null ? (
               <span>{t('harvest.dueIn', { days: daysLeft })}</span>
             ) : null}
           </span>

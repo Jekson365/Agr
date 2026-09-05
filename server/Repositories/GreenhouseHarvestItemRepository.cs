@@ -7,13 +7,15 @@ namespace Server.Repositories;
 
 public class GreenhouseHarvestItemRepository(AppDbContext context) : IGreenhouseHarvestItemRepository
 {
-    public async Task<IEnumerable<GreenhouseHarvestItem>> GetByHarvestAsync(int greenhouseHarvestId)
+    public async Task<IEnumerable<GreenhouseHarvestItem>> GetAsync(int? greenhouseHarvestId = null)
     {
-        return await context.GreenhouseHarvestItems
-            .AsNoTracking()
-            .Where(i => i.GreenhouseHarvestId == greenhouseHarvestId)
-            .OrderBy(i => i.Id)
-            .ToListAsync();
+        var query = context.GreenhouseHarvestItems.AsNoTracking().AsQueryable();
+        if (greenhouseHarvestId is not null)
+        {
+            query = query.Where(i => i.GreenhouseHarvestId == greenhouseHarvestId);
+        }
+
+        return await query.OrderBy(i => i.Id).ToListAsync();
     }
 
     public async Task<GreenhouseHarvestItem> AddAsync(GreenhouseHarvestItem item)

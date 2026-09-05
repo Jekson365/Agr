@@ -1,0 +1,218 @@
+.hcal-span {
+  --span-color: var(--color-amber);
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+  margin: 5px 0;
+  padding: 6px 9px 6px 12px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--span-color) 20%, var(--color-surface));
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  text-decoration: none;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+/* The tone stripe, drawn inside the box rather than as a border: a border would push the day
+   boxes 3px in, and they have to line up with the grid lines the body paints behind them. */
+.hcal-span::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 3px;
+  background: var(--span-color);
+  pointer-events: none;
+}
+
+.hcal-span:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 16px var(--color-shadow);
+  box-shadow:
+    0 0 0 1px var(--span-color),
+    0 0 16px color-mix(in srgb, var(--span-color) 55%, transparent);
+  z-index: 2;
+}
+
+.hcal-span-days {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  z-index: 1;
+}
+
+.hcal-span-day {
+  flex: 1 1 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px;
+  border: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--span-color) 45%, transparent);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.hcal-span-day:first-child {
+  border-left: 0;
+}
+
+.hcal-span:hover .hcal-span-day:hover {
+  background: color-mix(in srgb, var(--span-color) 26%, transparent);
+}
+
+/* A day with something to do on it: the work itself is drawn on the box, so it reads at a glance
+   across a span that may be dozens of days wide. The box keeps the harvest's own background and
+   only the icons carry the mark. */
+.hcal-span-day.marked {
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+/* Too many days in view for the icons to be drawn: the whole box carries the mark instead, so a
+   day with work on it still reads at a zoom where nothing else fits. */
+.hcal-span-day.marked.filled {
+  background: color-mix(in srgb, var(--color-on-tone) 30%, transparent);
+}
+
+.hcal-span:hover .hcal-span-day.marked.filled:hover {
+  background: color-mix(in srgb, var(--color-on-tone) 45%, transparent);
+}
+
+/* What a marked day carries, listed under the day it belongs to. Above the harvest's hover card,
+   which is what the list would otherwise have to compete with. */
+.hcal-day-note {
+  position: fixed;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 9rem;
+  max-width: 15rem;
+  padding: 6px;
+  border-radius: 11px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  pointer-events: none;
+  transform: translate(-50%, 8px);
+  box-shadow: 0 10px 24px var(--color-shadow);
+}
+
+.hcal-day-note-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: var(--color-surface-sunken);
+  color: var(--color-dark);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.hcal-day-note-row svg {
+  flex: none;
+  color: var(--color-danger);
+}
+
+.hcal-span-day-mark {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  max-width: 100%;
+  color: var(--color-on-tone);
+  pointer-events: none;
+}
+
+.hcal-span-head {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+}
+
+.hcal-span-icons {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.hcal-span-icons img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.hcal-span-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The stage, as a colour rather than a word: eight of them named in full would leave no room for
+   the harvest's own title on a chip only a few days wide. The name is in the card the chip opens. */
+.hcal-span-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface);
+}
+
+.hcal-span.overdue {
+  outline: 1px dashed var(--color-danger);
+  outline-offset: 1px;
+}
+
+.hcal-span.open-start {
+  padding-left: 9px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.hcal-span.open-start::before {
+  display: none;
+}
+
+.hcal-span.open-end {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcal-span {
+    transition: none;
+  }
+
+  .hcal-span:hover {
+    transform: none;
+  }
+}

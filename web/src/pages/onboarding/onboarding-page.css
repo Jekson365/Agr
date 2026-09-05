@@ -1,0 +1,140 @@
+.onboarding-page {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface-sunken);
+}
+
+.onboarding-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.onboarding-brand {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.onboarding-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.onboarding-signout {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.onboarding-signout:hover {
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+}
+
+.onboarding-shell {
+  flex: 1;
+  width: 100%;
+  padding: 24px 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.onboarding-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.onboarding-header-icon {
+  position: relative;
+  display: block;
+  height: 108px;
+  aspect-ratio: 1260 / 1460;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.onboarding-header-icon img {
+  position: absolute;
+  width: 198.42%;
+  height: auto;
+  left: -49.21%;
+  top: -31.37%;
+}
+
+.onboarding-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.onboarding-counter {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-green);
+}
+
+.onboarding-subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
+.onboarding-nav-button {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  padding: 7px 16px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.onboarding-nav-button:hover:not(:disabled) {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.onboarding-nav-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.onboarding-card {
+  width: min(920px, 100%);
+  padding: 26px 28px 24px;
+}
+
+@media (max-width: 720px) {
+  .onboarding-topbar {
+    padding: 12px 14px;
+  }
+
+  .onboarding-shell {
+    padding: 14px 14px 24px;
+    align-items: flex-start;
+  }
+
+  .onboarding-card {
+    padding: 18px 16px 16px;
+  }
+}

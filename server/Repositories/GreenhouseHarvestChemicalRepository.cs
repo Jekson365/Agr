@@ -8,11 +8,15 @@ namespace Server.Repositories;
 /// <summary>Applying a chemical changes no balance, so this is plain CRUD.</summary>
 public class GreenhouseHarvestChemicalRepository(AppDbContext context) : IGreenhouseHarvestChemicalRepository
 {
-    public async Task<IEnumerable<GreenhouseHarvestChemical>> GetByHarvestAsync(int greenhouseHarvestId)
+    public async Task<IEnumerable<GreenhouseHarvestChemical>> GetAsync(int? greenhouseHarvestId = null)
     {
-        return await context.GreenhouseHarvestChemicals
-            .AsNoTracking()
-            .Where(c => c.GreenhouseHarvestId == greenhouseHarvestId)
+        var query = context.GreenhouseHarvestChemicals.AsNoTracking().AsQueryable();
+        if (greenhouseHarvestId is not null)
+        {
+            query = query.Where(c => c.GreenhouseHarvestId == greenhouseHarvestId);
+        }
+
+        return await query
             .OrderBy(c => c.Date)
             .ThenBy(c => c.Id)
             .ToListAsync();

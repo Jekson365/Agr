@@ -11,9 +11,9 @@ namespace Server.Controllers;
 public class HarvestItemsController(IHarvestItemRepository harvestItemRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<HarvestItem>>> GetByHarvest([FromQuery] int harvestId)
+    public async Task<ActionResult<IEnumerable<HarvestItem>>> GetByHarvest([FromQuery] int? harvestId)
     {
-        return Ok(await harvestItemRepository.GetByHarvestAsync(harvestId));
+        return Ok(await harvestItemRepository.GetAsync(harvestId));
     }
 
     [HttpPost]
@@ -22,6 +22,10 @@ public class HarvestItemsController(IHarvestItemRepository harvestItemRepository
         if (item.StockId is null == item.TreeStockId is null)
         {
             return BadRequest("Provide exactly one of stockId or treeStockId.");
+        }
+        if (await harvestItemRepository.ExistsForHarvestAsync(item.HarvestId))
+        {
+            return Conflict("A harvest is planned for one good. Edit or remove the one it already has.");
         }
 
         var created = await harvestItemRepository.AddAsync(item);

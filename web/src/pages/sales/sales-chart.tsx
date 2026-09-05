@@ -9,6 +9,7 @@ import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import type { MarketSalesSummary, SalesPeriod } from '@/types/market-sale';
 import { bucketLabel, bucketTooltip } from './sales-labels';
+import './sales-chart.css';
 
 const PERIOD_OPTIONS: { value: SalesPeriod; labelKey: string }[] = [
   { value: 'Week', labelKey: 'sales.periodWeek' },
@@ -63,7 +64,8 @@ export function SalesChart({
         <div>
           <h2 className="sales-chart-title">{t('sales.chartTitle')}</h2>
           <p className="sales-chart-total">
-            {t('sales.chartTotal')}: <strong>{formatPrice(total)}</strong>
+            {t('sales.chartTotal')}
+            <strong>{formatPrice(total)}</strong>
           </p>
         </div>
 

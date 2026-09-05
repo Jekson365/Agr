@@ -1,0 +1,166 @@
+.tml {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tml-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.tml-month {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 16px 6px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tml-month-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.tml-month-net {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tml-month-net.up,
+.tml-delta.up {
+  color: var(--color-green);
+}
+
+.tml-month-net.down,
+.tml-delta.down {
+  color: var(--color-danger);
+}
+
+.tml-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  transition: border-color 140ms ease;
+}
+
+.tml-row:hover {
+  border-color: var(--color-muted);
+}
+
+.tml-sign {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.tml-sign.up {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.tml-sign.down {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.tml-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tml-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tml-meta {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.tml-values {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: none;
+}
+
+.tml-delta {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tml-balance {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tml-delete {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.tml-row:hover .tml-delete,
+.tml-delete:focus-visible {
+  opacity: 1;
+}
+
+.tml-delete:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.tml-spacer {
+  flex: none;
+  width: 28px;
+}
+
+@media (hover: none) {
+  .tml-delete {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tml-row,
+  .tml-delete {
+    transition: none;
+  }
+}

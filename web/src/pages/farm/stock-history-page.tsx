@@ -5,6 +5,8 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/history-columns.css';
 import '@/components/farm/record-list.css';
+import { AssessmentCriteriaCard } from '@/components/farm/assessment/assessment-criteria-card';
+import { StockGradeCharts } from '@/components/farm/stock/stock-grade-charts';
 import { StockPhotoHistoryView } from '@/components/farm/stock/stock-photo-history-view';
 import { STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import { formatLocalizedIsoDateTime } from '@/components/ui/date-utils';
@@ -152,6 +154,12 @@ export function StockHistoryPage() {
           <StockPhotoHistoryView stockId={stockId} />
         </div>
       </div>
+
+      <StockGradeCharts stockId={stockId} unitLabel={unitLabel} />
+
+      {/* The good's grading standard: set here, and read back on every harvest assessed against
+          it. A removed good keeps it on show but no longer takes edits. */}
+      <AssessmentCriteriaCard stockId={stockId} canEdit={!stock?.isDeleted} showSpoilage={false} />
 
       <ConfirmDeleteModal
         open={!!confirmDelete}

@@ -1,0 +1,91 @@
+.donut-chart {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+}
+
+.donut-chart-figure {
+  position: relative;
+  width: 11rem;
+  aspect-ratio: 1;
+  flex: none;
+}
+
+.donut-chart-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.donut-chart-track {
+  fill: none;
+  stroke: var(--color-border);
+  stroke-width: 12;
+}
+
+.donut-chart-slice {
+  fill: none;
+  stroke-width: 12;
+}
+
+.donut-chart-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  text-align: center;
+}
+
+.donut-chart-total {
+  font-size: 1.125rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-dark);
+}
+
+.donut-chart-caption {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.donut-chart-legend {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 9rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.donut-chart-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.donut-chart-dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  flex: none;
+  border-radius: 50%;
+}
+
+.donut-chart-legend-label {
+  font-size: 0.9375rem;
+  color: var(--color-dark);
+}
+
+.donut-chart-legend-value {
+  margin-left: auto;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--color-dark);
+}

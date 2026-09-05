@@ -1,4 +1,14 @@
-export type HarvestStatus = 'Planning' | 'Planting' | 'Harvested';
+export type HarvestStatus =
+  | 'Planning'
+  | 'Planting'
+  | 'Emergence'
+  | 'Flowering'
+  | 'Ripening'
+  | 'HarvestReady'
+  | 'Harvested'
+  /** The pick booked into the balances. Only here does a harvest's yield reach stock, the tree
+   *  products and the reports — Harvested alone records what came off the field. */
+  | 'TransferredToBalance';
 
 /** Crop harvests consume sown seed; fruit harvests pick standing trees. Both yield produce by
  * weight into plant stock, and each has its own tab. */
@@ -14,7 +24,7 @@ export type Harvest = {
   /**
    * ISO date (YYYY-MM-DD) the crop is expected to be picked, set while planning. Null when the
    * harvest was logged after the fact. Distinct from `date`, the record's own date that
-   * reporting groups by — a non-Harvested harvest past this date is overdue.
+   * reporting groups by — a harvest past this date that is not yet picked is overdue.
    */
   expectedHarvestDate: string | null;
   /** The farm/land this harvest belongs to. */

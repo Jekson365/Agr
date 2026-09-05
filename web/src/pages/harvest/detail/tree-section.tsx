@@ -12,12 +12,15 @@ type Props = {
   harvestId: number;
   harvestTrees: HarvestTree[];
   catalogs: Catalogs;
+  /** False once the harvest has booked its produce: editing a picking then would rewrite the
+   *  product balance it wrote, and the server refuses it. */
+  canEdit: boolean;
   onChanged: (next: HarvestTree[]) => void;
 };
 
 /** Which orchards were picked — fruit harvests only. Editable in any status: unlike sowing,
  *  picking happens at harvest time, so it is usually recorded once done. */
-export function TreeSection({ harvestId, harvestTrees, catalogs, onChanged }: Props) {
+export function TreeSection({ harvestId, harvestTrees, catalogs, canEdit, onChanged }: Props) {
   const { t } = useLanguage();
 
   const [formOpen, setFormOpen] = useState(false);
@@ -53,7 +56,7 @@ export function TreeSection({ harvestId, harvestTrees, catalogs, onChanged }: Pr
         rows={rows}
         emptyText={t('harvestTree.empty')}
         addLabel={t('harvestTree.add')}
-        canEdit
+        canEdit={canEdit}
         scrollable
         onAdd={() => {
           setEditing(null);

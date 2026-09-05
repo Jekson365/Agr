@@ -55,7 +55,6 @@ export function GreenhouseBalancePage() {
       }
     >
       <BalanceColumn
-        productHeader={t('balance.colPlant')}
         amountHeader={t('balance.colBalance')}
         emptyLabel={t('balance.emptyGreenhouse')}
         rows={balances}

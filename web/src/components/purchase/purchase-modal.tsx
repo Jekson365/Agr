@@ -12,7 +12,14 @@ import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG } from '@/typ
 import type { PurchaseDocument, PurchaseItemKind } from '@/types/purchase';
 import { PurchaseDocumentFields } from './purchase-document-fields';
 import { PurchaseItemRow } from './purchase-item-row';
-import { linesFromDocument, newLine, toItems, type PurchaseLine } from './purchase-lines';
+import {
+  createNewTargets,
+  isLineReady,
+  linesFromDocument,
+  newLine,
+  toItems,
+  type PurchaseLine,
+} from './purchase-lines';
 import { EMPTY_TARGETS, loadPurchaseTargets, PURCHASE_KIND_ORDER, type PurchaseTargets } from './purchase-targets';
 import './purchase-modal.css';
 
@@ -39,6 +46,7 @@ export function PurchaseModal({ open, editing, onClose, onSaved }: Props) {
   const [nextId, setNextId] = useState(1);
   /** Lines of the document being edited whose target has since been removed. */
   const [dropped, setDropped] = useState(0);
+  const equipmentAllowed = user?.plan !== 'Free';
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,11 +68,15 @@ export function PurchaseModal({ open, editing, onClose, onSaved }: Props) {
       livestock: isOn(LIVESTOCK_CONFIG),
       fruits: isOn(FRUIT_STOCK_CONFIG),
       crops: isOn(CROP_FARMING_CONFIG),
-      equipment: user?.plan !== 'Free',
+      equipment: equipmentAllowed,
     })
       .then((loaded) => {
         if (cancelled) return;
-        const available = PURCHASE_KIND_ORDER.filter((kind) => loaded[kind].length > 0);
+        // Inventory stays on the list with nothing in it: a farm buying its first tool has no
+        // equipment to point at yet, and the row creates it from the name typed here.
+        const available = PURCHASE_KIND_ORDER.filter(
+          (kind) => loaded[kind].length > 0 || (kind === 'Equipment' && equipmentAllowed)
+        );
         setTargets(loaded);
         setKinds(available);
 
@@ -100,15 +112,18 @@ export function PurchaseModal({ open, editing, onClose, onSaved }: Props) {
     setNextId((prev) => prev + 1);
   }
 
-  const items = toItems(lines, targets);
-  const total = items.reduce((sum, item) => sum + item.price, 0);
-  const canSave = seller.trim() !== '' && items.length === lines.length && lines.length > 0 && !saving;
+  const ready = lines.filter((line) => isLineReady(line, targets));
+  const total = ready.reduce((sum, line) => sum + (parseFloat(line.price) || 0), 0);
+  const canSave = seller.trim() !== '' && ready.length === lines.length && lines.length > 0 && !saving;
 
   async function handleSave() {
     if (!canSave) return;
     setSaving(true);
     setError(null);
     try {
+      // Inventory bought before the farm held any is created from the name typed on the row, and
+      // the purchase then books its quantity against the row it just made.
+      const items = toItems(lines, targets, await createNewTargets(lines));
       const input = { seller: seller.trim(), date, note: note.trim() || null, items };
       const saved = editing ? await updatePurchase(editing.id, input) : await createPurchase(input);
       onSaved?.(saved, editing == null);

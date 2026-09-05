@@ -4,6 +4,7 @@ import '@/components/farm/image-picker.css';
 import './stock-photo-history.css';
 import { formatLocalizedIsoDate, todayIsoDate } from '@/components/ui/date-utils';
 import { DateField } from '@/components/ui/date-field';
+import '@/components/ui/modal.css';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { createStockPhoto, deleteStockPhoto, getStockPhotos, uploadStockPhotoImage } from '@/services/stock-photo-service';

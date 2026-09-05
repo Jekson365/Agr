@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 
+import { HarvestStatusField } from '@/components/harvest/harvest-status-field';
 import { Modal } from '@/components/ui/modal';
 import { cropLabel } from '@/config/crop';
-import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/config/harvest-status';
 import { DateField } from '@/components/ui/date-field';
 import { useLanguage } from '@/contexts/language-context';
 import { getFarms } from '@/services/farm-service';
@@ -17,6 +17,7 @@ type Props = {
   /** New harvests are created under the tab's kind; an existing one keeps its own. */
   kind?: HarvestKind;
   editingHarvest: Harvest | null;
+  presetDate?: string;
   onClose: () => void;
   onSaved: (harvest: Harvest, isNew: boolean) => void;
 };
@@ -25,7 +26,7 @@ function plotLabel(plot: LandPlot, t: (key: string) => string): string {
   return `${cropLabel(plot.crop, t)} · ${plot.area} ${t('farm.areaUnit')}`;
 }
 
-export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, onClose, onSaved }: Props) {
+export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, presetDate, onClose, onSaved }: Props) {
   const { t } = useLanguage();
 
   const [titleInput, setTitleInput] = useState('');
@@ -50,13 +51,13 @@ export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, onClose,
   useEffect(() => {
     if (!open) return;
     setTitleInput(editingHarvest?.title ?? '');
-    setDate(editingHarvest?.date ?? '');
+    setDate(editingHarvest?.date ?? presetDate ?? '');
     setExpectedHarvestDate(editingHarvest?.expectedHarvestDate ?? '');
     setStatus(editingHarvest?.status ?? 'Planning');
     setFormError(null);
     initializeLand();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editingHarvest]);
+  }, [open, editingHarvest, presetDate]);
 
   async function initializeLand() {
     setFarmsLoading(true);
@@ -184,23 +185,7 @@ export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, onClose,
           <span className="limit-hint">{t('harvest.expectedDateHint')}</span>
         </div>
 
-        {isEditing && (
-          <div className="field">
-            <label>{t('harvest.statusLabel')}</label>
-            <div className="kind-row">
-              {HARVEST_STATUSES.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={status === option ? 'kind-chip active' : 'kind-chip'}
-                  onClick={() => setStatus(option)}
-                >
-                  <span>{t(HARVEST_STATUS_LABEL_KEY[option])}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {editingHarvest && <HarvestStatusField harvest={editingHarvest} value={status} onChange={setStatus} />}
 
         <div className="field">
           <label>{t('harvest.landLabel')}</label>

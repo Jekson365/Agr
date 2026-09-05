@@ -1,0 +1,117 @@
+/* The filter tabs and the column manager share a line — the manager sits at the far end, since it
+   changes how the table is read rather than what it lists. */
+.sales-toolbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sales-toolbar .tab-row {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.sales-columns {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.sales-columns-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sales-columns-trigger:hover,
+.sales-columns-trigger[aria-expanded='true'] {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.sales-columns-count {
+  color: var(--color-muted);
+  font-weight: 600;
+}
+
+.sales-columns-caret {
+  font-size: 0.625rem;
+  color: var(--color-muted);
+}
+
+.sales-columns-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 50;
+  min-width: 220px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: 0 12px 28px var(--color-shadow-strong);
+}
+
+.sales-columns-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.sales-columns-row:hover {
+  background: var(--color-surface-sunken);
+}
+
+.sales-columns-row.locked {
+  color: var(--color-muted);
+  cursor: default;
+}
+
+.sales-columns-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-green);
+}
+
+.sales-columns-reset {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  background: none;
+  color: var(--color-green);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sales-columns-reset:disabled {
+  color: var(--color-muted);
+  cursor: default;
+}

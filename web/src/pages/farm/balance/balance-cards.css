@@ -1,0 +1,195 @@
+/* One card per holding. The old table read the figures down a column; a card keeps a good's name,
+   its balance and what the marketplace holds of it together, which is how the page is actually
+   read — one good at a time rather than one column at a time. */
+
+.balance-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.875rem;
+}
+
+.balance-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px var(--color-shadow);
+}
+
+.balance-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6875rem;
+}
+
+.balance-card-icon {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-green-soft);
+}
+
+.balance-card-icon img {
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+}
+
+.balance-card-text {
+  min-width: 0;
+}
+
+.balance-card-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+/* The crop only needs spelling out when a custom name replaced it above. */
+.balance-card-kind {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-muted);
+}
+
+/* What the farm holds is what the card is for, so the figure is the largest thing on it. */
+.balance-card-figure {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.balance-card-value {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.balance-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+/* Every figure on the card is named, since a card has no column heading to sit under. */
+.balance-card-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.balance-card-none {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.balance-card-bands {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+
+/* The unit travels with the figure but isn't the figure. */
+.balance-unit {
+  margin-left: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+/* How much of the product is already on the marketplace — a quantity, but not one the farm can
+   count on, so it is set apart from the holding above it rather than matching its weight. */
+.balance-listed-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.balance-listed-chip .balance-unit {
+  color: inherit;
+  opacity: 0.75;
+}
+
+/* Nothing on hand. The card stays — the product exists and may come back — but it steps back, so
+   the page reads as what the farm actually holds. */
+.balance-card.is-empty .balance-card-title,
+.balance-card.is-empty .balance-card-value {
+  color: var(--color-muted);
+}
+
+/* The same treatment removed land and removed herds get on their cards: dashed and greyed, so the
+   card reads as switched off rather than missing. */
+.balance-card.is-removed {
+  border-style: dashed;
+  background: var(--color-surface-sunken);
+}
+
+.balance-card.is-empty .balance-card-icon,
+.balance-card.is-removed .balance-card-icon {
+  opacity: 0.55;
+  filter: grayscale(0.8);
+}
+
+.balance-card.is-removed .balance-card-icon {
+  border-style: dashed;
+  background: var(--color-surface);
+}
+
+/* The band's own mark, in the colours the grading sheet gives it. */
+.balance-band {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.balance-band-b {
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+}
+
+.balance-band-c {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.balance-band-d {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}

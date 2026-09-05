@@ -20,6 +20,7 @@ import {
   isApplyingTransition,
   isDestructiveTransition,
   isOverdue,
+  isPicked,
   type YieldRow,
 } from '@/components/harvest/harvest-analysis';
 import { HARVEST_STATUS_LABEL_KEY, HARVEST_STATUSES } from '@/components/harvest/status';
@@ -326,7 +327,7 @@ export default function HarvestDetailScreen() {
                       <View style={local.overdueBadge}>
                         <Text style={local.overdueBadgeText}>{t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}</Text>
                       </View>
-                    ) : harvest.status !== 'Harvested' && daysLeft != null ? (
+                    ) : !isPicked(harvest.status) && daysLeft != null ? (
                       <View style={local.dueBadge}>
                         <Text style={local.dueBadgeText}>{t('harvest.dueIn', { days: daysLeft })}</Text>
                       </View>
@@ -418,7 +419,7 @@ export default function HarvestDetailScreen() {
                       </Text>
                     </Pressable>
                   ))}
-                  {harvest.status === 'Harvested' && (
+                  {isPicked(harvest.status) && (
                     <Pressable
                       style={local.expensesButton}
                       onPress={() => setExpensesVisible(true)}
@@ -493,7 +494,7 @@ export default function HarvestDetailScreen() {
                         {item.amount} {target?.unitLabel ?? ''}
                       </Text>
                     </View>
-                    {harvest?.status !== 'Harvested' && (
+                    {!isPicked(harvest?.status ?? 'Planning') && (
                       <View style={styles.detailActions}>
                         <Pressable
                           hitSlop={8}
@@ -516,7 +517,7 @@ export default function HarvestDetailScreen() {
               })
             )}
 
-            {harvest?.status !== 'Harvested' && (
+            {!isPicked(harvest?.status ?? 'Planning') && items.length === 0 && (
               <Pressable style={styles.addButton} onPress={openAdd}>
                 <Ionicons name="add" size={18} color="#FFFFFF" />
                 <Text style={styles.addButtonLabel}>{t('harvestItem.add')}</Text>
@@ -547,7 +548,7 @@ export default function HarvestDetailScreen() {
                         {result.amount} {target?.unitLabel ?? ''}
                       </Text>
                     </View>
-                    {harvest?.status === 'Harvested' && (
+                    {isPicked(harvest?.status ?? 'Planning') && (
                       <View style={styles.detailActions}>
                         <Pressable
                           hitSlop={8}
@@ -570,14 +571,14 @@ export default function HarvestDetailScreen() {
               })
             )}
 
-            {harvest?.status === 'Harvested' ? (
+            {!isPicked(harvest?.status ?? 'Planning') ? (
+              <Text style={styles.emptyHint}>{t('harvestResult.needsHarvested')}</Text>
+            ) : results.length === 0 ? (
               <Pressable style={styles.addButton} onPress={openAddResult}>
                 <Ionicons name="add" size={18} color="#FFFFFF" />
                 <Text style={styles.addButtonLabel}>{t('harvestResult.add')}</Text>
               </Pressable>
-            ) : (
-              <Text style={styles.emptyHint}>{t('harvestResult.needsHarvested')}</Text>
-            )}
+            ) : null}
           </>
         )}
       </ScrollView>

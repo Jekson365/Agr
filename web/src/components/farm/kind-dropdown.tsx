@@ -100,7 +100,7 @@ export function KindDropdown({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
   /** Where the portalled popover sits, in viewport coordinates. Null until it is measured. */
-  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [rect, setRect] = useState<{ top?: number; bottom?: number; left: number; width: number } | null>(null);
 
   const selectedOption = options.find((opt) => opt.value === selected) ?? null;
 
@@ -156,11 +156,18 @@ export function KindDropdown({
       if (!trigger) return;
       const box = trigger.getBoundingClientRect();
 
-      // Flip above the field when there is not room under it.
+      // Flip above the field when there is not room under it. Flipped, the popover is pinned by
+      // its bottom edge rather than by a top computed from the maximum height — a short list would
+      // otherwise float far above the field it belongs to.
       const below = window.innerHeight - box.bottom;
       const maxHeight = size === 'large' ? POPOVER_MAX_HEIGHT_LARGE : POPOVER_MAX_HEIGHT;
-      const top = below < maxHeight && box.top > below ? box.top - maxHeight - 6 : box.bottom + 6;
-      setRect({ top: Math.max(8, top), left: box.left, width: box.width });
+
+      if (below < maxHeight && box.top > below) {
+        setRect({ bottom: window.innerHeight - box.top + 6, left: box.left, width: box.width });
+        return;
+      }
+
+      setRect({ top: box.bottom + 6, left: box.left, width: box.width });
     }
 
     place();
@@ -281,7 +288,7 @@ export function KindDropdown({
               <div
                 ref={popoverRef}
                 className={`kind-dropdown-popover${sizeClass}`}
-                style={{ top: rect.top, left: rect.left, width: rect.width }}
+                style={{ top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width }}
               >
               <input
                 className="kind-dropdown-search"

@@ -96,7 +96,6 @@ export function LivestockBalancePage() {
       }
     >
       <BalanceColumn
-        productHeader={t('balance.colProduct')}
         amountHeader={t('balance.colCollected')}
         listedHeader={t('balance.colOnMarket')}
         emptyLabel={t('balance.emptyLivestock')}

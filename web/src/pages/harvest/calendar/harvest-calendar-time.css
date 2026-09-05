@@ -1,0 +1,151 @@
+.hcal-axis {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.hcal-axis-hour {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 3px;
+  padding: 0 10px 0 0;
+  line-height: 1;
+  color: var(--color-muted);
+}
+
+.hcal-axis-num {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.hcal-axis-unit {
+  font-size: 0.625rem;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.hcal-hours {
+  grid-column: 2;
+  grid-row: 1;
+  display: grid;
+  border: 1px solid var(--color-border);
+  border-top: 0;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  background: var(--color-surface);
+  overflow: hidden;
+}
+
+.hcal-hour-col {
+  position: relative;
+  border-right: 1px solid var(--color-border);
+}
+
+.hcal-hour-col:last-child {
+  border-right: 0;
+}
+
+.hcal-slot {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 140ms ease;
+}
+
+.hcal-slot:last-child {
+  border-bottom: 0;
+}
+
+.hcal-slot {
+  cursor: pointer;
+}
+
+.hcal-slot:hover {
+  background: var(--color-surface-sunken);
+}
+
+.hcal-note {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  left: 2px;
+  right: 2px;
+  padding: 2px 8px;
+  border: 0;
+  border-left: 3px solid var(--color-gold);
+  border-radius: 6px;
+  background: var(--color-gold-soft);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 1;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.hcal-note:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 14px var(--color-shadow);
+  box-shadow:
+    0 0 0 1px var(--color-gold),
+    0 0 18px color-mix(in srgb, var(--color-gold) 60%, transparent);
+}
+
+.hcal-note-time {
+  font-weight: 700;
+  color: var(--color-gold);
+  flex: 0 0 auto;
+}
+
+.hcal-note-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hcal-now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-danger);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.hcal-now-dot {
+  position: absolute;
+  left: 0;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-danger);
+}
+
+.hcal-now-time {
+  position: absolute;
+  right: 4px;
+  top: -9px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--color-danger);
+  color: var(--color-on-accent);
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcal-slot,
+  .hcal-note {
+    transition: none;
+  }
+
+  .hcal-note:hover {
+    transform: none;
+  }
+}

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Modal } from '@/components/ui/modal';
 import { buildHarvestTargetOptions, harvestTargetKey } from '@/config/harvest-target';
 import { useLanguage } from '@/contexts/language-context';
+import { ApiError } from '@/services/api-client';
 import { createHarvestResult, updateHarvestResult } from '@/services/harvest-result-service';
 import { getStock } from '@/services/stock-service';
 import { getTreeStock } from '@/services/tree-stock-service';
@@ -104,8 +105,10 @@ export function HarvestResultFormModal({ open, harvestId, editingResult, planned
         onSaved(created, true);
       }
       onClose();
-    } catch {
-      setFormError(t('farm.saveError'));
+    } catch (err) {
+      setFormError(
+        err instanceof ApiError && err.status === 409 ? t('harvestResult.onlyOne') : t('farm.saveError')
+      );
     } finally {
       setSaving(false);
     }

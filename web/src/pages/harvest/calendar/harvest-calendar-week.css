@@ -1,0 +1,109 @@
+.harvest-calendar-week {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The day names ride along the top of the scroll region rather than scrolling away with the
+   hours: a grid row cannot stick past its own track, so the header is its own row above the
+   body instead of sharing one grid with it. */
+.harvest-calendar-week-head-row {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: var(--hcal-axis) minmax(0, 1fr);
+  background: var(--color-background);
+}
+
+.harvest-calendar-week-body {
+  display: grid;
+  grid-template-columns: var(--hcal-axis) minmax(0, 1fr);
+}
+
+.harvest-calendar-week-head {
+  display: grid;
+  background: var(--color-surface-sunken);
+  border: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  overflow: hidden;
+}
+
+.harvest-calendar-column-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px;
+  border: 0;
+  border-right: 1px solid var(--color-border);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.harvest-calendar-column-head:last-child {
+  border-right: 0;
+}
+
+.harvest-calendar-column-head:hover {
+  background: var(--color-green-muted);
+}
+
+.harvest-calendar-column-name {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.harvest-calendar-column-day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+.harvest-calendar-column-head.today .harvest-calendar-column-day {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.harvest-calendar-column-head:hover .harvest-calendar-column-day {
+  transform: scale(1.08);
+}
+
+@media (max-width: 860px) {
+  .harvest-calendar-week-head-row,
+  .harvest-calendar-week-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .harvest-calendar-week-gutter,
+  .harvest-calendar-week .hcal-axis {
+    display: none;
+  }
+
+  .harvest-calendar-week .hcal-hours {
+    grid-column: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .harvest-calendar-column-head,
+  .harvest-calendar-column-day {
+    transition: none;
+  }
+
+  .harvest-calendar-column-head:hover .harvest-calendar-column-day {
+    transform: none;
+  }
+}

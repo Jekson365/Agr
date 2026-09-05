@@ -7,4 +7,6 @@ public interface IWeatherClient
     /// postcode, or "auto:ip". Throws <see cref="WeatherApiException"/> on an upstream failure.
     /// </summary>
     Task<CurrentWeather> GetCurrentAsync(string location, CancellationToken cancellationToken = default);
+
+    Task<WeatherForecast> GetForecastAsync(string location, int days, CancellationToken cancellationToken = default);
 }

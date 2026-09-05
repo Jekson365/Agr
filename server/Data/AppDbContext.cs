@@ -23,9 +23,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<HarvestSeed> HarvestSeeds => Set<HarvestSeed>();
     public DbSet<HarvestTree> HarvestTrees => Set<HarvestTree>();
     public DbSet<HarvestChemical> HarvestChemicals => Set<HarvestChemical>();
+    public DbSet<HarvestEvent> HarvestEvents => Set<HarvestEvent>();
+    public DbSet<HarvestStatusChange> HarvestStatusChanges => Set<HarvestStatusChange>();
+    public DbSet<HarvestAssessment> HarvestAssessments => Set<HarvestAssessment>();
+    public DbSet<AssessmentCriteria> AssessmentCriteria => Set<AssessmentCriteria>();
     public DbSet<TreeProduct> TreeProducts => Set<TreeProduct>();
     public DbSet<HarvestProduct> HarvestProducts => Set<HarvestProduct>();
     public DbSet<TreeProductMovement> TreeProductMovements => Set<TreeProductMovement>();
+    public DbSet<TreeSeedling> TreeSeedlings => Set<TreeSeedling>();
+    public DbSet<OrchardBlock> OrchardBlocks => Set<OrchardBlock>();
+    public DbSet<TreeTreatment> TreeTreatments => Set<TreeTreatment>();
     public DbSet<Equipment> Equipment => Set<Equipment>();
     public DbSet<Configuration> Configurations => Set<Configuration>();
     public DbSet<Greenhouse> Greenhouses => Set<Greenhouse>();
@@ -128,6 +135,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasConversion<string>();
         modelBuilder.Entity<Harvest>()
             .Property(h => h.Kind)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<HarvestStatusChange>()
+            .Property(c => c.FromStatus)
+            .HasConversion<string>();
+        modelBuilder.Entity<HarvestStatusChange>()
+            .Property(c => c.ToStatus)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<TreeSeedling>()
+            .Property(s => s.Stage)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<OrchardBlock>()
+            .Property(b => b.Pattern)
             .HasConversion<string>();
 
         // Store the animal's gender as its readable name (e.g. "Male") instead of an integer.
@@ -547,6 +569,42 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(c => c.HarvestId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        // A day's note on a harvest: it exists only for that harvest and goes when it does.
+        modelBuilder.Entity<HarvestEvent>()
+            .HasOne<Harvest>()
+            .WithMany()
+            .HasForeignKey(e => e.HarvestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<HarvestStatusChange>()
+            .HasOne<Harvest>()
+            .WithMany()
+            .HasForeignKey(c => c.HarvestId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TreeSeedling>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(s => s.TreeStockId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // One planted area per orchard: where its trees stand is a single answer.
+        modelBuilder.Entity<OrchardBlock>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(b => b.TreeStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<OrchardBlock>()
+            .HasIndex(b => b.TreeStockId)
+            .IsUnique();
+
+        modelBuilder.Entity<TreeTreatment>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(t => t.TreeStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         // Each photo belongs to a single stock; deleting the stock removes its photo history.
         modelBuilder.Entity<StockPhoto>()
             .HasOne<Stock>()
@@ -587,6 +645,48 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(r => r.TreeStockId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // A good's own grading standard: what each band means for it. It belongs to the good and
+        // goes with it, and exactly one of the two is set (enforced in the controller).
+        modelBuilder.Entity<AssessmentCriteria>()
+            .HasOne<Stock>()
+            .WithMany()
+            .HasForeignKey(c => c.StockId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<AssessmentCriteria>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(c => c.TreeStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AssessmentCriteria>()
+            .Property(c => c.Grade)
+            .HasConversion<string>();
+
+        // A finished harvest's quality sheet: one line per band per good. It hangs off the same
+        // three rows a result does, and goes with any of them — the sheet describes that pick and
+        // means nothing without it. Exactly one of the two goods is set (enforced in the
+        // controller, as it is for results).
+        modelBuilder.Entity<HarvestAssessment>()
+            .HasOne<Harvest>()
+            .WithMany()
+            .HasForeignKey(a => a.HarvestId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HarvestAssessment>()
+            .HasOne<Stock>()
+            .WithMany()
+            .HasForeignKey(a => a.StockId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HarvestAssessment>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(a => a.TreeStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Bands are stored by name, like every other enum here.
+        modelBuilder.Entity<HarvestAssessment>()
+            .Property(a => a.Grade)
+            .HasConversion<string>();
 
         // A movement caused by a recorded harvest result is owned by that result; deleting the
         // result removes its movement rather than leaving a dangling log entry.

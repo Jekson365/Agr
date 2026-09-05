@@ -1,0 +1,111 @@
+.harvest-calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.harvest-calendar-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.harvest-calendar-views {
+  display: flex;
+  gap: 6px;
+}
+
+.harvest-calendar-view.active {
+  background: var(--color-green);
+  border-color: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.harvest-calendar-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.harvest-calendar-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.harvest-calendar-today,
+.harvest-calendar-step,
+.harvest-calendar-view {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.harvest-calendar-steppers {
+  display: flex;
+  gap: 6px;
+}
+
+.harvest-calendar-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--color-muted);
+}
+
+.harvest-calendar-today:hover,
+.harvest-calendar-step:hover,
+.harvest-calendar-view:hover {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.harvest-calendar-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+.harvest-calendar-zoom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+}
+
+.harvest-calendar-zoom .harvest-calendar-step {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.harvest-calendar-zoom .harvest-calendar-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.harvest-calendar-zoom-value {
+  min-width: 3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-muted);
+}

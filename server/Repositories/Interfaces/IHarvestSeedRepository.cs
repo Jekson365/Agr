@@ -4,7 +4,9 @@ namespace Server.Repositories.Interfaces;
 
 public interface IHarvestSeedRepository
 {
-    Task<IEnumerable<HarvestSeed>> GetByHarvestAsync(int harvestId);
+    Task<IEnumerable<HarvestSeed>> GetAsync(int? harvestId = null);
+
+    Task<bool> ExistsForHarvestAsync(int harvestId);
 
     /// <summary>Records seed sown for a harvest: deducts the amount from the seed and logs the
     /// matching <see cref="SeedMovement"/>.</summary>

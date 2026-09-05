@@ -1,8 +1,12 @@
 import { apiFetch } from '@/services/api-client';
 import type { GreenhouseHarvestSeed, GreenhouseHarvestSeedInput } from '@/types/greenhouse-harvest-seed';
 
-export function getGreenhouseHarvestSeeds(greenhouseHarvestId: number) {
-  return apiFetch<GreenhouseHarvestSeed[]>(`/api/greenhouseharvestseeds?greenhouseHarvestId=${greenhouseHarvestId}`);
+export function getGreenhouseHarvestSeeds(greenhouseHarvestId?: number) {
+  return apiFetch<GreenhouseHarvestSeed[]>(
+    `/api/greenhouseharvestseeds${
+      greenhouseHarvestId != null ? `?greenhouseHarvestId=${greenhouseHarvestId}` : ''
+    }`
+  );
 }
 
 /** Recording seed usage deducts the amount from that greenhouse seed. */

@@ -80,7 +80,8 @@ public class HarvestStockSync(
     }
 
     /// <summary>What the harvest should be contributing as it now stands: nothing at all unless it
-    /// is Harvested, and then its recorded results — see <see cref="IHarvestStockSync"/>.</summary>
+    /// is TransferredToBalance, and then its recorded results — see <see cref="IHarvestStockSync"/>.
+    /// Harvested only records the pick; the step after it is what books it.</summary>
     private async Task<Dictionary<RowKey, Contribution>> DesiredAsync(
         int harvestId,
         List<HarvestResult> results,
@@ -93,7 +94,7 @@ public class HarvestStockSync(
             .Where(h => h.Id == harvestId)
             .Select(h => (HarvestStatus?)h.Status)
             .FirstOrDefaultAsync();
-        if (status != HarvestStatus.Harvested)
+        if (status != HarvestStatus.TransferredToBalance)
         {
             return wanted;
         }

@@ -35,4 +35,29 @@ public class WeatherController(IWeatherClient weatherClient) : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
         }
     }
+
+    [HttpGet("forecast")]
+    public async Task<ActionResult<WeatherForecast>> GetForecast(
+        [FromQuery] string location = "Tbilisi",
+        [FromQuery] int days = WeatherApiClient.MaxForecastDays,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(location))
+        {
+            return BadRequest("A 'location' query parameter is required.");
+        }
+
+        try
+        {
+            return Ok(await weatherClient.GetForecastAsync(location, days, cancellationToken));
+        }
+        catch (WeatherApiException ex)
+        {
+            return StatusCode(StatusCodes.Status502BadGateway, ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+        }
+    }
 }

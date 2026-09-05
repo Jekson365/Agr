@@ -1,4 +1,8 @@
 {
+  "assessment": {
+    "unitSize": "mm",
+    "unitWeight": "g"
+  },
   "common": {
     "cancel": "Cancel",
     "add": "Add",

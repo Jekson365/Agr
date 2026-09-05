@@ -10,13 +10,20 @@ namespace Server.Repositories;
 /// after an edit, to take off anything the plan had put on the books under the older rule.</summary>
 public class HarvestItemRepository(AppDbContext context, IHarvestStockSync harvestStockSync) : IHarvestItemRepository
 {
-    public async Task<IEnumerable<HarvestItem>> GetByHarvestAsync(int harvestId)
+    public async Task<IEnumerable<HarvestItem>> GetAsync(int? harvestId = null)
     {
-        return await context.HarvestItems
-            .AsNoTracking()
-            .Where(i => i.HarvestId == harvestId)
-            .OrderBy(i => i.Id)
-            .ToListAsync();
+        var query = context.HarvestItems.AsNoTracking().AsQueryable();
+        if (harvestId is not null)
+        {
+            query = query.Where(i => i.HarvestId == harvestId);
+        }
+
+        return await query.OrderBy(i => i.Id).ToListAsync();
+    }
+
+    public Task<bool> ExistsForHarvestAsync(int harvestId)
+    {
+        return context.HarvestItems.AsNoTracking().AnyAsync(i => i.HarvestId == harvestId);
     }
 
     public async Task<HarvestItem> AddAsync(HarvestItem item)

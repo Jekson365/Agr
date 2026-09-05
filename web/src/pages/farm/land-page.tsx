@@ -12,7 +12,6 @@ import { cropImage, cropLabel } from '@/config/crop';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { isAtLimit, isOverLimit, isPlanLimitError } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
-import { GuideVideoButton } from '@/components/ui/guide-video-button';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import { deleteFarm, getFarms, restoreFarm } from '@/services/farm-service';
@@ -182,7 +181,6 @@ export function LandPage() {
       <div className="page-header">
         <h1 className="page-title">{t('farm.land')}</h1>
         <div className="page-header-actions">
-          <GuideVideoButton guide="land" />
           {/* Enabled even at the cap — clicking it answers with the available packets. */}
           <button type="button" className="add-button" onClick={openAdd}>
             + {t('farm.addFarmland')}

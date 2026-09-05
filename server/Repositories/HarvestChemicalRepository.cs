@@ -9,11 +9,15 @@ namespace Server.Repositories;
 /// is plain CRUD, like <see cref="HarvestTreeRepository"/>.</summary>
 public class HarvestChemicalRepository(AppDbContext context) : IHarvestChemicalRepository
 {
-    public async Task<IEnumerable<HarvestChemical>> GetByHarvestAsync(int harvestId)
+    public async Task<IEnumerable<HarvestChemical>> GetAsync(int? harvestId = null)
     {
-        return await context.HarvestChemicals
-            .AsNoTracking()
-            .Where(c => c.HarvestId == harvestId)
+        var query = context.HarvestChemicals.AsNoTracking().AsQueryable();
+        if (harvestId is not null)
+        {
+            query = query.Where(c => c.HarvestId == harvestId);
+        }
+
+        return await query
             .OrderBy(c => c.Date)
             .ThenBy(c => c.Id)
             .ToListAsync();

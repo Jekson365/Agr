@@ -1,0 +1,50 @@
+.day-forecast {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  max-width: 100%;
+  overflow: hidden;
+  line-height: 1.1;
+}
+
+.day-forecast-glyph {
+  flex-shrink: 0;
+  /* Drawn at a heavier weight than the app's other line icons: at a day column's width it is read
+     from across the grid rather than looked at. */
+  stroke-width: 1.6;
+}
+
+.day-forecast-temps {
+  display: inline-flex;
+  margin-top: 1px;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.day-forecast-min {
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.day-forecast.tone-clear .day-forecast-glyph {
+  color: var(--color-amber);
+}
+
+.day-forecast.tone-cloud .day-forecast-glyph {
+  color: var(--color-muted);
+}
+
+.day-forecast.tone-rain .day-forecast-glyph {
+  color: var(--color-blue);
+}
+
+.day-forecast.tone-snow .day-forecast-glyph {
+  color: var(--color-blue);
+}
+
+.day-forecast.tone-storm .day-forecast-glyph {
+  color: var(--color-violet);
+}

@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
+import { AssessmentCriteriaCard } from '@/components/farm/assessment/assessment-criteria-card';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/record-list.css';
+import { TreeMovementList } from '@/components/farm/tree-stock/tree-movement-list';
+import { TreePlantingModal } from '@/components/farm/tree-stock/tree-planting-modal';
+import { TreeStockActions } from '@/components/farm/tree-stock/tree-stock-actions';
 import { fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
-import { formatLocalizedIsoDateTime, formatLocalizedIsoDay } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteTreeStockMovement, getTreeStockMovements } from '@/services/tree-stock-movement-service';
 import { getTreeStockItem } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
-import type { BalanceAdjustOption } from '@/types/balance-adjustment';
 import type { TreeStockMovement } from '@/types/tree-stock-movement';
+import './tree-stock-history.css';
 
 export function TreeStockHistoryPage() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { id: idParam } = useParams<{ id: string }>();
   const treeStockId = Number(idParam);
 
@@ -24,7 +26,7 @@ export function TreeStockHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<TreeStockMovement | null>(null);
-  const [adjustOpen, setAdjustOpen] = useState(false);
+  const [planting, setPlanting] = useState<'plant' | 'remove' | null>(null);
 
   useEffect(() => {
     if (!treeStockId) return;
@@ -59,15 +61,8 @@ export function TreeStockHistoryPage() {
     }
   }
 
-  // Records come back ordered oldest→newest; show the most recent movement first.
-  const newestFirst = [...movements].reverse();
   const unitLabel = stock ? t(TREE_STOCK_UNIT_LABEL_KEY[stock.unit]) : '';
   const title = stock ? stock.name.trim() || fruitTypeLabel(stock.type, t) : t('treeStockHistory.title');
-
-  const adjustOptions: BalanceAdjustOption[] =
-    stock && !stock.isDeleted
-      ? [{ key: `tree:${stock.id}`, title, unitLabel, balance: stock.amount, target: { kind: 'treeStock', treeStockId: stock.id } }]
-      : [];
 
   return (
     <div>
@@ -77,11 +72,6 @@ export function TreeStockHistoryPage() {
 
       <div className="page-header">
         <h1 className="page-title">{title}</h1>
-        {adjustOptions.length > 0 && (
-          <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
-            + {t('treeStockHistory.adjust')}
-          </button>
-        )}
       </div>
 
       {loading ? (
@@ -96,57 +86,43 @@ export function TreeStockHistoryPage() {
       ) : (
         <>
           {stock && (
-            <div className="record-summary">
+            <div className="record-summary tsh-summary">
               <div>
                 <div className="record-summary-label">{t('treeStockHistory.current')}</div>
                 <div className="record-summary-value">
                   {stock.amount} {unitLabel}
                 </div>
               </div>
+
+              {!stock.isDeleted && (
+                <TreeStockActions onPlant={() => setPlanting('plant')} onRemove={() => setPlanting('remove')} />
+              )}
             </div>
           )}
 
           {movements.length === 0 ? (
             <p className="empty-state">{t('treeStockHistory.empty')}</p>
           ) : (
-            <div className="record-list">
-              {newestFirst.map((movement) => (
-                <div key={movement.id} className={movement.delta < 0 ? 'record-card record-card-down' : 'record-card record-card-up'}>
-                  <div className="record-card-main">
-                    <span className="record-card-date">
-                      {movement.date
-                        ? formatLocalizedIsoDay(movement.date, language)
-                        : formatLocalizedIsoDateTime(movement.createdAt, language)}
-                    </span>
-                    {movement.note && <span className="record-card-note">{movement.note}</span>}
-                  </div>
-                  <span
-                    className={movement.delta < 0 ? 'record-card-value record-card-value-down' : 'record-card-value record-card-value-up'}
-                  >
-                    {movement.delta >= 0 ? '+' : ''}
-                    {movement.delta} {unitLabel}
-                  </span>
-                  {movement.source !== 'Harvest' && (
-                    <button
-                      type="button"
-                      className="record-card-delete"
-                      onClick={() => setConfirmDelete(movement)}
-                      aria-label={t('common.delete')}
-                    >
-                      ✕
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <TreeMovementList
+              movements={movements}
+              amount={stock?.amount ?? 0}
+              unitLabel={unitLabel}
+              onDelete={setConfirmDelete}
+            />
           )}
         </>
       )}
 
-      <AdjustBalanceModal
-        open={adjustOpen}
-        options={adjustOptions}
-        onClose={() => setAdjustOpen(false)}
+      {/* The orchard's grading standard, on the same footing as a plant-stock good's. */}
+      <AssessmentCriteriaCard treeStockId={treeStockId} canEdit={!stock?.isDeleted} />
+
+      <TreePlantingModal
+        open={planting != null}
+        treeStockId={treeStockId}
+        direction={planting ?? 'plant'}
+        available={stock?.amount ?? 0}
+        unitLabel={unitLabel}
+        onClose={() => setPlanting(null)}
         onSaved={load}
       />
 

@@ -1,0 +1,110 @@
+/* One holding per page, filed under that holding in the sidebar — the tab row that used to switch
+   between four of them is gone, and with it the tab, icon and count rules it needed. */
+
+/* The cards keep to a readable measure rather than spreading to the width of a desk monitor. */
+.balance-panel {
+  max-width: 860px;
+}
+
+/* A holding with nothing in it: one framed line saying so, in place of the cards. */
+.balance-column-empty {
+  margin: 0;
+  padding: 44px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+}
+
+/* A switch, not an action: it reads as pressed while the removed holdings are on show. */
+.balance-removed-toggle {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.balance-removed-toggle:hover {
+  color: var(--color-dark);
+  border-color: var(--color-muted);
+}
+
+.balance-removed-toggle.active {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  border-color: var(--color-green);
+}
+
+.balance-skeleton-card {
+  gap: 14px;
+}
+
+.balance-skeleton-icon,
+.balance-skeleton-line,
+.balance-skeleton-figure {
+  display: block;
+  background: var(--color-border);
+  animation: balance-skeleton-pulse 1.4s ease-in-out infinite;
+}
+
+.balance-skeleton-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.balance-skeleton-line {
+  flex: 1 1 auto;
+  max-width: 100%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.balance-skeleton-figure {
+  flex: none;
+  width: 72px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.balance-skeleton-card:nth-child(2) > * {
+  animation-delay: 120ms;
+}
+
+.balance-skeleton-card:nth-child(3) > * {
+  animation-delay: 240ms;
+}
+
+.balance-skeleton-card:nth-child(4) > * {
+  animation-delay: 360ms;
+}
+
+@keyframes balance-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balance-skeleton-icon,
+  .balance-skeleton-line,
+  .balance-skeleton-figure {
+    animation: none;
+  }
+
+  .balance-removed-toggle {
+    transition: none;
+  }
+}
+

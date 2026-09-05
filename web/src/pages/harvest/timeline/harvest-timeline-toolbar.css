@@ -1,0 +1,79 @@
+.hcal-timeline-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hcal-timeline-toolbar-left,
+.hcal-timeline-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hcal-timeline-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hcal-timeline-button,
+.hcal-timeline-step {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: border-color 140ms ease, color 140ms ease;
+}
+
+.hcal-timeline-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: var(--color-muted);
+}
+
+.hcal-timeline-button:hover,
+.hcal-timeline-step:hover {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+.hcal-timeline-steppers,
+.hcal-timeline-zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hcal-timeline-zoom-value {
+  min-width: 74px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.hcal-timeline-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hcal-timeline-button,
+  .hcal-timeline-step {
+    transition: none;
+  }
+}

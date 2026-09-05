@@ -8,13 +8,15 @@ namespace Server.Repositories;
 public class GreenhouseHarvestSeedRepository(AppDbContext context, IGreenhouseSeedRepository greenhouseSeedRepository)
     : IGreenhouseHarvestSeedRepository
 {
-    public async Task<IEnumerable<GreenhouseHarvestSeed>> GetByHarvestAsync(int greenhouseHarvestId)
+    public async Task<IEnumerable<GreenhouseHarvestSeed>> GetAsync(int? greenhouseHarvestId = null)
     {
-        return await context.GreenhouseHarvestSeeds
-            .AsNoTracking()
-            .Where(s => s.GreenhouseHarvestId == greenhouseHarvestId)
-            .OrderBy(s => s.Id)
-            .ToListAsync();
+        var query = context.GreenhouseHarvestSeeds.AsNoTracking().AsQueryable();
+        if (greenhouseHarvestId is not null)
+        {
+            query = query.Where(s => s.GreenhouseHarvestId == greenhouseHarvestId);
+        }
+
+        return await query.OrderBy(s => s.Id).ToListAsync();
     }
 
     public async Task<bool> ExistsForSeedAsync(int greenhouseSeedId)

@@ -30,6 +30,16 @@ public class HarvestRepository(
     {
         context.Harvests.Add(harvest);
         await context.SaveChangesAsync();
+
+        context.HarvestStatusChanges.Add(new HarvestStatusChange
+        {
+            HarvestId = harvest.Id,
+            FromStatus = null,
+            ToStatus = harvest.Status,
+            Date = harvest.Date,
+        });
+        await context.SaveChangesAsync();
+
         return harvest;
     }
 
@@ -39,6 +49,17 @@ public class HarvestRepository(
         if (existing is null)
         {
             return false;
+        }
+
+        if (existing.Status != harvest.Status)
+        {
+            context.HarvestStatusChanges.Add(new HarvestStatusChange
+            {
+                HarvestId = harvest.Id,
+                FromStatus = existing.Status,
+                ToStatus = harvest.Status,
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
+            });
         }
 
         existing.Title = harvest.Title;

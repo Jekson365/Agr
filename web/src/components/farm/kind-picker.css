@@ -40,6 +40,13 @@
   font-weight: 600;
 }
 
+.kind-chip.blocked {
+  border-style: dashed;
+  background: var(--color-surface-sunken);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
 .kind-chip-icon {
   width: 18px;
   height: 18px;

@@ -1,8 +1,10 @@
 import { apiFetch } from '@/services/api-client';
 import type { HarvestTree, HarvestTreeInput } from '@/types/harvest-tree';
 
-export function getHarvestTrees(harvestId: number) {
-  return apiFetch<HarvestTree[]>(`/api/harvesttrees?harvestId=${harvestId}`);
+export function getHarvestTrees(harvestId?: number) {
+  return apiFetch<HarvestTree[]>(
+    `/api/harvesttrees${harvestId != null ? `?harvestId=${harvestId}` : ''}`
+  );
 }
 
 /** The fruit entries some harvest already records as picked — those have produce on the books, so

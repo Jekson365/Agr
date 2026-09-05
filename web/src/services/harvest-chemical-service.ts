@@ -1,8 +1,10 @@
 import { apiFetch } from '@/services/api-client';
 import type { HarvestChemical, HarvestChemicalInput } from '@/types/harvest-chemical';
 
-export function getHarvestChemicals(harvestId: number) {
-  return apiFetch<HarvestChemical[]>(`/api/harvestchemicals?harvestId=${harvestId}`);
+export function getHarvestChemicals(harvestId?: number) {
+  return apiFetch<HarvestChemical[]>(
+    `/api/harvestchemicals${harvestId != null ? `?harvestId=${harvestId}` : ''}`
+  );
 }
 
 export function createHarvestChemical(harvestChemical: HarvestChemicalInput) {

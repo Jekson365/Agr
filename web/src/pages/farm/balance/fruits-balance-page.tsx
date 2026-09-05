@@ -83,7 +83,6 @@ export function FruitsBalancePage() {
       }
     >
       <BalanceColumn
-        productHeader={t('balance.colProduct')}
         amountHeader={t('balance.colBalance')}
         listedHeader={t('balance.colOnMarket')}
         emptyLabel={t('balance.emptyTree')}

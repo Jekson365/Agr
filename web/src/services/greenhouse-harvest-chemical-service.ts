@@ -1,8 +1,12 @@
 import { apiFetch } from '@/services/api-client';
 import type { GreenhouseHarvestChemical, GreenhouseHarvestChemicalInput } from '@/types/greenhouse-harvest-chemical';
 
-export function getGreenhouseHarvestChemicals(greenhouseHarvestId: number) {
-  return apiFetch<GreenhouseHarvestChemical[]>(`/api/greenhouseharvestchemicals?greenhouseHarvestId=${greenhouseHarvestId}`);
+export function getGreenhouseHarvestChemicals(greenhouseHarvestId?: number) {
+  return apiFetch<GreenhouseHarvestChemical[]>(
+    `/api/greenhouseharvestchemicals${
+      greenhouseHarvestId != null ? `?greenhouseHarvestId=${greenhouseHarvestId}` : ''
+    }`
+  );
 }
 
 export function createGreenhouseHarvestChemical(harvestChemical: GreenhouseHarvestChemicalInput) {

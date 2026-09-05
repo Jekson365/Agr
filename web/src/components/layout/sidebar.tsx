@@ -4,6 +4,7 @@ import { NavLink } from 'react-router-dom';
 import coinIcon from '@/assets/coin.png';
 import marketIcon from '@/assets/icons/market.png';
 import logo from '@/assets/logo.png';
+import { LockIcon, UnlockIcon } from '@/components/icons/misc-icons';
 import { LogoutIcon, ProfileIcon } from '@/components/icons/nav-icons';
 import { navLinkClass, SidebarNavItem } from '@/components/layout/sidebar-nav-item';
 import { isNavItemVisible, QUICK_ACCESS_ITEMS } from '@/config/nav-items';
@@ -43,7 +44,12 @@ function initialsFor(name: string | undefined): string {
     .toUpperCase();
 }
 
-export function Sidebar() {
+type Props = {
+  locked: boolean;
+  onToggleLock: () => void;
+};
+
+export function Sidebar({ locked, onToggleLock }: Props) {
   const { t } = useLanguage();
   const { user, signOut } = useAuth();
   const { isOn } = useConfiguration();
@@ -68,6 +74,15 @@ export function Sidebar() {
       <div className="sidebar-brand">
         <img src={logo} className="sidebar-brand-icon" alt="" />
         <span className="sidebar-brand-title">{t('auth.appName')}</span>
+        <button
+          type="button"
+          className={locked ? 'sidebar-lock active' : 'sidebar-lock'}
+          title={t(locked ? 'nav.unlockMenu' : 'nav.lockMenu')}
+          aria-label={t(locked ? 'nav.unlockMenu' : 'nav.lockMenu')}
+          onClick={onToggleLock}
+        >
+          {locked ? <LockIcon width={18} height={18} /> : <UnlockIcon width={18} height={18} />}
+        </button>
       </div>
 
       {/* Who you are and what you've earned, at the top where both are the first thing seen. */}

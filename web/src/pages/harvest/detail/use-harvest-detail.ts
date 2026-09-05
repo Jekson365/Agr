@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import { buildYieldRows, treeActualRows } from '@/config/harvest-analysis';
 import { useLanguage } from '@/contexts/language-context';
 import { getFarm } from '@/services/farm-service';
 import { getHarvestChemicals } from '@/services/harvest-chemical-service';
@@ -7,20 +8,24 @@ import { getHarvest, updateHarvest } from '@/services/harvest-service';
 import { getHarvestItems } from '@/services/harvest-item-service';
 import { getHarvestResults } from '@/services/harvest-result-service';
 import { getHarvestSeeds } from '@/services/harvest-seed-service';
+import { getHarvestStatusChanges } from '@/services/harvest-status-change-service';
 import { getHarvestTrees } from '@/services/harvest-tree-service';
 import { getLandPlot } from '@/services/land-plot-service';
 import { getSeeds } from '@/services/seed-service';
 import { getStock } from '@/services/stock-service';
+import { getTreeProducts } from '@/services/tree-product-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import type { Farm } from '@/types/farm';
 import type { Harvest, HarvestStatus } from '@/types/harvest';
 import type { HarvestItem } from '@/types/harvest-item';
 import type { HarvestResult } from '@/types/harvest-result';
 import type { HarvestSeed } from '@/types/harvest-seed';
+import type { HarvestStatusChange } from '@/types/harvest-status-change';
 import type { HarvestTree } from '@/types/harvest-tree';
 import type { LandPlot } from '@/types/land-plot';
 import type { Seed } from '@/types/seed';
 import type { Stock } from '@/types/stock';
+import type { TreeProduct } from '@/types/tree-product';
 import type { TreeStock } from '@/types/tree-stock';
 
 export function useHarvestDetail(harvestId: number) {
@@ -31,9 +36,11 @@ export function useHarvestDetail(harvestId: number) {
   const [results, setResults] = useState<HarvestResult[]>([]);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [treeStocks, setTreeStocks] = useState<TreeStock[]>([]);
+  const [treeProducts, setTreeProducts] = useState<TreeProduct[]>([]);
   const [seeds, setSeeds] = useState<Seed[]>([]);
   const [harvestSeeds, setHarvestSeeds] = useState<HarvestSeed[]>([]);
   const [harvestTrees, setHarvestTrees] = useState<HarvestTree[]>([]);
+  const [statusChanges, setStatusChanges] = useState<HarvestStatusChange[]>([]);
   const [plot, setPlot] = useState<LandPlot | null>(null);
   const [farm, setFarm] = useState<Farm | null>(null);
   /** Summed cost of the chemicals applied, loaded here rather than in the section that lists
@@ -54,7 +61,7 @@ export function useHarvestDetail(harvestId: number) {
     setLoading(true);
     setError(null);
     try {
-      const [item, list, resultList, stockList, treeStockList, seedUsage, seedList, treeUsage, chemicals] = await Promise.all([
+      const [item, list, resultList, stockList, treeStockList, seedUsage, seedList, treeUsage, chemicals, changes, productList] = await Promise.all([
         getHarvest(harvestId),
         getHarvestItems(harvestId),
         getHarvestResults(harvestId),
@@ -66,6 +73,10 @@ export function useHarvestDetail(harvestId: number) {
         getSeeds(true),
         getHarvestTrees(harvestId),
         getHarvestChemicals(harvestId),
+        getHarvestStatusChanges(harvestId),
+        // A fruit harvest's amounts are in its orchard's produce unit, so the catalog that names
+        // it is part of reading one.
+        getTreeProducts().catch(() => []),
       ]);
       setHarvest(item);
       setItems(list);
@@ -76,6 +87,8 @@ export function useHarvestDetail(harvestId: number) {
       setSeeds(seedList);
       setHarvestTrees(treeUsage);
       setChemicalTotal(chemicals.reduce((sum, chemical) => sum + chemical.cost, 0));
+      setStatusChanges(changes);
+      setTreeProducts(productList);
 
       setFarm(item.farmId != null ? await getFarm(item.farmId) : null);
       setPlot(item.landPlotId != null ? await getLandPlot(item.landPlotId) : null);
@@ -106,13 +119,27 @@ export function useHarvestDetail(harvestId: number) {
     }
   }
 
+  const catalogs = useMemo(
+    () => ({ stocks, treeStocks, seeds, treeProducts }),
+    [stocks, treeStocks, seeds, treeProducts]
+  );
+
+  // Planned against actual, with the actual side read from whichever record the harvest's kind
+  // keeps it on. Derived once here so every panel reading it agrees.
+  const yieldRows = useMemo(
+    () => buildYieldRows(items, harvest?.kind === 'Fruit' ? treeActualRows(harvestTrees) : results),
+    [items, results, harvestTrees, harvest?.kind]
+  );
+
   return {
     harvest,
     items,
     results,
-    catalogs: { stocks, treeStocks, seeds },
+    catalogs,
+    yieldRows,
     harvestSeeds,
     harvestTrees,
+    statusChanges,
     plot,
     farm,
     chemicalTotal,
@@ -125,6 +152,7 @@ export function useHarvestDetail(harvestId: number) {
     setResults,
     setHarvestSeeds,
     setHarvestTrees,
+    setStatusChanges,
     setError,
     setChemicalTotal,
     reloadSeeds,
@@ -132,3 +160,5 @@ export function useHarvestDetail(harvestId: number) {
     load,
   };
 }
+
+export type HarvestDetail = ReturnType<typeof useHarvestDetail>;

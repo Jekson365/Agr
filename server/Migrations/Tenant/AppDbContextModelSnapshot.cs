@@ -89,6 +89,61 @@ namespace Server.Migrations.Tenant
                     b.ToTable("AnimalProductions");
                 });
 
+            modelBuilder.Entity("Server.Models.AssessmentCriteria", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Damaged")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Grade")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("Moisture")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Rotten")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("SizeFrom")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("SizeTo")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("StockId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TreeStockId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("WeightFrom")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("WeightTo")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StockId");
+
+                    b.HasIndex("TreeStockId");
+
+                    b.ToTable("AssessmentCriteria");
+                });
+
             modelBuilder.Entity("Server.Models.BreedingEvent", b =>
                 {
                     b.Property<int>("Id")
@@ -853,6 +908,44 @@ namespace Server.Migrations.Tenant
                     b.ToTable("Harvests");
                 });
 
+            modelBuilder.Entity("Server.Models.HarvestAssessment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Grade")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("HarvestId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("StockId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TreeStockId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Wasted")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HarvestId");
+
+                    b.HasIndex("StockId");
+
+                    b.HasIndex("TreeStockId");
+
+                    b.ToTable("HarvestAssessments");
+                });
+
             modelBuilder.Entity("Server.Models.HarvestChemical", b =>
                 {
                     b.Property<int>("Id")
@@ -879,6 +972,31 @@ namespace Server.Migrations.Tenant
                     b.HasIndex("HarvestId");
 
                     b.ToTable("HarvestChemicals");
+                });
+
+            modelBuilder.Entity("Server.Models.HarvestEvent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("HarvestId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HarvestId");
+
+                    b.ToTable("HarvestEvents");
                 });
 
             modelBuilder.Entity("Server.Models.HarvestItem", b =>
@@ -997,6 +1115,40 @@ namespace Server.Migrations.Tenant
                     b.HasIndex("SeedId");
 
                     b.ToTable("HarvestSeeds");
+                });
+
+            modelBuilder.Entity("Server.Models.HarvestStatusChange", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FromStatus")
+                        .HasColumnType("text");
+
+                    b.Property<int>("HarvestId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToStatus")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HarvestId");
+
+                    b.ToTable("HarvestStatusChanges");
                 });
 
             modelBuilder.Entity("Server.Models.HarvestTree", b =>
@@ -1372,6 +1524,48 @@ namespace Server.Migrations.Tenant
                     b.HasIndex("StockId");
 
                     b.ToTable("MedicalRecords");
+                });
+
+            modelBuilder.Entity("Server.Models.OrchardBlock", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Boundary")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Pattern")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("Rotation")
+                        .HasColumnType("double precision");
+
+                    b.Property<decimal>("RowSpacing")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("TreeCount")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("TreeSpacing")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("TreeStockId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreeStockId")
+                        .IsUnique();
+
+                    b.ToTable("OrchardBlocks");
                 });
 
             modelBuilder.Entity("Server.Models.PlantScanHistory", b =>
@@ -1990,6 +2184,64 @@ namespace Server.Migrations.Tenant
                     b.ToTable("TreeProductMovements");
                 });
 
+            modelBuilder.Entity("Server.Models.TreeSeedling", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("HardeningDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("PlantedOutDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("PlantedOutQuantity")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("ReadyDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("SownDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("SproutedDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("TreeStockId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreeStockId");
+
+                    b.ToTable("TreeSeedlings");
+                });
+
             modelBuilder.Entity("Server.Models.TreeStock", b =>
                 {
                     b.Property<int>("Id")
@@ -2080,6 +2332,31 @@ namespace Server.Migrations.Tenant
                     b.ToTable("TreeStockMovements");
                 });
 
+            modelBuilder.Entity("Server.Models.TreeTreatment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<int>("TreeStockId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreeStockId");
+
+                    b.ToTable("TreeTreatments");
+                });
+
             modelBuilder.Entity("Server.Models.Unit", b =>
                 {
                     b.Property<int>("Id")
@@ -2156,6 +2433,19 @@ namespace Server.Migrations.Tenant
                         .HasForeignKey("UnitId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.AssessmentCriteria", b =>
+                {
+                    b.HasOne("Server.Models.Stock", null)
+                        .WithMany()
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Server.Models.TreeStock", null)
+                        .WithMany()
+                        .HasForeignKey("TreeStockId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Server.Models.BreedingEvent", b =>
@@ -2312,7 +2602,35 @@ namespace Server.Migrations.Tenant
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("Server.Models.HarvestAssessment", b =>
+                {
+                    b.HasOne("Server.Models.Harvest", null)
+                        .WithMany()
+                        .HasForeignKey("HarvestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.Stock", null)
+                        .WithMany()
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Server.Models.TreeStock", null)
+                        .WithMany()
+                        .HasForeignKey("TreeStockId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Server.Models.HarvestChemical", b =>
+                {
+                    b.HasOne("Server.Models.Harvest", null)
+                        .WithMany()
+                        .HasForeignKey("HarvestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.HarvestEvent", b =>
                 {
                     b.HasOne("Server.Models.Harvest", null)
                         .WithMany()
@@ -2385,6 +2703,15 @@ namespace Server.Migrations.Tenant
                     b.HasOne("Server.Models.Seed", null)
                         .WithMany()
                         .HasForeignKey("SeedId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.HarvestStatusChange", b =>
+                {
+                    b.HasOne("Server.Models.Harvest", null)
+                        .WithMany()
+                        .HasForeignKey("HarvestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2485,6 +2812,15 @@ namespace Server.Migrations.Tenant
                     b.HasOne("Server.Models.LivestockDetail", null)
                         .WithMany()
                         .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.OrchardBlock", b =>
+                {
+                    b.HasOne("Server.Models.TreeStock", null)
+                        .WithMany()
+                        .HasForeignKey("TreeStockId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2593,6 +2929,14 @@ namespace Server.Migrations.Tenant
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Server.Models.TreeSeedling", b =>
+                {
+                    b.HasOne("Server.Models.TreeStock", null)
+                        .WithMany()
+                        .HasForeignKey("TreeStockId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
             modelBuilder.Entity("Server.Models.TreeStock", b =>
                 {
                     b.HasOne("Server.Models.LandPlot", null)
@@ -2618,6 +2962,15 @@ namespace Server.Migrations.Tenant
                         .HasForeignKey("HarvestResultId")
                         .OnDelete(DeleteBehavior.Cascade);
 
+                    b.HasOne("Server.Models.TreeStock", null)
+                        .WithMany()
+                        .HasForeignKey("TreeStockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.TreeTreatment", b =>
+                {
                     b.HasOne("Server.Models.TreeStock", null)
                         .WithMany()
                         .HasForeignKey("TreeStockId")

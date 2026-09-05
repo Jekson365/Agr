@@ -15,13 +15,15 @@ public class HarvestTreeRepository(
     AppDbContext context,
     IHarvestProductRepository harvestProductRepository) : IHarvestTreeRepository
 {
-    public async Task<IEnumerable<HarvestTree>> GetByHarvestAsync(int harvestId)
+    public async Task<IEnumerable<HarvestTree>> GetAsync(int? harvestId = null)
     {
-        return await context.HarvestTrees
-            .AsNoTracking()
-            .Where(h => h.HarvestId == harvestId)
-            .OrderBy(h => h.Id)
-            .ToListAsync();
+        var query = context.HarvestTrees.AsNoTracking().AsQueryable();
+        if (harvestId is not null)
+        {
+            query = query.Where(h => h.HarvestId == harvestId);
+        }
+
+        return await query.OrderBy(h => h.Id).ToListAsync();
     }
 
     public async Task<HarvestTree?> GetByIdAsync(int id)

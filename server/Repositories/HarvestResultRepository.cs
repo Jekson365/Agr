@@ -10,13 +10,25 @@ namespace Server.Repositories;
 /// <see cref="IHarvestStockSync"/>, which decides all of that.</summary>
 public class HarvestResultRepository(AppDbContext context, IHarvestStockSync harvestStockSync) : IHarvestResultRepository
 {
-    public async Task<IEnumerable<HarvestResult>> GetByHarvestAsync(int harvestId)
+    public async Task<IEnumerable<HarvestResult>> GetAsync(int? harvestId = null)
     {
-        return await context.HarvestResults
-            .AsNoTracking()
-            .Where(r => r.HarvestId == harvestId)
-            .OrderBy(r => r.Id)
-            .ToListAsync();
+        var query = context.HarvestResults.AsNoTracking().AsQueryable();
+        if (harvestId is not null)
+        {
+            query = query.Where(r => r.HarvestId == harvestId);
+        }
+
+        return await query.OrderBy(r => r.Id).ToListAsync();
+    }
+
+    public async Task<HarvestResult?> GetByIdAsync(int id)
+    {
+        return await context.HarvestResults.AsNoTracking().FirstOrDefaultAsync(r => r.Id == id);
+    }
+
+    public Task<bool> ExistsForHarvestAsync(int harvestId)
+    {
+        return context.HarvestResults.AsNoTracking().AnyAsync(r => r.HarvestId == harvestId);
     }
 
     public async Task<HarvestResult> AddAsync(HarvestResult result)

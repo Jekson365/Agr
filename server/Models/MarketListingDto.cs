@@ -14,6 +14,10 @@ public class MarketListingDto
     public string SellerPhoneNumber { get; set; } = string.Empty;
     public string SellerImagePath { get; set; } = string.Empty;
 
+    /// <summary>The seller's farm name, empty when they have not named one. Live from the profile
+    /// like the fields above, so a farm renamed after a listing was posted reads correctly.</summary>
+    public string SellerFarmName { get; set; } = string.Empty;
+
     public ListingType Type { get; set; }
     public ListingCategory Category { get; set; }
     public string ItemType { get; set; } = string.Empty;
@@ -47,6 +51,7 @@ public class MarketListingDto
         SellerSurname = seller?.Surname ?? string.Empty,
         SellerPhoneNumber = seller?.PhoneNumber ?? string.Empty,
         SellerImagePath = seller?.ImagePath ?? string.Empty,
+        SellerFarmName = seller?.FarmName ?? string.Empty,
         Type = listing.Type,
         Category = listing.Category,
         ItemType = listing.ItemType,

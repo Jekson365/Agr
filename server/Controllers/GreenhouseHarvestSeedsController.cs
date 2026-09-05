@@ -14,9 +14,9 @@ public class GreenhouseHarvestSeedsController(
     IGreenhouseSeedRepository greenhouseSeedRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<GreenhouseHarvestSeed>>> GetByHarvest([FromQuery] int greenhouseHarvestId)
+    public async Task<ActionResult<IEnumerable<GreenhouseHarvestSeed>>> GetByHarvest([FromQuery] int? greenhouseHarvestId)
     {
-        return Ok(await greenhouseHarvestSeedRepository.GetByHarvestAsync(greenhouseHarvestId));
+        return Ok(await greenhouseHarvestSeedRepository.GetAsync(greenhouseHarvestId));
     }
 
     [HttpPost]

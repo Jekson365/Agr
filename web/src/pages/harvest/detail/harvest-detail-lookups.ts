@@ -1,7 +1,14 @@
-import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
+import {
+  fruitKindImage,
+  fruitTypeLabel,
+  TREE_PRODUCT_UNIT_LABEL_KEY,
+  TREE_STOCK_UNIT_LABEL_KEY,
+} from '@/config/fruit-kinds';
 import { SEED_UNIT_LABEL_KEY, seedTitle } from '@/config/seed-kinds';
 import { stockKindImage, STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
+import type { HarvestKind } from '@/types/harvest';
 import type { Seed } from '@/types/seed';
+import type { TreeProduct } from '@/types/tree-product';
 import type { Stock } from '@/types/stock';
 import type { TreeStock } from '@/types/tree-stock';
 
@@ -11,7 +18,15 @@ type Translate = (key: string) => string;
  *  and still editable — the harvest is a record of what happened — but it is marked as removed. */
 export type TargetInfo = { label: string; icon: string; unitLabel: string; isDeleted: boolean };
 
-export type Catalogs = { stocks: Stock[]; treeStocks: TreeStock[]; seeds: Seed[] };
+export type Catalogs = { stocks: Stock[]; treeStocks: TreeStock[]; seeds: Seed[]; treeProducts: TreeProduct[] };
+
+/** What an orchard yields, when it has been given a product. A fruit harvest's amounts are in
+ *  this unit — kilograms of apples — not in the orchard's own, which counts trees. */
+function produceOf(catalogs: Catalogs, treeStockId: number): TreeProduct | null {
+  const treeStock = catalogs.treeStocks.find((s) => s.id === treeStockId);
+  if (!treeStock || treeStock.treeProductId == null) return null;
+  return catalogs.treeProducts.find((p) => p.id === treeStock.treeProductId) ?? null;
+}
 
 export function targetFor(
   catalogs: Catalogs,
@@ -83,4 +98,36 @@ export function unitLabelFor(unit: string | null, t: Translate): string {
 /** Trims derived ratios to 2 decimals without printing trailing zeros (12.5, not 12.50). */
 export function round2(value: number): string {
   return String(Math.round(value * 100) / 100);
+}
+
+/**
+ * The unit a harvest's yield is measured in. A crop's is the good's own; a fruit harvest's is the
+ * orchard's produce, since what was picked is weighed in kilograms while the orchard itself is
+ * counted in trees. Falls back to the orchard's unit for one with no product named yet.
+ */
+export function yieldRawUnitFor(
+  catalogs: Catalogs,
+  kind: HarvestKind,
+  stockId: number | null,
+  treeStockId: number | null
+): string | null {
+  if (kind === 'Fruit' && treeStockId != null) {
+    const produce = produceOf(catalogs, treeStockId);
+    if (produce) return produce.unit;
+  }
+  return rawUnitFor(catalogs, stockId, treeStockId);
+}
+
+/** {@link targetFor} with the same correction: a fruit row is labelled in its produce's unit. */
+export function yieldTargetFor(
+  catalogs: Catalogs,
+  kind: HarvestKind,
+  stockId: number | null,
+  treeStockId: number | null,
+  t: Translate
+): TargetInfo | null {
+  const target = targetFor(catalogs, stockId, treeStockId, t);
+  if (target == null || kind !== 'Fruit' || treeStockId == null) return target;
+  const produce = produceOf(catalogs, treeStockId);
+  return produce ? { ...target, unitLabel: t(TREE_PRODUCT_UNIT_LABEL_KEY[produce.unit] ?? '') } : target;
 }

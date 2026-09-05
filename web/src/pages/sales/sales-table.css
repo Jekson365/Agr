@@ -1,0 +1,142 @@
+.sales-table-wrap {
+  max-height: 68vh;
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px var(--color-shadow);
+  overscroll-behavior-x: contain;
+}
+
+.sales-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+}
+
+.sales-table th,
+.sales-table td {
+  padding: 11px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.sales-table thead tr {
+  background: var(--color-surface-sunken);
+}
+
+.sales-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: inherit;
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.sales-table tbody tr {
+  background: var(--color-surface);
+}
+
+.sales-table tbody tr:nth-child(even) {
+  background: var(--color-surface-sunken);
+}
+
+.sales-table tbody tr:hover {
+  background: var(--color-green-soft);
+}
+
+.sales-table tbody tr.busy {
+  opacity: 0.55;
+}
+
+.sales-table tbody td {
+  background: inherit;
+  color: var(--color-dark);
+  vertical-align: middle;
+}
+
+.sales-table tbody tr:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-green);
+}
+
+.sales-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.sales-table .numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.sales-table tfoot tr {
+  background: var(--color-surface-sunken);
+}
+
+.sales-table tfoot td {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: inherit;
+  border-top: 1px solid var(--color-border);
+  border-bottom: none;
+  color: var(--color-muted);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sales-table tfoot td.sales-total {
+  color: var(--color-green);
+  font-size: 0.9375rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.sales-table [data-col='date'],
+.sales-table [data-col='phone'],
+.sales-table [data-col='city'],
+.sales-table [data-col='village'],
+.sales-table [data-col='amount'],
+.sales-table [data-col='quantity'],
+.sales-table [data-col='status'],
+.sales-table [data-col='social'] {
+  white-space: nowrap;
+}
+
+.sales-table td[data-col='buyer'],
+.sales-table td[data-col='item'],
+.sales-table td[data-col='address'] {
+  overflow-wrap: anywhere;
+}
+
+.sales-table td[data-col='buyer'] {
+  min-width: 130px;
+  font-weight: 600;
+}
+
+.sales-table td[data-col='item'] {
+  min-width: 170px;
+}
+
+.sales-table td[data-col='address'] {
+  min-width: 140px;
+}
+
+.sales-table td[data-col='amount'] {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .sales-table th,
+  .sales-table td {
+    padding: 10px 12px;
+  }
+}

@@ -4,7 +4,7 @@ import { KindDropdown } from '@/components/farm/kind-dropdown';
 import type { KindOption } from '@/components/farm/kind-picker';
 import { useLanguage } from '@/contexts/language-context';
 import type { PurchaseItemKind } from '@/types/purchase';
-import { findTarget, targetKey, type PurchaseLine } from './purchase-lines';
+import { findTarget, NEW_TARGET_KEY, targetKey, type PurchaseLine } from './purchase-lines';
 import { PURCHASE_KIND_ICON } from './purchase-icons';
 import { PURCHASE_KIND_LABEL_KEY, type PurchaseTargets } from './purchase-targets';
 
@@ -28,19 +28,23 @@ export function PurchaseItemRow({ line, kinds, targets, onChange, onRemove, remo
     [kinds, t]
   );
 
-  const targetOptions: KindOption[] = useMemo(
-    () =>
-      options.map((target) => ({
-        value: targetKey(target),
-        label: `${target.label} (${target.unitLabel})`,
-        icon: target.icon,
-      })),
-    [options]
-  );
+  const canCreate = line.kind === 'Equipment';
+
+  const targetOptions: KindOption[] = useMemo(() => {
+    const rows = options.map((target) => ({
+      value: targetKey(target),
+      label: `${target.label} (${target.unitLabel})`,
+      icon: target.icon,
+    }));
+    return canCreate
+      ? [{ value: NEW_TARGET_KEY, label: t('purchase.newEquipment'), icon: PURCHASE_KIND_ICON.Equipment }, ...rows]
+      : rows;
+  }, [options, canCreate, t]);
 
   function changeKind(kind: PurchaseItemKind) {
     const first = targets[kind][0];
-    onChange({ ...line, kind, targetKey: first ? targetKey(first) : '' });
+    const key = first ? targetKey(first) : kind === 'Equipment' ? NEW_TARGET_KEY : '';
+    onChange({ ...line, kind, targetKey: key, newName: '' });
   }
 
   return (
@@ -56,13 +60,22 @@ export function PurchaseItemRow({ line, kinds, targets, onChange, onRemove, remo
 
       <div className="field">
         <label>{t('purchase.item')}</label>
-        {options.length === 0 ? (
+        {targetOptions.length === 0 ? (
           <span className="limit-hint field-fixed-value">{t('purchase.noTargets')}</span>
         ) : (
           <KindDropdown
             options={targetOptions}
             selected={line.targetKey}
             onSelect={(value) => onChange({ ...line, targetKey: value })}
+          />
+        )}
+
+        {line.targetKey === NEW_TARGET_KEY && (
+          <input
+            className="purchase-line-new"
+            value={line.newName ?? ''}
+            onChange={(e) => onChange({ ...line, newName: e.target.value })}
+            placeholder={t('purchase.equipmentNamePlaceholder')}
           />
         )}
       </div>

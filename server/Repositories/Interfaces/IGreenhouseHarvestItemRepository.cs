@@ -4,7 +4,7 @@ namespace Server.Repositories.Interfaces;
 
 public interface IGreenhouseHarvestItemRepository
 {
-    Task<IEnumerable<GreenhouseHarvestItem>> GetByHarvestAsync(int greenhouseHarvestId);
+    Task<IEnumerable<GreenhouseHarvestItem>> GetAsync(int? greenhouseHarvestId = null);
     Task<GreenhouseHarvestItem> AddAsync(GreenhouseHarvestItem item);
     Task<bool> UpdateAsync(GreenhouseHarvestItem item);
     Task<bool> DeleteAsync(int id);
@@ -12,7 +12,7 @@ public interface IGreenhouseHarvestItemRepository
 
 public interface IGreenhouseHarvestSeedRepository
 {
-    Task<IEnumerable<GreenhouseHarvestSeed>> GetByHarvestAsync(int greenhouseHarvestId);
+    Task<IEnumerable<GreenhouseHarvestSeed>> GetAsync(int? greenhouseHarvestId = null);
 
     /// <summary>Whether any harvest still records this seed as sown — checked before deleting it.</summary>
     Task<bool> ExistsForSeedAsync(int greenhouseSeedId);
@@ -54,7 +54,7 @@ public interface IGreenhouseHarvestResultRepository
 
 public interface IGreenhouseHarvestChemicalRepository
 {
-    Task<IEnumerable<GreenhouseHarvestChemical>> GetByHarvestAsync(int greenhouseHarvestId);
+    Task<IEnumerable<GreenhouseHarvestChemical>> GetAsync(int? greenhouseHarvestId = null);
     Task<GreenhouseHarvestChemical> AddAsync(GreenhouseHarvestChemical chemical);
     Task<bool> UpdateAsync(GreenhouseHarvestChemical chemical);
     Task<bool> DeleteAsync(int id);

@@ -10,6 +10,9 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class HarvestsController(IHarvestRepository harvestRepository) : ControllerBase
 {
+    private const string BalancedMessage =
+        "A harvest transferred to the balances is settled: it takes no further edits and cannot be removed.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Harvest>>> GetAll([FromQuery] HarvestKind? kind)
     {
@@ -49,6 +52,17 @@ public class HarvestsController(IHarvestRepository harvestRepository) : Controll
             return BadRequest();
         }
 
+        var existing = await harvestRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        if (existing.Status.CountsInBalance() && ChangesMoreThanMoney(existing, harvest))
+        {
+            return Conflict(BalancedMessage);
+        }
+
         var updated = await harvestRepository.UpdateAsync(harvest);
         return updated ? NoContent() : NotFound();
     }
@@ -56,7 +70,28 @@ public class HarvestsController(IHarvestRepository harvestRepository) : Controll
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var existing = await harvestRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        if (existing.Status.CountsInBalance())
+        {
+            return Conflict(BalancedMessage);
+        }
+
         var deleted = await harvestRepository.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
+    }
+
+    private static bool ChangesMoreThanMoney(Harvest existing, Harvest incoming)
+    {
+        return existing.Status != incoming.Status
+            || !string.Equals(existing.Title, incoming.Title, StringComparison.Ordinal)
+            || existing.Date != incoming.Date
+            || existing.ExpectedHarvestDate != incoming.ExpectedHarvestDate
+            || existing.FarmId != incoming.FarmId
+            || existing.LandPlotId != incoming.LandPlotId;
     }
 }

@@ -92,10 +92,10 @@ export function LivestockDetailFormModal({ open, livestockId, editingDetail, onC
   }
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={onClose} size="wide">
       <h2 className="form-title">{isEditing ? t('livestockDetail.edit') : t('livestockDetail.add')}</h2>
 
-      <div className="form-fields">
+      <div className="form-fields modal-form-grid">
         <div className="field">
           <label>{t('livestockDetail.code')}</label>
           <input value={codeInput} onChange={(e) => setCodeInput(e.target.value)} placeholder={t('livestockDetail.codePlaceholder')} />
@@ -130,7 +130,7 @@ export function LivestockDetailFormModal({ open, livestockId, editingDetail, onC
           onPick={pickImage}
         />
 
-        {formError && <div className="error-banner">{formError}</div>}
+        {formError && <div className="error-banner field-full">{formError}</div>}
       </div>
 
       <div className="modal-actions">

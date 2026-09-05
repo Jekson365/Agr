@@ -4,8 +4,9 @@ namespace Server.Repositories.Interfaces;
 
 /// <summary>
 /// Owns what a harvest currently puts into stock. Two rules decide it, and this is the only place
-/// either is applied: yield counts only while the harvest is <see cref="HarvestStatus.Harvested"/>,
-/// and only a recorded <see cref="HarvestResult"/> counts. A planned <see cref="HarvestItem"/> adds
+/// either is applied: yield counts only while the harvest is
+/// <see cref="HarvestStatus.TransferredToBalance"/> — <see cref="HarvestStatus.Harvested"/> records
+/// the pick, the step after it books it — and only a recorded <see cref="HarvestResult"/> counts. A planned <see cref="HarvestItem"/> adds
 /// nothing however the harvest ends up — it is a forecast, and a balance reports what is actually
 /// held. Call it after anything that could change that answer (the status, a plan, a result) and
 /// the movements and the stock amounts are brought back into line, whichever way they moved.

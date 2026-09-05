@@ -1,0 +1,70 @@
+/* The chosen good's assessment sheet: the four bands, what each was judged by, and how much
+   came out at it. */
+
+.hg-sheet {
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.hg-sheet-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.hg-sheet-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hg-sheet-totals {
+  display: inline-flex;
+  gap: 14px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+}
+
+.hg-sheet-graded {
+  color: var(--color-green);
+}
+
+.hg-sheet-graded.over {
+  color: var(--color-danger);
+}
+
+.hg-no-criteria {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--color-border);
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.hg-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.hg-saved {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.hg-over {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-danger);
+}

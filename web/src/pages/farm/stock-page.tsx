@@ -9,7 +9,6 @@ import { ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
 import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useAuth } from '@/contexts/auth-context';
-import { GuideVideoButton } from '@/components/ui/guide-video-button';
 import { useLanguage } from '@/contexts/language-context';
 import { getStock } from '@/services/stock-service';
 import type { Stock } from '@/types/stock';
@@ -85,7 +84,6 @@ export function StockPage() {
       <div className="page-header">
         <h1 className="page-title">{t('farm.plantStock')}</h1>
         <div className="page-header-actions">
-          <GuideVideoButton guide="stock" />
           {/* Enabled even at the cap — clicking it answers with the available packets. */}
           <button type="button" className="add-button" onClick={openAdd}>
             + {t('farm.addStock')}

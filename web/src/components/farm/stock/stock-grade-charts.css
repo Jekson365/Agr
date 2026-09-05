@@ -1,0 +1,62 @@
+.hfd + .sgc-grid {
+  margin-top: 12px;
+}
+
+.sgc-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.sgc-card {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.sgc-title {
+  margin: 0 0 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.sgc-total {
+  margin: 0 0 14px;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.sgc-card > .donut-chart {
+  flex: 1;
+  align-content: center;
+}
+
+.sgc-chart {
+  height: 14rem;
+}
+
+.sgc-chart .bar-chart-bar {
+  max-width: 3.25rem;
+}
+
+.sgc-empty {
+  margin-top: 20px;
+  padding: 24px;
+  border: 1px dashed var(--color-border);
+  border-radius: 16px;
+  color: var(--color-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .sgc-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

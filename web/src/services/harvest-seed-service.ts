@@ -1,8 +1,10 @@
 import { apiFetch } from '@/services/api-client';
 import type { HarvestSeed, HarvestSeedInput } from '@/types/harvest-seed';
 
-export function getHarvestSeeds(harvestId: number) {
-  return apiFetch<HarvestSeed[]>(`/api/harvestseeds?harvestId=${harvestId}`);
+export function getHarvestSeeds(harvestId?: number) {
+  return apiFetch<HarvestSeed[]>(
+    `/api/harvestseeds${harvestId != null ? `?harvestId=${harvestId}` : ''}`
+  );
 }
 
 /** Recording seed usage deducts the amount from that seed and logs it in the seed's history. */

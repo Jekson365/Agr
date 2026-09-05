@@ -1,0 +1,88 @@
+.onboarding-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.onboarding-progress-item {
+  display: flex;
+  align-items: center;
+  flex: 1 1 140px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.onboarding-progress-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.onboarding-progress-button:disabled {
+  cursor: default;
+}
+
+.onboarding-progress-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 50%;
+  background: var(--color-border);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.onboarding-progress-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.onboarding-progress-item.done {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.onboarding-progress-item.done .onboarding-progress-dot {
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.onboarding-progress-item.done .onboarding-progress-label {
+  color: var(--color-green);
+}
+
+.onboarding-progress-item.current {
+  border-color: var(--color-dark);
+  background: var(--color-surface);
+}
+
+.onboarding-progress-item.current .onboarding-progress-dot {
+  background: var(--color-dark);
+  color: var(--color-on-accent);
+}
+
+.onboarding-progress-item.current .onboarding-progress-label {
+  color: var(--color-dark);
+}

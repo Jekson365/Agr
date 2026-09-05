@@ -659,6 +659,13 @@ export const styles = StyleSheet.create({
   statusBadgeHarvestedText: {
     color: '#FFFFFF',
   },
+  statusBadgeBalanced: {
+    backgroundColor: Brand.violetSoft,
+    borderColor: Brand.violet,
+  },
+  statusBadgeBalancedText: {
+    color: Brand.violet,
+  },
   formActions: {
     flexDirection: 'row',
     gap: 12,

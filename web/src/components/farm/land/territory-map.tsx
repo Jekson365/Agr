@@ -1,6 +1,7 @@
 import * as L from 'leaflet';
 import { useEffect, useRef, useState } from 'react';
 
+import { MAP_TILE_LAYERS, type MapBaseLayer } from '@/config/map-tiles';
 import { useLanguage } from '@/contexts/language-context';
 import { initialOf, territoryCenter, type OtherTerritory, type TerritoryPoint } from '@/config/territory';
 
@@ -13,24 +14,6 @@ const DEFAULT_CENTER: TerritoryPoint = { lat: 41.7151, lng: 44.8271 };
 
 /** Close enough to make out field edges, but not so close that a first-time user is lost. */
 const DEFAULT_ZOOM = 15;
-
-type BaseLayer = 'satellite' | 'street';
-
-/** Imagery is the default: a street map shows roads, not where one field stops and the next
- *  begins, which is the whole job here. */
-const TILE_LAYERS: Record<BaseLayer, { url: string; attribution: string; maxNativeZoom: number }> = {
-  satellite: {
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution:
-      'Tiles &copy; Esri — Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP and the GIS User Community',
-    maxNativeZoom: 19,
-  },
-  street: {
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
-    maxNativeZoom: 19,
-  },
-};
 
 const VERTEX_ICON = L.divIcon({ className: 'territory-handle', iconSize: [14, 14] });
 const MIDPOINT_ICON = L.divIcon({ className: 'territory-handle midpoint', iconSize: [12, 12] });
@@ -60,6 +43,22 @@ function ownerPin(initial: string, owner: string, size: number): L.DivIcon {
   });
 }
 
+/** One orchard's trees on the map. Colours are passed in resolved: the canvas renderer paints
+ *  from these options and cannot see a stylesheet, let alone a custom property. */
+export type PlantingLayer = {
+  key: string;
+  /** A resolved colour — `#rrggbb`, not `var(--…)`. */
+  colour: string;
+  /** Radius in metres to draw each tree at, so spacing reads as the distance it is. */
+  radius: number;
+  trees: TerritoryPoint[];
+  /** Unbroken runs drawn as a line through them, for a layout that is a hedge rather than
+   *  separate trees. */
+  runs?: TerritoryPoint[][];
+  /** The block's own outline, for a layer being shown alongside rather than edited. */
+  outline?: TerritoryPoint[];
+};
+
 type Props = {
   /** The outline, in order around the territory. */
   points: TerritoryPoint[];
@@ -80,6 +79,10 @@ type Props = {
   wheelZoom?: boolean;
   /** Where to open when nothing is marked yet, e.g. the owner's saved location. */
   fallbackCenter?: TerritoryPoint | null;
+  /** Planted blocks drawn inside or beside the outline, one layer per orchard. On a canvas
+   *  renderer and never interactive: a block runs to thousands of trees, and every one of them
+   *  would otherwise swallow the click that puts a corner down. */
+  plantings?: PlantingLayer[];
   className?: string;
 };
 
@@ -102,6 +105,7 @@ export function TerritoryMap({
   label,
   wheelZoom,
   fallbackCenter,
+  plantings,
   className,
 }: Props) {
   const { t } = useLanguage();
@@ -117,6 +121,8 @@ export function TerritoryMap({
   const othersGroupRef = useRef<L.LayerGroup | null>(null);
   const vertexGroupRef = useRef<L.LayerGroup | null>(null);
   const midpointGroupRef = useRef<L.LayerGroup | null>(null);
+  const plantingGroupRef = useRef<L.LayerGroup | null>(null);
+  const plantingRendererRef = useRef<L.Canvas | null>(null);
 
   // The map's listeners are attached once, when it is created, so they read the current points and
   // callback from refs rather than closing over the values of the render that created the map.
@@ -129,7 +135,7 @@ export function TerritoryMap({
    *  panning and zooming is left alone. */
   const framedRef = useRef(false);
 
-  const [baseLayer, setBaseLayer] = useState<BaseLayer>('satellite');
+  const [baseLayer, setBaseLayer] = useState<MapBaseLayer>('satellite');
   const [locating, setLocating] = useState(false);
 
   useEffect(() => {
@@ -158,6 +164,8 @@ export function TerritoryMap({
 
     // Added first so the neighbours sit under this map's own outline and its handles.
     othersGroupRef.current = L.layerGroup().addTo(map);
+    plantingRendererRef.current = L.canvas({ padding: 0.3 });
+    plantingGroupRef.current = L.layerGroup().addTo(map);
     vertexGroupRef.current = L.layerGroup().addTo(map);
     midpointGroupRef.current = L.layerGroup().addTo(map);
 
@@ -187,11 +195,58 @@ export function TerritoryMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // The trees inside the outline. Redrawn whole whenever the plan changes: the layout is derived
+  // from the shape and the spacings, so there is no per-tree identity worth keeping in step.
+  useEffect(() => {
+    const group = plantingGroupRef.current;
+    const renderer = plantingRendererRef.current;
+    if (!group || !renderer) return;
+
+    group.clearLayers();
+
+    for (const layer of plantings ?? []) {
+      if (layer.outline && layer.outline.length >= 3) {
+        L.polygon(
+          layer.outline.map((point) => [point.lat, point.lng] as L.LatLngTuple),
+          {
+            color: layer.colour,
+            weight: 2,
+            opacity: 0.9,
+            fillColor: layer.colour,
+            fillOpacity: 0.08,
+            dashArray: '6 5',
+            interactive: false,
+          }
+        ).addTo(group);
+      }
+
+      for (const run of layer.runs ?? []) {
+        L.polyline(
+          run.map((point) => [point.lat, point.lng] as L.LatLngTuple),
+          { color: layer.colour, weight: 3, opacity: 0.75, interactive: false, renderer }
+        ).addTo(group);
+      }
+
+      for (const tree of layer.trees) {
+        L.circle([tree.lat, tree.lng], {
+          radius: layer.radius,
+          color: '#ffffff',
+          weight: 1,
+          opacity: 0.65,
+          fillColor: layer.colour,
+          fillOpacity: 0.9,
+          interactive: false,
+          renderer,
+        }).addTo(group);
+      }
+    }
+  }, [plantings]);
+
   // Swap the imagery under the outline without touching anything drawn on top of it.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    const { url, attribution, maxNativeZoom } = TILE_LAYERS[baseLayer];
+    const { url, attribution, maxNativeZoom } = MAP_TILE_LAYERS[baseLayer];
     // Zooming past the deepest tile the source publishes stretches the last one rather than
     // showing empty squares — useful when tracing a boundary closely.
     const layer = L.tileLayer(url, { attribution, maxNativeZoom, maxZoom: 21 }).addTo(map);

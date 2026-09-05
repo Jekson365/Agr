@@ -4,7 +4,7 @@ namespace Server.Repositories.Interfaces;
 
 public interface IHarvestTreeRepository
 {
-    Task<IEnumerable<HarvestTree>> GetByHarvestAsync(int harvestId);
+    Task<IEnumerable<HarvestTree>> GetAsync(int? harvestId = null);
     Task<HarvestTree?> GetByIdAsync(int id);
 
     /// <summary>

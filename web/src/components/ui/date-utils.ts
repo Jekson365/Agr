@@ -146,3 +146,10 @@ export function formatLocalizedIsoDateTime(value: string | null | undefined, lan
   const time = formatTime(`${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`, language);
   return `${formatLocalizedDate(date, language)}, ${time}`;
 }
+
+/** A plain `YYYY-MM-DD` as `dd.mm.yyyy`. Digits only, so it reads the same in every language —
+ *  and built from the string rather than a Date, so no timezone can shift the day. */
+export function formatIsoDayNumeric(iso: string): string {
+  const [year, month, day] = iso.split('-');
+  return year && month && day ? `${day}.${month}.${year}` : iso;
+}

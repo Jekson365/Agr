@@ -1,0 +1,87 @@
+.hv-charts,
+.hv-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 1.25rem;
+}
+
+.hv-charts > .hd-panel,
+.hv-info-grid > .hd-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.hv-charts > .hd-panel > .donut-chart {
+  flex: 1;
+  align-content: center;
+}
+
+.hv-charts + .hv-charts {
+  margin-top: 1.25rem;
+}
+
+.hv-charts .hd-panel + .hd-panel,
+.hv-info-grid .hd-panel + .hd-panel {
+  margin-top: 0;
+}
+
+.hv-chart-total {
+  margin: 0 0 1rem;
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
+.hv-chart-body {
+  height: clamp(14rem, 32vh, 20rem);
+}
+
+/* Four bands across a whole panel makes each bar a slab; capped, they read as bars and the
+   column's own centring keeps them under their labels. Scoped here so the sales chart, which
+   has a bar per day, keeps filling its track. */
+.hv-chart-body .bar-chart-bar {
+  max-width: 3.25rem;
+}
+
+.hv-info-grid {
+  margin-top: 1.25rem;
+}
+
+.hv-info {
+  margin: 0;
+}
+
+.hv-info > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6875rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hv-info > div:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.hv-info dt {
+  font-size: 0.9375rem;
+  color: var(--color-muted);
+}
+
+.hv-info dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-align: right;
+  overflow-wrap: anywhere;
+  color: var(--color-dark);
+}
+
+@media (max-width: 1000px) {
+  .hv-charts,
+  .hv-info-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

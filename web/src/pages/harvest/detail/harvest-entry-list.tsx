@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import { useLanguage } from '@/contexts/language-context';
 import './harvest-detail-panels.css';
 
@@ -16,9 +18,13 @@ type Props = {
   emptyText: string;
   addLabel?: string;
   canEdit: boolean;
+  canAdd?: boolean;
+  capText?: string;
   /** Caps the list's height so a long one scrolls inside the panel, keeping the add button and
    *  the tabs above it in reach instead of pushing them off the screen. */
   scrollable?: boolean;
+  /** Shown in place of the add button while a row is being entered inline. */
+  addForm?: ReactNode;
   onAdd?: () => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -36,7 +42,10 @@ export function HarvestEntryList({
   emptyText,
   addLabel,
   canEdit,
+  canAdd = true,
+  capText,
   scrollable,
+  addForm,
   onAdd,
   onEdit,
   onDelete,
@@ -77,7 +86,11 @@ export function HarvestEntryList({
         </div>
       )}
 
-      {canEdit && onAdd && addLabel && (
+      {canEdit && canAdd && addForm}
+
+      {canEdit && !canAdd && capText && <p className="hd-note">{capText}</p>}
+
+      {canEdit && canAdd && !addForm && onAdd && addLabel && (
         <button type="button" className="hd-button primary" onClick={onAdd}>
           + {addLabel}
         </button>

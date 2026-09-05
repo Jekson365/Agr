@@ -2,11 +2,13 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
 import { LoginPage } from '@/pages/auth/login-page';
-import { CalendarPage } from '@/pages/calendar-page';
 import { AnimalHistoryPage } from '@/pages/farm/animal-history-page';
 import { EquipmentPage } from '@/pages/farm/equipment-page';
 import { FarmPage } from '@/pages/farm/farm-page';
 import { FruitsPage } from '@/pages/farm/fruits-page';
+import { NurseryPage } from '@/pages/farm/nursery/nursery-page';
+import { PositioningPage } from '@/pages/farm/positioning/positioning-page';
+import { TreatmentPage } from '@/pages/farm/treatment/treatment-page';
 import { GreenhouseDetailPage } from '@/pages/farm/greenhouse-detail-page';
 // import { GreenhouseHarvestDetailPage } from '@/pages/farm/greenhouse-harvest-detail-page';
 import { GreenhouseHarvestPage } from '@/pages/farm/greenhouse-harvest-page';
@@ -28,14 +30,17 @@ import { StockPage } from '@/pages/farm/stock-page';
 import { TreeProductHistoryPage } from '@/pages/farm/tree-product-history-page';
 import { TreeProductsPage } from '@/pages/farm/tree-products-page';
 import { TreeStockHistoryPage } from '@/pages/farm/tree-stock-history-page';
-import { FruitHarvestDetailPage } from '@/pages/harvest/fruit-harvest/fruit-harvest-detail-page';
 import { HarvestDetailPage } from '@/pages/harvest/harvest-detail-page';
-import { HarvestPage } from '@/pages/harvest/harvest-page';
+import { HarvestGradingPage } from '@/pages/harvest/grading/harvest-grading-page';
+import { HarvestCalendarPage } from '@/pages/harvest/calendar/harvest-calendar-page';
+import { HarvestTimelinePage } from '@/pages/harvest/timeline/harvest-timeline-page';
+import { HarvestWorkspacePage } from '@/pages/harvest/workspace/harvest-workspace-page';
 import { LandingPage } from '@/pages/landing-page';
 import { MapPage } from '@/pages/map-page';
 import { MarketDetailPage } from '@/pages/market/market-detail-page';
 import { MarketPage } from '@/pages/market/market-page';
 import { NotFoundPage } from '@/pages/not-found-page';
+import { OnboardingPage } from '@/pages/onboarding/onboarding-page';
 import { ProfilePage } from '@/pages/profile-page';
 import { ReportHarvestPage } from '@/pages/report-harvest-page';
 import { ReportPage } from '@/pages/report-page';
@@ -49,6 +54,7 @@ import { OwnerRoute } from '@/routes/owner-route';
 import { SuperAdminRoute } from '@/routes/super-admin-route';
 import { ManagerPage } from '@/pages/manager/manager-page';
 import { ManagementRoute } from '@/routes/management-route';
+import { OnboardingRoute } from '@/routes/onboarding-route';
 import { ProtectedRoute } from '@/routes/protected-route';
 import { PublicOnlyRoute } from '@/routes/public-route';
 import {
@@ -79,6 +85,9 @@ function App() {
       </Route>
 
       <Route element={<ProtectedRoute />}>
+        <Route path="/onboarding" element={<OnboardingPage />} />
+
+        <Route element={<OnboardingRoute />}>
         <Route element={<AppShell />}>
           {/* The marketplace and the account's own profile are open to every signed-in account,
               including one registered from the marketplace with no farm behind it. */}
@@ -118,15 +127,19 @@ function App() {
             <Route path="/farm/stock/:id" element={<StockHistoryPage />} />
             <Route path="/farm/seeds" element={<SeedsPage />} />
             <Route path="/farm/seeds/:id" element={<SeedHistoryPage />} />
-            <Route path="/harvest" element={<HarvestPage />} />
+            <Route path="/harvest" element={<HarvestWorkspacePage />} />
             <Route path="/harvest/detail/:id" element={<HarvestDetailPage />} />
+            <Route path="/harvest/grading/:id" element={<HarvestGradingPage />} />
           </Route>
 
           <Route element={<ConfigRoute name={FRUIT_STOCK_CONFIG} />}>
             <Route path="/farm/fruits" element={<FruitsPage />} />
             <Route path="/farm/fruits/balance" element={<FruitsBalancePage />} />
-            <Route path="/farm/fruits/harvest" element={<HarvestPage kind="Fruit" />} />
-            <Route path="/farm/fruits/harvest/:id" element={<FruitHarvestDetailPage />} />
+            <Route path="/farm/fruits/nursery" element={<NurseryPage />} />
+            <Route path="/farm/fruits/positioning" element={<PositioningPage />} />
+            <Route path="/farm/fruits/treatment" element={<TreatmentPage />} />
+            <Route path="/farm/fruits/harvest" element={<HarvestWorkspacePage kind="Fruit" />} />
+            <Route path="/farm/fruits/harvest/:id" element={<HarvestDetailPage />} />
             <Route path="/farm/fruits/products" element={<TreeProductsPage />} />
             <Route path="/farm/fruits/products/:id" element={<TreeProductHistoryPage />} />
             <Route path="/farm/fruits/:id" element={<TreeStockHistoryPage />} />
@@ -163,14 +176,18 @@ function App() {
           <Route element={<SuperAdminRoute />}>
             <Route path="/manager" element={<ManagerPage />} />
           </Route>
+          {/* Field, orchard and greenhouse harvests on one timeline, so it sits outside the
+              crop-farming gate that covers the field's own pages. */}
+          <Route path="/harvest/timeline" element={<HarvestTimelinePage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/report/harvest" element={<ReportHarvestPage />} />
           <Route path="/report/production" element={<ReportProductionPage />} />
           <Route path="/report/stock" element={<ReportStockPage />} />
           <Route element={<ConfigRoute name={CALENDAR_CONFIG} />}>
-            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/calendar" element={<HarvestCalendarPage />} />
           </Route>
           </Route>
+        </Route>
         </Route>
       </Route>
 

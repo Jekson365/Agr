@@ -8,6 +8,7 @@ import { PRODUCTION_TYPE_LABEL_KEY, UNIT_LABEL_KEY } from '@/components/farm/liv
 import { styles } from '@/components/farm/shared/styles';
 import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY } from '@/components/farm/stock/stock';
 import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/components/farm/tree-stock/tree-stock';
+import { countsInBalance } from '@/components/harvest/harvest-analysis';
 import { HarvestReportCard, type YieldRow } from '@/components/report/harvest-report-card';
 import { ProductionRecordCard, ProductionTotalCard, type ProductionTotalRow } from '@/components/report/production-report-card';
 import { TotalReportCard } from '@/components/report/total-report-card';
@@ -114,10 +115,10 @@ export default function ReportScreen() {
       setProductionTypes(productionTypeList);
       setUnits(unitList);
 
-      // Results only ever exist for harvests already marked Harvested (the backend enforces this),
-      // so skip fetching for the rest.
-      const harvestedIds = harvestList.filter((h) => h.status === 'Harvested').map((h) => h.id);
-      const entries = await Promise.all(harvestedIds.map(async (id) => [id, await getHarvestResults(id)] as const));
+      // Only a harvest whose pick has been booked into the balances is reported on, matching what
+      // the server's own report endpoints count, so skip fetching for the rest.
+      const bookedIds = harvestList.filter((h) => countsInBalance(h.status)).map((h) => h.id);
+      const entries = await Promise.all(bookedIds.map(async (id) => [id, await getHarvestResults(id)] as const));
       setResultsByHarvest(Object.fromEntries(entries));
 
       const detailEntries = await Promise.all(
@@ -195,7 +196,7 @@ export default function ReportScreen() {
   const filteredHarvests = useMemo(() => {
     const term = search.trim().toLowerCase();
     return harvests
-      .filter((h) => h.status === 'Harvested')
+      .filter((h) => countsInBalance(h.status))
       .filter((h) => isInRange(h.date))
       .filter((h) => (term ? h.title.toLowerCase().includes(term) : true))
       .sort((a, b) => b.date.localeCompare(a.date));

@@ -1,0 +1,44 @@
+/* The add row a detail section opens in place of its add button: a target and an amount, at the
+   same enlarged scale as the panels in harvest-detail-panels.css. */
+
+.hd-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 2px dashed var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface-sunken);
+}
+
+.hd-inline-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 13rem);
+  gap: 1rem;
+  align-items: start;
+}
+
+.hd-inline .field {
+  margin-bottom: 0;
+}
+
+.hd-inline-amount input {
+  width: 100%;
+}
+
+.hd-inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .hd-inline-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .hd-inline-actions .hd-button {
+    flex: 1;
+  }
+}

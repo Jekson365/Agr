@@ -1,8 +1,12 @@
 import { apiFetch } from '@/services/api-client';
 import type { GreenhouseHarvestItem, GreenhouseHarvestItemInput } from '@/types/greenhouse-harvest-item';
 
-export function getGreenhouseHarvestItems(greenhouseHarvestId: number) {
-  return apiFetch<GreenhouseHarvestItem[]>(`/api/greenhouseharvestitems?greenhouseHarvestId=${greenhouseHarvestId}`);
+export function getGreenhouseHarvestItems(greenhouseHarvestId?: number) {
+  return apiFetch<GreenhouseHarvestItem[]>(
+    `/api/greenhouseharvestitems${
+      greenhouseHarvestId != null ? `?greenhouseHarvestId=${greenhouseHarvestId}` : ''
+    }`
+  );
 }
 
 export function createGreenhouseHarvestItem(item: GreenhouseHarvestItemInput) {

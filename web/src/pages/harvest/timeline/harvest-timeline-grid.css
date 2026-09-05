@@ -1,0 +1,128 @@
+.hcal-timeline {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  overflow: hidden;
+  user-select: none;
+}
+
+.hcal-timeline-months,
+.hcal-timeline-days,
+.hcal-timeline-today-layer,
+.hcal-timeline-rows {
+  display: grid;
+}
+
+.hcal-timeline-months {
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.hcal-timeline-month {
+  padding: 6px 8px;
+  border-right: 1px solid var(--color-border);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hcal-timeline-month:last-child {
+  border-right: 0;
+}
+
+.hcal-timeline-days {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.hcal-timeline-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 6px 2px;
+  border: 0;
+  border-right: 1px solid var(--color-border);
+  background: transparent;
+  font: inherit;
+  color: var(--color-dark);
+  cursor: pointer;
+  overflow: hidden;
+  transition: background-color 140ms ease;
+}
+
+.hcal-timeline-day:last-child {
+  border-right: 0;
+}
+
+.hcal-timeline-day:hover {
+  background: var(--color-green-muted);
+}
+
+.hcal-timeline-weekday {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.hcal-timeline-date {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.hcal-timeline-day.today {
+  background: var(--color-green-muted);
+}
+
+.hcal-timeline-day.today .hcal-timeline-date {
+  color: var(--color-green);
+}
+
+.hcal-timeline-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-image:
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px);
+  background-repeat: repeat, repeat;
+}
+
+.hcal-timeline-today-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.hcal-timeline-today {
+  background: var(--color-green-muted);
+  background: color-mix(in srgb, var(--color-green) 20%, transparent);
+}
+
+.hcal-timeline-rows {
+  position: relative;
+  align-self: start;
+  width: 100%;
+}
+
+.hcal-timeline-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}

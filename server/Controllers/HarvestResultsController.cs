@@ -11,10 +11,13 @@ namespace Server.Controllers;
 public class HarvestResultsController(IHarvestResultRepository harvestResultRepository, IHarvestRepository harvestRepository)
     : ControllerBase
 {
+    private const string BalancedMessage =
+        "This harvest's yield is already on the balances, so its result is settled.";
+
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<HarvestResult>>> GetByHarvest([FromQuery] int harvestId)
+    public async Task<ActionResult<IEnumerable<HarvestResult>>> GetByHarvest([FromQuery] int? harvestId)
     {
-        return Ok(await harvestResultRepository.GetByHarvestAsync(harvestId));
+        return Ok(await harvestResultRepository.GetAsync(harvestId));
     }
 
     [HttpPost]
@@ -30,9 +33,17 @@ public class HarvestResultsController(IHarvestResultRepository harvestResultRepo
         {
             return NotFound();
         }
-        if (harvest.Status != HarvestStatus.Harvested)
+        if (!harvest.Status.IsPicked())
         {
             return BadRequest("The harvest must be marked Harvested before recording its result.");
+        }
+        if (harvest.Status.CountsInBalance())
+        {
+            return Conflict(BalancedMessage);
+        }
+        if (await harvestResultRepository.ExistsForHarvestAsync(result.HarvestId))
+        {
+            return Conflict("A harvest yields one good. Edit or remove the result it already has.");
         }
 
         var created = await harvestResultRepository.AddAsync(result);
@@ -56,9 +67,13 @@ public class HarvestResultsController(IHarvestResultRepository harvestResultRepo
         {
             return NotFound();
         }
-        if (harvest.Status != HarvestStatus.Harvested)
+        if (!harvest.Status.IsPicked())
         {
             return BadRequest("The harvest must be marked Harvested before editing its result.");
+        }
+        if (harvest.Status.CountsInBalance())
+        {
+            return Conflict(BalancedMessage);
         }
 
         var updated = await harvestResultRepository.UpdateAsync(result);
@@ -68,6 +83,18 @@ public class HarvestResultsController(IHarvestResultRepository harvestResultRepo
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var existing = await harvestResultRepository.GetByIdAsync(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        var harvest = await harvestRepository.GetByIdAsync(existing.HarvestId);
+        if (harvest is not null && harvest.Status.CountsInBalance())
+        {
+            return Conflict(BalancedMessage);
+        }
+
         var deleted = await harvestResultRepository.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
     }

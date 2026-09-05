@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import { useLanguage } from '@/contexts/language-context';
+import './balance-page.css';
 
 type Props = {
   /** The area this balance belongs to — where the sidebar files it, and where the top link goes
@@ -64,7 +65,20 @@ export function BalanceLayout({ backTo, backLabel, loading, error, onRetry, remo
       </div>
 
       {loading ? (
-        <div className="state-box">…</div>
+        /* The cards' own shape, held while the figures are on their way: a bare spinner gives the
+           eye nothing to settle on, and the cards arriving into an empty page shift everything
+           under them. */
+        <div className="balance-panel">
+          <div className="balance-cards" aria-hidden="true">
+            {[0, 1, 2, 3].map((row) => (
+              <div key={row} className="balance-card balance-skeleton-card">
+                <span className="balance-skeleton-icon" />
+                <span className="balance-skeleton-line" />
+                <span className="balance-skeleton-figure" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : error ? (
         <div className="state-box">
           <span>{t('balance.loadError')}</span>

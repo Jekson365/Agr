@@ -1,13 +1,21 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import { usePopoverAnchor } from './use-popover-anchor';
 import './multi-select.css';
+import './multi-select-popover.css';
 
 /** Roughly how tall the popover gets — search box plus a full list. Only used to decide whether
  *  it still fits under the trigger, so an approximation is enough. */
 const POPOVER_MAX_HEIGHT = 290;
 
-export type MultiSelectOption = { value: string; label: string; icon?: string };
+export type MultiSelectOption = {
+  value: string;
+  label: string;
+  icon?: string;
+  colour?: string;
+  hint?: string;
+};
 
 type Props = {
   options: MultiSelectOption[];
@@ -16,6 +24,8 @@ type Props = {
   placeholder: string;
   searchPlaceholder: string;
   emptyText: string;
+  /** Shown as a row above the list when given; toggles every option the search leaves visible. */
+  markAllLabel?: string;
   /** 'large' matches the add forms, whose fields are drawn a size up. The popover is portalled to
    *  <body>, so no scope the form sets can reach it — it has to be told. */
   size?: 'default' | 'large';
@@ -29,65 +39,13 @@ export function MultiSelect({
   placeholder,
   searchPlaceholder,
   emptyText,
+  markAllLabel,
   size = 'default',
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [rect, setRect] = useState<{ top: number; left: number; width: number } | null>(null);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const { rect, rootRef, triggerRef, popoverRef } = usePopoverAnchor(open, setOpen, POPOVER_MAX_HEIGHT);
 
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-      // The popover is portalled out of the control, so it is no longer inside rootRef and has to
-      // be asked about separately — without this, clicking an option would close the list first.
-      if (rootRef.current?.contains(target) || popoverRef.current?.contains(target)) return;
-      setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
-
-  /*
-   * Portalled to <body> and positioned from the trigger's box, so a modal card with
-   * overflow-y:auto cannot clip it — the same treatment kind-dropdown.tsx needed, and for the
-   * same reason. Placed on layout rather than in an effect, so it never paints at the wrong spot
-   * first.
-   */
-  useLayoutEffect(() => {
-    if (!open) return;
-
-    function place() {
-      const trigger = triggerRef.current;
-      if (!trigger) return;
-      const box = trigger.getBoundingClientRect();
-
-      // Flip above the field when there is not room under it.
-      const below = window.innerHeight - box.bottom;
-      const top =
-        below < POPOVER_MAX_HEIGHT && box.top > below ? box.top - POPOVER_MAX_HEIGHT - 6 : box.bottom + 6;
-      setRect({ top: Math.max(8, top), left: box.left, width: box.width });
-    }
-
-    place();
-    // Capture phase, so it follows the trigger when an ancestor scrolls rather than only the page.
-    window.addEventListener('scroll', place, true);
-    window.addEventListener('resize', place);
-    return () => {
-      window.removeEventListener('scroll', place, true);
-      window.removeEventListener('resize', place);
-    };
-  }, [open]);
 
   const selectedSet = new Set(selected);
 
@@ -100,13 +58,21 @@ export function MultiSelect({
     onChange(selectedSet.has(value) ? selected.filter((v) => v !== value) : [...selected, value]);
   }
 
-  const triggerLabel =
-    selected.length === 0
-      ? placeholder
-      : options
-          .filter((o) => selectedSet.has(o.value))
-          .map((o) => o.label)
-          .join(', ');
+  const allMarked = filtered.length > 0 && filtered.every((o) => selectedSet.has(o.value));
+
+  function toggleAll() {
+    const values = filtered.map((o) => o.value);
+    if (allMarked) {
+      const drop = new Set(values);
+      onChange(selected.filter((value) => !drop.has(value)));
+      return;
+    }
+    onChange([...selected, ...values.filter((value) => !selectedSet.has(value))]);
+  }
+
+  const chosen = options.filter((o) => selectedSet.has(o.value));
+  const triggerLabel = selected.length === 0 ? placeholder : chosen.map((o) => o.label).join(', ');
+  const swatches = chosen.filter((o) => o.colour);
 
   return (
     <div className="multi-select" ref={rootRef}>
@@ -117,6 +83,13 @@ export function MultiSelect({
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
       >
+        {swatches.length > 0 && (
+          <span className="multi-select-dots" aria-hidden="true">
+            {swatches.map((option) => (
+              <span key={option.value} className="multi-select-dot" style={{ background: option.colour }} />
+            ))}
+          </span>
+        )}
         <span className={selected.length === 0 ? 'multi-select-value placeholder' : 'multi-select-value'}>{triggerLabel}</span>
         {selected.length > 0 && <span className="multi-select-count">{selected.length}</span>}
         <span className="multi-select-caret" aria-hidden="true">
@@ -139,6 +112,20 @@ export function MultiSelect({
             placeholder={searchPlaceholder}
             autoFocus
           />
+          {markAllLabel && filtered.length > 0 && (
+            <button
+              type="button"
+              className={allMarked ? 'multi-select-option multi-select-all checked' : 'multi-select-option multi-select-all'}
+              onClick={toggleAll}
+            >
+              <span className="multi-select-check" aria-hidden="true">
+                {allMarked ? '✓' : ''}
+              </span>
+              <span className="multi-select-option-label">{markAllLabel}</span>
+              <span className="multi-select-hint">{filtered.length}</span>
+            </button>
+          )}
+
           <div className="multi-select-list">
             {filtered.length === 0 ? (
               <p className="multi-select-empty">{emptyText}</p>
@@ -153,8 +140,16 @@ export function MultiSelect({
                   <span className="multi-select-check" aria-hidden="true">
                     {selectedSet.has(option.value) ? '✓' : ''}
                   </span>
+                  {option.colour && (
+                    <span
+                      className="multi-select-dot"
+                      style={{ background: option.colour }}
+                      aria-hidden="true"
+                    />
+                  )}
                   {option.icon && <img src={option.icon} className="multi-select-icon" alt="" />}
                   <span className="multi-select-option-label">{option.label}</span>
+                  {option.hint && <span className="multi-select-hint">{option.hint}</span>}
                 </button>
               ))
             )}

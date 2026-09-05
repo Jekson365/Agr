@@ -19,6 +19,21 @@
   color: var(--color-dark);
 }
 
+.hd-panel-subtitle {
+  margin: 1.5rem 0 1rem;
+  padding-top: 1.25rem;
+  border-top: 2px solid var(--color-border);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.hd-panel-subtitle:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 .hd-note {
   margin: 0 0 1rem;
   font-size: 0.9375rem;
@@ -96,6 +111,11 @@
   font-size: 0.9375rem;
   font-weight: 600;
   cursor: pointer;
+}
+
+.hd-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .hd-button:hover:not(:disabled) {

@@ -10,13 +10,20 @@ public class HarvestSeedRepository(
     ISeedRepository seedRepository,
     ISeedMovementRepository seedMovementRepository) : IHarvestSeedRepository
 {
-    public async Task<IEnumerable<HarvestSeed>> GetByHarvestAsync(int harvestId)
+    public async Task<IEnumerable<HarvestSeed>> GetAsync(int? harvestId = null)
     {
-        return await context.HarvestSeeds
-            .AsNoTracking()
-            .Where(s => s.HarvestId == harvestId)
-            .OrderBy(s => s.Id)
-            .ToListAsync();
+        var query = context.HarvestSeeds.AsNoTracking().AsQueryable();
+        if (harvestId is not null)
+        {
+            query = query.Where(s => s.HarvestId == harvestId);
+        }
+
+        return await query.OrderBy(s => s.Id).ToListAsync();
+    }
+
+    public Task<bool> ExistsForHarvestAsync(int harvestId)
+    {
+        return context.HarvestSeeds.AsNoTracking().AnyAsync(s => s.HarvestId == harvestId);
     }
 
     public async Task<HarvestSeed> AddAsync(HarvestSeed harvestSeed)

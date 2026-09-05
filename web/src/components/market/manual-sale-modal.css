@@ -1,0 +1,61 @@
+.sale-form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 16px;
+  align-items: start;
+}
+
+.sale-form-grid .field-full {
+  grid-column: 1 / -1;
+}
+
+.sale-form-grid .field-wide {
+  grid-column: span 2;
+}
+
+.sale-form-grid .field {
+  gap: 4px;
+  min-width: 0;
+}
+
+.sale-form-grid .field label {
+  font-size: 0.75rem;
+}
+
+.sale-form-grid .field input,
+.sale-form-grid .field select,
+.sale-form-grid .date-field {
+  height: 40px;
+}
+
+.sale-form-grid .kind-row {
+  margin-bottom: 0;
+}
+
+.manual-sale-modal .form-title {
+  margin-bottom: 12px;
+}
+
+.manual-sale-modal .modal-actions {
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .sale-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .sale-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sale-form-grid .field-wide {
+    grid-column: 1 / -1;
+  }
+}
+
+.manual-sale-modal .modal-card {
+  padding: 20px 24px;
+}

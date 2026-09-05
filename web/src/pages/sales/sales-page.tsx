@@ -10,6 +10,8 @@ import { ApiError } from '@/services/api-client';
 import { deleteManualSale, setMarketSaleFulfillment } from '@/services/market-sale-service';
 import type { MarketOrderFulfillment, MarketSale } from '@/types/market-sale';
 import { SalesChart } from './sales-chart';
+import { SalesColumnManager } from './sales-column-manager';
+import { loadHiddenColumns, saveHiddenColumns, type SalesColumnId } from './sales-columns';
 import { bucketTooltip } from './sales-labels';
 import { SalesTable } from './sales-table';
 import { useSalesData } from './use-sales-data';
@@ -25,6 +27,12 @@ export function SalesPage() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [deleting, setDeleting] = useState<MarketSale | null>(null);
+  const [hiddenColumns, setHiddenColumns] = useState<SalesColumnId[]>(loadHiddenColumns);
+
+  function changeColumns(hidden: SalesColumnId[]) {
+    setHiddenColumns(hidden);
+    saveHiddenColumns(hidden);
+  }
 
   async function toggle(sale: MarketSale) {
     const next: MarketOrderFulfillment = sale.fulfillment === 'Sold' ? 'Ordered' : 'Sold';
@@ -98,36 +106,46 @@ export function SalesPage() {
 
       {selectedLabel && <h2 className="sales-selected-title">{selectedLabel}</h2>}
 
-      <div className="tab-row">
-        <button
-          type="button"
-          className={filter === 'all' ? 'tab-item active' : 'tab-item'}
-          onClick={() => setFilter('all')}
-        >
-          {t('sales.filterAll')} ({data.sales.length})
-        </button>
-        <button
-          type="button"
-          className={filter === 'Ordered' ? 'tab-item active' : 'tab-item'}
-          onClick={() => setFilter('Ordered')}
-        >
-          {t('sales.statusOrdered')} ({orderedCount})
-        </button>
-        <button
-          type="button"
-          className={filter === 'Sold' ? 'tab-item active' : 'tab-item'}
-          onClick={() => setFilter('Sold')}
-        >
-          {t('sales.statusSold')} ({soldCount})
-        </button>
+      <div className="sales-toolbar">
+        <div className="tab-row">
+          <button
+            type="button"
+            className={filter === 'all' ? 'tab-item active' : 'tab-item'}
+            onClick={() => setFilter('all')}
+          >
+            {t('sales.filterAll')} ({data.sales.length})
+          </button>
+          <button
+            type="button"
+            className={filter === 'Ordered' ? 'tab-item active' : 'tab-item'}
+            onClick={() => setFilter('Ordered')}
+          >
+            {t('sales.statusOrdered')} ({orderedCount})
+          </button>
+          <button
+            type="button"
+            className={filter === 'Sold' ? 'tab-item active' : 'tab-item'}
+            onClick={() => setFilter('Sold')}
+          >
+            {t('sales.statusSold')} ({soldCount})
+          </button>
+        </div>
+
+        <SalesColumnManager hidden={hiddenColumns} onChange={changeColumns} />
       </div>
 
       {data.salesLoading ? (
-        <div className="state-box">…</div>
+        <div className="sales-empty">…</div>
       ) : visible.length === 0 ? (
-        <p className="empty-state">{t('sales.empty')}</p>
+        <p className="sales-empty">{t('sales.empty')}</p>
       ) : (
-        <SalesTable sales={visible} busyId={busyId} onToggle={toggle} onDelete={setDeleting} />
+        <SalesTable
+          sales={visible}
+          busyId={busyId}
+          hidden={hiddenColumns}
+          onToggle={toggle}
+          onDelete={setDeleting}
+        />
       )}
 
       <ManualSaleModal

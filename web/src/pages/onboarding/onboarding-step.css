@@ -1,0 +1,55 @@
+.onboarding-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 18px;
+}
+
+.onboarding-field-wide {
+  grid-column: 1 / -1;
+}
+
+.onboarding-map {
+  height: 340px;
+}
+
+.onboarding-fields .territory-field-preview {
+  height: 220px;
+}
+
+.onboarding-fields .kind-row {
+  margin-bottom: 0;
+}
+
+.onboarding-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.onboarding-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.onboarding-next {
+  min-width: 200px;
+  padding: 0 24px;
+}
+
+@media (max-width: 720px) {
+  .onboarding-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .onboarding-map {
+    height: 260px;
+  }
+
+  .onboarding-next {
+    flex: 1;
+    min-width: 0;
+  }
+}

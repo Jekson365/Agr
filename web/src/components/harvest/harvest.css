@@ -16,10 +16,28 @@
   color: var(--color-green);
 }
 
+.status-badge-growing {
+  background: var(--color-blue-soft);
+  border-color: var(--color-blue-soft);
+  color: var(--color-blue);
+}
+
+.status-badge-ready {
+  background: var(--color-amber-soft);
+  border-color: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
 .status-badge-harvested {
   background: var(--color-green);
   border-color: var(--color-green);
   color: var(--color-on-accent);
+}
+
+.status-badge-balanced {
+  background: var(--color-violet-soft);
+  border-color: var(--color-violet);
+  color: var(--color-violet);
 }
 
 .harvest-info-block {

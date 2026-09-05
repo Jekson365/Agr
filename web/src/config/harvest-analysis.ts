@@ -7,7 +7,7 @@ import type { HarvestResult } from '@/types/harvest-result';
 type PlannedRow = Pick<HarvestItem, 'stockId' | 'treeStockId' | 'amount' | 'unit'>;
 
 /** Just the fields buildYieldRows reads off a recorded result. */
-type ActualRow = Pick<HarvestResult, 'stockId' | 'treeStockId' | 'amount'>;
+export type ActualRow = Pick<HarvestResult, 'stockId' | 'treeStockId' | 'amount'>;
 
 /**
  * Derived views over a harvest — planned-vs-actual yield and the normalized economics.
@@ -103,13 +103,25 @@ export function buildYieldRows(items: PlannedRow[], results: ActualRow[]): Yield
 }
 
 /**
- * The goods a harvest puts into stock while it is Harvested — what the status change is actually
- * about to write or reverse. Mirrors HarvestStockSync on the server: only a recorded result moves
- * stock. What a good was planned to yield is a forecast and never reaches a balance, so a harvest
+ * The goods a harvest puts into stock while it is TransferredToBalance — what the status change is
+ * actually about to write or reverse. Mirrors HarvestStockSync on the server: only a recorded
+ * result moves stock. What a good was planned to yield is a forecast and never reaches a balance, so a harvest
  * that recorded nothing moves nothing however much it planned.
  */
 export function stockMovingRows(rows: YieldRow[]): YieldRow[] {
   return rows.filter((row) => row.actual > 0);
+}
+
+/**
+ * The actual side of a fruit harvest. An orchard's produce is recorded on the trees that were
+ * picked rather than as a HarvestResult — HarvestTreeRepository keeps the HarvestProduct row that
+ * reaches the balances in step with `harvestedAmount` — so this is where a fruit harvest's yield
+ * is read from. Trees picked but not yet weighed carry nothing and are left out.
+ */
+export function treeActualRows(trees: { treeStockId: number; harvestedAmount: number }[]): ActualRow[] {
+  return trees
+    .filter((tree) => tree.harvestedAmount > 0)
+    .map((tree) => ({ stockId: null, treeStockId: tree.treeStockId, amount: tree.harvestedAmount }));
 }
 
 export type HarvestEconomics = {
@@ -192,11 +204,28 @@ export function todayIsoDate(): string {
 type Scheduled = { status: HarvestStatus; expectedHarvestDate: string | null };
 
 /**
+ * Whether the crop is off the field. True from Harvested onwards: the step after it books the
+ * yield into the balances, and a harvest already in the balances is no less picked for it.
+ */
+export function isPicked(status: HarvestStatus): boolean {
+  return status === 'Harvested' || status === 'TransferredToBalance';
+}
+
+/**
+ * Whether the harvest's recorded yield counts towards stock, the tree products and the reports.
+ * The single client-side statement of the server's rule in HarvestStockSync: Harvested records
+ * what was picked, and only TransferredToBalance books it.
+ */
+export function countsInBalance(status: HarvestStatus): boolean {
+  return status === 'TransferredToBalance';
+}
+
+/**
  * A harvest is overdue when its expected pick date has passed and it still hasn't been
  * harvested. Comparison is lexicographic, which is exact for `YYYY-MM-DD`.
  */
 export function isOverdue(harvest: Scheduled, today: string = todayIsoDate()): boolean {
-  return harvest.status !== 'Harvested' && harvest.expectedHarvestDate != null && harvest.expectedHarvestDate < today;
+  return !isPicked(harvest.status) && harvest.expectedHarvestDate != null && harvest.expectedHarvestDate < today;
 }
 
 /** Days until the expected pick date; negative when overdue. Null without an expected date. */
@@ -208,14 +237,14 @@ export function daysUntilExpected(harvest: Pick<Scheduled, 'expectedHarvestDate'
 
 /**
  * Whether moving to `next` reverses stock that was already applied. Stock is only ever written
- * when a harvest reaches Harvested (see HarvestRepository), so leaving Harvested undoes it —
+ * when a harvest reaches TransferredToBalance (see HarvestRepository), so leaving it undoes it —
  * the one transition that silently rewrites data outside the harvest itself.
  */
 export function isDestructiveTransition(current: HarvestStatus, next: HarvestStatus): boolean {
-  return current === 'Harvested' && next !== 'Harvested';
+  return countsInBalance(current) && !countsInBalance(next);
 }
 
 /** Whether moving to `next` writes the recorded results into stock for the first time. */
 export function isApplyingTransition(current: HarvestStatus, next: HarvestStatus): boolean {
-  return current !== 'Harvested' && next === 'Harvested';
+  return !countsInBalance(current) && countsInBalance(next);
 }

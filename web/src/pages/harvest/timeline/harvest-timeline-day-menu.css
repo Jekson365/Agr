@@ -1,0 +1,69 @@
+.hcal-day-menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 12rem;
+  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  box-shadow: 0 10px 24px var(--color-shadow);
+}
+
+.hcal-day-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.hcal-day-menu-item:hover {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.hcal-day-menu-item.active {
+  color: var(--color-green);
+}
+
+.hcal-day-menu-item.danger {
+  margin-top: 4px;
+  border-top: 1px solid var(--color-border);
+  border-radius: 0 0 7px 7px;
+}
+
+.hcal-day-menu-item.danger:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.hcal-day-menu-icon {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  opacity: 0.75;
+}
+
+.hcal-day-menu-item.active .hcal-day-menu-icon,
+.hcal-day-menu-item:hover .hcal-day-menu-icon {
+  opacity: 1;
+}
+
+.hcal-day-menu-label {
+  flex: 1;
+}
+
+.hcal-day-menu-tick {
+  flex: none;
+  color: var(--color-green);
+}

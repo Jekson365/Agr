@@ -8,6 +8,10 @@ export type BarDatum = {
   value: number;
   /** Fuller label shown in the hover tooltip; falls back to `label`. */
   tooltipLabel?: string;
+  /** Fill for this one bar; falls back to the stylesheet's green. */
+  color?: string;
+  /** Edge for this one bar, for a fill too pale to read on its own. */
+  borderColor?: string;
 };
 
 type BarChartProps = {
@@ -106,7 +110,14 @@ export function BarChart({
                   tabIndex={onBarClick ? 0 : undefined}
                   aria-pressed={onBarClick ? i === selectedIndex : undefined}
                 >
-                  <div className="bar-chart-bar" style={{ height: `${(d.value / axisMax) * 100}%` }} />
+                  <div
+                    className="bar-chart-bar"
+                    style={{
+                      height: `${(d.value / axisMax) * 100}%`,
+                      background: d.color,
+                      border: d.borderColor ? `1px solid ${d.borderColor}` : undefined,
+                    }}
+                  />
                 </div>
               );
             })}

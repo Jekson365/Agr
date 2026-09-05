@@ -34,6 +34,8 @@ export const Brand = {
   border: '#E1E4E0',
   muted: '#8A938C',
   background: '#FFFFFF',
+  violet: '#7C3AED',
+  violetSoft: '#F0EAFE',
 };
 
 export const Fonts = Platform.select({

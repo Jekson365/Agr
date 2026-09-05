@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { styles } from '@/components/farm/shared/styles';
-import { daysUntilExpected, isOverdue } from '@/components/harvest/harvest-analysis';
+import { daysUntilExpected, isOverdue, isPicked } from '@/components/harvest/harvest-analysis';
 import { HARVEST_STATUS_BADGE_STYLE, HARVEST_STATUS_BADGE_TEXT_STYLE, HARVEST_STATUS_LABEL_KEY } from '@/components/harvest/status';
 import { Brand } from '@/constants/theme';
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
@@ -46,7 +46,7 @@ export function HarvestCard({ item, onMenu, onPress }: Props) {
               <View style={local.overdueBadge}>
                 <Text style={local.overdueBadgeText}>{t('harvest.overdueBy', { days: Math.abs(daysLeft ?? 0) })}</Text>
               </View>
-            ) : item.status !== 'Harvested' && daysLeft != null ? (
+            ) : !isPicked(item.status) && daysLeft != null ? (
               <View style={local.dueBadge}>
                 <Text style={local.dueBadgeText}>{t('harvest.dueIn', { days: daysLeft })}</Text>
               </View>

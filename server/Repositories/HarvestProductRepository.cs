@@ -32,7 +32,7 @@ public class HarvestProductRepository(
         context.HarvestProducts.Add(harvestProduct);
         await context.SaveChangesAsync();
 
-        await SyncMovementAsync(harvestProduct, await IsHarvestedAsync(harvestProduct.HarvestId));
+        await SyncMovementAsync(harvestProduct, await IsTransferredToBalanceAsync(harvestProduct.HarvestId));
         return harvestProduct;
     }
 
@@ -49,7 +49,7 @@ public class HarvestProductRepository(
 
         await context.SaveChangesAsync();
 
-        await SyncMovementAsync(existing, await IsHarvestedAsync(existing.HarvestId));
+        await SyncMovementAsync(existing, await IsTransferredToBalanceAsync(existing.HarvestId));
         return true;
     }
 
@@ -70,32 +70,33 @@ public class HarvestProductRepository(
 
     public async Task SyncMovementsForHarvestAsync(int harvestId)
     {
-        var harvested = await IsHarvestedAsync(harvestId);
+        var booked = await IsTransferredToBalanceAsync(harvestId);
         var rows = await context.HarvestProducts.AsNoTracking().Where(p => p.HarvestId == harvestId).ToListAsync();
         foreach (var row in rows)
         {
-            await SyncMovementAsync(row, harvested);
+            await SyncMovementAsync(row, booked);
         }
     }
 
-    private async Task<bool> IsHarvestedAsync(int harvestId)
+    private async Task<bool> IsTransferredToBalanceAsync(int harvestId)
     {
         var status = await context.Harvests
             .AsNoTracking()
             .Where(h => h.Id == harvestId)
             .Select(h => (HarvestStatus?)h.Status)
             .FirstOrDefaultAsync();
-        return status == HarvestStatus.Harvested;
+        return status == HarvestStatus.TransferredToBalance;
     }
 
     /// <summary>
     /// Keeps a produce row's movement in step with what the row now says. The fruit only counts
-    /// towards the product's balance once the harvest is Harvested — until then (and again after
-    /// it's moved back off Harvested) the row is a plan, so it carries no movement at all.
+    /// towards the product's balance once the harvest is TransferredToBalance — until then (and
+    /// again after it's moved back off it) the row records a pick nobody has booked, so it carries
+    /// no movement at all.
     /// </summary>
-    private async Task SyncMovementAsync(HarvestProduct harvestProduct, bool harvested)
+    private async Task SyncMovementAsync(HarvestProduct harvestProduct, bool booked)
     {
-        if (!harvested)
+        if (!booked)
         {
             await treeProductMovementRepository.DeleteForHarvestProductAsync(harvestProduct.Id);
             return;

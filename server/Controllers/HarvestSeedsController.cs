@@ -11,9 +11,9 @@ namespace Server.Controllers;
 public class HarvestSeedsController(IHarvestSeedRepository harvestSeedRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<HarvestSeed>>> GetByHarvest([FromQuery] int harvestId)
+    public async Task<ActionResult<IEnumerable<HarvestSeed>>> GetByHarvest([FromQuery] int? harvestId)
     {
-        return Ok(await harvestSeedRepository.GetByHarvestAsync(harvestId));
+        return Ok(await harvestSeedRepository.GetAsync(harvestId));
     }
 
     [HttpPost]
@@ -22,6 +22,10 @@ public class HarvestSeedsController(IHarvestSeedRepository harvestSeedRepository
         if (harvestSeed.Amount <= 0)
         {
             return BadRequest("Amount must be positive.");
+        }
+        if (await harvestSeedRepository.ExistsForHarvestAsync(harvestSeed.HarvestId))
+        {
+            return Conflict("A harvest sows one seed. Edit or remove the one it already has.");
         }
 
         return Ok(await harvestSeedRepository.AddAsync(harvestSeed));

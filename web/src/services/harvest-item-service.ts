@@ -1,8 +1,10 @@
 import { apiFetch } from '@/services/api-client';
 import type { HarvestItem, HarvestItemInput } from '@/types/harvest-item';
 
-export function getHarvestItems(harvestId: number) {
-  return apiFetch<HarvestItem[]>(`/api/harvestitems?harvestId=${harvestId}`);
+export function getHarvestItems(harvestId?: number) {
+  return apiFetch<HarvestItem[]>(
+    `/api/harvestitems${harvestId != null ? `?harvestId=${harvestId}` : ''}`
+  );
 }
 
 export function createHarvestItem(item: HarvestItemInput) {

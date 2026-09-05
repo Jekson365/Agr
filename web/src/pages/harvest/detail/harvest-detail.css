@@ -58,41 +58,79 @@
   color: var(--color-dark);
 }
 
+.hd-stages-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.hd-stages-edit {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--color-green);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hd-stages-edit:hover {
+  text-decoration: underline;
+}
+
+/* Eight stages across one row: the track floor follows the viewport rather than a breakpoint, so
+   they stay on as few rows as the width allows instead of stacking into a column of eight. */
 .hd-stages {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(clamp(4.75rem, 11vw, 8rem), 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 }
 
 .hd-stage {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
-  min-height: 4.5rem;
-  padding: 0.75rem;
+  gap: 0.4375rem;
+  min-height: 2.75rem;
+  padding: 0.4375rem 0.5rem;
   border: 2px solid var(--color-border);
-  border-radius: 1rem;
+  border-radius: 0.75rem;
   background: var(--color-surface);
   color: var(--color-dark);
   font: inherit;
-  font-size: 0.9375rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1.2;
   text-align: center;
   cursor: pointer;
+}
+
+.hd-stage-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.hd-stage-date {
+  font-size: 0.625rem;
+  font-weight: 500;
+  opacity: 0.75;
 }
 
 .hd-stage-mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 1.25rem;
+  height: 1.25rem;
   flex-shrink: 0;
   border-radius: 50%;
   background: var(--color-surface-sunken);
-  font-size: 0.875rem;
+  font-size: 0.6875rem;
   font-weight: 700;
 }
 
@@ -123,62 +161,30 @@
   cursor: default;
 }
 
-.hd-nav {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 1.75rem;
+.hd-stage.blocked {
+  border-style: dashed;
+  border-color: var(--color-border);
+  background: var(--color-surface-sunken);
+  color: var(--color-muted);
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.hd-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-height: 7rem;
-  padding: 1rem 0.5rem;
-  border: 2px solid var(--color-border);
-  border-radius: 1rem;
+.hd-stage.blocked .hd-stage-mark {
   background: var(--color-surface);
-  color: var(--color-dark);
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.hd-nav-item img {
-  width: 2.75rem;
-  height: 2.75rem;
-  object-fit: contain;
-}
-
-.hd-nav-item[aria-pressed='true'] {
-  border-color: var(--color-green);
-  background: var(--color-green-muted);
-  color: var(--color-green);
-}
-
-.hd-nav-count {
-  font-size: 0.875rem;
-  font-weight: 700;
   color: var(--color-muted);
 }
 
-.hd-nav-item[aria-pressed='true'] .hd-nav-count {
-  color: var(--color-green);
-}
-
 .hd-back:focus-visible,
-.hd-stage:focus-visible,
-.hd-nav-item:focus-visible {
+.hd-stage:focus-visible {
   outline: 3px solid var(--color-green);
   outline-offset: 2px;
 }
 
-@media (max-width: 640px) {
-  .hd-stages {
-    grid-template-columns: 1fr;
+@media (max-width: 560px) {
+  .hd-stage {
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
   }
 }

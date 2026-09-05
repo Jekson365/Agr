@@ -24,7 +24,7 @@ public interface ITreeStockMovementRepository
 
     /// <summary>
     /// Removes the movement linked to <paramref name="harvestItemId"/>, if any — used when a
-    /// harvest's stock contribution is reversed (e.g. its status moves off "Harvested").
+    /// harvest's stock contribution is reversed (e.g. its status moves off "TransferredToBalance").
     /// </summary>
     Task<bool> DeleteForHarvestItemAsync(int harvestItemId);
 
@@ -37,7 +37,7 @@ public interface ITreeStockMovementRepository
 
     /// <summary>
     /// Removes the movement linked to <paramref name="harvestResultId"/>, if any — used when a
-    /// harvest's stock contribution is reversed (e.g. its status moves off "Harvested").
+    /// harvest's stock contribution is reversed (e.g. its status moves off "TransferredToBalance").
     /// </summary>
     Task<bool> DeleteForHarvestResultAsync(int harvestResultId);
 }

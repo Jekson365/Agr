@@ -1,21 +1,19 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { HarvestExpensesModal } from '@/components/harvest/harvest-expenses-modal';
-import { buildYieldRows, computeEconomics } from '@/config/harvest-analysis';
+import { HarvestMoneyForm } from '@/components/harvest/harvest-money-form';
+import { computeEconomics, type YieldRow } from '@/config/harvest-analysis';
 import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import type { Harvest } from '@/types/harvest';
-import type { HarvestItem } from '@/types/harvest-item';
-import type { HarvestResult } from '@/types/harvest-result';
 import { HarvestComparison } from './harvest-comparison';
-import { rawUnitFor, round2, targetFor, type Catalogs } from './harvest-detail-lookups';
+import { buildHarvestKpiCards } from './harvest-kpi-cards';
+import { yieldRawUnitFor, yieldTargetFor, type Catalogs } from './harvest-detail-lookups';
 import './harvest-detail-money.css';
 import './harvest-detail-panels.css';
 
 type Props = {
   harvest: Harvest;
-  items: HarvestItem[];
-  results: HarvestResult[];
+  yieldRows: YieldRow[];
   catalogs: Catalogs;
   plotArea: number | null;
   /** Chemicals are recorded in their own section, but their cost is part of this harvest's
@@ -26,20 +24,16 @@ type Props = {
 
 /** Everything the harvest cost and earned, in one place: the figures, what was planned against
  *  what came off the field, and the chemicals applied. */
-export function MoneySection({ harvest, items, results, catalogs, plotArea, chemicalTotal, onHarvestSaved }: Props) {
+export function MoneySection({ harvest, yieldRows, catalogs, plotArea, chemicalTotal, onHarvestSaved }: Props) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
-
-  const [expensesOpen, setExpensesOpen] = useState(false);
-
-  const yieldRows = useMemo(() => buildYieldRows(items, results), [items, results]);
 
   const economics = useMemo(
     () =>
       computeEconomics(
         harvest,
         yieldRows,
-        (row) => rawUnitFor(catalogs, row.stockId, row.treeStockId),
+        (row) => yieldRawUnitFor(catalogs, harvest.kind, row.stockId, row.treeStockId),
         plotArea,
         chemicalTotal
       ),
@@ -48,49 +42,10 @@ export function MoneySection({ harvest, items, results, catalogs, plotArea, chem
 
   const unitLabel = (() => {
     const row = yieldRows.find((r) => r.actual > 0);
-    return row ? (targetFor(catalogs, row.stockId, row.treeStockId, t)?.unitLabel ?? '') : '';
+    return row ? (yieldTargetFor(catalogs, harvest.kind, row.stockId, row.treeStockId, t)?.unitLabel ?? '') : '';
   })();
 
-  const cards: { label: string; value: string; tone?: 'positive' | 'negative' }[] = [];
-  if (economics.totalYield > 0) {
-    cards.push({
-      label: t('harvest.kpiTotalYield'),
-      value: economics.unit ? `${round2(economics.totalYield)} ${unitLabel}` : t('harvest.kpiMixedUnits'),
-    });
-  }
-  if (economics.revenue > 0) cards.push({ label: t('harvest.revenueLabel'), value: formatPrice(economics.revenue) });
-  if (economics.totalExpenses > 0) {
-    cards.push({ label: t('harvest.expensesTotal'), value: formatPrice(economics.totalExpenses) });
-  }
-  if (economics.revenue > 0 || economics.totalExpenses > 0) {
-    cards.push({
-      label: t('harvest.netTotal'),
-      value: formatPrice(economics.net),
-      tone: economics.net < 0 ? 'negative' : 'positive',
-    });
-  }
-  if (economics.yieldPerArea != null) {
-    cards.push({
-      label: t('harvest.kpiYieldPerArea'),
-      value: `${round2(economics.yieldPerArea)} ${unitLabel}/${t('farm.areaUnit')}`,
-    });
-  }
-  if (economics.costPerUnit != null) {
-    cards.push({ label: t('harvest.kpiCostPerUnit', { unit: unitLabel }), value: formatPrice(economics.costPerUnit) });
-  }
-  if (economics.revenuePerUnit != null) {
-    cards.push({
-      label: t('harvest.kpiRevenuePerUnit', { unit: unitLabel }),
-      value: formatPrice(economics.revenuePerUnit),
-    });
-  }
-  if (economics.netPerArea != null) {
-    cards.push({
-      label: t('harvest.kpiNetPerArea', { unit: t('farm.areaUnit') }),
-      value: formatPrice(economics.netPerArea),
-      tone: economics.netPerArea < 0 ? 'negative' : 'positive',
-    });
-  }
+  const cards = buildHarvestKpiCards(economics, unitLabel, t, formatPrice);
 
   return (
     <>
@@ -112,19 +67,11 @@ export function MoneySection({ harvest, items, results, catalogs, plotArea, chem
 
         {economics.unit == null && economics.totalYield > 0 && <p className="hd-note">{t('harvest.kpiMixedUnitsHint')}</p>}
 
-        <button type="button" className="hd-button primary" onClick={() => setExpensesOpen(true)}>
-          {t('harvest.expensesTitle')}
-        </button>
+        <h3 className="hd-panel-subtitle">{t('harvest.expensesTitle')}</h3>
+        <HarvestMoneyForm harvest={harvest} onSaved={onHarvestSaved} />
       </section>
 
       <HarvestComparison rows={yieldRows} catalogs={catalogs} />
-
-      <HarvestExpensesModal
-        harvest={harvest}
-        open={expensesOpen}
-        onClose={() => setExpensesOpen(false)}
-        onSaved={onHarvestSaved}
-      />
     </>
   );
 }
