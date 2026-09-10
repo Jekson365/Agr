@@ -23,10 +23,10 @@ export function PurchaseItemRow({ line, kinds, targets, onChange, onRemove, remo
   const options = targets[line.kind];
   const selected = findTarget(targets, line);
 
-  const kindOptions: KindOption[] = useMemo(
-    () => kinds.map((kind) => ({ value: kind, label: t(PURCHASE_KIND_LABEL_KEY[kind]), icon: PURCHASE_KIND_ICON[kind] })),
-    [kinds, t]
-  );
+  const kindOptions: KindOption[] = useMemo(() => {
+    const offered = kinds.includes(line.kind) ? kinds : [line.kind, ...kinds];
+    return offered.map((kind) => ({ value: kind, label: t(PURCHASE_KIND_LABEL_KEY[kind]), icon: PURCHASE_KIND_ICON[kind] }));
+  }, [kinds, line.kind, t]);
 
   const canCreate = line.kind === 'Equipment';
 
@@ -56,6 +56,7 @@ export function PurchaseItemRow({ line, kinds, targets, onChange, onRemove, remo
           selected={line.kind}
           onSelect={(value) => changeKind(value as PurchaseItemKind)}
         />
+        {line.kind === 'TreeSeedling' && <span className="limit-hint">{t('purchase.seedlingHint')}</span>}
       </div>
 
       <div className="field">

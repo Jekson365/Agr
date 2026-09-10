@@ -5,6 +5,7 @@ public enum PurchaseItemKind
     Livestock,
     LivestockProduction,
     TreeStock,
+    TreeSeedling,
     TreeProduct,
     Stock,
     Seed,
@@ -29,4 +30,6 @@ public class PurchaseItem
     public decimal Price { get; set; }
 
     public int? MovementId { get; set; }
+
+    public int? SeedlingId { get; set; }
 }

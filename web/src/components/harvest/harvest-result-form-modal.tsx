@@ -17,13 +17,22 @@ type Props = {
   harvestId: number;
   editingResult: HarvestResult | null;
   /** The harvest's planned items — only used to list those targets first, since they're the
-   * likely picks. Anything in stock can be recorded, planned or not. */
+   * likely picks. Any sown crop can be recorded, planned or not. */
   plannedItems: HarvestItem[];
+  sownTypes: string[];
   onClose: () => void;
   onSaved: (result: HarvestResult, isNew: boolean) => void;
 };
 
-export function HarvestResultFormModal({ open, harvestId, editingResult, plannedItems, onClose, onSaved }: Props) {
+export function HarvestResultFormModal({
+  open,
+  harvestId,
+  editingResult,
+  plannedItems,
+  sownTypes,
+  onClose,
+  onSaved,
+}: Props) {
   const { t } = useLanguage();
 
   const [stocks, setStocks] = useState<Stock[]>([]);
@@ -55,17 +64,20 @@ export function HarvestResultFormModal({ open, harvestId, editingResult, planned
       const editingTreeId = editingResult?.treeStockId ?? null;
       const allowedTreeStocks = treeStockList.filter((s) => s.id === editingTreeId);
 
-      // A removed good takes no more yield, and only stays on the list for the row already
-      // recorded against it — dropping it there would retarget that row on the next save.
+      // Only what was sown can come back off the field. A removed good takes no more yield
+      // either, and both keep the good on the list for the row already recorded against it —
+      // dropping it there would retarget that row on the next save.
       const editingStockId = editingResult?.stockId ?? null;
-      const allowedStocks = stockList.filter((s) => !s.isDeleted || s.id === editingStockId);
+      const allowedStocks = stockList.filter(
+        (s) => (!s.isDeleted && sownTypes.includes(s.type)) || s.id === editingStockId
+      );
 
       setStocks(allowedStocks);
       setTreeStocks(allowedTreeStocks);
 
-      // What actually came off the field doesn't have to match the plan — a crop can yield
-      // something that was never planned, and a harvest may have had no planned items at all.
-      // The planned targets just sort to the front as the likely picks.
+      // What actually came off the field doesn't have to match the plan — a sown crop can yield
+      // where nothing was planned, and a harvest may have had no planned items at all. The
+      // planned targets just sort to the front as the likely picks.
       const plannedKeys = new Set(plannedItems.map((item) => harvestTargetKey(item.stockId, item.treeStockId)));
       const editingKey = editingResult ? harvestTargetKey(editingResult.stockId, editingResult.treeStockId) : null;
 
@@ -124,7 +136,7 @@ export function HarvestResultFormModal({ open, harvestId, editingResult, planned
           {targetsLoading ? (
             <span className="limit-hint">…</span>
           ) : options.length === 0 ? (
-            <p className="limit-hint">{t('harvestItem.noStock')}</p>
+            <p className="limit-hint">{sownTypes.length === 0 ? t('harvestItem.sowFirst') : t('harvestItem.noStock')}</p>
           ) : (
             <div className="kind-row">
               {options.map((option) => (

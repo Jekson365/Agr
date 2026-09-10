@@ -7,6 +7,7 @@ import {
 import { SEED_UNIT_LABEL_KEY, seedTitle } from '@/config/seed-kinds';
 import { stockKindImage, STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import type { HarvestKind } from '@/types/harvest';
+import type { HarvestSeed } from '@/types/harvest-seed';
 import type { Seed } from '@/types/seed';
 import type { TreeProduct } from '@/types/tree-product';
 import type { Stock } from '@/types/stock';
@@ -130,4 +131,13 @@ export function yieldTargetFor(
   if (target == null || kind !== 'Fruit' || treeStockId == null) return target;
   const produce = produceOf(catalogs, treeStockId);
   return produce ? { ...target, unitLabel: t(TREE_PRODUCT_UNIT_LABEL_KEY[produce.unit] ?? '') } : target;
+}
+
+export function sownTypesFor(catalogs: Catalogs, harvestSeeds: HarvestSeed[]): string[] {
+  const seedById = new Map(catalogs.seeds.map((seed) => [seed.id, seed]));
+  return [
+    ...new Set(
+      harvestSeeds.map((used) => seedById.get(used.seedId)?.type).filter((type): type is string => !!type)
+    ),
+  ];
 }

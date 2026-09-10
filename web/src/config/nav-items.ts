@@ -4,9 +4,13 @@ import farmIcon from '@/assets/icons/farm.png';
 import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
 import mapIcon from '@/assets/icons/map.png';
+import positioningIcon from '@/assets/icons/positioning.png';
 import purchasesIcon from '@/assets/icons/purchases.png';
 import reportIcon from '@/assets/icons/report.png';
 import sellsIcon from '@/assets/icons/sells.png';
+import treatmentIcon from '@/assets/icons/treatment.png';
+import treeSeedIcon from '@/assets/icons/tree-seed.png';
+import treesIcon from '@/assets/icons/trees.png';
 import animalsIcon from '@/assets/properties/animals.png';
 import balanceIcon from '@/assets/properties/balance.png';
 import equipmentIcon from '@/assets/properties/equipment.png';
@@ -92,10 +96,10 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         icon: fruitsIcon,
         requiresConfig: FRUIT_STOCK_CONFIG,
         children: [
-          { to: '/farm/fruits', labelKey: 'fruits.trees', icon: fruitsIcon, end: true },
-          { to: '/farm/fruits/nursery', labelKey: 'nursery.title', icon: seedIcon },
-          { to: '/farm/fruits/positioning', labelKey: 'positioning.title', icon: landIcon },
-          { to: '/farm/fruits/treatment', labelKey: 'treatment.title', icon: calendarIcon },
+          { to: '/farm/fruits', labelKey: 'fruits.trees', icon: treesIcon, end: true },
+          { to: '/farm/fruits/nursery', labelKey: 'nursery.title', icon: treeSeedIcon },
+          { to: '/farm/fruits/positioning', labelKey: 'positioning.title', icon: positioningIcon },
+          { to: '/farm/fruits/treatment', labelKey: 'treatment.title', icon: treatmentIcon },
           { to: '/farm/fruits/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
           { to: '/farm/fruits/balance', labelKey: 'farm.balance', icon: balanceIcon },
           // { to: '/farm/fruits/products', labelKey: 'treeProduct.title', icon: fruitsIcon },

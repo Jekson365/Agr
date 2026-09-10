@@ -93,6 +93,11 @@ public partial class PurchasesController
                 }
                 return orchard.Name.Trim().Length > 0 ? orchard.Name.Trim() : orchard.Type;
             }
+            case PurchaseItemKind.TreeSeedling:
+            {
+                var kind = (await fruitKindRepository.GetAllAsync()).FirstOrDefault(k => k.Id == line.TargetId);
+                return kind?.Name;
+            }
             case PurchaseItemKind.TreeProduct:
             {
                 var product = await treeProductRepository.GetByIdAsync(line.TargetId);

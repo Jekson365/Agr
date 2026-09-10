@@ -13,6 +13,7 @@ import { HarvestDetailBody } from '../detail/harvest-detail-body';
 import { yieldRawUnitFor, yieldTargetFor } from '../detail/harvest-detail-lookups';
 import { buildHarvestKpiCards } from '../detail/harvest-kpi-cards';
 import { useHarvestDetail } from '../detail/use-harvest-detail';
+import type { HarvestGoodSources } from './harvest-list-goods';
 import '../detail/harvest-detail.css';
 import '../detail/harvest-detail-panels.css';
 import '../detail/harvest-detail-money.css';
@@ -23,9 +24,10 @@ type Props = {
   onEdit: (harvest: Harvest) => void;
   onDelete: (harvest: Harvest) => void;
   onHarvestChanged: (harvest: Harvest) => void;
+  onGoodsChanged: (harvestId: number, sources: HarvestGoodSources) => void;
 };
 
-export function HarvestDetailPane({ harvestId, onEdit, onDelete, onHarvestChanged }: Props) {
+export function HarvestDetailPane({ harvestId, onEdit, onDelete, onHarvestChanged, onGoodsChanged }: Props) {
   const { t, language } = useLanguage();
   const { formatPrice } = useCurrency();
 
@@ -35,6 +37,12 @@ export function HarvestDetailPane({ harvestId, onEdit, onDelete, onHarvestChange
   useEffect(() => {
     if (harvest) onHarvestChanged(harvest);
   }, [harvest, onHarvestChanged]);
+
+  const { items, results, harvestTrees } = detail;
+
+  useEffect(() => {
+    onGoodsChanged(harvestId, { items, results, trees: harvestTrees });
+  }, [harvestId, items, results, harvestTrees, onGoodsChanged]);
 
   const economics = useMemo(
     () =>

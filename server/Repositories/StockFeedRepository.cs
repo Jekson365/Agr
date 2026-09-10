@@ -32,6 +32,8 @@ public class StockFeedRepository(AppDbContext context) : IStockFeedRepository
         }
 
         existing.StockId = feed.StockId;
+        existing.TreeProductId = feed.TreeProductId;
+        existing.EquipmentId = feed.EquipmentId;
         existing.Amount = feed.Amount;
         // LivestockId is fixed once created.
 

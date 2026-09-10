@@ -2,6 +2,7 @@ export type PurchaseItemKind =
   | 'Livestock'
   | 'LivestockProduction'
   | 'TreeStock'
+  | 'TreeSeedling'
   | 'TreeProduct'
   | 'Stock'
   | 'Seed'

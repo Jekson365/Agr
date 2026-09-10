@@ -1799,6 +1799,9 @@ namespace Server.Migrations.Tenant
                     b.Property<decimal>("Quantity")
                         .HasColumnType("numeric");
 
+                    b.Property<int?>("SeedlingId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("TargetId")
                         .HasColumnType("integer");
 
@@ -1876,6 +1879,1206 @@ namespace Server.Migrations.Tenant
                     b.ToTable("SeedMovements");
                 });
 
+            modelBuilder.Entity("Server.Models.SoilFertilityAssessment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsComplete")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("LandPlotId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MaxScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RuleSetId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("Score")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("SoilInvestigationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RuleSetId");
+
+                    b.HasIndex("SoilInvestigationId")
+                        .IsUnique();
+
+                    b.ToTable("SoilFertilityAssessments");
+                });
+
+            modelBuilder.Entity("Server.Models.SoilFertilityAssessmentResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AssessmentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Explanation")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FactorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FactorKey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("HasData")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("InputValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaximumPoints")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal?>("Points")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PointsMax")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PointsMin")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AssessmentId");
+
+                    b.ToTable("SoilFertilityAssessmentResults");
+                });
+
+            modelBuilder.Entity("Server.Models.SoilFertilityCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaxScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RuleSetId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RuleSetId");
+
+                    b.ToTable("SoilFertilityCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Key = "highlyFertile",
+                            MaxScore = 100,
+                            MinScore = 81,
+                            RuleSetId = 1,
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Key = "fertile",
+                            MaxScore = 80,
+                            MinScore = 71,
+                            RuleSetId = 1,
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Key = "moderatelyFertile",
+                            MaxScore = 70,
+                            MinScore = 61,
+                            RuleSetId = 1,
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Key = "lowFertility",
+                            MaxScore = 60,
+                            MinScore = 41,
+                            RuleSetId = 1,
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Key = "infertile",
+                            MaxScore = 40,
+                            MinScore = 21,
+                            RuleSetId = 1,
+                            SortOrder = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Key = "veryPoor",
+                            MaxScore = 20,
+                            MinScore = 0,
+                            RuleSetId = 1,
+                            SortOrder = 6
+                        });
+                });
+
+            modelBuilder.Entity("Server.Models.SoilFertilityFactor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Form")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsRequired")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("MaxPoints")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("MinPoints")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("ParameterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RuleSetId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RuleSetId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("SoilFertilityFactors");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "relief",
+                            MaxPoints = 5,
+                            MinPoints = 1,
+                            ParameterId = 1,
+                            RuleSetId = 1,
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "vegetationCover",
+                            MaxPoints = 5,
+                            MinPoints = 1,
+                            ParameterId = 2,
+                            RuleSetId = 1,
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "mechanicalComposition",
+                            MaxPoints = 10,
+                            MinPoints = 1,
+                            ParameterId = 3,
+                            RuleSetId = 1,
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "structure",
+                            MaxPoints = 5,
+                            MinPoints = 1,
+                            ParameterId = 4,
+                            RuleSetId = 1,
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "humus",
+                            MaxPoints = 30,
+                            MinPoints = 1,
+                            ParameterId = 12,
+                            RuleSetId = 1,
+                            SortOrder = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "acidityAlkalinity",
+                            MaxPoints = 15,
+                            MinPoints = 1,
+                            ParameterId = 16,
+                            RuleSetId = 1,
+                            SortOrder = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "hydrophysicalProperties",
+                            MaxPoints = 10,
+                            MinPoints = 1,
+                            RuleSetId = 1,
+                            SortOrder = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "soilQuality",
+                            MaxPoints = 10,
+                            MinPoints = 1,
+                            RuleSetId = 1,
+                            SortOrder = 8
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Form = "None",
+                            IsRequired = true,
+                            Key = "ph",
+                            MaxPoints = 10,
+                            MinPoints = 1,
+                            ParameterId = 10,
+                            RuleSetId = 1,
+                            SortOrder = 9
+                        });
+                });
+
+            modelBuilder.Entity("Server.Models.SoilInvestigation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("InvestigationDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Laboratory")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("LandPlotId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ReportPath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SampleNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly?>("SamplingDate")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("SamplingDepthCm")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LandPlotId", "InvestigationDate");
+
+                    b.ToTable("SoilInvestigations");
+                });
+
+            modelBuilder.Entity("Server.Models.SoilInvestigationResult", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Form")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("NumericValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("ParameterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SoilInvestigationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TextValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParameterId");
+
+                    b.HasIndex("SoilInvestigationId", "ParameterId", "Form")
+                        .IsUnique();
+
+                    b.ToTable("SoilInvestigationResults");
+                });
+
+            modelBuilder.Entity("Server.Models.SoilParameterCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ParameterId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParameterId", "Key")
+                        .IsUnique();
+
+                    b.ToTable("SoilParameterCategories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Key = "heavyClay",
+                            ParameterId = 3,
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Key = "mediumClay",
+                            ParameterId = 3,
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Key = "otherClay",
+                            ParameterId = 3,
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Key = "sandyHeavyLoam",
+                            ParameterId = 3,
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Key = "mediumLoam",
+                            ParameterId = 3,
+                            SortOrder = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Key = "silt",
+                            ParameterId = 3,
+                            SortOrder = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Key = "sand",
+                            ParameterId = 3,
+                            SortOrder = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Key = "wellStructured",
+                            ParameterId = 4,
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Key = "moderatelyStructured",
+                            ParameterId = 4,
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Key = "weaklyStructured",
+                            ParameterId = 4,
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Key = "structureless",
+                            ParameterId = 4,
+                            SortOrder = 4
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Key = "calcium",
+                            ParameterId = 16,
+                            SortOrder = 1
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Key = "calciumMagnesium",
+                            ParameterId = 16,
+                            SortOrder = 2
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Key = "sodium",
+                            ParameterId = 16,
+                            SortOrder = 3
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Key = "hydrogen",
+                            ParameterId = 16,
+                            SortOrder = 4
+                        });
+                });
+
+            modelBuilder.Entity("Server.Models.SoilParameterDefinition", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DefaultUnit")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DefaultUnitAvailable")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Group")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsRegulationParameter")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("SupportsForms")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("ValueKind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("SoilParameterDefinitions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "FieldConditions",
+                            IsRegulationParameter = true,
+                            Key = "relief",
+                            SortOrder = 1,
+                            SupportsForms = false,
+                            ValueKind = "Category"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "FieldConditions",
+                            IsRegulationParameter = true,
+                            Key = "vegetationCover",
+                            SortOrder = 2,
+                            SupportsForms = false,
+                            ValueKind = "Category"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "Physical",
+                            IsRegulationParameter = true,
+                            Key = "mechanicalComposition",
+                            SortOrder = 10,
+                            SupportsForms = false,
+                            ValueKind = "Category"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "Physical",
+                            IsRegulationParameter = true,
+                            Key = "soilStructure",
+                            SortOrder = 11,
+                            SupportsForms = false,
+                            ValueKind = "Category"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "",
+                            Group = "Physical",
+                            IsRegulationParameter = false,
+                            Key = "fieldCapacity",
+                            SortOrder = 12,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DefaultUnit = "g/cm3",
+                            DefaultUnitAvailable = "",
+                            Group = "Physical",
+                            IsRegulationParameter = false,
+                            Key = "bulkDensity",
+                            SortOrder = 13,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "",
+                            Group = "Physical",
+                            IsRegulationParameter = false,
+                            Key = "porosity",
+                            SortOrder = 14,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DefaultUnit = "mm/h",
+                            DefaultUnitAvailable = "",
+                            Group = "Physical",
+                            IsRegulationParameter = false,
+                            Key = "permeability",
+                            SortOrder = 15,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "",
+                            Group = "Chemical",
+                            IsRegulationParameter = true,
+                            Key = "carbonates",
+                            SortOrder = 20,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            DefaultUnit = "pH",
+                            DefaultUnitAvailable = "",
+                            Group = "Chemical",
+                            IsRegulationParameter = true,
+                            Key = "ph",
+                            SortOrder = 21,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "Chemical",
+                            IsRegulationParameter = true,
+                            Key = "acidity",
+                            SortOrder = 22,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "",
+                            Group = "Chemical",
+                            IsRegulationParameter = true,
+                            Key = "humus",
+                            SortOrder = 23,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "mg/kg",
+                            Group = "Nutrients",
+                            IsRegulationParameter = true,
+                            Key = "nitrogen",
+                            SortOrder = 30,
+                            SupportsForms = true,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "mg/kg",
+                            Group = "Nutrients",
+                            IsRegulationParameter = true,
+                            Key = "phosphorus",
+                            SortOrder = 31,
+                            SupportsForms = true,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            DefaultUnit = "%",
+                            DefaultUnitAvailable = "mg/kg",
+                            Group = "Nutrients",
+                            IsRegulationParameter = true,
+                            Key = "potassium",
+                            SortOrder = 32,
+                            SupportsForms = true,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "AbsorbedBases",
+                            IsRegulationParameter = true,
+                            Key = "absorbedBaseComposition",
+                            SortOrder = 40,
+                            SupportsForms = false,
+                            ValueKind = "Category"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "AbsorbedBases",
+                            IsRegulationParameter = true,
+                            Key = "calcium",
+                            SortOrder = 41,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "AbsorbedBases",
+                            IsRegulationParameter = true,
+                            Key = "calciumMagnesium",
+                            SortOrder = 42,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "AbsorbedBases",
+                            IsRegulationParameter = true,
+                            Key = "sodium",
+                            SortOrder = 43,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            DefaultUnit = "",
+                            DefaultUnitAvailable = "",
+                            Group = "AbsorbedBases",
+                            IsRegulationParameter = true,
+                            Key = "hydrogenAcidity",
+                            SortOrder = 44,
+                            SupportsForms = false,
+                            ValueKind = "Numeric"
+                        });
+                });
+
+            modelBuilder.Entity("Server.Models.SoilScoringRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Condition")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FactorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Form")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("MaxInclusive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("MaxValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<bool>("MinInclusive")
+                        .HasColumnType("boolean");
+
+                    b.Property<decimal?>("MinValue")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("ParameterId")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("PointsMax")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("PointsMin")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("RuleSetId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RuleSetId", "FactorId", "Priority");
+
+                    b.ToTable("SoilScoringRules");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 1,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 10m,
+                            PointsMin = 9m,
+                            Priority = 1,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 2,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 9m,
+                            PointsMin = 8m,
+                            Priority = 2,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CategoryId = 3,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 8m,
+                            PointsMin = 6m,
+                            Priority = 3,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CategoryId = 4,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 6m,
+                            PointsMin = 5m,
+                            Priority = 4,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CategoryId = 5,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 4m,
+                            PointsMin = 3m,
+                            Priority = 5,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CategoryId = 6,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 2m,
+                            PointsMin = 2m,
+                            Priority = 6,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CategoryId = 7,
+                            Condition = "Category",
+                            FactorId = 3,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 3,
+                            PointsMax = 1m,
+                            PointsMin = 1m,
+                            Priority = 7,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CategoryId = 8,
+                            Condition = "Category",
+                            FactorId = 4,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 4,
+                            PointsMax = 5m,
+                            PointsMin = 5m,
+                            Priority = 1,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CategoryId = 9,
+                            Condition = "Category",
+                            FactorId = 4,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 4,
+                            PointsMax = 4m,
+                            PointsMin = 3m,
+                            Priority = 2,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CategoryId = 10,
+                            Condition = "Category",
+                            FactorId = 4,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 4,
+                            PointsMax = 3m,
+                            PointsMin = 2m,
+                            Priority = 3,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CategoryId = 11,
+                            Condition = "Category",
+                            FactorId = 4,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MinInclusive = true,
+                            ParameterId = 4,
+                            PointsMax = 1m,
+                            PointsMin = 1m,
+                            Priority = 4,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Condition = "Range",
+                            FactorId = 9,
+                            Form = "None",
+                            MaxInclusive = true,
+                            MaxValue = 7.0m,
+                            MinInclusive = true,
+                            MinValue = 6.5m,
+                            ParameterId = 10,
+                            PointsMax = 10m,
+                            PointsMin = 9m,
+                            Priority = 1,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Condition = "Range",
+                            FactorId = 9,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MaxValue = 6.5m,
+                            MinInclusive = true,
+                            MinValue = 5.0m,
+                            ParameterId = 10,
+                            PointsMax = 9m,
+                            PointsMin = 6m,
+                            Priority = 2,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Condition = "Range",
+                            FactorId = 9,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MaxValue = 5.0m,
+                            MinInclusive = true,
+                            MinValue = 4.0m,
+                            ParameterId = 10,
+                            PointsMax = 6m,
+                            PointsMin = 4m,
+                            Priority = 3,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Condition = "Range",
+                            FactorId = 9,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MaxValue = 4.0m,
+                            MinInclusive = true,
+                            MinValue = 3.0m,
+                            ParameterId = 10,
+                            PointsMax = 4m,
+                            PointsMin = 2m,
+                            Priority = 4,
+                            RuleSetId = 1
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Condition = "Range",
+                            FactorId = 9,
+                            Form = "None",
+                            MaxInclusive = false,
+                            MaxValue = 3.0m,
+                            MinInclusive = true,
+                            ParameterId = 10,
+                            PointsMax = 1m,
+                            PointsMin = 1m,
+                            Priority = 5,
+                            RuleSetId = 1
+                        });
+                });
+
+            modelBuilder.Entity("Server.Models.SoilScoringRuleSet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("EffectiveFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("EffectiveTo")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("MaxScore")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PointSelection")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SoilScoringRuleSets");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            EffectiveFrom = new DateOnly(2014, 1, 1),
+                            IsActive = true,
+                            MaxScore = 100,
+                            Name = "Georgian Soil Fertility Assessment",
+                            Notes = "Seeded from the task specification, not from the regulation document. Rules are supplied for mechanical composition, structure and pH only. Humus, relief, vegetation cover, absorbed bases, hydrophysical properties and the soil quality factor have no rules until the regulation tables are provided.",
+                            PointSelection = "Minimum",
+                            Source = "Technical Regulation",
+                            Version = "unverified"
+                        });
+                });
+
             modelBuilder.Entity("Server.Models.Stock", b =>
                 {
                     b.Property<int>("Id")
@@ -1918,17 +3121,27 @@ namespace Server.Migrations.Tenant
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
+                    b.Property<int?>("EquipmentId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("LivestockId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("StockId")
+                    b.Property<int?>("StockId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TreeProductId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EquipmentId");
+
                     b.HasIndex("LivestockId");
 
                     b.HasIndex("StockId");
+
+                    b.HasIndex("TreeProductId");
 
                     b.ToTable("StockFeeds");
                 });
@@ -2863,8 +4076,97 @@ namespace Server.Migrations.Tenant
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Server.Models.SoilFertilityAssessment", b =>
+                {
+                    b.HasOne("Server.Models.SoilScoringRuleSet", null)
+                        .WithMany()
+                        .HasForeignKey("RuleSetId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.SoilInvestigation", null)
+                        .WithMany()
+                        .HasForeignKey("SoilInvestigationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilFertilityAssessmentResult", b =>
+                {
+                    b.HasOne("Server.Models.SoilFertilityAssessment", null)
+                        .WithMany()
+                        .HasForeignKey("AssessmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilFertilityCategory", b =>
+                {
+                    b.HasOne("Server.Models.SoilScoringRuleSet", null)
+                        .WithMany()
+                        .HasForeignKey("RuleSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilFertilityFactor", b =>
+                {
+                    b.HasOne("Server.Models.SoilScoringRuleSet", null)
+                        .WithMany()
+                        .HasForeignKey("RuleSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilInvestigation", b =>
+                {
+                    b.HasOne("Server.Models.LandPlot", null)
+                        .WithMany()
+                        .HasForeignKey("LandPlotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilInvestigationResult", b =>
+                {
+                    b.HasOne("Server.Models.SoilParameterDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("ParameterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.SoilInvestigation", null)
+                        .WithMany()
+                        .HasForeignKey("SoilInvestigationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilParameterCategory", b =>
+                {
+                    b.HasOne("Server.Models.SoilParameterDefinition", null)
+                        .WithMany()
+                        .HasForeignKey("ParameterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.SoilScoringRule", b =>
+                {
+                    b.HasOne("Server.Models.SoilScoringRuleSet", null)
+                        .WithMany()
+                        .HasForeignKey("RuleSetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Server.Models.StockFeed", b =>
                 {
+                    b.HasOne("Server.Models.Equipment", null)
+                        .WithMany()
+                        .HasForeignKey("EquipmentId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Server.Models.Livestock", null)
                         .WithMany()
                         .HasForeignKey("LivestockId")
@@ -2874,8 +4176,12 @@ namespace Server.Migrations.Tenant
                     b.HasOne("Server.Models.Stock", null)
                         .WithMany()
                         .HasForeignKey("StockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Server.Models.TreeProduct", null)
+                        .WithMany()
+                        .HasForeignKey("TreeProductId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Server.Models.StockHistory", b =>

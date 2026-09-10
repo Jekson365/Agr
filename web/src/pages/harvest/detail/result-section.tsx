@@ -6,21 +6,25 @@ import { useLanguage } from '@/contexts/language-context';
 import { deleteHarvestResult } from '@/services/harvest-result-service';
 import type { HarvestItem } from '@/types/harvest-item';
 import type { HarvestResult } from '@/types/harvest-result';
+import type { HarvestSeed } from '@/types/harvest-seed';
 import { HarvestEntryList, type EntryRow } from './harvest-entry-list';
-import { targetFor, type Catalogs } from './harvest-detail-lookups';
+import { sownTypesFor, targetFor, type Catalogs } from './harvest-detail-lookups';
 
 type Props = {
   harvestId: number;
   results: HarvestResult[];
   items: HarvestItem[];
+  harvestSeeds: HarvestSeed[];
   catalogs: Catalogs;
   /** Results belong to a finished harvest; before that the section explains itself instead. */
   canEdit: boolean;
   onChanged: (next: HarvestResult[]) => void;
 };
 
-export function ResultSection({ harvestId, results, items, catalogs, canEdit, onChanged }: Props) {
+export function ResultSection({ harvestId, results, items, harvestSeeds, catalogs, canEdit, onChanged }: Props) {
   const { t } = useLanguage();
+
+  const sownTypes = sownTypesFor(catalogs, harvestSeeds);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<HarvestResult | null>(null);
@@ -77,6 +81,7 @@ export function ResultSection({ harvestId, results, items, catalogs, canEdit, on
         harvestId={harvestId}
         editingResult={editing}
         plannedItems={items}
+        sownTypes={sownTypes}
         onClose={() => setFormOpen(false)}
         onSaved={(saved, isNew) =>
           onChanged(isNew ? [...results, saved] : results.map((r) => (r.id === saved.id ? saved : r)))

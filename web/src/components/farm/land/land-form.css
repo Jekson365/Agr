@@ -1,7 +1,7 @@
-/* Three times the standard 440px form card. The land form earns the room: it is the one that marks
+/* Three times the standard 352px form card. The land form earns the room: it is the one that marks
    out a territory, and the map preview is worth seeing while the rest is filled in. */
 .land-form-modal .modal-card {
-  max-width: 1320px;
+  max-width: 1056px;
 }
 
 /* All that width across one column would leave 1300px-wide text inputs, so the fields sit three

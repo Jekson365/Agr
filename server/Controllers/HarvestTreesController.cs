@@ -21,6 +21,19 @@ public class HarvestTreesController(
     /// </summary>
     private const string AlreadyPickedMessage = "This harvest already records those trees as picked.";
 
+    /// <summary>
+    /// A fruit harvest covers one orchard. Its costs, its revenue and its grading all answer for
+    /// that one, so picking a second orchard is a second harvest rather than a second row.
+    /// </summary>
+    private const string OneOrchardMessage = "A fruit harvest picks one orchard. Record the other on its own harvest.";
+
+    /// <summary>
+    /// What came off the trees is weighed at picking time, so it is recorded once the harvest is
+    /// marked harvested. Before that a row records which orchard was picked and how many trees.
+    /// </summary>
+    private const string NotHarvestedMessage =
+        "The harvested amount is recorded once the harvest is marked harvested.";
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<HarvestTree>>> GetByHarvest([FromQuery] int? harvestId)
     {
@@ -51,9 +64,17 @@ public class HarvestTreesController(
             return Conflict(BalancedMessage);
         }
 
-        if (await harvestTreeRepository.ExistsForHarvestAsync(harvestTree.HarvestId, harvestTree.TreeStockId))
+        if (harvestTree.HarvestedAmount > 0 && !await PickedAsync(harvestTree.HarvestId))
         {
-            return Conflict(AlreadyPickedMessage);
+            return Conflict(NotHarvestedMessage);
+        }
+
+        if (await harvestTreeRepository.HasAnyForHarvestAsync(harvestTree.HarvestId))
+        {
+            return Conflict(
+                await harvestTreeRepository.ExistsForHarvestAsync(harvestTree.HarvestId, harvestTree.TreeStockId)
+                    ? AlreadyPickedMessage
+                    : OneOrchardMessage);
         }
 
         return Ok(await harvestTreeRepository.AddAsync(harvestTree));
@@ -80,6 +101,13 @@ public class HarvestTreesController(
         if (await SettledAsync(existing.HarvestId))
         {
             return Conflict(BalancedMessage);
+        }
+
+        // A row recorded while the harvest was picked keeps its weight if the status is walked
+        // back, so only a change to the figure is refused — not the figure already on the row.
+        if (harvestTree.HarvestedAmount != existing.HarvestedAmount && !await PickedAsync(existing.HarvestId))
+        {
+            return Conflict(NotHarvestedMessage);
         }
 
         // The harvest a row belongs to is fixed once created, so that's the harvest the orchard
@@ -113,6 +141,13 @@ public class HarvestTreesController(
 
     /// <summary>Whether the harvest has booked its produce. Editing a picking afterwards would
     /// rewrite the product balance it wrote, the same way a result would.</summary>
+    /// <summary>Whether the harvest has reached the point where what came off the trees is known.</summary>
+    private async Task<bool> PickedAsync(int harvestId)
+    {
+        var harvest = await harvestRepository.GetByIdAsync(harvestId);
+        return harvest is not null && harvest.Status.IsPicked();
+    }
+
     private async Task<bool> SettledAsync(int harvestId)
     {
         var harvest = await harvestRepository.GetByIdAsync(harvestId);

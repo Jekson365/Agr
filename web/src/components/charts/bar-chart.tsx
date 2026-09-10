@@ -25,6 +25,7 @@ type BarChartProps = {
   onBarClick?: (index: number) => void;
   /** Index of the currently selected bar, highlighted and holding focus dimming. */
   selectedIndex?: number | null;
+  groupSize?: number;
 };
 
 /** Rounds a value up to a "nice" axis maximum (1/2/2.5/5 × 10ⁿ). */
@@ -48,8 +49,13 @@ export function BarChart({
   ariaLabel,
   onBarClick,
   selectedIndex = null,
+  groupSize = 1,
 }: BarChartProps) {
   const [hovered, setHovered] = useState<number | null>(null);
+
+  const size = groupSize > 1 ? groupSize : 1;
+  const groups: BarDatum[][] = [];
+  for (let i = 0; i < data.length; i += size) groups.push(data.slice(i, i + size));
 
   const maxValue = Math.max(0, ...data.map((d) => d.value));
   const axisMax = niceCeil(maxValue);
@@ -79,48 +85,53 @@ export function BarChart({
         <div className="bar-chart-gutter-spacer" aria-hidden="true" />
 
         <div className={trackClass}>
-          <div className="bar-chart-bars">
-            {data.map((d, i) => {
-              const colClass = [
-                'bar-chart-col',
-                i === hovered ? 'hovered' : '',
-                i === selectedIndex ? 'selected' : '',
-                onBarClick ? 'clickable' : '',
-              ]
-                .filter(Boolean)
-                .join(' ');
-              return (
-                <div
-                  key={i}
-                  className={colClass}
-                  onMouseEnter={() => setHovered(i)}
-                  onMouseLeave={() => setHovered((cur) => (cur === i ? null : cur))}
-                  onClick={onBarClick ? () => onBarClick(i) : undefined}
-                  onKeyDown={
-                    onBarClick
-                      ? (event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            onBarClick(i);
-                          }
-                        }
-                      : undefined
-                  }
-                  role={onBarClick ? 'button' : undefined}
-                  tabIndex={onBarClick ? 0 : undefined}
-                  aria-pressed={onBarClick ? i === selectedIndex : undefined}
-                >
-                  <div
-                    className="bar-chart-bar"
-                    style={{
-                      height: `${(d.value / axisMax) * 100}%`,
-                      background: d.color,
-                      border: d.borderColor ? `1px solid ${d.borderColor}` : undefined,
-                    }}
-                  />
-                </div>
-              );
-            })}
+          <div className={size > 1 ? 'bar-chart-bars grouped' : 'bar-chart-bars'}>
+            {groups.map((group, gi) => (
+              <div key={gi} className="bar-chart-group">
+                {group.map((d, j) => {
+                  const i = gi * size + j;
+                  const colClass = [
+                    'bar-chart-col',
+                    i === hovered ? 'hovered' : '',
+                    i === selectedIndex ? 'selected' : '',
+                    onBarClick ? 'clickable' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ');
+                  return (
+                    <div
+                      key={i}
+                      className={colClass}
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered((cur) => (cur === i ? null : cur))}
+                      onClick={onBarClick ? () => onBarClick(i) : undefined}
+                      onKeyDown={
+                        onBarClick
+                          ? (event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                onBarClick(i);
+                              }
+                            }
+                          : undefined
+                      }
+                      role={onBarClick ? 'button' : undefined}
+                      tabIndex={onBarClick ? 0 : undefined}
+                      aria-pressed={onBarClick ? i === selectedIndex : undefined}
+                    >
+                      <div
+                        className="bar-chart-bar"
+                        style={{
+                          height: `${(d.value / axisMax) * 100}%`,
+                          background: d.color,
+                          border: d.borderColor ? `1px solid ${d.borderColor}` : undefined,
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
 
           {hovered != null && data[hovered] && (
@@ -140,15 +151,18 @@ export function BarChart({
 
       <div className="bar-chart-xaxis">
         <span className="bar-chart-gutter-spacer" aria-hidden="true" />
-        <div className="bar-chart-xlabels">
-          {data.map((d, i) => (
+        <div className={size > 1 ? 'bar-chart-xlabels grouped' : 'bar-chart-xlabels'}>
+          {groups.map((group, gi) => (
             <span
-              key={i}
+              key={gi}
               className={
-                i === hovered || i === selectedIndex ? 'bar-chart-xlabel hovered' : 'bar-chart-xlabel'
+                (hovered != null && Math.floor(hovered / size) === gi) ||
+                (selectedIndex != null && Math.floor(selectedIndex / size) === gi)
+                  ? 'bar-chart-xlabel hovered'
+                  : 'bar-chart-xlabel'
               }
             >
-              {d.label}
+              {group[0].label}
             </span>
           ))}
         </div>

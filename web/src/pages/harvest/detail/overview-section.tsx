@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 
 import { BarChart, type BarDatum } from '@/components/charts/bar-chart';
 import { DonutChart } from '@/components/charts/donut-chart';
-import { ASSESSMENT_GRADE_COLOR, ASSESSMENT_GRADE_FILL } from '@/config/assessment-grades';
+import { gradeDistributionBars } from '@/config/assessment-grades';
 import { useLanguage } from '@/contexts/language-context';
 import { getHarvestAssessments } from '@/services/harvest-assessment-service';
-import { ASSESSMENT_GRADES, type HarvestAssessment } from '@/types/harvest-assessment';
+import type { HarvestAssessment } from '@/types/harvest-assessment';
 import type { Harvest } from '@/types/harvest';
 import { round2, yieldTargetFor } from './harvest-detail-lookups';
 import { HarvestInfoPanels } from './harvest-info-panels';
@@ -80,12 +80,7 @@ export function OverviewSection({ harvestId, harvest, detail, onOpenGrading }: P
       harvested,
       graded,
       wasted,
-      data: ASSESSMENT_GRADES.map((grade) => ({
-        label: grade,
-        value: lines.filter((line) => line.grade === grade).reduce((sum, line) => sum + line.quantity, 0),
-        color: ASSESSMENT_GRADE_FILL[grade],
-        borderColor: ASSESSMENT_GRADE_COLOR[grade],
-      })),
+      data: gradeDistributionBars(lines, t('harvest.usable'), t('harvest.wasted')),
     });
   }
 
@@ -136,10 +131,15 @@ export function OverviewSection({ harvestId, harvest, detail, onOpenGrading }: P
             <h2 className="hd-panel-title">{t('harvest.gradeDistribution')}</h2>
             <p className="hv-chart-total">
               {chart.label} · {t('harvestGrading.graded', { amount: round2(chart.graded), unit: chart.unitLabel })}
+              <span className="bar-chart-key">
+                <span className="bar-chart-key-swatch" />
+                {t('harvest.wasted')}
+              </span>
             </p>
             <div className="hv-chart-body">
               <BarChart
                 data={chart.data}
+                groupSize={2}
                 formatValue={(value) => `${round2(value)} ${chart.unitLabel}`}
                 ariaLabel={`${t('harvest.gradeDistribution')} — ${chart.label}`}
               />

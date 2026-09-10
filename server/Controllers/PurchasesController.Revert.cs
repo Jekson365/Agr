@@ -6,6 +6,7 @@ public partial class PurchasesController
 {
     private const string SpentMessage = "This purchase can no longer be rolled back — part of what it added is already used up.";
     private const string UntrackedMessage = "This purchase was recorded before it could be rolled back.";
+    private const string PlantedOutMessage = "This purchase can no longer be rolled back — seedlings it brought in are already planted out.";
 
     /// <summary>The first reason these lines cannot be taken back, or null when they all can.
     /// Asked of every line before any of them moves, so a refusal costs nothing.</summary>
@@ -23,6 +24,16 @@ public partial class PurchasesController
 
     private async Task<string?> BlockedFromRevertAsync(PurchaseItem item)
     {
+        if (item.Kind == PurchaseItemKind.TreeSeedling)
+        {
+            if (item.SeedlingId is null)
+            {
+                return UntrackedMessage;
+            }
+            var batch = await treeSeedlingRepository.GetByIdAsync(item.SeedlingId.Value);
+            return batch is not null && batch.Stage == NurseryStage.PlantedOut ? PlantedOutMessage : null;
+        }
+
         if (item.MovementId is null && item.Kind != PurchaseItemKind.Equipment)
         {
             return UntrackedMessage;
@@ -86,6 +97,13 @@ public partial class PurchasesController
             case PurchaseItemKind.TreeStock:
                 await treeStockMovementRepository.DeleteAsync(item.MovementId!.Value);
                 await treeStockRepository.AdjustAmountRawAsync(item.TargetId, -item.Quantity);
+                break;
+
+            case PurchaseItemKind.TreeSeedling:
+                if (item.SeedlingId is not null)
+                {
+                    await treeSeedlingRepository.DeleteAsync(item.SeedlingId.Value);
+                }
                 break;
 
             case PurchaseItemKind.TreeProduct:

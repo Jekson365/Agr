@@ -1,45 +1,41 @@
+import { MultiSelect, type MultiSelectOption } from '@/components/ui/multi-select';
 import { fruitKindImage, treeStockLabel } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import type { TreeStock } from '@/types/tree-stock';
 
 type Props = {
   orchards: TreeStock[];
-  selectedId: number | null;
+  selectedIds: number[];
   counts: Map<number, number>;
-  onSelect: (id: number | null) => void;
+  onChange: (ids: number[]) => void;
 };
 
-export function TreatmentFruitRow({ orchards, selectedId, counts, onSelect }: Props) {
+export function TreatmentFruitRow({ orchards, selectedIds, counts, onChange }: Props) {
   const { t } = useLanguage();
 
-  return (
-    <div className="trt-picker">
-      <button
-        type="button"
-        className={selectedId == null ? 'trt-pick all active' : 'trt-pick all'}
-        aria-pressed={selectedId == null}
-        onClick={() => onSelect(null)}
-      >
-        <span className="trt-pick-name">{t('treatment.allFruits')}</span>
-      </button>
+  const options: MultiSelectOption[] = orchards.map((orchard) => {
+    const count = counts.get(orchard.id) ?? 0;
+    return {
+      value: String(orchard.id),
+      label: treeStockLabel(orchard, t),
+      icon: fruitKindImage(orchard.type),
+      hint: count > 0 ? String(count) : undefined,
+    };
+  });
 
-      {orchards.map((orchard) => {
-        const count = counts.get(orchard.id) ?? 0;
-        const active = orchard.id === selectedId;
-        return (
-          <button
-            key={orchard.id}
-            type="button"
-            className={active ? 'trt-pick active' : 'trt-pick'}
-            aria-pressed={active}
-            onClick={() => onSelect(active ? null : orchard.id)}
-          >
-            <img src={fruitKindImage(orchard.type)} alt="" className="trt-pick-icon" />
-            <span className="trt-pick-name">{treeStockLabel(orchard, t)}</span>
-            {count > 0 && <span className="trt-pick-count">{count}</span>}
-          </button>
-        );
-      })}
+  return (
+    <div className="trt-field">
+      <span className="trt-field-label">{t('treatment.orchards')}</span>
+      <MultiSelect
+        options={options}
+        selected={selectedIds.map(String)}
+        onChange={(values) => onChange(values.map(Number))}
+        placeholder={t('treatment.noneFruits')}
+        allSelectedLabel={t('treatment.allFruits')}
+        searchPlaceholder={t('treatment.fruitSearch')}
+        emptyText={t('treatment.noFruitMatch')}
+        markAllLabel={t('common.markAll')}
+      />
     </div>
   );
 }

@@ -118,16 +118,17 @@ export const PACKET_ROWS: {
 export const MANAGE_CARDS: LandingCard[] = [
   { id: 'stock', icon: plantsIcon, points: 4 },
   { id: 'livestock', icon: animalsIcon, points: 4 },
-  { id: 'fruits', icon: fruitsIcon, points: 4 },
+  { id: 'fruits', icon: fruitsIcon, points: 6 },
   { id: 'greenhouse', icon: greenhouseIcon, points: 4 },
 ];
 
 /** Section 4 — harvest management. */
 export const HARVEST_FEATURES: LandingCard[] = [
   { id: 'record', icon: harvestIcon, points: 0 },
+  { id: 'stages', icon: calendarIcon, points: 0 },
   { id: 'warehouse', icon: plantsIcon, points: 0 },
   { id: 'quality', icon: balanceIcon, points: 0 },
-  { id: 'history', icon: calendarIcon, points: 0 },
+  { id: 'history', icon: reportIcon, points: 0 },
 ];
 
 /** Section 5 — marketplace categories. */

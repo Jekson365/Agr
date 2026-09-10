@@ -35,7 +35,7 @@
 
 .modal-card {
   width: 100%;
-  max-width: 560px;
+  max-width: 448px;
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   background: var(--color-surface);
@@ -75,15 +75,15 @@
   color: var(--color-on-accent);
 }
 
-/* Wider variant for forms with enough fields that a single 440px column runs too tall. */
+/* Wider variant for forms with enough fields that a single 352px column runs too tall. */
 .modal-card.wide {
-  max-width: 720px;
+  max-width: 576px;
 }
 
-/* A step past `wide` for the two-column forms that still crowd at 720px, without going to the
+/* A step past `wide` for the two-column forms that still crowd at 576px, without going to the
    near-fullscreen `full`. */
 .modal-card.xwide {
-  max-width: 1060px;
+  max-width: 848px;
 }
 
 /* Near-fullscreen variant for editors that need real canvas space — the positioning editor's

@@ -22,7 +22,7 @@ export function TreatmentPage() {
   const state = useTreatments();
   const range = useMonthRange();
 
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [selectedIds, setSelectedIds] = useState<number[] | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(() => [...TREE_TREATMENTS]);
   const [menu, setMenu] = useState<DayMenu | null>(null);
 
@@ -56,7 +56,9 @@ export function TreatmentPage() {
 
   const { days } = range;
   const rangeLabel = `${monthNames(language)[range.anchor.getMonth()]} ${range.anchor.getFullYear()}`;
-  const visible = selectedId == null ? state.orchards : state.orchards.filter((row) => row.id === selectedId);
+  const chosenIds = selectedIds ?? state.orchards.map((row) => row.id);
+  const chosenSet = new Set(chosenIds);
+  const visible = state.orchards.filter((row) => chosenSet.has(row.id));
 
   return (
     <div className="trt-page page-fill">
@@ -69,14 +71,16 @@ export function TreatmentPage() {
           <h1 className="page-title">{t('treatment.title')}</h1>
         </div>
 
-        <TreatmentFruitRow
-          orchards={state.orchards}
-          selectedId={selectedId}
-          counts={counts}
-          onSelect={setSelectedId}
-        />
+        <div className="trt-filters">
+          <TreatmentFruitRow
+            orchards={state.orchards}
+            selectedIds={chosenIds}
+            counts={counts}
+            onChange={setSelectedIds}
+          />
 
-        <TreatmentFilterRow selected={selectedTypes} counts={typeCounts} onChange={setSelectedTypes} />
+          <TreatmentFilterRow selected={selectedTypes} counts={typeCounts} onChange={setSelectedTypes} />
+        </div>
 
         <TreatmentToolbar
           range={rangeLabel}
@@ -99,7 +103,7 @@ export function TreatmentPage() {
             today={today}
             orchards={visible}
             dayTreatments={shown}
-            emptyText={t('treatment.noOrchards')}
+            emptyText={t(state.orchards.length === 0 ? 'treatment.noOrchards' : 'treatment.pickOrchard')}
             onPickDay={(orchardId, date, at) => setMenu({ orchardId, date, ...at })}
           />
         </div>

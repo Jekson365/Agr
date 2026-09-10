@@ -22,12 +22,14 @@ export function TreatmentFilterRow({ selected, counts, onChange }: Props) {
   });
 
   return (
-    <div className="trt-filter">
+    <div className="trt-field">
+      <span className="trt-field-label">{t('treatment.filterLabel')}</span>
       <MultiSelect
         options={options}
         selected={selected}
         onChange={onChange}
-        placeholder={t('treatment.allTypes')}
+        placeholder={t('treatment.noneSelected')}
+        allSelectedLabel={t('treatment.allTypes')}
         searchPlaceholder={t('treatment.typeSearch')}
         emptyText={t('treatment.noTypeMatch')}
         markAllLabel={t('common.markAll')}

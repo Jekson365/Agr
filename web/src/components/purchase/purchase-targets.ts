@@ -1,10 +1,11 @@
-import { fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
+import { fruitKindImage, fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { livestockTypeLabel } from '@/config/livestock-kinds';
 import { PRODUCTION_TYPE_LABEL_KEY, UNIT_LABEL_KEY } from '@/config/production';
 import { SEED_UNIT_LABEL_KEY } from '@/config/seed-kinds';
 import { STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import { getAllAnimalProductions } from '@/services/animal-production-service';
 import { getEquipment } from '@/services/equipment-service';
+import { getFruitKinds } from '@/services/fruit-kind-service';
 import { getLivestock } from '@/services/livestock-service';
 import { getProductionMovements } from '@/services/production-movement-service';
 import { getProductionTypes } from '@/services/production-type-service';
@@ -22,6 +23,7 @@ export const PURCHASE_KIND_LABEL_KEY: Record<PurchaseItemKind, string> = {
   Livestock: 'purchase.kindLivestock',
   LivestockProduction: 'purchase.kindLivestockProduction',
   TreeStock: 'purchase.kindTreeStock',
+  TreeSeedling: 'purchase.kindTreeSeedling',
   TreeProduct: 'purchase.kindTreeProduct',
   Stock: 'purchase.kindStock',
   Seed: 'purchase.kindSeed',
@@ -31,12 +33,26 @@ export const PURCHASE_KIND_LABEL_KEY: Record<PurchaseItemKind, string> = {
 export const PURCHASE_KIND_ORDER: PurchaseItemKind[] = [
   'Livestock',
   'LivestockProduction',
+  'TreeSeedling',
   'TreeStock',
   'TreeProduct',
   'Stock',
   'Seed',
   'Equipment',
 ];
+
+const RETIRED_PURCHASE_KINDS: PurchaseItemKind[] = ['TreeStock'];
+
+/** The categories a new line may choose. Inventory stays on the list with nothing in it: a farm
+ *  buying its first tool has no equipment to point at yet, and the row creates it from the name
+ *  typed there. */
+export function offeredPurchaseKinds(targets: PurchaseTargets, equipmentAllowed: boolean): PurchaseItemKind[] {
+  return PURCHASE_KIND_ORDER.filter(
+    (kind) =>
+      !RETIRED_PURCHASE_KINDS.includes(kind) &&
+      (targets[kind].length > 0 || (kind === 'Equipment' && equipmentAllowed))
+  );
+}
 
 const maybe = <T,>(on: boolean, load: () => Promise<T[]>): Promise<T[]> =>
   on ? load().catch(() => []) : Promise.resolve([]);
@@ -57,6 +73,7 @@ export const EMPTY_TARGETS: PurchaseTargets = {
   Livestock: [],
   LivestockProduction: [],
   TreeStock: [],
+  TreeSeedling: [],
   TreeProduct: [],
   Stock: [],
   Seed: [],
@@ -71,7 +88,7 @@ export type PurchaseAreas = {
 };
 
 export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): Promise<PurchaseTargets> {
-  const [groups, productions, movements, productionTypes, units, orchards, treeProducts, stock, seeds, equipment] =
+  const [groups, productions, movements, productionTypes, units, orchards, fruitKinds, treeProducts, stock, seeds, equipment] =
     await Promise.all([
       maybe(areas.livestock, () => getLivestock()),
       maybe(areas.livestock, () => getAllAnimalProductions()),
@@ -79,6 +96,7 @@ export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): P
       maybe(areas.livestock, () => getProductionTypes()),
       maybe(areas.livestock, () => getUnits()),
       maybe(areas.fruits, () => getTreeStock()),
+      maybe(areas.fruits, () => getFruitKinds()),
       maybe(areas.fruits, () => getTreeProducts()),
       maybe(areas.crops, () => getStock()),
       maybe(areas.crops, () => getSeeds()),
@@ -120,6 +138,13 @@ export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): P
       label: orchard.name.trim() || fruitTypeLabel(orchard.type, t),
       unitLabel: t(TREE_STOCK_UNIT_LABEL_KEY[orchard.unit] ?? 'farm.unitPlant'),
       icon: purchaseTargetIcon('TreeStock', orchard.type),
+    })),
+    TreeSeedling: fruitKinds.map((kind) => ({
+      targetId: kind.id,
+      unitId: null,
+      label: fruitTypeLabel(kind.name, t),
+      unitLabel: t('farm.unitPlant'),
+      icon: fruitKindImage(kind.name),
     })),
     TreeProduct: treeProducts.map((product) => ({
       targetId: product.id,

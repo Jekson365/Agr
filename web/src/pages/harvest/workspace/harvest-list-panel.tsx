@@ -8,12 +8,14 @@ import { formatIsoDayNumeric } from '@/components/ui/date-utils';
 import { HARVEST_STATUS_BADGE_CLASS, HARVEST_STATUS_LABEL_KEY, harvestStatusesFor } from '@/config/harvest-status';
 import { useLanguage } from '@/contexts/language-context';
 import type { Harvest, HarvestKind } from '@/types/harvest';
+import type { TargetInfo } from '../detail/harvest-detail-lookups';
 import '../detail/harvest-detail-panels.css';
 import { HARVEST_SORT_OPTIONS, type HarvestFilters } from './harvest-list-filter';
 
 type Props = {
   kind: HarvestKind;
   harvests: Harvest[];
+  goods: Map<number, TargetInfo[]>;
   total: number;
   overdueCount: number;
   filters: HarvestFilters;
@@ -28,6 +30,7 @@ type Props = {
 export function HarvestListPanel({
   kind,
   harvests,
+  goods,
   total,
   overdueCount,
   filters,
@@ -128,7 +131,11 @@ export function HarvestListPanel({
       ) : (
         <div className="hw-rows">
           {harvests.map((item) => {
-            const label = `${item.title} · ${formatIsoDayNumeric(item.date)}`;
+            const grown = goods.get(item.id) ?? [];
+            const names = grown.map((good) => good.label).join(', ');
+            const label = names
+              ? `${item.title} · ${names} · ${formatIsoDayNumeric(item.date)}`
+              : `${item.title} · ${formatIsoDayNumeric(item.date)}`;
             return (
               <button
                 key={item.id}
@@ -139,7 +146,11 @@ export function HarvestListPanel({
                 title={collapsed ? label : undefined}
                 onClick={() => onSelect(item.id)}
               >
-                <img src={harvestIcon} alt="" className="hw-row-icon" />
+                <span className="hw-row-mark">
+                  <img src={harvestIcon} alt="" className="hw-row-icon" />
+                  {grown[0] && <img src={grown[0].icon} alt="" className="hw-row-good" />}
+                  {grown.length > 1 && <span className="hw-row-more">+{grown.length - 1}</span>}
+                </span>
                 <span className="hw-row-main">
                   <span className="hw-row-title">{item.title}</span>
                   <span className={`${HARVEST_STATUS_BADGE_CLASS[item.status]} harvest-status-badge`}>

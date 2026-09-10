@@ -110,11 +110,50 @@
   outline-offset: 2px;
 }
 
+.hw-row-mark {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+}
+
 .hw-row-icon {
   width: 2.5rem;
   height: 2.5rem;
   flex-shrink: 0;
   object-fit: contain;
+}
+
+.hw-row-good {
+  position: absolute;
+  right: -0.375rem;
+  bottom: -0.25rem;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 0.4375rem;
+  border: 2px solid var(--color-surface);
+  background: var(--color-surface);
+  object-fit: contain;
+}
+
+.hw-row.selected .hw-row-good {
+  border-color: var(--color-green-soft);
+  background: var(--color-green-soft);
+}
+
+.hw-row-more {
+  position: absolute;
+  right: -0.375rem;
+  top: -0.375rem;
+  min-width: 1.05rem;
+  padding: 0 0.2rem;
+  border-radius: 0.55rem;
+  border: 2px solid var(--color-surface);
+  background: var(--color-green);
+  color: var(--color-on-accent);
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.05rem;
+  text-align: center;
 }
 
 .hw-row-main {

@@ -20,6 +20,8 @@ public partial class PurchasesController(
     IProductionMovementRepository productionMovementRepository,
     ITreeStockRepository treeStockRepository,
     ITreeStockMovementRepository treeStockMovementRepository,
+    IFruitKindRepository fruitKindRepository,
+    ITreeSeedlingRepository treeSeedlingRepository,
     ITreeProductRepository treeProductRepository,
     ITreeProductMovementRepository treeProductMovementRepository,
     IStockRepository stockRepository,

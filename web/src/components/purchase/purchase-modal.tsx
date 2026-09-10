@@ -20,7 +20,7 @@ import {
   toItems,
   type PurchaseLine,
 } from './purchase-lines';
-import { EMPTY_TARGETS, loadPurchaseTargets, PURCHASE_KIND_ORDER, type PurchaseTargets } from './purchase-targets';
+import { EMPTY_TARGETS, loadPurchaseTargets, offeredPurchaseKinds, type PurchaseTargets } from './purchase-targets';
 import './purchase-modal.css';
 
 type Props = {
@@ -72,11 +72,7 @@ export function PurchaseModal({ open, editing, onClose, onSaved }: Props) {
     })
       .then((loaded) => {
         if (cancelled) return;
-        // Inventory stays on the list with nothing in it: a farm buying its first tool has no
-        // equipment to point at yet, and the row creates it from the name typed here.
-        const available = PURCHASE_KIND_ORDER.filter(
-          (kind) => loaded[kind].length > 0 || (kind === 'Equipment' && equipmentAllowed)
-        );
+        const available = offeredPurchaseKinds(loaded, equipmentAllowed);
         setTargets(loaded);
         setKinds(available);
 

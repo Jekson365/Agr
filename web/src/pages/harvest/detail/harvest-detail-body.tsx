@@ -36,7 +36,7 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
   const sections: HarvestSection[] = isPicked(harvest.status)
     ? isFruit
       ? ['overview', 'trees', 'money', 'grading', 'chemicals']
-      : ['overview', 'seeds', 'result', 'money', 'grading', 'chemicals']
+      : ['result', 'seeds', 'overview', 'grading', 'chemicals', 'money']
     : [inputSection, 'chemicals'];
 
   useEffect(() => {
@@ -83,6 +83,7 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
           harvestTrees={harvestTrees}
           catalogs={catalogs}
           canEdit={!countsInBalance(harvest.status)}
+          canRecordHarvested={isPicked(harvest.status)}
           onChanged={detail.setHarvestTrees}
         />
       )}
@@ -92,6 +93,7 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
           harvestId={harvestId}
           results={results}
           items={items}
+          harvestSeeds={harvestSeeds}
           catalogs={catalogs}
           canEdit={isPicked(harvest.status) && !countsInBalance(harvest.status)}
           onChanged={detail.setResults}

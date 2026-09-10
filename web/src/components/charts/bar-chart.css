@@ -72,6 +72,20 @@
   gap: 2px; /* 2px surface gap between adjacent bars */
 }
 
+.bar-chart-group {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.bar-chart-bars.grouped,
+.bar-chart-xlabels.grouped {
+  gap: 14px;
+}
+
 .bar-chart-col {
   flex: 1;
   min-width: 0;
@@ -168,4 +182,20 @@
 .bar-chart-xlabel.hovered {
   color: var(--color-dark);
   font-weight: 600;
+}
+
+.bar-chart-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-left: 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.bar-chart-key-swatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 2px;
+  background: var(--color-danger);
 }

@@ -10,6 +10,7 @@ import { getTreeStock } from '@/services/tree-stock-service';
 import type { HarvestTree } from '@/types/harvest-tree';
 import type { TreeProduct } from '@/types/tree-product';
 import type { TreeStock } from '@/types/tree-stock';
+import './harvest.css';
 
 type Props = {
   open: boolean;
@@ -17,13 +18,24 @@ type Props = {
   editingTree: HarvestTree | null;
   /** What this harvest already records as picked, so those orchards stay out of the picker. */
   existingTrees: HarvestTree[];
+  /** True once the harvest is marked harvested. What came off the trees is weighed at picking
+   *  time, so before that the row records the orchard and the trees alone. */
+  canRecordHarvested: boolean;
   onClose: () => void;
   onSaved: (harvestTree: HarvestTree, isNew: boolean) => void;
 };
 
 /** Records how many trees of an orchard were picked. The orchard's own count is untouched —
  * the fruit that came off them is recorded as a result, by weight, against plant stock. */
-export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTrees, onClose, onSaved }: Props) {
+export function HarvestTreeFormModal({
+  open,
+  harvestId,
+  editingTree,
+  existingTrees,
+  canRecordHarvested,
+  onClose,
+  onSaved,
+}: Props) {
   const { t } = useLanguage();
 
   /** The orchards still free to record — the farm's fruit, minus what this harvest already picked. */
@@ -86,11 +98,17 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTre
 
   const selected = treeStocks.find((s) => s.id === selectedId) ?? null;
   const amount = parseFloat(amountInput) || 0;
-  const harvestedAmount = Math.max(0, parseFloat(harvestedInput) || 0);
+  // Before the harvest is marked harvested the field isn't offered, so a row already carrying a
+  // weight keeps it rather than being zeroed by a save made from an earlier status.
+  const harvestedAmount = canRecordHarvested
+    ? Math.max(0, parseFloat(harvestedInput) || 0)
+    : editingTree?.harvestedAmount ?? 0;
   // The produce unit for the selected orchard's assigned product, shown next to the harvested field.
   const harvestedUnit = (() => {
     const product = selected != null ? treeProducts.find((p) => p.id === selected.treeProductId) : null;
-    return product ? t(TREE_PRODUCT_UNIT_LABEL_KEY[product.unit] ?? 'farm.unitKg') : '';
+    // Every product is created in kilograms; Box and Quantity only exist on rows entered while
+    // the unit was still a choice, so those keep reading in the unit they were recorded under.
+    return product ? t(TREE_PRODUCT_UNIT_LABEL_KEY[product.unit] ?? 'farm.unitKg') : t('farm.unitKg');
   })();
   // You can't pick more trees than the orchard holds, but picking doesn't consume them either.
   const overAvailable = selected != null && amount > selected.amount;
@@ -114,7 +132,9 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTre
     } catch (err) {
       // The server refuses an orchard this harvest picked meanwhile (e.g. from another session).
       setFormError(
-        err instanceof ApiError && err.status === 409 ? t('harvestTree.alreadyPicked') : t('farm.saveError')
+        err instanceof ApiError && err.status === 409
+          ? t(editingTree ? 'harvestTree.alreadyPicked' : 'harvestTree.onlyOne')
+          : t('farm.saveError')
       );
     } finally {
       setSaving(false);
@@ -175,13 +195,19 @@ export function HarvestTreeFormModal({ open, harvestId, editingTree, existingTre
         {treeStocks.length > 0 && (
           <div className="field">
             <label>{t('harvestTree.amountHarvested')}</label>
-            <input
-              value={harvestedInput}
-              onChange={(e) => setHarvestedInput(e.target.value)}
-              placeholder="0"
-              inputMode="decimal"
-            />
-            {harvestedUnit && <span className="limit-hint">{harvestedUnit}</span>}
+            {canRecordHarvested ? (
+              <span className="harvest-tree-weight">
+                <input
+                  value={harvestedInput}
+                  onChange={(e) => setHarvestedInput(e.target.value)}
+                  placeholder="0"
+                  inputMode="decimal"
+                />
+                <span className="harvest-tree-unit">{harvestedUnit}</span>
+              </span>
+            ) : (
+              <p className="limit-hint">{t('harvestTree.harvestedLater')}</p>
+            )}
           </div>
         )}
 

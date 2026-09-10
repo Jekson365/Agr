@@ -14,6 +14,7 @@ export const PURCHASE_KIND_ICON: Record<PurchaseItemKind, string> = {
   Livestock: animalsIcon,
   LivestockProduction: milkIcon,
   TreeStock: fruitsIcon,
+  TreeSeedling: fruitsIcon,
   TreeProduct: treeProductIcon,
   Stock: plantsIcon,
   Seed: seedIcon,
@@ -26,6 +27,7 @@ export function purchaseTargetIcon(kind: PurchaseItemKind, typeName: string): st
     case 'Livestock':
       return livestockImage(typeName);
     case 'TreeStock':
+    case 'TreeSeedling':
       return fruitKindImage(typeName);
     case 'Stock':
     case 'Seed':

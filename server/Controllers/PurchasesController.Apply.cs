@@ -59,6 +59,23 @@ public partial class PurchasesController
                     Date = document.Date,
                 })).Id;
 
+            case PurchaseItemKind.TreeSeedling:
+            {
+                var batch = await treeSeedlingRepository.AddAsync(new TreeSeedling
+                {
+                    Type = item.Name,
+                    Name = string.Empty,
+                    Quantity = (int)Math.Round(item.Quantity),
+                    Stage = NurseryStage.Ready,
+                    SownDate = document.Date,
+                    ReadyDate = document.Date,
+                    Location = string.Empty,
+                    Notes = note,
+                });
+                item.SeedlingId = batch.Id;
+                return null;
+            }
+
             case PurchaseItemKind.TreeProduct:
                 return (await treeProductMovementRepository.AddAsync(new TreeProductMovement
                 {

@@ -3,6 +3,7 @@ import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/con
 import { useLanguage } from '@/contexts/language-context';
 import { FRUIT_KIND_CATALOG } from './fruit-kind-catalog';
 import type { TreeStockFormValues } from './tree-stock-form';
+import { TreeStockLandField } from './tree-stock-land-field';
 
 type Props = {
   open: boolean;
@@ -82,6 +83,21 @@ export function TreeStockFormFields({ open, isEditing, values, formError, setFie
           />
         )}
       </div>
+
+      {/* Where the trees stand. A new orchard names its plot here so the land page and the fruit
+          page agree from the start; an existing one shows what it was given, since moving an
+          orchard rewrites what its harvests and its plot say happened. */}
+      {!isEditing && (
+        <TreeStockLandField
+          open={open}
+          farmId={values.farmId}
+          landPlotId={values.landPlotId}
+          onChange={(farmId, landPlotId) => {
+            setField('farmId', farmId);
+            setField('landPlotId', landPlotId);
+          }}
+        />
+      )}
 
       {/* Fruit is counted in trees, so the unit isn't a choice — just shown for confirmation. */}
       <div className="field">

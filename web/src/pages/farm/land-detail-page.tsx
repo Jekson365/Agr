@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import landPlaceholder from '@/assets/properties/land.png';
 import { CardMenu } from '@/components/farm/card-menu';
@@ -35,6 +35,7 @@ import './land-detail-page.css';
 
 export function LandDetailPage() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
   const { id: idParam } = useParams<{ id: string }>();
   const farmId = Number(idParam);
 
@@ -267,6 +268,10 @@ export function LandDetailPage() {
                       <CardMenu
                         onEdit={() => openEdit(plot)}
                         onDelete={() => setConfirmDelete({ id: plot.id, crop: plotLabel(plot) })}
+                        extra={{
+                          labelKey: 'soil.title',
+                          onSelect: () => navigate(`/farm/land/${farmId}/plot/${plot.id}/soil`),
+                        }}
                       />
                     </div>
                   ))}

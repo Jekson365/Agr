@@ -5,8 +5,8 @@ Each user has their own Postgres database (``farm_user_{userId}``); this finds t
 to an email address by looking the user up in the master database, then truncates every table
 holding that user's records.
 
-Six tables are kept by default besides ``__EFMigrationsHistory``: Units, ProductionTypes,
-LivestockKinds, StockKinds, FruitKinds and Configurations. They hold reference data seeded by the
+Twelve tables are kept by default besides ``__EFMigrationsHistory``: Units, ProductionTypes,
+LivestockKinds, StockKinds, FruitKinds, Configurations and the six soil scoring reference tables. They hold reference data seeded by the
 migrations, and EF will not put it back — HasData is applied by a migration, and the history table
 already says those migrations ran. A tenant emptied without them has no units, no animal kinds and
 no feature switches, and the app cannot record anything.
@@ -41,6 +41,12 @@ SEEDED_CATALOGS = (
     "StockKinds",
     "FruitKinds",
     "Configurations",
+    "SoilScoringRuleSets",
+    "SoilFertilityFactors",
+    "SoilFertilityCategories",
+    "SoilParameterDefinitions",
+    "SoilParameterCategories",
+    "SoilScoringRules",
 )
 
 MIGRATIONS_TABLE = "__EFMigrationsHistory"

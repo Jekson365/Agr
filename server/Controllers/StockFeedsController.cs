@@ -10,6 +10,14 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class StockFeedsController(IStockFeedRepository stockFeedRepository) : ControllerBase
 {
+    private const string TargetMessage = "A feed entry names exactly one of a stock, a tree product or a piece of equipment.";
+
+    private static bool NamesOneTarget(StockFeed feed)
+    {
+        var named = (feed.StockId is null ? 0 : 1) + (feed.TreeProductId is null ? 0 : 1) + (feed.EquipmentId is null ? 0 : 1);
+        return named == 1;
+    }
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StockFeed>>> GetByLivestock([FromQuery] int livestockId)
     {
@@ -19,6 +27,11 @@ public class StockFeedsController(IStockFeedRepository stockFeedRepository) : Co
     [HttpPost]
     public async Task<ActionResult<StockFeed>> Create(StockFeed feed)
     {
+        if (!NamesOneTarget(feed))
+        {
+            return BadRequest(TargetMessage);
+        }
+
         var created = await stockFeedRepository.AddAsync(feed);
         return Ok(created);
     }
@@ -29,6 +42,10 @@ public class StockFeedsController(IStockFeedRepository stockFeedRepository) : Co
         if (id != feed.Id)
         {
             return BadRequest();
+        }
+        if (!NamesOneTarget(feed))
+        {
+            return BadRequest(TargetMessage);
         }
 
         var updated = await stockFeedRepository.UpdateAsync(feed);

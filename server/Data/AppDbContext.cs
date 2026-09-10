@@ -7,7 +7,7 @@ namespace Server.Data;
 /// Per-user domain database. Each user has their own physical Postgres database with this schema
 /// (named <c>farm_user_{userId}</c>); the connection is resolved per request from the caller's user id.
 /// </summary>
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Product> Products => Set<Product>();
     public DbSet<Farm> Farms => Set<Farm>();
@@ -53,6 +53,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<StockHistory> StockHistories => Set<StockHistory>();
     public DbSet<StockPhoto> StockPhotos => Set<StockPhoto>();
+    public DbSet<SoilScoringRuleSet> SoilScoringRuleSets => Set<SoilScoringRuleSet>();
+    public DbSet<SoilFertilityFactor> SoilFertilityFactors => Set<SoilFertilityFactor>();
+    public DbSet<SoilParameterDefinition> SoilParameterDefinitions => Set<SoilParameterDefinition>();
+    public DbSet<SoilParameterCategory> SoilParameterCategories => Set<SoilParameterCategory>();
+    public DbSet<SoilScoringRule> SoilScoringRules => Set<SoilScoringRule>();
+    public DbSet<SoilFertilityCategory> SoilFertilityCategories => Set<SoilFertilityCategory>();
+    public DbSet<SoilInvestigation> SoilInvestigations => Set<SoilInvestigation>();
+    public DbSet<SoilInvestigationResult> SoilInvestigationResults => Set<SoilInvestigationResult>();
+    public DbSet<SoilFertilityAssessment> SoilFertilityAssessments => Set<SoilFertilityAssessment>();
+    public DbSet<SoilFertilityAssessmentResult> SoilFertilityAssessmentResults => Set<SoilFertilityAssessmentResult>();
     public DbSet<MedicalRecord> MedicalRecords => Set<MedicalRecord>();
     public DbSet<StockFeed> StockFeeds => Set<StockFeed>();
     public DbSet<TreeStock> TreeStocks => Set<TreeStock>();
@@ -290,6 +300,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasOne<Stock>()
             .WithMany()
             .HasForeignKey(f => f.StockId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<StockFeed>()
+            .HasOne<TreeProduct>()
+            .WithMany()
+            .HasForeignKey(f => f.TreeProductId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<StockFeed>()
+            .HasOne<Equipment>()
+            .WithMany()
+            .HasForeignKey(f => f.EquipmentId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Each harvest belongs to a farm; deleting the farm removes harvests recorded against it.
@@ -604,6 +624,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(t => t.TreeStockId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        ConfigureSoil(modelBuilder);
 
         // Each photo belongs to a single stock; deleting the stock removes its photo history.
         modelBuilder.Entity<StockPhoto>()

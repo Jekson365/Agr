@@ -14,6 +14,13 @@ public interface IHarvestTreeRepository
     /// </summary>
     Task<bool> ExistsForHarvestAsync(int harvestId, int treeStockId, int? excludeId = null);
 
+    /// <summary>
+    /// Whether this harvest already picks an orchard at all. A fruit harvest covers one orchard:
+    /// its costs, its revenue and its grading all answer for that one, so a second orchard is a
+    /// second harvest rather than a second row here.
+    /// </summary>
+    Task<bool> HasAnyForHarvestAsync(int harvestId);
+
     Task<HarvestTree> AddAsync(HarvestTree harvestTree);
     Task<bool> UpdateAsync(HarvestTree harvestTree);
     Task<bool> DeleteAsync(int id);

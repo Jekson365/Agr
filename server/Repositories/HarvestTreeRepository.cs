@@ -39,6 +39,11 @@ public class HarvestTreeRepository(
                 && (excludeId == null || h.Id != excludeId));
     }
 
+    public Task<bool> HasAnyForHarvestAsync(int harvestId)
+    {
+        return context.HarvestTrees.AsNoTracking().AnyAsync(t => t.HarvestId == harvestId);
+    }
+
     public async Task<HarvestTree> AddAsync(HarvestTree harvestTree)
     {
         context.HarvestTrees.Add(harvestTree);

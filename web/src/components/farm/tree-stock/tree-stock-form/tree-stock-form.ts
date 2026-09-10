@@ -17,6 +17,10 @@ export type TreeStockFormValues = {
    * carries an existing row's product back for display only.
    */
   produce: string;
+  /** The land and the plot on it these trees stand on. Held as strings, since they come straight
+   *  from the two selects; blank means the orchard is not tied to a plot yet. */
+  farmId: string;
+  landPlotId: string;
 };
 
 /** The form as it opens: the row being edited, or blank for a new one. The type is filled in once
@@ -29,6 +33,8 @@ export function makeInitialValues(editingStock: TreeStock | null): TreeStockForm
     // Always trees for a new entry; an older row keeps whatever it was created under.
     unit: editingStock?.unit ?? TREE_STOCK_DEFAULT_UNIT,
     produce: '',
+    farmId: '',
+    landPlotId: editingStock?.landPlotId == null ? '' : String(editingStock.landPlotId),
   };
 }
 

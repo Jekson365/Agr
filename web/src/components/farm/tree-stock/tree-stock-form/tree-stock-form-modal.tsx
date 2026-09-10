@@ -5,8 +5,9 @@ import { fruitTypeLabel, TREE_PRODUCT_DEFAULT_UNIT } from '@/config/fruit-kinds'
 import { isPlanLimitError } from '@/config/plan-benefits';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
+import { getLandPlot, updateLandPlot } from '@/services/land-plot-service';
 import { createTreeProduct, deleteTreeProduct, getTreeProducts } from '@/services/tree-product-service';
-import { createTreeStock, updateTreeStock } from '@/services/tree-stock-service';
+import { createTreeStock, deleteTreeStock, updateTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 import { isFormComplete, isNameTaken, makeInitialValues, parseAmount, type TreeStockFormValues } from './tree-stock-form';
 import { TreeStockFormFields } from './tree-stock-form-fields';
@@ -87,6 +88,7 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
         // The product has to exist before the row can name it, so it is written first — and taken
         // back out again if the row is then refused, rather than left in the catalog with nothing
         // producing it.
+        const plotId = values.landPlotId ? Number(values.landPlotId) : null;
         const product = await createTreeProduct({ name: produce, unit: TREE_PRODUCT_DEFAULT_UNIT });
         let created: TreeStock;
         try {
@@ -95,13 +97,29 @@ export function TreeStockFormModal({ open, editingStock, existingItems, onClose,
             name,
             amount,
             unit: values.unit,
-            landPlotId: null,
+            landPlotId: plotId,
             treeProductId: product.id,
           });
         } catch (err) {
           await deleteTreeProduct(product.id).catch(() => {});
           throw err;
         }
+
+        // The plot carries its own pointer back, and the land page reads that one — so both sides
+        // are written or neither is. A plot taken since the list was drawn is the case this
+        // catches, and it puts the orchard and its product back rather than leaving them stranded.
+        if (plotId != null) {
+          try {
+            const plot = await getLandPlot(plotId);
+            await updateLandPlot(plotId, { ...plot, treeStockId: created.id, stockId: null });
+          } catch {
+            await deleteTreeStock(created.id).catch(() => {});
+            await deleteTreeProduct(product.id).catch(() => {});
+            setFormError(t('treeStock.plotTaken'));
+            return;
+          }
+        }
+
         onSaved(created, true);
       }
       onClose();

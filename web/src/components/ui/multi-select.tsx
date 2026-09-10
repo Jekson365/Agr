@@ -9,6 +9,9 @@ import './multi-select-popover.css';
  *  it still fits under the trigger, so an approximation is enough. */
 const POPOVER_MAX_HEIGHT = 290;
 
+const MAX_TRIGGER_LABELS = 2;
+const MAX_TRIGGER_DOTS = 4;
+
 export type MultiSelectOption = {
   value: string;
   label: string;
@@ -29,6 +32,7 @@ type Props = {
   /** 'large' matches the add forms, whose fields are drawn a size up. The popover is portalled to
    *  <body>, so no scope the form sets can reach it — it has to be told. */
   size?: 'default' | 'large';
+  allSelectedLabel?: string;
 };
 
 /** A searchable dropdown that lets the user pick several options at once (checkbox list). */
@@ -41,6 +45,7 @@ export function MultiSelect({
   emptyText,
   markAllLabel,
   size = 'default',
+  allSelectedLabel,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -71,8 +76,13 @@ export function MultiSelect({
   }
 
   const chosen = options.filter((o) => selectedSet.has(o.value));
-  const triggerLabel = selected.length === 0 ? placeholder : chosen.map((o) => o.label).join(', ');
-  const swatches = chosen.filter((o) => o.colour);
+  const everyChosen = options.length > 0 && chosen.length === options.length;
+  const allLabel = everyChosen ? allSelectedLabel : undefined;
+  const neutral = chosen.length === 0 || allLabel != null;
+  const listed = chosen.slice(0, MAX_TRIGGER_LABELS).map((o) => o.label).join(', ');
+  const triggerLabel = chosen.length === 0 ? placeholder : allLabel ?? listed;
+  const more = neutral ? 0 : chosen.length - MAX_TRIGGER_LABELS;
+  const swatches = neutral ? [] : chosen.filter((o) => o.colour).slice(0, MAX_TRIGGER_DOTS);
 
   return (
     <div className="multi-select" ref={rootRef}>
@@ -90,8 +100,8 @@ export function MultiSelect({
             ))}
           </span>
         )}
-        <span className={selected.length === 0 ? 'multi-select-value placeholder' : 'multi-select-value'}>{triggerLabel}</span>
-        {selected.length > 0 && <span className="multi-select-count">{selected.length}</span>}
+        <span className={neutral ? 'multi-select-value placeholder' : 'multi-select-value'}>{triggerLabel}</span>
+        {more > 0 && <span className="multi-select-count">+{more}</span>}
         <span className="multi-select-caret" aria-hidden="true">
           ▾
         </span>

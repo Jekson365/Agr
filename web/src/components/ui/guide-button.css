@@ -64,5 +64,5 @@
 /* Narrower than the default card: this is a paragraph and a short list, and a long line of text
    is harder to read than a short one. */
 .guide-modal .modal-card {
-  max-width: 620px;
+  max-width: 496px;
 }

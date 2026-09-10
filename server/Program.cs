@@ -78,6 +78,7 @@ builder.Services.AddScoped<ITreeProductMovementRepository, TreeProductMovementRe
 builder.Services.AddScoped<IHarvestProductRepository, HarvestProductRepository>();
 builder.Services.AddScoped<IStockHistoryRepository, StockHistoryRepository>();
 builder.Services.AddScoped<IStockPhotoRepository, StockPhotoRepository>();
+builder.Services.AddScoped<ISoilInvestigationRepository, SoilInvestigationRepository>();
 builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
 builder.Services.AddScoped<IStockFeedRepository, StockFeedRepository>();
 builder.Services.AddScoped<ITreeStockRepository, TreeStockRepository>();
@@ -101,6 +102,7 @@ builder.Services.AddScoped<INeighbourRepository, NeighbourRepository>();
 builder.Services.AddScoped<INeighbourTerritoryService, NeighbourTerritoryService>();
 builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<ISoilFertilityScoringService, SoilFertilityScoringService>();
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
 builder.Services.AddScoped<ICoinService, CoinService>();
 builder.Services.AddScoped<IMarketSaleInventoryService, MarketSaleInventoryService>();

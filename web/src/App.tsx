@@ -16,6 +16,7 @@ import { GreenhousePage } from '@/pages/farm/greenhouse-page';
 import { GreenhouseSeedsPage } from '@/pages/farm/greenhouse-seeds-page';
 import { GreenhouseStockPage } from '@/pages/farm/greenhouse-stock-page';
 import { LandDetailPage } from '@/pages/farm/land-detail-page';
+import { SoilPage } from '@/pages/farm/soil/soil-page';
 import { KindTypesPage } from '@/pages/farm/kind-types-page';
 import { LandPage } from '@/pages/farm/land-page';
 import { LivestockBreedingPage } from '@/pages/farm/livestock-breeding-page';
@@ -103,6 +104,7 @@ function App() {
           <Route path="/farm" element={<FarmPage />} />
           <Route path="/farm/land" element={<LandPage />} />
           <Route path="/farm/land/:id" element={<LandDetailPage />} />
+          <Route path="/farm/land/:id/plot/:plotId/soil" element={<SoilPage />} />
           {/* Each area a tenant setting covers sits behind that setting. Hiding the sidebar entry
               alone would leave the paths reachable by URL, bookmark or an old link. */}
           <Route element={<ConfigRoute name={LIVESTOCK_CONFIG} />}>

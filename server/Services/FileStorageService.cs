@@ -11,12 +11,24 @@ public class FileStorageService(
 {
     private static readonly string[] AllowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
-    public async Task<string> SaveImageAsync(IFormFile file, string subfolder)
+    private static readonly string[] AllowedDocumentExtensions = [".jpg", ".jpeg", ".png", ".webp", ".pdf"];
+
+    public Task<string> SaveImageAsync(IFormFile file, string subfolder)
+    {
+        return SaveAsync(file, subfolder, AllowedExtensions, "Unsupported image type.");
+    }
+
+    public Task<string> SaveDocumentAsync(IFormFile file, string subfolder)
+    {
+        return SaveAsync(file, subfolder, AllowedDocumentExtensions, "Unsupported file type.");
+    }
+
+    private async Task<string> SaveAsync(IFormFile file, string subfolder, string[] allowed, string rejection)
     {
         var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-        if (!AllowedExtensions.Contains(extension))
+        if (!allowed.Contains(extension))
         {
-            throw new InvalidOperationException("Unsupported image type.");
+            throw new InvalidOperationException(rejection);
         }
 
         var user = await masterDb.Users.FindAsync(currentTenant.UserId)
