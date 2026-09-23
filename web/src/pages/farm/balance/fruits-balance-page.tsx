@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 
 import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
+import { fruitKindImage, fruitTypeLabel } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
+import { getHarvestAssessments } from '@/services/harvest-assessment-service';
 import { getMarketListings } from '@/services/market-listing-service';
 import { getStockMovementReport } from '@/services/report-service';
 import { getTreeProductMovements, getTreeProducts } from '@/services/tree-product-service';
+import { getTreeStock } from '@/services/tree-stock-service';
+import { ASSESSMENT_GRADES, type HarvestAssessment } from '@/types/harvest-assessment';
 import type { MarketListing } from '@/types/market-listing';
 import type { StockMovementReportRow } from '@/types/report';
 import type { TreeProduct, TreeProductMovement } from '@/types/tree-product';
+import type { TreeStock } from '@/types/tree-stock';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
 import { balancesByProduct, balancesByTreeProduct } from './balance-sources';
@@ -27,6 +32,8 @@ export function FruitsBalancePage() {
 
   const [treeProducts, setTreeProducts] = useState<TreeProduct[]>([]);
   const [treeProductMovements, setTreeProductMovements] = useState<TreeProductMovement[]>([]);
+  const [orchards, setOrchards] = useState<TreeStock[]>([]);
+  const [bands, setBands] = useState<HarvestAssessment[]>([]);
   /** Only read for the removed orchards below — the products above carry their own ledger. */
   const [rows, setRows] = useState<StockMovementReportRow[]>([]);
   const [listings, setListings] = useState<MarketListing[]>([]);
@@ -41,16 +48,20 @@ export function FruitsBalancePage() {
     setLoading(true);
     setError(null);
     try {
-      const [productList, movementList, movementRows, listingList] = await Promise.all([
+      const [productList, movementList, movementRows, listingList, orchardList, bandRows] = await Promise.all([
         getTreeProducts(),
         getTreeProductMovements(),
         getStockMovementReport(),
         getMarketListings({ mine: true }),
+        getTreeStock(true),
+        getHarvestAssessments().catch(() => []),
       ]);
       setTreeProducts(productList);
       setTreeProductMovements(movementList);
       setRows(movementRows);
       setListings(listingList);
+      setOrchards(orchardList);
+      setBands(bandRows);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -63,6 +74,38 @@ export function FruitsBalancePage() {
     ...balancesByTreeProduct(treeProducts, treeProductMovements, t),
     ...(showRemoved ? balancesByProduct(rows, 'tree', t, 'only') : []),
   ];
+
+  const orchardById = new Map(orchards.map((orchard) => [orchard.id, orchard]));
+  const orchardByProduct = new Map(
+    orchards.filter((orchard) => orchard.treeProductId != null).map((orchard) => [orchard.treeProductId!, orchard])
+  );
+
+  function orchardFor(row: ProductBalance): TreeStock | undefined {
+    const [scope, id] = row.key.split(':');
+    return scope === 'treeProduct' ? orchardByProduct.get(Number(id)) : orchardById.get(Number(id));
+  }
+
+  function iconFor(row: ProductBalance) {
+    return fruitKindImage(orchardFor(row)?.type ?? '');
+  }
+
+  function captionFor(row: ProductBalance) {
+    const orchard = orchardFor(row);
+    if (!orchard) return undefined;
+    const label = fruitTypeLabel(orchard.type, t);
+    return label === row.title ? undefined : label;
+  }
+
+  function bandsFor(row: ProductBalance): string[] {
+    const orchard = orchardFor(row);
+    if (!orchard) return [];
+    const totals = new Map<string, number>();
+    for (const band of bands) {
+      if (band.treeStockId !== orchard.id) continue;
+      totals.set(band.grade, (totals.get(band.grade) ?? 0) + band.quantity);
+    }
+    return ASSESSMENT_GRADES.filter((grade) => (totals.get(grade) ?? 0) > 0);
+  }
 
   return (
     <BalanceLayout
@@ -88,6 +131,9 @@ export function FruitsBalancePage() {
         emptyLabel={t('balance.emptyTree')}
         rows={balances}
         listedFor={(row: ProductBalance) => listedFor(row, listed)}
+        bandsFor={bandsFor}
+        iconFor={iconFor}
+        captionFor={captionFor}
       />
 
       <AdjustBalanceModal open={adjustOpen} options={adjustOptions(balances)} onClose={() => setAdjustOpen(false)} onSaved={load} />

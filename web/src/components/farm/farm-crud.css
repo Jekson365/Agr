@@ -394,7 +394,7 @@
    badge here, and nothing about that shape suits the plainer card next door. */
 /* The two knobs the tiles are built from. Declared for every grid that uses one plus the two
    detail heroes, so there is a single place to change either number and all of them move
-   together: /farm/land, /farm/land/:id, /harvest, /farm/seeds, /farm/stock, and the greenhouse's
+   together: /farm/land, /farm/land/:id, /harvest, /farm/stock, and the greenhouse's
    own list, goods, seed, harvest and detail pages. */
 .land-tile-grid,
 .entity-tile-grid,

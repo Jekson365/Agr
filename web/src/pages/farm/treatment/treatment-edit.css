@@ -1,0 +1,39 @@
+.trt-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.trt-edit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 18px;
+}
+
+.trt-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trt-edit-field span {
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+}
+
+.trt-edit-field input {
+  width: 6.5rem;
+  padding: 5px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.trt-edit-field input:disabled {
+  opacity: 0.55;
+}

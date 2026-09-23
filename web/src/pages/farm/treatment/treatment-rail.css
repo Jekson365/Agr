@@ -1,0 +1,63 @@
+/* The helper tools: squares stacked down the left of the drawing, so they stay put whether the
+   plan beside them is a wide field or a narrow one. */
+.trt-rail {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trt-rail-tool {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
+}
+
+.trt-rail-tool:hover:not(:disabled) {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.trt-rail-tool:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.trt-rail-tool.is-on {
+  border-color: var(--color-pick);
+  background: var(--color-pick);
+  color: var(--color-on-tone);
+}
+
+.trt-rail-tool.is-primary:not(:disabled) {
+  border-color: var(--color-green);
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.trt-rail-tool.is-save:not(:disabled) {
+  border-color: var(--color-green);
+  color: var(--color-green);
+}
+
+/* How many trees are held, where the tools are rather than in the text below — it is the number
+   the two middle buttons act on. */
+.trt-rail-count {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 26px;
+  border-radius: 10px;
+  background: var(--color-pick);
+  color: var(--color-on-tone);
+  font-size: 0.75rem;
+  font-weight: 700;
+}

@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 
 import { ChevronRightIcon } from '@/components/icons/misc-icons';
 import { NeighboursButton } from '@/components/neighbours/neighbours-button';
+import { ExportButton } from '@/components/ui/export-button';
 import { FontSizeToggle } from '@/components/ui/font-size-toggle';
 import { GuideButton } from '@/components/ui/guide-button';
 import { LanguageToggle } from '@/components/ui/language-toggle';
@@ -110,6 +111,7 @@ export function AppShell() {
         <div className="app-shell-body">
           <header className="app-topbar">
             <GuideButton />
+            <ExportButton />
             <FontSizeToggle />
             <ThemeToggle />
             <LanguageToggle />

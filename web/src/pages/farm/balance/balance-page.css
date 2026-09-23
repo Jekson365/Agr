@@ -3,7 +3,7 @@
 
 /* The cards keep to a readable measure rather than spreading to the width of a desk monitor. */
 .balance-panel {
-  max-width: 860px;
+  max-width: 1500px;
 }
 
 /* A holding with nothing in it: one framed line saying so, in place of the cards. */

@@ -13,7 +13,7 @@ import { ApiError, resolveAssetUrl } from '@/services/api-client';
 import { deleteGreenhouse, getGreenhouses } from '@/services/greenhouse-service';
 import type { Greenhouse } from '@/types/greenhouse';
 
-/** Built on the shared entity tile — the same card /harvest, /farm/seeds and /farm/stock use, with
+/** Built on the shared entity tile — the same card /harvest and /farm/stock use, with
  * the greenhouse's own photo standing in for their icon panel. */
 export function GreenhousePage() {
   const { t, language } = useLanguage();

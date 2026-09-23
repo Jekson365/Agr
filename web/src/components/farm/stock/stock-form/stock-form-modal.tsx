@@ -4,6 +4,7 @@ import { Modal } from '@/components/ui/modal';
 import { isPlanLimitError } from '@/config/plan-benefits';
 import { useLanguage } from '@/contexts/language-context';
 import { createStockWithSeed, updateStock } from '@/services/stock-service';
+import type { Seed } from '@/types/seed';
 import type { Stock } from '@/types/stock';
 import { isFormComplete, makeInitialValues, parseAmount, type StockFormValues } from './stock-form';
 import { StockFormFields } from './stock-form-fields';
@@ -12,7 +13,7 @@ type Props = {
   open: boolean;
   editingStock: Stock | null;
   onClose: () => void;
-  onSaved: (stock: Stock, isNew: boolean) => void;
+  onSaved: (stock: Stock, isNew: boolean, seed?: Seed) => void;
   /** Called instead of showing an inline error when the plan cap is what refused the write. */
   onLimitReached?: (message: string) => void;
 };
@@ -60,7 +61,7 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
       }
 
       // One call makes the stock and its seed together, so a failure leaves neither behind.
-      const { stock } = await createStockWithSeed({
+      const { stock, seed } = await createStockWithSeed({
         type: values.type,
         name,
         amount,
@@ -68,7 +69,7 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
         seedAmount: parseAmount(values.seedAmount),
         seedUnit: values.seedUnit,
       });
-      onSaved(stock, true);
+      onSaved(stock, true, seed);
       onClose();
     } catch (err) {
       if (isPlanLimitError(err) && onLimitReached) {

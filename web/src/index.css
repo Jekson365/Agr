@@ -30,6 +30,10 @@
   --color-muted: #8a938c;
   --color-background: #f5fbf7;
   --color-danger: #dc2626;
+  /* A picked tree on the orchard plan. Indigo because the ten orchard colours already cover the
+     reds, greens, cyans and ambers — "selected" has to stay distinct whichever one a block drew
+     in, so it is the one strong hue none of them uses. */
+  --color-pick: #4338ca;
   --color-danger-bg: #fef2f2;
   --color-danger-border: #fecaca;
   --color-danger-strong: #c0392b;
@@ -95,6 +99,8 @@
   --color-muted: #8d9891;
   --color-background: #10140f;
   --color-danger: #f87171;
+  /* Lifted the way the other accents are, so it reads against a dark ground. */
+  --color-pick: #c7d2fe;
   --color-danger-bg: #2a1918;
   --color-danger-border: #4b2724;
   --color-danger-strong: #ef6b5c;

@@ -1,0 +1,48 @@
+.trt-pos-shape.is-dragging {
+  overflow: visible;
+}
+
+/* Corner handles: the dot you see, painted but not aimed at — the transparent target over it is
+   what takes the pointer. */
+.trt-corner {
+  fill: var(--color-surface);
+  stroke-opacity: 0.95;
+  pointer-events: none;
+}
+
+.trt-corner-grab {
+  fill: transparent;
+  cursor: grab;
+  /* Without this a drag on a touch screen scrolls the page instead of moving the corner. */
+  touch-action: none;
+}
+
+.trt-corner-grab:active {
+  cursor: grabbing;
+}
+
+/* The faint handle between two corners: clicking one puts a corner there. `all` rather than the
+   default, so the hollow middle answers a click too. */
+.trt-corner-mid {
+  fill: none;
+  stroke-opacity: 0.45;
+  pointer-events: all;
+  cursor: copy;
+  transition: stroke-opacity 140ms ease;
+}
+
+.trt-corner-mid:hover {
+  stroke-opacity: 0.9;
+}
+
+/* The editing surface: bare ground inside the frame takes a click, which puts a corner there. */
+.trt-canvas {
+  fill: transparent;
+  cursor: crosshair;
+}
+
+/* The planting steps back while the outline is being worked on, so the shape and its handles are
+   what the eye follows. The trees stop answering clicks in this mode anyway. */
+.trt-pos-shape.is-editing .trt-tree {
+  fill-opacity: 0.35;
+}

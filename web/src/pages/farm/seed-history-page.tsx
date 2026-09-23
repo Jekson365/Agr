@@ -51,8 +51,8 @@ export function SeedHistoryPage() {
 
   return (
     <div>
-      <Link to="/farm/seeds" className="back-link">
-        ← {t('seed.title')}
+      <Link to="/farm/stock" className="back-link">
+        ← {t('farm.plantStock')}
       </Link>
 
       <div className="page-header">

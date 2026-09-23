@@ -4,10 +4,10 @@ import { AppShell } from '@/components/layout/app-shell';
 import { LoginPage } from '@/pages/auth/login-page';
 import { AnimalHistoryPage } from '@/pages/farm/animal-history-page';
 import { EquipmentPage } from '@/pages/farm/equipment-page';
+import { FarmExportPage } from '@/pages/export/farm-export-page';
 import { FarmPage } from '@/pages/farm/farm-page';
 import { FruitsPage } from '@/pages/farm/fruits-page';
 import { NurseryPage } from '@/pages/farm/nursery/nursery-page';
-import { PositioningPage } from '@/pages/farm/positioning/positioning-page';
 import { TreatmentPage } from '@/pages/farm/treatment/treatment-page';
 import { GreenhouseDetailPage } from '@/pages/farm/greenhouse-detail-page';
 // import { GreenhouseHarvestDetailPage } from '@/pages/farm/greenhouse-harvest-detail-page';
@@ -25,7 +25,6 @@ import { LivestockMovementPage } from '@/pages/farm/livestock-movement-page';
 import { LivestockPage } from '@/pages/farm/livestock-page';
 import { LivestockProductionPage } from '@/pages/farm/livestock-production-page';
 import { SeedHistoryPage } from '@/pages/farm/seed-history-page';
-import { SeedsPage } from '@/pages/farm/seeds-page';
 import { StockHistoryPage } from '@/pages/farm/stock-history-page';
 import { StockPage } from '@/pages/farm/stock-page';
 import { TreeProductHistoryPage } from '@/pages/farm/tree-product-history-page';
@@ -102,6 +101,7 @@ function App() {
               the marketplace instead; the server refuses those requests as well. */}
           <Route element={<ManagementRoute />}>
           <Route path="/farm" element={<FarmPage />} />
+          <Route path="/export" element={<FarmExportPage />} />
           <Route path="/farm/land" element={<LandPage />} />
           <Route path="/farm/land/:id" element={<LandDetailPage />} />
           <Route path="/farm/land/:id/plot/:plotId/soil" element={<SoilPage />} />
@@ -127,7 +127,6 @@ function App() {
             <Route path="/farm/stock" element={<StockPage />} />
             <Route path="/farm/stock/balance" element={<StockBalancePage />} />
             <Route path="/farm/stock/:id" element={<StockHistoryPage />} />
-            <Route path="/farm/seeds" element={<SeedsPage />} />
             <Route path="/farm/seeds/:id" element={<SeedHistoryPage />} />
             <Route path="/harvest" element={<HarvestWorkspacePage />} />
             <Route path="/harvest/detail/:id" element={<HarvestDetailPage />} />
@@ -138,7 +137,6 @@ function App() {
             <Route path="/farm/fruits" element={<FruitsPage />} />
             <Route path="/farm/fruits/balance" element={<FruitsBalancePage />} />
             <Route path="/farm/fruits/nursery" element={<NurseryPage />} />
-            <Route path="/farm/fruits/positioning" element={<PositioningPage />} />
             <Route path="/farm/fruits/treatment" element={<TreatmentPage />} />
             <Route path="/farm/fruits/harvest" element={<HarvestWorkspacePage kind="Fruit" />} />
             <Route path="/farm/fruits/harvest/:id" element={<HarvestDetailPage />} />

@@ -59,9 +59,25 @@
   margin-left: auto;
 }
 
-.trt-scroll {
-  overflow: auto;
+/* The page's one vertical scroller: the calendar at its natural height, then the plan below it
+   standing a screen tall, so neither is squeezed by the other. */
+.trt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   overscroll-behavior: contain;
+}
+
+/* As tall as its rows and no taller — a calendar of two orchards has no business holding a whole
+   screen open. flex: none so the column cannot shrink it below that either.
+   Only the horizontal axis is contained: `overflow-x: auto` makes the box a scroller on both axes,
+   and a plain `contain` there swallows every wheel turn over the calendar — it has no vertical
+   overflow of its own to spend them on, and nothing reaches the page scroller behind it. */
+.trt-scroll {
+  flex: none;
+  height: fit-content;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
 }
 
 .trt-swatch {

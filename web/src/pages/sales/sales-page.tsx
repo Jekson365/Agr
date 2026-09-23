@@ -83,7 +83,7 @@ export function SalesPage() {
       </Link>
 
       <div className="page-header">
-        <h1 className="page-title">{t('sales.title')}</h1>
+        <h1 className="page-title">{t('sales.listTitle')}</h1>
         <button type="button" className="add-button" onClick={() => setAddOpen(true)}>
           + {t('sales.manualAdd')}
         </button>

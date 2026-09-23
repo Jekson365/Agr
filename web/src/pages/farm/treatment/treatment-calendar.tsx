@@ -21,10 +21,21 @@ type Props = {
   orchards: TreeStock[];
   dayTreatments: Map<string, TreeTreatment[]>;
   emptyText: string;
+  activeId: number | null;
   onPickDay: (orchardId: number, date: string, at: { x: number; y: number }) => void;
+  onPickOrchard: (orchardId: number) => void;
 };
 
-export function TreatmentCalendar({ days, today, orchards, dayTreatments, emptyText, onPickDay }: Props) {
+export function TreatmentCalendar({
+  days,
+  today,
+  orchards,
+  dayTreatments,
+  emptyText,
+  activeId,
+  onPickDay,
+  onPickOrchard,
+}: Props) {
   const { t, language } = useLanguage();
 
   const [hover, setHover] = useState<{ day: string; rows: TreeTreatment[]; x: number; y: number } | null>(null);
@@ -67,10 +78,15 @@ export function TreatmentCalendar({ days, today, orchards, dayTreatments, emptyT
       ) : (
         orchards.map((orchard) => (
           <div key={orchard.id} className="trt-cal-row" style={{ gridTemplateColumns: template }}>
-            <span className="trt-cal-label">
+            <button
+              type="button"
+              className={orchard.id === activeId ? 'trt-cal-label is-active' : 'trt-cal-label'}
+              title={t('treatment.positionPick')}
+              onClick={() => onPickOrchard(orchard.id)}
+            >
               <img src={fruitKindImage(orchard.type)} alt="" className="trt-cal-label-icon" />
               <span className="trt-cal-label-name">{treeStockLabel(orchard, t)}</span>
-            </span>
+            </button>
 
             {days.map((day) => {
               const date = toIsoDate(day);

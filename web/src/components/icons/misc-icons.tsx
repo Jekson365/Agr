@@ -1,6 +1,6 @@
 import type { SVGProps } from 'react';
 
-function Icon(props: SVGProps<SVGSVGElement>) {
+export function Icon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -185,6 +185,16 @@ export function ImagesIcon(props: SVGProps<SVGSVGElement>) {
       <rect x="3" y="3" width="14" height="14" rx="2" />
       <path d="m3 13 3.5-3.5a2 2 0 0 1 2.8 0L13 13" />
       <path d="M21 8v11a2 2 0 0 1-2 2H8" />
+    </Icon>
+  );
+}
+
+export function FlaskIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <path d="M9.5 3h5" />
+      <path d="M10 3v6.4L4.9 17.9A2 2 0 0 0 6.6 21h10.8a2 2 0 0 0 1.7-3.1L14 9.4V3" />
+      <path d="M7.5 15h9" />
     </Icon>
   );
 }

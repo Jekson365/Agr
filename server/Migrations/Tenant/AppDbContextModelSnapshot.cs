@@ -3455,6 +3455,47 @@ namespace Server.Migrations.Tenant
                     b.ToTable("TreeSeedlings");
                 });
 
+            modelBuilder.Entity("Server.Models.TreeSpotTreatment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TreeIndex")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TreeStockId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreeStockId", "TreeIndex");
+
+                    b.ToTable("TreeSpotTreatments");
+                });
+
             modelBuilder.Entity("Server.Models.TreeStock", b =>
                 {
                     b.Property<int>("Id")
@@ -4241,6 +4282,15 @@ namespace Server.Migrations.Tenant
                         .WithMany()
                         .HasForeignKey("TreeStockId")
                         .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("Server.Models.TreeSpotTreatment", b =>
+                {
+                    b.HasOne("Server.Models.TreeStock", null)
+                        .WithMany()
+                        .HasForeignKey("TreeStockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Server.Models.TreeStock", b =>

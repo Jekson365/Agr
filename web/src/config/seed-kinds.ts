@@ -18,3 +18,12 @@ export const SEED_UNIT_LABEL_KEY: Record<string, string> = {
   Gram: 'seed.unitGram',
   Quantity: 'farm.unitQuantity',
 };
+
+export function seedForStock<T extends { type: string; name: string }>(
+  seeds: T[],
+  stock: { type: string; name: string },
+): T | undefined {
+  const type = stock.type.trim().toLowerCase();
+  const name = stock.name.trim().toLowerCase();
+  return seeds.find((seed) => seed.type.trim().toLowerCase() === type && seed.name.trim().toLowerCase() === name);
+}

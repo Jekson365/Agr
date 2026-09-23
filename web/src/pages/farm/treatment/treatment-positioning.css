@@ -1,0 +1,169 @@
+/* A screenful of its own, matching the calendar above it. */
+.trt-pos {
+  flex: none;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+/* Until an orchard is picked there is one line to say, and a screen of empty panel to say it in
+   would be worse than a short one. */
+.trt-pos.is-empty {
+  min-height: 0;
+  padding: 8px 14px;
+  background: var(--color-surface-sunken);
+}
+
+.trt-pos-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.trt-pos-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.trt-pos-icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.trt-pos-name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-dark);
+}
+
+.trt-pos-label {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.trt-pos-link {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-green);
+  text-decoration: none;
+}
+
+.trt-pos-link:hover {
+  text-decoration: underline;
+}
+
+/* Takes what the panel has left over, so the drawing and the record list grow with the window
+   instead of sitting at a fixed height in the middle of it. */
+.trt-pos-body {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 14px 22px;
+  margin-top: 10px;
+  min-height: 18rem;
+}
+
+/* Sized by the frame, not by the plot: a long thin field and a square one both sit in the same
+   box, each keeping its own shape inside it. Given room to grow because the trees in it are
+   click targets — at field scale each one is only a few pixels across. */
+.trt-pos-shape {
+  flex: 1 1 22rem;
+  min-width: 0;
+  max-width: 42rem;
+  height: auto;
+  min-height: 16rem;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface-sunken);
+}
+
+.trt-tree {
+  fill: var(--tree);
+  fill-opacity: 0.9;
+}
+
+/* A tree that already carries a record keeps the block's colour and gains a thin outline, so the
+   drawing says what has been treated before anything is picked. */
+.trt-tree.is-treated {
+  stroke: var(--color-dark);
+  stroke-opacity: 0.5;
+  stroke-width: 1.5px;
+  paint-order: stroke;
+}
+
+/* Picked trees leave the block's colour altogether. The outline is the panel's own ground, so two
+   picked neighbours still read apart where the planting is tight. */
+.trt-tree.is-picked {
+  fill: var(--color-pick);
+  fill-opacity: 1;
+  stroke: var(--color-surface-sunken);
+  stroke-width: 1.5px;
+  paint-order: stroke;
+}
+
+.trt-tree-ring {
+  fill: none;
+  stroke: var(--color-pick);
+  stroke-opacity: 0.45;
+  pointer-events: none;
+}
+
+/* Paint and hit target are separate circles: the visible rings above set `stroke`, which would
+   otherwise outrank the transparent stroke that does the widening and shrink it to a hairline. */
+.trt-tree-hit {
+  fill: transparent;
+  stroke: transparent;
+  cursor: pointer;
+}
+
+.trt-pos-picked {
+  color: var(--color-dark);
+}
+
+/* The read-only figures that sit among the editable fields below the drawing. */
+.trt-pos-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trt-pos-fact b {
+  font-size: 0.9375rem;
+  color: var(--color-dark);
+}
+
+.trt-pos-fact span {
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+}
+
+.trt-pos-hint {
+  margin: 8px 0 0;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.trt-pos.is-empty .trt-pos-hint {
+  margin: 0;
+}
+
+/* Marks a layout that has not been saved yet, so a seeded shape is never mistaken for a stored one. */
+.trt-pos-new {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-pick);
+  color: var(--color-on-tone);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}

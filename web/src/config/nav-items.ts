@@ -4,7 +4,6 @@ import farmIcon from '@/assets/icons/farm.png';
 import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
 import mapIcon from '@/assets/icons/map.png';
-import positioningIcon from '@/assets/icons/positioning.png';
 import purchasesIcon from '@/assets/icons/purchases.png';
 import reportIcon from '@/assets/icons/report.png';
 import sellsIcon from '@/assets/icons/sells.png';
@@ -84,7 +83,6 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
           // `end` so the stock link doesn't stay lit while its own balance is open below it.
           { to: '/farm/stock', labelKey: 'farm.plantStock', icon: plantsIcon, end: true },
           { to: '/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
-          { to: '/farm/seeds', labelKey: 'seed.title', icon: seedIcon },
           { to: '/farm/stock/balance', labelKey: 'farm.balance', icon: balanceIcon },
         ],
       },
@@ -98,7 +96,6 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
         children: [
           { to: '/farm/fruits', labelKey: 'fruits.trees', icon: treesIcon, end: true },
           { to: '/farm/fruits/nursery', labelKey: 'nursery.title', icon: treeSeedIcon },
-          { to: '/farm/fruits/positioning', labelKey: 'positioning.title', icon: positioningIcon },
           { to: '/farm/fruits/treatment', labelKey: 'treatment.title', icon: treatmentIcon },
           { to: '/farm/fruits/harvest', labelKey: 'dashboard.harvest', icon: harvestIcon },
           { to: '/farm/fruits/balance', labelKey: 'farm.balance', icon: balanceIcon },

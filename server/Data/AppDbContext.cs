@@ -33,6 +33,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
     public DbSet<TreeSeedling> TreeSeedlings => Set<TreeSeedling>();
     public DbSet<OrchardBlock> OrchardBlocks => Set<OrchardBlock>();
     public DbSet<TreeTreatment> TreeTreatments => Set<TreeTreatment>();
+    public DbSet<TreeSpotTreatment> TreeSpotTreatments => Set<TreeSpotTreatment>();
     public DbSet<Equipment> Equipment => Set<Equipment>();
     public DbSet<Configuration> Configurations => Set<Configuration>();
     public DbSet<Greenhouse> Greenhouses => Set<Greenhouse>();
@@ -624,6 +625,17 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             .WithMany()
             .HasForeignKey(t => t.TreeStockId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TreeSpotTreatment>()
+            .HasOne<TreeStock>()
+            .WithMany()
+            .HasForeignKey(t => t.TreeStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Every read is "what has this orchard's trees had", in tree order — the panel draws the
+        // treated ones onto the plan and lists one tree's history beside it.
+        modelBuilder.Entity<TreeSpotTreatment>()
+            .HasIndex(t => new { t.TreeStockId, t.TreeIndex });
 
         ConfigureSoil(modelBuilder);
 

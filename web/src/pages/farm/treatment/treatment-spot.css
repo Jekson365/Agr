@@ -1,0 +1,125 @@
+.trt-spot-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+/* The column beside the drawing. It matches the drawing's height so the two read as one row and
+   a long history scrolls inside it rather than pushing the plan up the page. */
+.trt-spot-panel {
+  flex: 1 1 17rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 16rem;
+}
+
+.trt-spot-panel-title {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.trt-spot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.trt-spot-row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-surface-sunken);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.trt-spot-row:hover {
+  border-color: var(--color-green);
+}
+
+/* The record whose trees are marked on the plan. */
+.trt-spot-row.is-active {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.trt-spot-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  padding: 7px 0 7px 9px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.trt-spot-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 999px;
+}
+
+.trt-spot-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.trt-spot-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-dark);
+}
+
+.trt-spot-meta {
+  font-size: 0.6875rem;
+  color: var(--color-muted);
+}
+
+.trt-spot-note {
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  white-space: pre-wrap;
+}
+
+.trt-spot-remove {
+  flex: none;
+  align-self: center;
+  margin-right: 6px;
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.trt-spot-remove:hover {
+  background: var(--color-green-muted);
+  color: var(--color-dark);
+}

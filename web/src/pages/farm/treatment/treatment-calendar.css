@@ -91,9 +91,25 @@
   align-items: center;
   gap: 8px;
   padding: 8px 10px;
+  border: 0;
   border-right: 1px solid var(--color-border);
   background: var(--color-surface-sunken);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
   overflow: hidden;
+  transition: background-color 140ms ease;
+}
+
+.trt-cal-label:hover {
+  background: var(--color-green-muted);
+}
+
+/* The orchard whose layout the panel below is showing. The bar is on the inner edge so it reads
+   as pointing at the row rather than at the column of names. */
+.trt-cal-label.is-active {
+  background: var(--color-green-muted);
+  box-shadow: inset -3px 0 0 var(--color-green);
 }
 
 .trt-cal-label-icon {

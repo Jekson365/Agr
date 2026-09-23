@@ -1,0 +1,41 @@
+.land-tile-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: calc(8px * var(--tile-scale));
+}
+
+.land-tile-actions .land-tile-details {
+  margin-top: 0;
+}
+
+.land-tile-soil {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6px * var(--tile-text-scale));
+  padding: calc(10px * var(--tile-scale)) calc(12px * var(--tile-scale));
+  border: 1px solid var(--color-border);
+  border-radius: calc(10px * var(--tile-scale));
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font: inherit;
+  font-size: calc(0.8125rem * var(--tile-text-scale));
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.land-tile-soil svg {
+  width: calc(16px * var(--tile-text-scale));
+  height: calc(16px * var(--tile-text-scale));
+}
+
+.land-tile-soil:hover {
+  border-color: var(--color-green);
+}
+
+.land-tile.is-removed .land-tile-soil {
+  opacity: 0.55;
+  filter: grayscale(0.8);
+}

@@ -1,0 +1,122 @@
+.purchase-col-toggle {
+  width: 44px;
+  padding-right: 0 !important;
+}
+
+.purchase-col-id {
+  width: 68px;
+  white-space: nowrap;
+}
+
+.purchase-badge-id {
+  display: inline-block;
+  padding: 2px 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.purchase-col-date {
+  width: 128px;
+  white-space: nowrap;
+}
+
+.purchase-cell-day {
+  display: block;
+}
+
+.purchase-cell-year {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.purchase-col-seller {
+  min-width: 140px;
+}
+
+.purchase-cell-seller {
+  display: block;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.purchase-cell-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+.purchase-col-goods {
+  min-width: 190px;
+}
+
+.purchase-cell-goods {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.purchase-cell-count {
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.purchase-col-total {
+  width: 112px;
+  text-align: right;
+  color: var(--color-green);
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.purchase-col-action {
+  width: 1%;
+  text-align: right;
+}
+
+.purchase-row-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.purchase-row-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: pointer;
+}
+
+.purchase-row-action:hover {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.purchase-row-action.danger:hover {
+  border-color: var(--color-danger);
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.purchase-row-action:focus-visible {
+  outline: 2px solid var(--color-green);
+  outline-offset: 1px;
+}

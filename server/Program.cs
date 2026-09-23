@@ -73,6 +73,7 @@ builder.Services.AddScoped<IHarvestStatusChangeRepository, HarvestStatusChangeRe
 builder.Services.AddScoped<ITreeSeedlingRepository, TreeSeedlingRepository>();
 builder.Services.AddScoped<IOrchardBlockRepository, OrchardBlockRepository>();
 builder.Services.AddScoped<ITreeTreatmentRepository, TreeTreatmentRepository>();
+builder.Services.AddScoped<ITreeSpotTreatmentRepository, TreeSpotTreatmentRepository>();
 builder.Services.AddScoped<ITreeProductRepository, TreeProductRepository>();
 builder.Services.AddScoped<ITreeProductMovementRepository, TreeProductMovementRepository>();
 builder.Services.AddScoped<IHarvestProductRepository, HarvestProductRepository>();

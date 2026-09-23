@@ -1,0 +1,129 @@
+@container purchase-grid (max-width: 820px) {
+  .purchase-table-wrap {
+    max-height: none;
+    overflow: visible;
+    border: none;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .purchase-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .purchase-table thead {
+    display: none;
+  }
+
+  .purchase-table tbody {
+    display: block;
+  }
+
+  .purchase-row {
+    display: grid;
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'toggle seller total'
+      'toggle id date'
+      'toggle goods goods'
+      'toggle actions actions';
+    align-items: center;
+    gap: 8px 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-surface);
+    box-shadow: 0 1px 2px var(--color-shadow);
+  }
+
+  .purchase-row.alt,
+  .purchase-row:hover {
+    background: var(--color-surface);
+  }
+
+  .purchase-row.open {
+    margin-bottom: 0;
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    background: var(--color-green-muted);
+  }
+
+  .purchase-table tbody tr td,
+  .purchase-row:hover td:first-child,
+  .purchase-row.open td:first-child {
+    display: block;
+    padding: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+  }
+
+  .purchase-col-toggle {
+    grid-area: toggle;
+    width: auto;
+    padding: 0 !important;
+  }
+
+  .purchase-col-id {
+    grid-area: id;
+  }
+
+  .purchase-col-date {
+    grid-area: date;
+    justify-self: end;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+  }
+
+  .purchase-cell-day,
+  .purchase-cell-year {
+    display: inline;
+  }
+
+  .purchase-cell-year {
+    margin-left: 4px;
+  }
+
+  .purchase-col-seller {
+    grid-area: seller;
+  }
+
+  .purchase-col-goods {
+    grid-area: goods;
+    min-width: 0;
+  }
+
+  .purchase-col-total {
+    grid-area: total;
+    width: auto;
+    align-self: start;
+    font-size: 1rem;
+  }
+
+  .purchase-col-action {
+    grid-area: actions;
+    width: auto;
+    justify-self: end;
+    margin-top: 2px;
+  }
+
+  .purchase-items-row {
+    display: block;
+    margin-bottom: 10px;
+    border: 1px solid var(--color-border);
+    border-top: none;
+    border-radius: 0 0 14px 14px;
+    background: var(--color-surface);
+  }
+
+  .purchase-table .purchase-items-row td:first-child {
+    display: none;
+  }
+
+  .purchase-table .purchase-items-row td {
+    padding: 0 12px 12px;
+  }
+}

@@ -7,8 +7,8 @@ import { FilterIcon, SearchIcon } from '@/components/icons/misc-icons';
 import { PurchaseFilterPanel } from '@/components/purchase/purchase-filter-panel';
 import { EMPTY_FILTERS, filterPurchases, hasActiveFilters, kindsPresent } from '@/components/purchase/purchase-filters';
 import { PurchaseModal } from '@/components/purchase/purchase-modal';
+import '@/components/purchase/purchase-stats.css';
 import { PurchaseTable } from '@/components/purchase/purchase-table';
-import '@/components/purchase/purchase-table.css';
 import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import { deletePurchase, getPurchases } from '@/services/purchase-service';
@@ -60,6 +60,7 @@ export function PurchasesPage() {
   const kinds = useMemo(() => kindsPresent(documents), [documents]);
   const shown = useMemo(() => filterPurchases(documents, filters), [documents, filters]);
   const total = shown.reduce((sum, document) => sum + document.total, 0);
+  const goods = shown.reduce((sum, document) => sum + document.items.length, 0);
   const narrowed = filters.search.trim() !== '' || hasActiveFilters(filters);
 
   return (
@@ -102,11 +103,19 @@ export function PurchasesPage() {
         <p className="empty-state">{t(narrowed ? 'purchase.listNoMatches' : 'purchase.listEmpty')}</p>
       ) : (
         <>
-          <div className="purchase-summary">
-            <span>{t('purchase.documentCount', { count: shown.length })}</span>
-            <span className="purchase-summary-total">
-              {t('purchase.total')}: {formatPrice(total)}
-            </span>
+          <div className="purchase-stats">
+            <div className="purchase-stat">
+              <span className="purchase-stat-label">{t('purchase.statDocuments')}</span>
+              <span className="purchase-stat-value">{shown.length}</span>
+            </div>
+            <div className="purchase-stat">
+              <span className="purchase-stat-label">{t('purchase.statGoods')}</span>
+              <span className="purchase-stat-value">{goods}</span>
+            </div>
+            <div className="purchase-stat">
+              <span className="purchase-stat-label">{t('purchase.statTotal')}</span>
+              <span className="purchase-stat-value green">{formatPrice(total)}</span>
+            </div>
           </div>
 
           <PurchaseTable
