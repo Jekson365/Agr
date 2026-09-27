@@ -14,10 +14,11 @@ public class UserDto
     public string PhoneNumber { get; set; } = string.Empty;
 
     /// <summary>
-    /// Whether an SMS code has proved this number. The profile screen uses it to know that the
-    /// number is the account's way in and cannot be edited there.
+    /// Whether an SMS code has proved this number.
     /// </summary>
     public bool PhoneVerified { get; set; }
+
+    public bool SignsInWithPhone { get; set; }
 
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
@@ -66,6 +67,7 @@ public class UserDto
         Surname = user.Surname,
         PhoneNumber = user.PhoneNumber,
         PhoneVerified = user.PhoneVerifiedAt is not null,
+        SignsInWithPhone = user.SignsInWithPhone,
         Country = user.Country,
         City = user.City,
         BirthDate = user.BirthDate,

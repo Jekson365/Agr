@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom';
 import { CardMenu } from '@/components/farm/card-menu';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
+import { LimitCounter } from '@/components/farm/plan/limit-counter';
+import { UpgradeTile } from '@/components/farm/plan/upgrade-tile';
+import { usePlanLimit } from '@/components/farm/plan/use-plan-limit';
 import { StockFormModal } from '@/components/farm/stock/stock-form/stock-form-modal';
 import { StockSeedLink } from '@/components/farm/stock/stock-seed-link';
 import { ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
-import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { seedForStock } from '@/config/seed-kinds';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useAuth } from '@/contexts/auth-context';
@@ -28,8 +30,6 @@ export function StockPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Stock | null>(null);
-  /** Non-null while the packet list is up; holds the cap message that raised it. */
-  const [packetsMessage, setPacketsMessage] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -49,24 +49,16 @@ export function StockPage() {
     }
   }
 
-  const atLimit = isAtLimit(user?.maxStockKinds, stock.length);
-  // Only a downgrade can leave the count past the cap; that is also where the server stops edits.
-  const overLimit = isOverLimit(user?.maxStockKinds, stock.length);
+  const limit = usePlanLimit(user?.maxStockKinds, stock.length, t('farm.plantStock'));
 
   function openAdd() {
-    if (atLimit) {
-      setPacketsMessage(t('plans.limitReached', { resource: t('farm.plantStock') }));
-      return;
-    }
+    if (limit.blocksAdd()) return;
     setEditingItem(null);
     setFormOpen(true);
   }
 
   function openEdit(item: Stock) {
-    if (overLimit) {
-      setPacketsMessage(t('plans.overLimit', { resource: t('farm.plantStock') }));
-      return;
-    }
+    if (limit.blocksEdit()) return;
     setEditingItem(item);
     setFormOpen(true);
   }
@@ -75,7 +67,7 @@ export function StockPage() {
      when it answers 402 the packets go up just the same. */
   function handleLimitReached(message: string) {
     setFormOpen(false);
-    setPacketsMessage(message);
+    limit.showPackets(message);
   }
 
   function handleSaved(item: Stock, isNew: boolean, seed?: Seed) {
@@ -94,6 +86,7 @@ export function StockPage() {
       <div className="page-header">
         <h1 className="page-title">{t('farm.plantStock')}</h1>
         <div className="page-header-actions">
+          <LimitCounter count={limit.count} max={limit.max} onClick={() => limit.showPackets()} />
           {/* Enabled even at the cap — clicking it answers with the available packets. */}
           <button type="button" className="add-button" onClick={openAdd}>
             + {t('farm.addStock')}
@@ -152,10 +145,9 @@ export function StockPage() {
               </div>
             );
           })}
+          {limit.atLimit && <UpgradeTile resource={t('farm.plantStock')} onClick={() => limit.showPackets()} />}
         </div>
       )}
-
-      {atLimit && <p className="limit-hint">{t('plans.limitReached', { resource: t('farm.plantStock') })}</p>}
 
       <StockFormModal
         open={formOpen}
@@ -166,9 +158,9 @@ export function StockPage() {
       />
 
       <PacketsModal
-        open={packetsMessage != null}
-        message={packetsMessage ?? ''}
-        onClose={() => setPacketsMessage(null)}
+        open={limit.packetsMessage != null}
+        message={limit.packetsMessage ?? ''}
+        onClose={limit.closePackets}
       />
 
     </div>

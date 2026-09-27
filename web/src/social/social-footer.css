@@ -1,0 +1,96 @@
+.social-visual {
+  margin-top: 44px;
+  zoom: var(--social-zoom);
+}
+
+.social-footer {
+  position: absolute;
+  bottom: var(--social-footer-bottom);
+  left: var(--social-pad-x);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 26px;
+  width: 500px;
+}
+
+.social-points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social-points li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.social-points svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.social-check-disc {
+  fill: var(--social-accent);
+}
+
+.social-check-mark {
+  stroke: var(--color-surface);
+}
+
+.social-post:is(.is-dark, .is-photo) .social-check-mark {
+  stroke: var(--social-deep-2);
+}
+
+.social-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 22px 40px;
+  border-radius: 999px;
+  background: var(--social-cta-bg);
+  box-shadow: 0 16px 36px var(--social-shade);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--social-cta-ink);
+}
+
+.social-post.is-square .social-points li {
+  font-size: 23px;
+}
+
+.social-post.is-square .social-points li:nth-child(n + 3) {
+  display: none;
+}
+
+.social-sticker {
+  position: absolute;
+  top: -16px;
+  left: 700px;
+  width: 250px;
+  height: 250px;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 26px var(--social-shade));
+  transform: rotate(8deg);
+  pointer-events: none;
+}
+
+.social-footer .social-visual {
+  margin-top: 0;
+}
+
+.social-post.is-square.is-map .social-points {
+  display: none;
+}
+
+.social-post.is-square .social-cta {
+  padding: 18px 34px;
+  font-size: 26px;
+}

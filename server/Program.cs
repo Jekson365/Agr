@@ -105,6 +105,7 @@ builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<ISoilFertilityScoringService, SoilFertilityScoringService>();
 builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
+builder.Services.AddScoped<IPlanLimitLock, PlanLimitLock>();
 builder.Services.AddScoped<ICoinService, CoinService>();
 builder.Services.AddScoped<IMarketSaleInventoryService, MarketSaleInventoryService>();
 

@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom';
 import { CardMenu } from '@/components/farm/card-menu';
 import '@/components/farm/farm-crud.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
+import { LimitCounter } from '@/components/farm/plan/limit-counter';
+import { UpgradeTile } from '@/components/farm/plan/upgrade-tile';
+import { usePlanLimit } from '@/components/farm/plan/use-plan-limit';
 import { TreeStockFormModal } from '@/components/farm/tree-stock/tree-stock-form/tree-stock-form-modal';
 import { BoxIcon, ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
-import { isAtLimit, isOverLimit } from '@/config/plan-benefits';
 import { fruitKindImage, fruitTypeLabel, treeStockLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -23,8 +25,6 @@ export function FruitsPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TreeStock | null>(null);
-  /** Non-null while the packet list is up; holds the cap message that raised it. */
-  const [packetsMessage, setPacketsMessage] = useState<string | null>(null);
 
   useEffect(() => {
     load();
@@ -42,24 +42,16 @@ export function FruitsPage() {
     }
   }
 
-  const atLimit = isAtLimit(user?.maxFruitKinds, items.length);
-  // Only a downgrade can leave the count past the cap; that is also where the server stops edits.
-  const overLimit = isOverLimit(user?.maxFruitKinds, items.length);
+  const limit = usePlanLimit(user?.maxFruitKinds, items.length, t('farm.fruits'));
 
   function openAdd() {
-    if (atLimit) {
-      setPacketsMessage(t('plans.limitReached', { resource: t('farm.fruits') }));
-      return;
-    }
+    if (limit.blocksAdd()) return;
     setEditingItem(null);
     setFormOpen(true);
   }
 
   function openEdit(item: TreeStock) {
-    if (overLimit) {
-      setPacketsMessage(t('plans.overLimit', { resource: t('farm.fruits') }));
-      return;
-    }
+    if (limit.blocksEdit()) return;
     setEditingItem(item);
     setFormOpen(true);
   }
@@ -68,7 +60,7 @@ export function FruitsPage() {
      when it answers 402 the packets go up just the same. */
   function handleLimitReached(message: string) {
     setFormOpen(false);
-    setPacketsMessage(message);
+    limit.showPackets(message);
   }
 
   function handleSaved(item: TreeStock, isNew: boolean) {
@@ -83,10 +75,13 @@ export function FruitsPage() {
 
       <div className="page-header">
         <h1 className="page-title">{t('farm.fruits')}</h1>
-        {/* Enabled even at the cap — clicking it answers with the available packets. */}
-        <button type="button" className="add-button" onClick={openAdd}>
-          + {t('treeStock.add')}
-        </button>
+        <div className="page-header-actions">
+          <LimitCounter count={limit.count} max={limit.max} onClick={() => limit.showPackets()} />
+          {/* Enabled even at the cap — clicking it answers with the available packets. */}
+          <button type="button" className="add-button" onClick={openAdd}>
+            + {t('treeStock.add')}
+          </button>
+        </div>
       </div>
 
       {loading ? (
@@ -144,10 +139,9 @@ export function FruitsPage() {
               </div>
             );
           })}
+          {limit.atLimit && <UpgradeTile resource={t('farm.fruits')} onClick={() => limit.showPackets()} />}
         </div>
       )}
-
-      {atLimit && <p className="limit-hint">{t('plans.limitReached', { resource: t('farm.fruits') })}</p>}
 
       <TreeStockFormModal
         open={formOpen}
@@ -159,9 +153,9 @@ export function FruitsPage() {
       />
 
       <PacketsModal
-        open={packetsMessage != null}
-        message={packetsMessage ?? ''}
-        onClose={() => setPacketsMessage(null)}
+        open={limit.packetsMessage != null}
+        message={limit.packetsMessage ?? ''}
+        onClose={limit.closePackets}
       />
 
     </div>

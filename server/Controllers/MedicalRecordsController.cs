@@ -8,7 +8,9 @@ namespace Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class MedicalRecordsController(IMedicalRecordRepository medicalRecordRepository) : ControllerBase
+public class MedicalRecordsController(
+    IMedicalRecordRepository medicalRecordRepository,
+    ILivestockRepository livestockRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MedicalRecord>>> GetByStock([FromQuery] int stockId)
@@ -19,6 +21,11 @@ public class MedicalRecordsController(IMedicalRecordRepository medicalRecordRepo
     [HttpPost]
     public async Task<ActionResult<MedicalRecord>> Create(MedicalRecord record)
     {
+        if (await livestockRepository.IsDeletedAsync(null, record.StockId))
+        {
+            return Conflict(LivestockController.DeletedMessage);
+        }
+
         // The server owns the audit timestamp; VisitDate (when the visit happened) is client-supplied.
         record.CreatedAt = DateTime.UtcNow;
 

@@ -1,4 +1,13 @@
 import { ApiError } from '@/services/api-client';
+import type { StoragePlan } from '@/types/auth';
+
+export const STORAGE_PLANS: StoragePlan[] = ['Free', 'Medium', 'Premium'];
+
+export const STORAGE_PLAN_LABEL_KEY: Record<StoragePlan, string> = {
+  Free: 'profile.planFree',
+  Medium: 'profile.planMedium',
+  Premium: 'profile.planPremium',
+};
 
 /** What the server answers with when a plan cap, not the input, is what blocked a write. */
 const PLAN_LIMIT_STATUS = 402;

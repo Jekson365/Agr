@@ -447,6 +447,9 @@ namespace Server.Migrations.Master
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<bool>("SignsInWithPhone")
+                        .HasColumnType("boolean");
+
                     b.Property<long>("StorageUsedBytes")
                         .HasColumnType("bigint");
 
@@ -465,7 +468,7 @@ namespace Server.Migrations.Master
 
                     b.HasIndex("PhoneNumber")
                         .IsUnique()
-                        .HasFilter("\"PhoneVerifiedAt\" IS NOT NULL");
+                        .HasFilter("\"PhoneVerifiedAt\" IS NOT NULL OR \"SignsInWithPhone\"");
 
                     b.ToTable("Users");
                 });

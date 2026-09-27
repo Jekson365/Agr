@@ -79,7 +79,7 @@ export const PLAN_PACKETS: LandingPacket[] = [
     nameKey: 'profile.planMedium',
     price: 19,
     featured: true,
-    limits: { land: 3, livestock: 10, stock: 10, fruit: 10, scans: 5, storageMb: 300, equipment: true },
+    limits: { land: 3, livestock: 5, stock: 5, fruit: 5, scans: 5, storageMb: 300, equipment: true },
   },
   {
     id: 'premium',

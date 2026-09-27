@@ -1,5 +1,6 @@
 import { apiFetch } from '@/services/api-client';
 import type { AdminUser, PremiumRequest } from '@/types/admin';
+import type { StoragePlan } from '@/types/auth';
 import type { Configuration } from '@/types/configuration';
 
 /**
@@ -57,5 +58,12 @@ export function setManagementAccess(userId: number, value: boolean): Promise<Adm
   return apiFetch<AdminUser>(`/api/admin/users/${userId}/management-access`, {
     method: 'PUT',
     body: JSON.stringify({ value }),
+  });
+}
+
+export function setUserPlan(userId: number, plan: StoragePlan): Promise<AdminUser> {
+  return apiFetch<AdminUser>(`/api/admin/users/${userId}/plan`, {
+    method: 'PUT',
+    body: JSON.stringify({ plan }),
   });
 }

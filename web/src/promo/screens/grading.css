@@ -1,0 +1,102 @@
+.promo-grading {
+  display: flex;
+  flex-direction: column;
+}
+
+.promo-grading-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 22px;
+}
+
+.promo-grading-head strong {
+  flex: 1;
+}
+
+.promo-chip.is-muted {
+  background: var(--color-surface-sunken);
+  color: var(--promo-text-soft);
+}
+
+.promo-grading-split {
+  display: flex;
+  gap: 3px;
+  height: 18px;
+  margin: 20px 0 12px;
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.promo-grading-split > span {
+  flex-basis: 0;
+}
+
+.promo-grading-split .is-wasted {
+  background: repeating-linear-gradient(135deg, var(--color-danger) 0 5px, var(--color-danger-bg) 5px 10px);
+}
+
+.promo-grading-row {
+  display: grid;
+  grid-template-columns: 58px 118px 128px 1fr 88px;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--promo-text-soft);
+}
+
+.promo-grading-row + .promo-grading-row:not(.is-header) {
+  border-top: 1px solid var(--color-border);
+}
+
+.promo-grading-row.is-header {
+  padding: 6px 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.promo-grade {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.promo-grading-amount {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.promo-grading-amount strong {
+  min-width: 78px;
+  font-size: 19px;
+  text-align: right;
+  color: var(--color-dark);
+}
+
+.promo-grading-track {
+  flex: 1;
+  height: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+}
+
+.promo-grading-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.promo-grading-wasted {
+  font-weight: 700;
+  text-align: right;
+  color: var(--color-danger);
+}

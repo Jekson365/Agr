@@ -1,16 +1,10 @@
 import { PersonIcon } from '@/components/icons/misc-icons';
 import { formatBytes } from '@/components/ui/format-bytes';
+import { STORAGE_PLAN_LABEL_KEY } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
-import type { StoragePlan } from '@/types/auth';
 import '@/pages/profile-page.css';
-
-const STORAGE_PLAN_LABEL_KEY: Record<StoragePlan, string> = {
-  Free: 'profile.planFree',
-  Medium: 'profile.planMedium',
-  Premium: 'profile.planPremium',
-};
 
 function countLabel(max: number | null, t: (key: string) => string): string {
   return max == null ? t('profile.limitUnlimited') : String(max);

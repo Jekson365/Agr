@@ -13,7 +13,8 @@ public class GreenhouseStocksController(
     IGreenhouseStockRepository greenhouseStockRepository,
     IGreenhouseSeedRepository greenhouseSeedRepository,
     IGreenhouseRepository greenhouseRepository,
-    IPlanLimitService planLimitService) : ControllerBase
+    IPlanLimitService planLimitService,
+    IPlanLimitLock planLimitLock) : ControllerBase
 {
     private const string NameTakenMessage = "Greenhouse stock with this name already exists.";
 
@@ -52,6 +53,7 @@ public class GreenhouseStocksController(
             return BadRequest("Unknown unit.");
         }
 
+        await using var planLock = await planLimitLock.AcquireAsync(PlanResource.GreenhouseStock);
         var name = request.Name.Trim();
         if (await NameTakenAsync(name))
         {
@@ -86,6 +88,7 @@ public class GreenhouseStocksController(
             Unit = request.SeedUnit,
         });
 
+        await planLock.CommitAsync();
         return Ok(new GreenhouseStockWithSeedResponse { Stock = stock, Seed = seed });
     }
 

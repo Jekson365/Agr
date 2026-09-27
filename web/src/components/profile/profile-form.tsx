@@ -115,6 +115,7 @@ export function ProfileForm() {
             value={phoneInput}
             onChange={(e) => setPhoneInput(e.target.value)}
             placeholder={t('profile.phoneNumberPlaceholder')}
+            readOnly={Boolean(user?.signsInWithPhone || user?.phoneVerified)}
           />
         </div>
       </div>

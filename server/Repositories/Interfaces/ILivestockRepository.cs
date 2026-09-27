@@ -14,6 +14,8 @@ public interface ILivestockRepository
     /// <summary>Any group, deleted or not — history pages look one up by the id they hold.</summary>
     Task<Livestock?> GetByIdAsync(int id);
 
+    Task<bool> IsDeletedAsync(int? livestockId, params int?[] animalIds);
+
     /// <summary>Whether another group still on the page already uses this name (compared
     /// case-insensitively). <paramref name="excludeId"/> skips the group being edited, so saving it
     /// unchanged isn't reported as a clash with itself. A removed group is listed nowhere, so it

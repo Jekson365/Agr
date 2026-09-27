@@ -144,4 +144,14 @@ public class LivestockRepository(AppDbContext context) : ILivestockRepository
         await context.SaveChangesAsync();
         return true;
     }
+
+    public Task<bool> IsDeletedAsync(int? livestockId, params int?[] animalIds)
+    {
+        var animals = animalIds.OfType<int>().ToList();
+        var animalGroupIds = context.LivestockDetails
+            .Where(detail => animals.Contains(detail.Id))
+            .Select(detail => detail.LivestockId);
+        return context.Livestock.AnyAsync(group => group.IsDeleted
+            && (group.Id == livestockId || animalGroupIds.Contains(group.Id)));
+    }
 }

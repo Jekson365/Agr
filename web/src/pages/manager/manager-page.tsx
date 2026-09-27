@@ -11,8 +11,10 @@ import {
   getPremiumRequests,
   rejectPremiumRequest,
   setManagementAccess,
+  setUserPlan,
 } from '@/services/admin-service';
 import type { AdminUser, PremiumRequest } from '@/types/admin';
+import type { StoragePlan } from '@/types/auth';
 import { ManagerPremiumList } from './manager-premium-list';
 import { ManagerUsersTable } from './manager-users-table';
 import { UserConfigurationsModal } from './user-configurations-modal';
@@ -82,11 +84,11 @@ export function ManagerPage() {
     }
   }
 
-  async function changeAccess(user: AdminUser, value: boolean) {
-    setAccessBusyId(user.id);
+  async function writeRow(userId: number, write: () => Promise<AdminUser>) {
+    setAccessBusyId(userId);
     setError(null);
     try {
-      const updated = await setManagementAccess(user.id, value);
+      const updated = await write();
       setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -94,6 +96,9 @@ export function ManagerPage() {
       setAccessBusyId(null);
     }
   }
+
+  const changeAccess = (target: AdminUser, value: boolean) => writeRow(target.id, () => setManagementAccess(target.id, value));
+  const changePlan = (target: AdminUser, plan: StoragePlan) => writeRow(target.id, () => setUserPlan(target.id, plan));
 
   const term = search.trim().toLowerCase();
   const visibleUsers = term
@@ -139,6 +144,7 @@ export function ManagerPage() {
           onSearch={setSearch}
           onConfigure={setConfiguring}
           onManagementAccess={changeAccess}
+          onPlan={changePlan}
           busyId={accessBusyId}
           operatorId={user?.id ?? null}
         />

@@ -1,0 +1,108 @@
+.promo-share-body {
+  display: flex;
+  align-items: center;
+  gap: 44px;
+}
+
+.promo-donut {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+}
+
+.promo-donut-hole {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 146px;
+  height: 146px;
+  border-radius: 50%;
+  background: var(--color-surface);
+}
+
+.promo-donut-hole strong {
+  font-size: 38px;
+  line-height: 1.1;
+}
+
+.promo-donut-hole span {
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.promo-share-legend {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.promo-share-legend li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+}
+
+.promo-share-label {
+  flex: 1;
+}
+
+.promo-share-legend strong {
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+
+.promo-quarters {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 18px;
+}
+
+.promo-quarter-bars {
+  display: flex;
+  flex: 1;
+  gap: 28px;
+  min-height: 0;
+}
+
+.promo-quarter {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.promo-quarter-pair {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.promo-quarter-bar {
+  width: 36%;
+  border-radius: 8px 8px 3px 3px;
+  background: var(--color-green);
+}
+
+.promo-quarter-bar.is-cost {
+  background: var(--color-amber);
+}
+
+.promo-quarter-label {
+  font-size: 16px;
+  color: var(--color-muted);
+}

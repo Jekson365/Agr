@@ -1,0 +1,108 @@
+.promo-outro {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: var(--color-on-overlay);
+}
+
+.promo-outro-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    rgba(38, 112, 72, 0.9) 0%,
+    rgba(18, 56, 36, 0.95) 58%,
+    rgba(10, 30, 20, 0.97) 100%
+  );
+}
+
+.promo-outro-copy {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.promo-outro-badge {
+  display: grid;
+  place-items: center;
+  width: 176px;
+  height: 176px;
+  border-radius: 50%;
+  background: var(--color-background);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.promo-outro-badge img {
+  width: 138px;
+  height: 138px;
+  object-fit: contain;
+}
+
+.promo-outro-name {
+  margin: 22px 0 0;
+  font-size: 118px;
+  line-height: 1.12;
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+}
+
+.promo-outro-name span {
+  display: inline-block;
+}
+
+.promo-outro-tagline {
+  margin: 12px 0 0;
+  font-size: 36px;
+  color: color-mix(in srgb, var(--color-on-overlay) 88%, transparent);
+}
+
+.promo-outro-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 44px;
+  padding: 24px 52px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.promo-outro-cta-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 10px color-mix(in srgb, var(--color-on-overlay) 16%, transparent),
+    0 0 50px 14px color-mix(in srgb, var(--color-on-overlay) 22%, transparent);
+}
+
+.promo-outro-cta-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.promo-outro-shine {
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: 0;
+  width: 110px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-green) 20%, transparent), transparent);
+}
+
+.promo-outro-url {
+  margin: 34px 0 0;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-on-overlay) 94%, transparent);
+}

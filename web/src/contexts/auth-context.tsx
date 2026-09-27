@@ -51,10 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       void authService
         .claimDailyBonus()
-        .then(({ granted, user: paid }) => {
-          if (!granted) return;
-          setUser(paid);
-          saveSession({ token: session.token, user: paid });
+        .then(({ user: fresh }) => {
+          setUser(fresh);
+          saveSession({ token: session.token, user: fresh });
         })
         .catch(() => {
           /* offline, or the token expired — the next start will ask again */

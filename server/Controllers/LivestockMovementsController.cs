@@ -41,6 +41,11 @@ public class LivestockMovementsController(
             return NotFound();
         }
 
+        if (group.IsDeleted)
+        {
+            return Conflict(LivestockController.DeletedMessage);
+        }
+
         // A herd cannot lose more animals than it has. Only a removal is checked; an addition has
         // no ceiling.
         if (movement.Delta < 0 && -movement.Delta > group.Count)

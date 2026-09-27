@@ -1,0 +1,80 @@
+.social-mascot {
+  --size: 620px;
+  --right: -40px;
+  --bottom: -60px;
+
+  position: absolute;
+  right: var(--right);
+  bottom: var(--bottom);
+  width: var(--size);
+  height: var(--size);
+  object-fit: contain;
+  filter: drop-shadow(0 28px 38px var(--social-shade));
+  pointer-events: none;
+}
+
+.social-mascot.is-toma {
+  --size: 640px;
+  --right: -44px;
+  --bottom: -92px;
+}
+
+.social-mascot.is-maia {
+  --size: 580px;
+  --right: -44px;
+  --bottom: -52px;
+}
+
+.social-mascot.is-toma-calm {
+  --size: 660px;
+  --right: -70px;
+  --bottom: -122px;
+}
+
+.social-mascot.is-toma-animals {
+  --size: 610px;
+  --right: -46px;
+  --bottom: -104px;
+}
+
+.social-mascot.is-toma-field {
+  --size: 860px;
+  --right: -200px;
+  --bottom: -228px;
+}
+
+.social-post.is-square .social-mascot.is-toma {
+  --size: 540px;
+  --right: -40px;
+  --bottom: -78px;
+}
+
+.social-post.is-square .social-mascot.is-maia {
+  --size: 500px;
+  --right: -26px;
+  --bottom: -44px;
+}
+
+.social-post.is-square .social-mascot.is-toma-calm {
+  --size: 560px;
+  --right: -62px;
+  --bottom: -104px;
+}
+
+.social-post.is-square .social-mascot.is-toma-animals {
+  --size: 540px;
+  --right: -36px;
+  --bottom: -52px;
+}
+
+.social-post.is-square.is-map .social-mascot.is-maia {
+  --size: 460px;
+  --right: -30px;
+  --bottom: -60px;
+}
+
+.social-post.is-square .social-mascot.is-toma-field {
+  --size: 720px;
+  --right: -170px;
+  --bottom: -190px;
+}

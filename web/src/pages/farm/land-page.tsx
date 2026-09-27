@@ -8,7 +8,10 @@ import { LandFormModal } from '@/components/farm/land/land-form-modal';
 import { LandSoilPlotModal } from '@/components/farm/land/land-soil-plot-modal';
 import { LandTile } from '@/components/farm/land/land-tile';
 import { PacketsModal } from '@/components/farm/packets-modal';
-import { isAtLimit, isOverLimit, isPlanLimitError } from '@/config/plan-benefits';
+import { LimitCounter } from '@/components/farm/plan/limit-counter';
+import { UpgradeTile } from '@/components/farm/plan/upgrade-tile';
+import { usePlanLimit } from '@/components/farm/plan/use-plan-limit';
+import { isPlanLimitError } from '@/config/plan-benefits';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteFarm, restoreFarm } from '@/services/farm-service';
@@ -26,32 +29,22 @@ export function LandPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Farm | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
-  /** Non-null while the packet list is up; holds the cap message that raised it. */
-  const [packetsMessage, setPacketsMessage] = useState<string | null>(null);
   /** Non-null while a land's plots are being picked between for its soil investigations. */
   const [soilPicker, setSoilPicker] = useState<{ farmId: number; plots: LandPlot[] } | null>(null);
 
   /* Removed land is out of use, so it doesn't count against the plan — which is also what the
      server counts, and what makes restoring a piece worth refusing when there is no room. */
   const activeCount = farms.filter((farm) => !farm.isRemoved).length;
-  const atLimit = isAtLimit(user?.maxLand, activeCount);
-  // Only a downgrade can leave the count past the cap; that is also where the server stops edits.
-  const overLimit = isOverLimit(user?.maxLand, activeCount);
+  const limit = usePlanLimit(user?.maxLand, activeCount, t('farm.land'));
 
   function openAdd() {
-    if (atLimit) {
-      setPacketsMessage(t('plans.limitReached', { resource: t('farm.land') }));
-      return;
-    }
+    if (limit.blocksAdd()) return;
     setEditingItem(null);
     setFormOpen(true);
   }
 
   function openEdit(item: Farm) {
-    if (overLimit) {
-      setPacketsMessage(t('plans.overLimit', { resource: t('farm.land') }));
-      return;
-    }
+    if (limit.blocksEdit()) return;
     setEditingItem(item);
     setFormOpen(true);
   }
@@ -60,7 +53,7 @@ export function LandPage() {
      when it answers 402 the packets go up just the same. */
   function handleLimitReached(message: string) {
     setFormOpen(false);
-    setPacketsMessage(message);
+    limit.showPackets(message);
   }
 
   /* Removing land marks it rather than dropping it, so the card stays put and turns disabled —
@@ -87,7 +80,7 @@ export function LandPage() {
       // The server refuses when the plan has no room for it any more, which is the packets case
       // rather than an error to print over the page.
       if (isPlanLimitError(err)) {
-        setPacketsMessage(t('plans.limitReached', { resource: t('farm.land') }));
+        limit.showPackets();
         return;
       }
       setError(err instanceof Error ? err.message : String(err));
@@ -107,6 +100,7 @@ export function LandPage() {
       <div className="page-header">
         <h1 className="page-title">{t('farm.land')}</h1>
         <div className="page-header-actions">
+          <LimitCounter count={limit.count} max={limit.max} onClick={() => limit.showPackets()} />
           {/* Enabled even at the cap — clicking it answers with the available packets. */}
           <button type="button" className="add-button" onClick={openAdd}>
             + {t('farm.addFarmland')}
@@ -143,10 +137,9 @@ export function LandPage() {
               />
             );
           })}
+          {limit.atLimit && <UpgradeTile resource={t('farm.land')} onClick={() => limit.showPackets()} />}
         </div>
       )}
-
-      {atLimit && <p className="limit-hint">{t('plans.limitReached', { resource: t('farm.land') })}</p>}
 
       <LandFormModal
         open={formOpen}
@@ -157,9 +150,9 @@ export function LandPage() {
       />
 
       <PacketsModal
-        open={packetsMessage != null}
-        message={packetsMessage ?? ''}
-        onClose={() => setPacketsMessage(null)}
+        open={limit.packetsMessage != null}
+        message={limit.packetsMessage ?? ''}
+        onClose={limit.closePackets}
       />
 
       <LandSoilPlotModal

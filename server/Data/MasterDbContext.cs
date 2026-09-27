@@ -68,13 +68,10 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .IsUnique()
             .HasFilter("\"Email\" <> ''");
 
-        // The other login identifier. Only a verified number is one: an unverified number is
-        // whatever someone typed into their profile, and two people are free to have typed the
-        // same thing. The filter is also what keeps this index addable to a live database.
         modelBuilder.Entity<User>()
             .HasIndex(u => u.PhoneNumber)
             .IsUnique()
-            .HasFilter("\"PhoneVerifiedAt\" IS NOT NULL");
+            .HasFilter("\"PhoneVerifiedAt\" IS NOT NULL OR \"SignsInWithPhone\"");
 
         // Codes are looked up by number, newest first — both to verify one and to count how many
         // have gone out recently.

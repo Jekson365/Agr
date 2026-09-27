@@ -1,0 +1,124 @@
+.limit-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 6px 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.limit-counter:hover {
+  border-color: var(--color-green);
+}
+
+.limit-counter-value {
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-green);
+}
+
+.limit-counter.is-full {
+  border-color: var(--color-amber);
+}
+
+.limit-counter.is-full .limit-counter-value {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.upgrade-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: calc(220px * var(--tile-scale, 1));
+  padding: calc(20px * var(--tile-scale, 1));
+  border: 2px dashed var(--color-green);
+  border-radius: calc(18px * var(--tile-scale, 1));
+  background: linear-gradient(160deg, var(--color-green-soft), var(--color-green-muted));
+  font: inherit;
+  text-align: center;
+  color: var(--color-dark);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+@media (hover: hover) {
+  .upgrade-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px var(--color-shadow);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upgrade-tile {
+    transition: none;
+  }
+
+  .upgrade-tile:hover {
+    transform: none;
+  }
+}
+
+.upgrade-tile-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-green);
+  color: var(--color-on-accent);
+}
+
+.upgrade-tile-title {
+  font-size: 1.125rem;
+}
+
+.upgrade-tile-text {
+  max-width: 30ch;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.upgrade-tile-plan {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-green);
+}
+
+.upgrade-tile-cta {
+  margin-top: 4px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--color-dark);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-on-accent);
+}
+
+@media (max-width: 560px) {
+  .limit-counter {
+    padding: 0 5px;
+  }
+
+  .limit-counter-plan {
+    display: none;
+  }
+}

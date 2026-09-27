@@ -1,7 +1,10 @@
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
+import { STORAGE_PLAN_LABEL_KEY, STORAGE_PLANS } from '@/config/plan-benefits';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import type { AdminUser } from '@/types/admin';
+import type { StoragePlan } from '@/types/auth';
+import './manager-plan-select.css';
 
 type Props = {
   users: AdminUser[];
@@ -11,6 +14,7 @@ type Props = {
   onConfigure: (user: AdminUser) => void;
   /** Lets an account into the farm software, or shuts it out. Absent for the operator's own row. */
   onManagementAccess: (user: AdminUser, value: boolean) => void;
+  onPlan: (user: AdminUser, plan: StoragePlan) => void;
   /** The row currently being written, so only its own control goes quiet. */
   busyId: number | null;
   operatorId: number | null;
@@ -22,6 +26,7 @@ export function ManagerUsersTable({
   onSearch,
   onConfigure,
   onManagementAccess,
+  onPlan,
   busyId,
   operatorId,
 }: Props) {
@@ -80,7 +85,20 @@ export function ManagerUsersTable({
                       {u.phoneVerified && <span className="manager-verified"> ✓</span>}
                     </div>
                   </td>
-                  <td>{u.plan}</td>
+                  <td>
+                    <select
+                      className="manager-plan-select"
+                      value={u.plan}
+                      disabled={busyId === u.id}
+                      onChange={(e) => onPlan(u, e.target.value as StoragePlan)}
+                    >
+                      {STORAGE_PLANS.map((plan) => (
+                        <option key={plan} value={plan}>
+                          {t(STORAGE_PLAN_LABEL_KEY[plan])}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="numeric">{u.listingCount}</td>
                   <td className="manager-user-sub">{formatLocalizedIsoDate(u.createdAt, language)}</td>
                   <td>

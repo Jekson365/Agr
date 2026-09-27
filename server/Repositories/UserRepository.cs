@@ -20,7 +20,7 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User?> GetByVerifiedPhoneAsync(string phoneNumber)
+    public async Task<User?> GetBySignInPhoneAsync(string phoneNumber)
     {
         if (string.IsNullOrEmpty(phoneNumber))
         {
@@ -28,7 +28,7 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         }
 
         return await context.Users
-            .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber && u.PhoneVerifiedAt != null);
+            .FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber && (u.SignsInWithPhone || u.PhoneVerifiedAt != null));
     }
 
     public async Task<User?> GetByIdAsync(int id)
@@ -41,10 +41,10 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         return !string.IsNullOrEmpty(email) && await context.Users.AnyAsync(u => u.Email == email);
     }
 
-    public async Task<bool> VerifiedPhoneExistsAsync(string phoneNumber)
+    public async Task<bool> SignInPhoneExistsAsync(string phoneNumber)
     {
         return !string.IsNullOrEmpty(phoneNumber)
-            && await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber && u.PhoneVerifiedAt != null);
+            && await context.Users.AnyAsync(u => u.PhoneNumber == phoneNumber && (u.SignsInWithPhone || u.PhoneVerifiedAt != null));
     }
 
     public async Task<User> AddAsync(User user)
@@ -77,9 +77,7 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         user.Name = request.Name.Trim();
         user.Surname = request.Surname.Trim();
 
-        // A verified number is what the account signs in with, so the profile screen — which proves
-        // nothing — is not allowed to move it. Changing it has to go back through an SMS code.
-        if (user.PhoneVerifiedAt is null)
+        if (!user.SignsInWithPhone && user.PhoneVerifiedAt is null)
         {
             user.PhoneNumber = request.PhoneNumber.Trim();
         }

@@ -110,7 +110,7 @@ Identity, profile, plan, quota, coins. Notable columns:
 |---|---|
 | `Email` | Lower-cased/trimmed on write. **Unique index filtered `"Email" <> ''`** — phone-registered accounts all hold `''`. |
 | `PasswordHash` | BCrypt. **Empty string ⇒ Google-only account**; `Login` must reject before `BCrypt.Verify`, which throws on an empty hash. |
-| `PhoneNumber` / `PhoneVerifiedAt` | **Unique index filtered `"PhoneVerifiedAt" IS NOT NULL`** — an unverified number is a contact detail, not an identity, and may collide. |
+| `PhoneNumber` / `PhoneVerifiedAt` / `SignsInWithPhone` | **Unique index filtered `"PhoneVerifiedAt" IS NOT NULL OR "SignsInWithPhone"`** — a number is a sign-in identity when it was registered through `phone/register` (`SignsInWithPhone`, no SMS check) or SMS-verified; otherwise it is a contact detail and may collide. The profile endpoint cannot change a sign-in number. |
 | `Role` | `Owner` \| `Member` (text). Everyone self-registering gets `Owner`. Not actually enforced anywhere yet. |
 | `DbName` | `farm_user_{Id}`, assigned in `UserRepository.AddAsync` once the identity exists. |
 | `Plan` | `Free` \| `Medium` \| `Premium` (text) — see §8. |
@@ -138,9 +138,10 @@ concurrency guard — `CoinService` catches `DbUpdateException`, detaches and re
 
 ### `PhoneVerificationCodes`
 `(PhoneNumber, CreatedAt)` index. Stores `CodeHash`, never the digits. Rows are kept after use
-because the send-rate limits are counted from them. **The phone auth routes are currently commented
-out** in `AuthController` (they answer 404); the tables, services, DTOs and SMS integration all
-remain.
+because the send-rate limits are counted from them. **Nothing writes to it today**: `POST
+/api/auth/phone/register` and `phone/login` (`AuthController.Phone.cs`) take a number and a password
+with no SMS code, and there is no send-code route. The table, `PhoneVerificationService` and the SMS
+integration remain for when verification is wanted back.
 
 ---
 
@@ -322,6 +323,12 @@ would survive, leaving uncorrectable negative balances. A soft-deleted row:
 - refuses further edits and sales (409),
 - no longer counts toward plan limits.
 
+A deleted `Livestock` group also refuses **new records under it** — movements, animals,
+production, breeding events and results, medical, weight and feed rows all answer 409 with
+`LivestockController.DeletedMessage`, checked through `ILivestockRepository.IsDeletedAsync`
+(which takes a group id and/or animal ids). A removed herd stops counting toward the cap, so
+without this it kept working as a free extra herd.
+
 ---
 
 ## 7. API conventions
@@ -369,9 +376,9 @@ drill-downs).
 |---|---|---|---|
 | Storage | 50 MB | 300 MB | unlimited |
 | Land plots | 1 | 3 | unlimited |
-| Livestock kinds | 3 | 10 | unlimited |
-| Stock kinds | 3 | 10 | unlimited |
-| Fruit kinds | 3 | 10 | unlimited |
+| Livestock kinds | 3 | 5 | unlimited |
+| Stock kinds | 3 | 5 | unlimited |
+| Fruit kinds | 3 | 5 | unlimited |
 | AI scans / day | 1 | 5 | unlimited |
 | Equipment | ✗ | ✓ | ✓ |
 | Balance report | ✓ | ✓ | ✓ | 
@@ -380,6 +387,22 @@ drill-downs).
 re-restrict from. Note the two-tier check: `EnsureCanAddX` (`>=` limit → refuse) guards *creation*,
 `EnsureXWithinLimit` (`>` limit → refuse) guards *edits*, so someone exactly at their cap — or over
 it after a downgrade — can still maintain what they have.
+
+A "kind" is one live row — each `Stock`, `TreeStock` or `Livestock` group counts once, and
+soft-deleted rows (and removed farms, for land) never count. New accounts start on `Free` (the
+`User.Plan` default; no registration path sets it). **Only a superuser changes a plan**:
+`PUT /api/admin/users/{id}/plan` (`AdminController.Plans.cs`) re-reads `IsSuperAdmin` like every
+admin action and answers 403 otherwise. There is no self-service upgrade and no payment
+integration. A client sees a new plan on its next `POST /api/auth/daily-bonus`, which returns the
+current `UserDto` whether or not a bonus was paid.
+
+**Every capped create takes a per-tenant lock before it counts**:
+`IPlanLimitLock.AcquireAsync(PlanResource.X)` opens a transaction and calls
+`pg_advisory_xact_lock`, which Postgres scopes to the tenant's own database, and the controller
+commits after the insert. Without it, requests fired together each counted the same rows and all
+passed — ten parallel stock creates on Free made ten stocks. It covers farm create and restore,
+stock (both routes), fruit, livestock, and the shared greenhouse stock/seed allowance. A new create
+path that a cap guards has to do the same.
 
 `Services/CoinService.cs`: `WelcomeBonus = 50` (once ever, guarded by `User.WelcomeBonusGrantedAt`),
 `NeighbourBonus = 100` to both sides (once per pair ever, guarded by the `NeighbourCoinAwards`
@@ -414,7 +437,7 @@ dotnet ef migrations add <Name> --context MasterDbContext -o Migrations/Master
 - **Review EF's generated `defaultValue`s by hand.** Its automatic choices (`0` for a new
   non-nullable int, etc.) are frequently wrong for backfilling existing tenant rows.
 - **Adding a unique index to a live tenant database usually needs a filter.** Both existing examples
-  do exactly that — `Users.Email` (`<> ''`), `Users.PhoneNumber` (`PhoneVerifiedAt IS NOT NULL`),
+  do exactly that — `Users.Email` (`<> ''`), `Users.PhoneNumber` (`PhoneVerifiedAt IS NOT NULL OR SignsInWithPhone`),
   `TreeStocks.TreeProductId` (`IS NOT NULL`) — because pre-existing rows would otherwise collide.
 - `scripts/truncate_tenant.py --email <addr>` empties one tenant, keeping `__EFMigrationsHistory`
   and the six seeded catalogs (see §5.1). Dry-run by default; `--yes` to execute. Reads the table
@@ -428,7 +451,7 @@ dotnet ef migrations add <Name> --context MasterDbContext -o Migrations/Master
 |---|---|---|
 | `WeatherApi` | `GET /api/weather` | weatherapi.com, 10 s timeout, defaults to Tbilisi. |
 | `OpenAi` | `POST /api/plantscan/analyze` | `gpt-4o-mini`, 60 s timeout; results saved to `PlantScanHistories`; quota-metered per plan. |
-| `SmsService` | phone auth | smsservice.ge (`bi.msg.ge`), 15 s timeout. **Currently unreachable** — the routes are commented out. |
+| `SmsService` | phone verification | smsservice.ge (`bi.msg.ge`), 15 s timeout. **Currently unused** — phone sign-up does not send codes. |
 | `Google:ClientId` | `POST /api/auth/google` | ID token verified against Google's keys with this as audience; unverified email is rejected. |
 
 ---

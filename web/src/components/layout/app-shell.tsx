@@ -7,7 +7,7 @@ import { ExportButton } from '@/components/ui/export-button';
 import { FontSizeToggle } from '@/components/ui/font-size-toggle';
 import { GuideButton } from '@/components/ui/guide-button';
 import { LanguageToggle } from '@/components/ui/language-toggle';
-import { MarketplaceButton } from '@/components/ui/marketplace-button';
+// import { MarketplaceButton } from '@/components/ui/marketplace-button';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { KindIconLoader } from '@/components/layout/kind-icon-loader';
 import { Sidebar } from '@/components/layout/sidebar';
@@ -115,7 +115,7 @@ export function AppShell() {
             <FontSizeToggle />
             <ThemeToggle />
             <LanguageToggle />
-            <MarketplaceButton />
+            {/* <MarketplaceButton /> */}
             <NeighboursButton />
           </header>
           <main className="app-content">

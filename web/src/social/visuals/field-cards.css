@@ -1,0 +1,133 @@
+.crops-card,
+.harvest-card,
+.orchard-card,
+.greenhouse-card {
+  width: 640px;
+}
+
+.crops-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.crops-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  border: 1px solid var(--color-green-muted);
+  border-radius: 26px;
+  background: var(--color-green-soft);
+}
+
+.crops-tile img {
+  width: 62px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.crops-tile strong {
+  margin-top: 6px;
+  font-size: 21px;
+}
+
+.crops-tile span {
+  font-size: 21px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-green);
+}
+
+.harvest-steps {
+  position: relative;
+  display: flex;
+}
+
+.harvest-steps-track {
+  position: absolute;
+  top: 13px;
+  right: 10%;
+  left: 10%;
+  height: 5px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-blue), var(--color-stage-emergence), var(--color-stage-flowering), var(--color-stage-ripening), var(--color-green));
+}
+
+.harvest-step {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+
+.harvest-step i {
+  width: 30px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 5px solid var(--color-surface);
+  border-radius: 50%;
+}
+
+.harvest-head {
+  margin: 18px 0 6px;
+}
+
+.harvest-head .social-card-title {
+  font-size: 23px;
+}
+
+.harvest-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 7px 0;
+}
+
+.harvest-row-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.harvest-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 23px;
+}
+
+.harvest-row-head .social-chip {
+  padding: 4px 12px;
+  font-size: 19px;
+}
+
+.harvest-row-figures {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}
+
+.harvest-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.harvest-bars span {
+  height: 9px;
+  border-radius: 999px;
+  background: var(--color-green);
+}
+
+.harvest-bars .is-planned {
+  background: color-mix(in srgb, var(--color-green) 24%, var(--color-surface));
+}

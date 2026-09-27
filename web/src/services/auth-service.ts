@@ -7,8 +7,6 @@ import type {
   PhoneLoginRequest,
   PhoneRegisterRequest,
   RegisterRequest,
-  SendPhoneCodeRequest,
-  SendPhoneCodeResponse,
   UpdateProfileRequest,
   User,
 } from '@/types/auth';
@@ -33,14 +31,6 @@ export function register(request: RegisterRequest) {
  */
 export function claimDailyBonus() {
   return apiFetch<DailyBonusResponse>('/api/auth/daily-bonus', { method: 'POST' });
-}
-
-/** Asks for a code to be texted to a number that is about to be registered. */
-export function sendPhoneCode(request: SendPhoneCodeRequest) {
-  return apiFetch<SendPhoneCodeResponse>('/api/auth/phone/send-code', {
-    method: 'POST',
-    body: JSON.stringify(request),
-  });
 }
 
 export function registerByPhone(request: PhoneRegisterRequest) {

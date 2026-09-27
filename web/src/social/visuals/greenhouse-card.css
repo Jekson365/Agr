@@ -1,0 +1,50 @@
+.greenhouse-plan {
+  display: flex;
+  gap: 12px;
+  height: 310px;
+  padding: 14px;
+  border: 2px solid color-mix(in srgb, var(--color-blue) 24%, var(--color-border));
+  border-radius: 26px;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 52px, color-mix(in srgb, var(--color-blue) 9%, transparent) 52px 54px),
+    color-mix(in srgb, var(--color-blue) 4%, var(--color-surface));
+}
+
+.greenhouse-bed {
+  display: flex;
+  flex-basis: 0;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 2px dashed;
+  border-radius: 18px;
+}
+
+.greenhouse-bed-head {
+  font-size: 19px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.greenhouse-bed-plants {
+  display: grid;
+  flex: 1;
+  align-content: center;
+  justify-items: center;
+  gap: 6px;
+}
+
+.greenhouse-bed-plants img {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.greenhouse-bed-area {
+  align-self: flex-start;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 19px;
+}

@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import { LivestockFormModal } from '@/components/farm/livestock/livestock-form-modal';
-import { ChevronRightIcon, LocationIcon, PawIcon } from '@/components/icons/misc-icons';
-import { livestockImage } from '@/config/livestock-kinds';
-import { isAtLimit } from '@/config/plan-benefits';
+import { LivestockTile } from '@/components/farm/livestock/livestock-tile';
+import { PacketsModal } from '@/components/farm/packets-modal';
+import { LimitCounter } from '@/components/farm/plan/limit-counter';
+import { UpgradeTile } from '@/components/farm/plan/upgrade-tile';
+import { usePlanLimit } from '@/components/farm/plan/use-plan-limit';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { getFarms } from '@/services/farm-service';
@@ -51,15 +52,16 @@ export function LivestockPage() {
   // Removed groups stop counting against the plan, so the cap is read off the live ones — which
   // is also the count the server enforces when the list is being shown with the removed included.
   const activeCount = livestock.filter((item) => !item.isDeleted).length;
-  const atLimit = isAtLimit(user?.maxLivestockKinds, activeCount);
+  const limit = usePlanLimit(user?.maxLivestockKinds, activeCount, t('farm.livestock'));
 
   function openAdd() {
-    if (atLimit) return;
+    if (limit.blocksAdd()) return;
     setEditingItem(null);
     setFormOpen(true);
   }
 
   function openEdit(item: Livestock) {
+    if (limit.blocksEdit()) return;
     setEditingItem(item);
     setFormOpen(true);
   }
@@ -99,7 +101,8 @@ export function LivestockPage() {
              {/* <Link to="/farm/livestock/balance" className="secondary-button">
             {t('productionBalance.short')}
           </Link> */}
-          <button type="button" className="add-button" onClick={openAdd} disabled={atLimit}>
+          <LimitCounter count={limit.count} max={limit.max} onClick={() => limit.showPackets()} />
+          <button type="button" className="add-button" onClick={openAdd}>
             + {t('farm.addLivestock')}
           </button>
         </div>
@@ -116,74 +119,20 @@ export function LivestockPage() {
         </div>
       ) : (
         <div className="entity-tile-grid">
-          {livestock.map((item) => {
-            const farmName = farms.find((f) => f.id === item.farmId)?.name;
-            return (
-              <div key={item.id} className={item.isDeleted ? 'entity-tile is-removed' : 'entity-tile'}>
-                <Link to={`/farm/livestock/${item.id}`} className="entity-tile-media">
-                  <img src={livestockImage(item.type)} alt="" className="entity-tile-icon" />
-                </Link>
-
-                {/* A removed group takes no edits — the server refuses them — and cannot be removed
-                    twice, so it carries no menu at all. */}
-                {!item.isDeleted && (
-                  <div className="entity-tile-menu">
-                    <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete(item)} />
-                  </div>
-                )}
-
-                <div className="entity-tile-body">
-                  <h2 className="entity-tile-title">
-                    {item.name}
-                    {item.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
-                  </h2>
-
-                  <div className="entity-tile-meta">
-                    <div className="entity-tile-row">
-                      <PawIcon width={16} height={16} />
-                      <span>
-                        {t('farm.count')}: {item.count}
-                      </span>
-                    </div>
-                    {farmName && (
-                      <div className="entity-tile-row">
-                        <LocationIcon width={16} height={16} />
-                        <span>
-                          {t('farm.farm')}: {farmName}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <span className="entity-tile-divider" />
-
-                  <div className="entity-tile-actions">
-                    {/* What the herd yields and how it grows are a pair, so they share a row. */}
-                    <div className="entity-tile-actions-row">
-                      <Link to={`/farm/livestock/${item.id}/production`} className="entity-tile-details">
-                        {t('production.title')}
-                      </Link>
-                      <Link to={`/farm/livestock/${item.id}/breeding`} className="entity-tile-details breeding">
-                        {t('farm.breeding')}
-                      </Link>
-                    </div>
-                    <Link to={`/farm/livestock/${item.id}/movement`} className="entity-tile-details secondary">
-                      {t('livestockMovement.title')}
-                    </Link>
-                    <Link to={`/farm/livestock/${item.id}`} className="entity-tile-details secondary">
-                      {t('farm.individualAnimals')}
-                      <ChevronRightIcon width={16} height={16} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {livestock.map((item) => (
+            <LivestockTile
+              key={item.id}
+              item={item}
+              farmName={farms.find((f) => f.id === item.farmId)?.name}
+              onEdit={() => openEdit(item)}
+              onDelete={() => setConfirmDelete(item)}
+            />
+          ))}
+          {limit.atLimit && <UpgradeTile resource={t('farm.livestock')} onClick={() => limit.showPackets()} />}
         </div>
       )}
 
       {farms.length === 0 && <p className="limit-hint">{t('farm.noFarmland')}</p>}
-      {atLimit && <p className="limit-hint">{t('plans.limitReached', { resource: t('farm.livestock') })}</p>}
 
       <LivestockFormModal
         open={formOpen}
@@ -192,6 +141,16 @@ export function LivestockPage() {
         existingItems={livestock}
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
+        onLimitReached={(message) => {
+          setFormOpen(false);
+          limit.showPackets(message);
+        }}
+      />
+
+      <PacketsModal
+        open={limit.packetsMessage != null}
+        message={limit.packetsMessage ?? ''}
+        onClose={limit.closePackets}
       />
 
       {/* Removing a group marks it rather than dropping it: its animals, production and movement

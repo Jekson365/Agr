@@ -14,10 +14,11 @@ public class LivestockController(
     ILivestockMovementRepository livestockMovementRepository,
     ILivestockDetailRepository livestockDetailRepository,
     IAnimalProductionRepository animalProductionRepository,
-    IPlanLimitService planLimitService) : ControllerBase
+    IPlanLimitService planLimitService,
+    IPlanLimitLock planLimitLock) : ControllerBase
 {
     private const string ProduceInUseMessage = "This group has already collected records under that output, so it cannot be dropped.";
-    private const string DeletedMessage = "This livestock group was removed.";
+    public const string DeletedMessage = "This livestock group was removed.";
 
     /// <summary>
     /// What a group is made of is settled when it is created: its animals, its production history
@@ -42,6 +43,7 @@ public class LivestockController(
     [HttpPost]
     public async Task<ActionResult<Livestock>> Create(Livestock livestock)
     {
+        await using var planLock = await planLimitLock.AcquireAsync(PlanResource.Livestock);
         if (await livestockRepository.ExistsByNameAsync(livestock.Name.Trim()))
         {
             return Conflict("A livestock group with this name already exists.");
@@ -86,6 +88,7 @@ public class LivestockController(
             await livestockDetailRepository.AddForGroupAsync(created.Id, openingCount);
         }
 
+        await planLock.CommitAsync();
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 

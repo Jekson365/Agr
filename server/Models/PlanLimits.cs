@@ -16,7 +16,7 @@ public static class PlanLimits
     public static int? MaxLivestockKinds(StoragePlan plan) => plan switch
     {
         StoragePlan.Free => 3,
-        StoragePlan.Medium => 10,
+        StoragePlan.Medium => 5,
         StoragePlan.Premium => null,
         _ => throw new ArgumentOutOfRangeException(nameof(plan)),
     };
@@ -25,7 +25,7 @@ public static class PlanLimits
     public static int? MaxStockKinds(StoragePlan plan) => plan switch
     {
         StoragePlan.Free => 3,
-        StoragePlan.Medium => 10,
+        StoragePlan.Medium => 5,
         StoragePlan.Premium => null,
         _ => throw new ArgumentOutOfRangeException(nameof(plan)),
     };
@@ -34,7 +34,7 @@ public static class PlanLimits
     public static int? MaxFruitKinds(StoragePlan plan) => plan switch
     {
         StoragePlan.Free => 3,
-        StoragePlan.Medium => 10,
+        StoragePlan.Medium => 5,
         StoragePlan.Premium => null,
         _ => throw new ArgumentOutOfRangeException(nameof(plan)),
     };

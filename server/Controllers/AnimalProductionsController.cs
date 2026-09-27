@@ -59,6 +59,11 @@ public class AnimalProductionsController(
             return BadRequest("Provide exactly one of animalId or livestockId.");
         }
 
+        if (await livestockRepository.IsDeletedAsync(production.LivestockId, production.AnimalId))
+        {
+            return Conflict(LivestockController.DeletedMessage);
+        }
+
         if (production.IsRealization)
         {
             // Recorded against the animal, not its group: it is that animal that was realized, and

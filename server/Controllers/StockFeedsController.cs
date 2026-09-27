@@ -8,7 +8,9 @@ namespace Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class StockFeedsController(IStockFeedRepository stockFeedRepository) : ControllerBase
+public class StockFeedsController(
+    IStockFeedRepository stockFeedRepository,
+    ILivestockRepository livestockRepository) : ControllerBase
 {
     private const string TargetMessage = "A feed entry names exactly one of a stock, a tree product or a piece of equipment.";
 
@@ -30,6 +32,11 @@ public class StockFeedsController(IStockFeedRepository stockFeedRepository) : Co
         if (!NamesOneTarget(feed))
         {
             return BadRequest(TargetMessage);
+        }
+
+        if (await livestockRepository.IsDeletedAsync(feed.LivestockId))
+        {
+            return Conflict(LivestockController.DeletedMessage);
         }
 
         var created = await stockFeedRepository.AddAsync(feed);

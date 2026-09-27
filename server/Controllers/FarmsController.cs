@@ -12,7 +12,8 @@ namespace Server.Controllers;
 public class FarmsController(
     IFarmRepository farmRepository,
     IFileStorageService fileStorageService,
-    IPlanLimitService planLimitService) : ControllerBase
+    IPlanLimitService planLimitService,
+    IPlanLimitLock planLimitLock) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Farm>>> GetAll()
@@ -30,6 +31,7 @@ public class FarmsController(
     [HttpPost]
     public async Task<ActionResult<Farm>> Create(Farm farm)
     {
+        await using var planLock = await planLimitLock.AcquireAsync(PlanResource.Land);
         try
         {
             await planLimitService.EnsureCanAddLandAsync(await ActiveLandCountAsync());
@@ -40,6 +42,7 @@ public class FarmsController(
         }
 
         var created = await farmRepository.AddAsync(farm);
+        await planLock.CommitAsync();
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -117,6 +120,7 @@ public class FarmsController(
     [HttpPost("{id:int}/restore")]
     public async Task<IActionResult> Restore(int id)
     {
+        await using var planLock = await planLimitLock.AcquireAsync(PlanResource.Land);
         var existing = await farmRepository.GetByIdAsync(id);
         if (existing is null)
         {
@@ -137,7 +141,9 @@ public class FarmsController(
             return PlanLimitReached(ex.Message);
         }
 
-        return await farmRepository.SetRemovedAsync(id, false) ? NoContent() : NotFound();
+        var restored = await farmRepository.SetRemovedAsync(id, false);
+        await planLock.CommitAsync();
+        return restored ? NoContent() : NotFound();
     }
 
     [HttpPost("upload-image")]

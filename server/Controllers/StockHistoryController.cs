@@ -8,7 +8,9 @@ namespace Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class StockHistoryController(IStockHistoryRepository stockHistoryRepository) : ControllerBase
+public class StockHistoryController(
+    IStockHistoryRepository stockHistoryRepository,
+    ILivestockRepository livestockRepository) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<StockHistory>>> GetByStock([FromQuery] int stockId)
@@ -19,6 +21,11 @@ public class StockHistoryController(IStockHistoryRepository stockHistoryReposito
     [HttpPost]
     public async Task<ActionResult<StockHistory>> Create(StockHistory history)
     {
+        if (await livestockRepository.IsDeletedAsync(null, history.StockId))
+        {
+            return Conflict(LivestockController.DeletedMessage);
+        }
+
         // The server owns the timestamp so the series can't be back-dated from the client.
         history.CreatedAt = DateTime.UtcNow;
         var created = await stockHistoryRepository.AddAsync(history);

@@ -13,7 +13,8 @@ public class GreenhouseSeedsController(
     IGreenhouseSeedRepository greenhouseSeedRepository,
     IGreenhouseStockRepository greenhouseStockRepository,
     IGreenhouseRepository greenhouseRepository,
-    IPlanLimitService planLimitService) : ControllerBase
+    IPlanLimitService planLimitService,
+    IPlanLimitLock planLimitLock) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GreenhouseSeed>>> GetAll([FromQuery] int? greenhouseId)
@@ -36,6 +37,7 @@ public class GreenhouseSeedsController(
     [HttpPost]
     public async Task<ActionResult<GreenhouseSeed>> Create(GreenhouseSeed seed)
     {
+        await using var planLock = await planLimitLock.AcquireAsync(PlanResource.GreenhouseStock);
         var invalid = await ValidateAsync(seed);
         if (invalid is not null)
         {
@@ -51,6 +53,7 @@ public class GreenhouseSeedsController(
         seed.Type = seed.Type.Trim();
         seed.Name = seed.Name.Trim();
         var created = await greenhouseSeedRepository.AddAsync(seed);
+        await planLock.CommitAsync();
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 

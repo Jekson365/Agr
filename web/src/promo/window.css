@@ -1,0 +1,124 @@
+.promo-window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 26px;
+  background: var(--color-surface);
+  box-shadow: 0 60px 120px rgba(31, 42, 36, 0.22), 0 14px 34px rgba(31, 42, 36, 0.1);
+  transform-origin: 50% 100%;
+}
+
+.promo-window-chrome {
+  position: relative;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  height: 54px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.promo-window-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.promo-window-address {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 26px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 17px;
+  color: var(--color-muted);
+  transform: translateX(-50%);
+}
+
+.promo-window-body {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.promo-window-main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.promo-side {
+  position: relative;
+  flex: none;
+  height: 100%;
+  overflow: hidden;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface-sunken);
+}
+
+.promo-side-brand {
+  position: absolute;
+  top: 28px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 27px;
+  font-weight: 700;
+}
+
+.promo-side-brand img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.promo-side-pill {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  border-radius: 15px;
+  background: var(--color-green-muted);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-green) 18%, transparent);
+}
+
+.promo-side-link {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 14px;
+  font-size: 21px;
+  color: var(--promo-text-soft);
+}
+
+.promo-side-link img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.promo-side-link.is-active {
+  font-weight: 700;
+  color: var(--color-green);
+}
+
+.promo-side-ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--color-green);
+  pointer-events: none;
+}

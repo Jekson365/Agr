@@ -35,11 +35,10 @@ public class User
 
     /// <summary>
     /// When an SMS code proved this number belongs to whoever holds the account, or null if nobody
-    /// ever has. It is what separates an identity from a contact detail: only a verified number is
-    /// unique across users and can be signed in with, so a number merely typed into the profile
-    /// screen never becomes a way in.
+    /// ever has.
     /// </summary>
     public DateTime? PhoneVerifiedAt { get; set; }
+    public bool SignsInWithPhone { get; set; }
     public string Country { get; set; } = string.Empty;
     public string City { get; set; } = string.Empty;
     public DateOnly? BirthDate { get; set; }

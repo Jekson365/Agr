@@ -1,0 +1,77 @@
+.promo-intro {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  text-align: center;
+  color: var(--color-on-overlay);
+}
+
+.promo-intro-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.promo-intro-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(16, 26, 20, 0.7) 0%,
+    rgba(16, 26, 20, 0.46) 45%,
+    rgba(16, 26, 20, 0.84) 100%
+  );
+}
+
+.promo-intro-badge,
+.promo-intro-ring {
+  position: absolute;
+  width: 236px;
+  height: 236px;
+  border-radius: 50%;
+}
+
+.promo-intro-badge {
+  display: grid;
+  place-items: center;
+  background: var(--color-background);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.4);
+}
+
+.promo-intro-badge img {
+  width: 186px;
+  height: 186px;
+  object-fit: contain;
+}
+
+.promo-intro-ring {
+  border: 3px solid color-mix(in srgb, var(--color-on-overlay) 80%, transparent);
+}
+
+.promo-intro-copy {
+  position: absolute;
+  top: 535px;
+  right: 0;
+  left: 0;
+}
+
+.promo-intro-name {
+  margin: 0;
+  font-size: 132px;
+  line-height: 1.12;
+  letter-spacing: 0.01em;
+  text-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
+}
+
+.promo-intro-name span {
+  display: inline-block;
+}
+
+.promo-intro-tagline {
+  margin: 20px 0 0;
+  font-size: 40px;
+  color: color-mix(in srgb, var(--color-on-overlay) 90%, transparent);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}

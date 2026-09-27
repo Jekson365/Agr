@@ -11,6 +11,7 @@ namespace Server.Controllers;
 [Route("api/[controller]")]
 public class LivestockDetailsController(
     ILivestockDetailRepository livestockDetailRepository,
+    ILivestockRepository livestockRepository,
     IAnimalProductionRepository animalProductionRepository,
     ILivestockMovementRepository livestockMovementRepository,
     IFileStorageService fileStorageService) : ControllerBase
@@ -38,6 +39,11 @@ public class LivestockDetailsController(
     [HttpPost]
     public async Task<ActionResult<LivestockDetail>> Create(LivestockDetail detail)
     {
+        if (await livestockRepository.IsDeletedAsync(detail.LivestockId))
+        {
+            return Conflict(LivestockController.DeletedMessage);
+        }
+
         var created = await livestockDetailRepository.AddAsync(detail);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }

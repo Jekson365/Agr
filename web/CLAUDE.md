@@ -130,7 +130,8 @@ Every hook throws if used outside its provider. Notes:
 - **Session restore + daily bonus.** `AuthProvider`'s mount effect reads the stored session, then
   fires `POST /api/auth/daily-bonus` **off the awaited path**. It has to be here, not at sign-in: a
   token lasts a week, so someone opening the app daily would otherwise collect a daily bonus weekly.
-  The call is idempotent server-side; failures are swallowed.
+  The call is idempotent server-side, and its response **always replaces the stored user** — paid
+  or not — which is how a plan a superuser granted reaches the client. Failures are swallowed.
 - **Currency is display-only.** Prices are entered and stored in GEL; `GEL_PER_USD = 2.7` is a
   hardcoded constant, not a live FX rate.
 - **Font scaling works by setting `documentElement.style.fontSize` as a percentage.** Every size in
@@ -292,13 +293,16 @@ artwork are client-side, and duplicating either server-side would fork them.
 
 1. `useLanguage()` for `t`, `useAuth()` for `user` (plan caps).
 2. `load()` + `loading`/`error` state as in §5.
-3. `isAtLimit(user?.maxStockKinds, rows.length)` gates **add**;
-   `isOverLimit(...)` gates **edit** — only a plan downgrade puts a count past the cap, and that is
-   the one state where the server also refuses edits. Being exactly full still allows editing.
-4. The add button stays **enabled** at the cap; clicking it opens `PacketsModal` with the cap
-   message rather than doing nothing.
-5. The form modal takes `onLimitReached` — the client's own check runs against a possibly stale
-   `user`, so **the server has the last word**: a 402 raises the same packets modal.
+3. `const limit = usePlanLimit(user?.maxStockKinds, rows.length, t('farm.plantStock'))`
+   (`components/farm/plan/`) wraps `isAtLimit`/`isOverLimit`: `limit.blocksAdd()` at the top of
+   the add handler, `limit.blocksEdit()` at the top of the edit handler — only a plan downgrade puts
+   a count past the cap, and that is the one state where the server also refuses edits. Count live
+   rows only; soft-deleted ones never count.
+4. The add button stays **enabled** at the cap; `blocksAdd` opens `PacketsModal` with the cap
+   message instead. The header shows `<LimitCounter>` ("plan · 2 / 3", hidden on unlimited plans)
+   and, at the cap, the grid ends with an `<UpgradeTile>` card. Both call `limit.showPackets()`.
+5. The form modal takes `onLimitReached={limit.showPackets}` — the client's own check runs against
+   a possibly stale `user`, so **the server has the last word**: a 402 raises the same packets modal.
 6. Render `.entity-tile-grid` of `.entity-tile` cards, each with a `CardMenu` (edit/delete).
 7. `ConfirmDeleteModal` with a **custom `body`** wherever deletion is a soft delete — the default
    "cannot be undone" line overstates what happens to the history behind a stock, fruit or herd.
