@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CardMenu } from '@/components/farm/card-menu';
+import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
+import '@/components/farm/narrow-tile-grid.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { LimitCounter } from '@/components/farm/plan/limit-counter';
 import { UpgradeTile } from '@/components/farm/plan/upgrade-tile';
@@ -12,7 +14,7 @@ import { BoxIcon, ChevronRightIcon, LeafIcon } from '@/components/icons/misc-ico
 import { fruitKindImage, fruitTypeLabel, treeStockLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
-import { getTreeStock } from '@/services/tree-stock-service';
+import { deleteTreeStock, getTreeStock } from '@/services/tree-stock-service';
 import type { TreeStock } from '@/types/tree-stock';
 
 export function FruitsPage() {
@@ -25,6 +27,7 @@ export function FruitsPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<TreeStock | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     load();
@@ -67,6 +70,19 @@ export function FruitsPage() {
     setItems((prev) => (isNew ? [...prev, item] : prev.map((i) => (i.id === item.id ? item : i))));
   }
 
+  async function confirmDeleteItem() {
+    if (!confirmDelete) return;
+    const { id } = confirmDelete;
+    try {
+      await deleteTreeStock(id);
+      setItems((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setConfirmDelete(null);
+    }
+  }
+
   return (
     <div>
       <Link to="/farm" className="back-link">
@@ -94,7 +110,7 @@ export function FruitsPage() {
           </button>
         </div>
       ) : (
-        <div className="entity-tile-grid">
+        <div className="entity-tile-grid narrow-tiles">
           {items.map((item) => {
             const typeLabel = fruitTypeLabel(item.type, t);
             const unitLabel = t(TREE_STOCK_UNIT_LABEL_KEY[item.unit]);
@@ -106,8 +122,7 @@ export function FruitsPage() {
                 </Link>
 
                 <div className="entity-tile-menu">
-                  {/* Edit only: fruit is no longer removed from its card. */}
-                  <CardMenu onEdit={() => openEdit(item)} />
+                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
                 </div>
 
                 <div className="entity-tile-body">
@@ -158,6 +173,13 @@ export function FruitsPage() {
         onClose={limit.closePackets}
       />
 
+      <ConfirmDeleteModal
+        open={!!confirmDelete}
+        name={confirmDelete?.name ?? ''}
+        body={t('farm.deleteFruitBody')}
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={confirmDeleteItem}
+      />
     </div>
   );
 }

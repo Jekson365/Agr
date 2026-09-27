@@ -23,12 +23,11 @@ import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './p
  * What the herds have collected and how much of it is left, keyed by production type and unit —
  * litres and pieces cannot be summed, so a product is a (type, unit) pair. Like the fruit table
  * this reports what the holding yields rather than the holding, so the removed groups themselves
- * are appended by their head count once asked for.
+ * are appended by their head count.
  */
 export function LivestockBalancePage() {
   const { t } = useLanguage();
 
-  const [showRemoved, setShowRemoved] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
 
   const [productions, setProductions] = useState<AnimalProduction[]>([]);
@@ -74,7 +73,7 @@ export function LivestockBalancePage() {
   const listed = listedTotals(listings);
   const balances = [
     ...balancesByProductionType(productions, productionMovements, productionTypes, units, t),
-    ...(showRemoved ? removedLivestockBalances(livestock, t) : []),
+    ...removedLivestockBalances(livestock, t),
   ];
 
   return (
@@ -84,11 +83,6 @@ export function LivestockBalancePage() {
       loading={loading}
       error={error}
       onRetry={load}
-      removed={{
-        has: livestock.some((group) => group.isDeleted),
-        showing: showRemoved,
-        onToggle: () => setShowRemoved((prev) => !prev),
-      }}
       actions={
         <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
           + {t('balance.adjust')}

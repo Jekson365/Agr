@@ -68,9 +68,6 @@ export function BalanceColumn({
               <span className="balance-card-text">
                 <span className="balance-card-title">
                   {item.title}
-                  {/* Only shown once the removed holdings are asked for, so it marks the cards that
-                      are not part of what the farm keeps today rather than labelling everything
-                      else by omission. */}
                   {item.removed && <span className="balance-removed-chip">{t('balance.removed')}</span>}
                 </span>
                 {caption && <span className="balance-card-kind">{caption}</span>}

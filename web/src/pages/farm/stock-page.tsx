@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CardMenu } from '@/components/farm/card-menu';
+import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
+import '@/components/farm/narrow-tile-grid.css';
 import { PacketsModal } from '@/components/farm/packets-modal';
 import { LimitCounter } from '@/components/farm/plan/limit-counter';
 import { UpgradeTile } from '@/components/farm/plan/upgrade-tile';
@@ -15,7 +17,7 @@ import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import { getSeeds } from '@/services/seed-service';
-import { getStock } from '@/services/stock-service';
+import { deleteStock, getStock } from '@/services/stock-service';
 import type { Seed } from '@/types/seed';
 import type { Stock } from '@/types/stock';
 
@@ -30,6 +32,7 @@ export function StockPage() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Stock | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
   useEffect(() => {
     load();
@@ -77,6 +80,19 @@ export function StockPage() {
     }
   }
 
+  async function confirmDeleteItem() {
+    if (!confirmDelete) return;
+    const { id } = confirmDelete;
+    try {
+      await deleteStock(id);
+      setStock((prev) => prev.filter((i) => i.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setConfirmDelete(null);
+    }
+  }
+
   return (
     <div>
       <Link to="/farm" className="back-link">
@@ -104,7 +120,7 @@ export function StockPage() {
           </button>
         </div>
       ) : (
-        <div className="entity-tile-grid">
+        <div className="entity-tile-grid medium-tiles">
           {stock.map((item) => {
             const typeLabel = stockTypeLabel(item.type, t);
             const title = item.name.trim() || typeLabel;
@@ -118,8 +134,7 @@ export function StockPage() {
                 {seed && <StockSeedLink seedId={seed.id} />}
 
                 <div className="entity-tile-menu">
-                  {/* Edit only: a good is no longer removed from its card. */}
-                  <CardMenu onEdit={() => openEdit(item)} />
+                  <CardMenu onEdit={() => openEdit(item)} onDelete={() => setConfirmDelete({ id: item.id, name: title })} />
                 </div>
 
                 <div className="entity-tile-body">
@@ -163,6 +178,13 @@ export function StockPage() {
         onClose={limit.closePackets}
       />
 
+      <ConfirmDeleteModal
+        open={!!confirmDelete}
+        name={confirmDelete?.name ?? ''}
+        body={t('farm.deleteStockBody')}
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={confirmDeleteItem}
+      />
     </div>
   );
 }

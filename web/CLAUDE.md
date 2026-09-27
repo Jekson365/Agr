@@ -304,6 +304,10 @@ artwork are client-side, and duplicating either server-side would fork them.
 5. The form modal takes `onLimitReached={limit.showPackets}` — the client's own check runs against
    a possibly stale `user`, so **the server has the last word**: a 402 raises the same packets modal.
 6. Render `.entity-tile-grid` of `.entity-tile` cards, each with a `CardMenu` (edit/delete).
+   Two pages narrow the shared track (`components/farm/narrow-tile-grid.css`): fruit uses
+   `narrow-tiles` (40% narrower, with the upgrade card spanning two columns once the grid fits two —
+   a container query, so a one-column phone never gets a forced second track) and stock uses
+   `medium-tiles` (30% wider than that). Livestock keeps the shared width: its action pair needs it.
 7. `ConfirmDeleteModal` with a **custom `body`** wherever deletion is a soft delete — the default
    "cannot be undone" line overstates what happens to the history behind a stock, fruit or herd.
 8. `handleSaved(item, isNew)` patches local state; no refetch.
@@ -350,5 +354,9 @@ artwork are client-side, and duplicating either server-side would fork them.
 10. Soft-deleted rows are absent from list endpoints. A page that must *name* a historical
     reference has to pass `includeDeleted` — `getStock(true)`, `getLivestock(true)` — and the
     `isDeleted` flag only ever arrives on those calls.
+    Removed stock, fruit and herds **stay visible, marked removed, in the balances, the reports and
+    the farm export** (whose summary counts only live ones), with no sell/adjust. Everywhere else
+    they are unusable: pickers filter them even when fetched with `includeDeleted`, and a removed
+    herd's card on the livestock page carries no links or menu.
 11. `src/pages/farm/livestock-balance/` is dead code reachable from nothing; don't assume edits
     there are visible anywhere.

@@ -22,12 +22,11 @@ import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './p
  * What the orchards have yielded and how much of it is left, by product. This table reports what
  * the holding *yields* rather than the holding itself — produce outlives the orchard that gave it,
  * so nothing is missing from it to reveal. What is missing is the removed orchards themselves, by
- * their tree count; those are appended once asked for.
+ * their tree count; those are appended.
  */
 export function FruitsBalancePage() {
   const { t } = useLanguage();
 
-  const [showRemoved, setShowRemoved] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
 
   const [treeProducts, setTreeProducts] = useState<TreeProduct[]>([]);
@@ -72,7 +71,7 @@ export function FruitsBalancePage() {
   const listed = listedTotals(listings);
   const balances = [
     ...balancesByTreeProduct(treeProducts, treeProductMovements, t),
-    ...(showRemoved ? balancesByProduct(rows, 'tree', t, 'only') : []),
+    ...balancesByProduct(rows, 'tree', t, 'only'),
   ];
 
   const orchardById = new Map(orchards.map((orchard) => [orchard.id, orchard]));
@@ -114,11 +113,6 @@ export function FruitsBalancePage() {
       loading={loading}
       error={error}
       onRetry={load}
-      removed={{
-        has: rows.some((row) => row.isDeleted && row.treeStockId != null),
-        showing: showRemoved,
-        onToggle: () => setShowRemoved((prev) => !prev),
-      }}
       actions={
         <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
           + {t('balance.adjust')}

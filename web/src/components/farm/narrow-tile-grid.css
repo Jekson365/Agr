@@ -1,0 +1,14 @@
+.entity-tile-grid.narrow-tiles {
+  container-type: inline-size;
+  grid-template-columns: repeat(auto-fill, minmax(min(calc(138px * var(--tile-scale)), 100%), 1fr));
+}
+
+.entity-tile-grid.medium-tiles {
+  grid-template-columns: repeat(auto-fill, minmax(min(calc(138px * 1.3 * var(--tile-scale)), 100%), 1fr));
+}
+
+@container (min-width: 460px) {
+  .narrow-tiles .upgrade-tile {
+    grid-column: span 2;
+  }
+}

@@ -21,6 +21,12 @@ function farmNames(data: FarmExportData): Map<number, string> {
   return new Map(data.farms.map((farm) => [farm.id, farm.name]));
 }
 
+function removedName(name: string, removed: boolean, t: Translate): string {
+  if (!removed) return name;
+  const mark = `(${t('export.removed')})`;
+  return name ? `${name} ${mark}` : mark;
+}
+
 export function landsTable(data: FarmExportData, t: Translate): ExportTable {
   const plotCount = new Map<number, number>();
   for (const plot of data.plots) {
@@ -80,7 +86,7 @@ export function stockTable(data: FarmExportData, t: Translate): ExportTable {
       id: `stock-${item.id}`,
       cells: {
         type: stockTypeLabel(item.type, t),
-        name: item.name.trim(),
+        name: removedName(item.name.trim(), item.isDeleted, t),
         amount: `${round2(item.amount)} ${t(STOCK_UNIT_LABEL_KEY[item.unit] ?? 'farm.unit')}`,
       },
     })),
@@ -99,7 +105,7 @@ export function seedsTable(data: FarmExportData, t: Translate): ExportTable {
       id: `seed-${seed.id}`,
       cells: {
         type: stockTypeLabel(seed.type, t),
-        name: seed.name.trim(),
+        name: removedName(seed.name.trim(), seed.isDeleted, t),
         amount: `${round2(seed.amount)} ${t(SEED_UNIT_LABEL_KEY[seed.unit] ?? 'farm.unit')}`,
       },
     })),
@@ -118,7 +124,7 @@ export function treeStockTable(data: FarmExportData, t: Translate): ExportTable 
       id: `tree-${item.id}`,
       cells: {
         type: fruitTypeLabel(item.type, t),
-        name: item.name.trim(),
+        name: removedName(item.name.trim(), item.isDeleted, t),
         amount: `${round2(item.amount)} ${t(TREE_STOCK_UNIT_LABEL_KEY[item.unit] ?? 'farm.unit')}`,
       },
     })),
@@ -140,7 +146,7 @@ export function livestockTable(data: FarmExportData, t: Translate): ExportTable 
       id: `herd-${group.id}`,
       cells: {
         type: livestockTypeLabel(group.type, t),
-        name: group.name.trim(),
+        name: removedName(group.name.trim(), group.isDeleted, t),
         land: names.get(group.farmId) ?? '',
         count: String(group.count),
       },

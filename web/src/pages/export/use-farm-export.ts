@@ -55,10 +55,10 @@ export function useFarmExport() {
       const [farms, plots, stock, seeds, treeStock, livestock, greenhouses, equipment] = await Promise.all([
         getFarms(),
         getAllLandPlots().catch(() => [] as LandPlot[]),
-        getStock().catch(() => [] as Stock[]),
-        getSeeds().catch(() => [] as Seed[]),
-        getTreeStock().catch(() => [] as TreeStock[]),
-        getLivestock().catch(() => [] as Livestock[]),
+        getStock(true).catch(() => [] as Stock[]),
+        getSeeds(true).catch(() => [] as Seed[]),
+        getTreeStock(true).catch(() => [] as TreeStock[]),
+        getLivestock(true).catch(() => [] as Livestock[]),
         getGreenhouses().catch(() => [] as Greenhouse[]),
         equipmentAllowed ? getEquipment().catch(() => [] as Equipment[]) : Promise.resolve([] as Equipment[]),
       ]);

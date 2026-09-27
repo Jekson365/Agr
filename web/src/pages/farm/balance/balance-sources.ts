@@ -59,9 +59,8 @@ export function balancesByProduct(
 }
 
 /**
- * The groups the farm has removed, by head count. A removed group is no longer part of the herd, so
- * it is off the livestock tab until the removed holdings are asked for — but what it held was real,
- * and this is where it reads back. Its production is not repeated here: that is already counted by
+ * The groups the farm has removed, by head count. A removed group is no longer part of the herd,
+ * but what it held was real, and this is where it reads back. Its production is not repeated here: that is already counted by
  * {@link balancesByProductionType}, which reads the records rather than the group, and those
  * outlive the group they were collected from.
  */

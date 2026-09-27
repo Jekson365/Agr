@@ -12,6 +12,9 @@ export function ExportSummary({ data }: { data: FarmExportData }) {
   const { user } = useAuth();
 
   const active = data.farms.filter((farm) => !farm.isRemoved);
+  const liveStock = data.stock.filter((item) => !item.isDeleted);
+  const liveTrees = data.treeStock.filter((item) => !item.isDeleted);
+  const liveHerds = data.livestock.filter((group) => !group.isDeleted);
   const owner = [user?.name, user?.surname].filter(Boolean).join(' ').trim();
   const place = [user?.city, user?.country].filter(Boolean).join(', ');
   const date = formatLocalizedIsoDay(todayIsoDate(), language, { year: true });
@@ -20,9 +23,9 @@ export function ExportSummary({ data }: { data: FarmExportData }) {
     { key: 'lands', label: t('farm.land'), value: String(active.length) },
     { key: 'area', label: t('farm.area'), value: `${total(active.map((farm) => farm.area))} ${t('farm.areaUnit')}` },
     { key: 'plots', label: t('export.plots'), value: String(data.plots.length) },
-    { key: 'stock', label: t('farm.plantStock'), value: String(data.stock.length) },
-    { key: 'fruits', label: t('farm.fruits'), value: String(data.treeStock.length) },
-    { key: 'herds', label: t('farm.livestock'), value: String(total(data.livestock.map((group) => group.count))) },
+    { key: 'stock', label: t('farm.plantStock'), value: String(liveStock.length) },
+    { key: 'fruits', label: t('farm.fruits'), value: String(liveTrees.length) },
+    { key: 'herds', label: t('farm.livestock'), value: String(total(liveHerds.map((group) => group.count))) },
   ];
 
   return (

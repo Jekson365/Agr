@@ -22,12 +22,6 @@ import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './p
 export function StockBalancePage() {
   const { t } = useLanguage();
 
-  /**
-   * Whether the goods the farm has removed are shown alongside what it keeps. Off by default —
-   * the page answers "what do I have?", and a removed good is not part of that — but what it held
-   * was real and is still recorded, so it can be asked for.
-   */
-  const [showRemoved, setShowRemoved] = useState(false);
   const [adjustOpen, setAdjustOpen] = useState(false);
 
   const [rows, setRows] = useState<StockMovementReportRow[]>([]);
@@ -64,7 +58,7 @@ export function StockBalancePage() {
   const listed = listedTotals(listings);
   // Plant stock is the one table that reports the holdings themselves, so removed goods belong in
   // it directly rather than as an appendix.
-  const balances = balancesByProduct(rows, 'stock', t, showRemoved ? 'include' : 'exclude');
+  const balances = balancesByProduct(rows, 'stock', t, 'include');
 
   /** The kind behind each row, keyed the way balancesByProduct keys its balances. A balance
    *  carries the figures alone, so the artwork and the crop name are resolved back through this
@@ -105,11 +99,6 @@ export function StockBalancePage() {
       loading={loading}
       error={error}
       onRetry={load}
-      removed={{
-        has: rows.some((row) => row.isDeleted && row.stockId != null),
-        showing: showRemoved,
-        onToggle: () => setShowRemoved((prev) => !prev),
-      }}
       actions={
         <button type="button" className="add-button" onClick={() => setAdjustOpen(true)}>
           + {t('balance.adjust')}

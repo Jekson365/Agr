@@ -15,12 +15,17 @@ type Props = {
 
 export function LivestockTile({ item, farmName, onEdit, onDelete }: Props) {
   const { t } = useLanguage();
+  const icon = <img src={livestockImage(item.type)} alt="" className="entity-tile-icon" />;
 
   return (
     <div className={item.isDeleted ? 'entity-tile is-removed' : 'entity-tile'}>
-      <Link to={`/farm/livestock/${item.id}`} className="entity-tile-media">
-        <img src={livestockImage(item.type)} alt="" className="entity-tile-icon" />
-      </Link>
+      {item.isDeleted ? (
+        <div className="entity-tile-media">{icon}</div>
+      ) : (
+        <Link to={`/farm/livestock/${item.id}`} className="entity-tile-media">
+          {icon}
+        </Link>
+      )}
 
       {!item.isDeleted && (
         <div className="entity-tile-menu">
@@ -51,25 +56,29 @@ export function LivestockTile({ item, farmName, onEdit, onDelete }: Props) {
           )}
         </div>
 
-        <span className="entity-tile-divider" />
+        {!item.isDeleted && (
+          <>
+            <span className="entity-tile-divider" />
 
-        <div className="entity-tile-actions">
-          <div className="entity-tile-actions-row">
-            <Link to={`/farm/livestock/${item.id}/production`} className="entity-tile-details">
-              {t('production.title')}
-            </Link>
-            <Link to={`/farm/livestock/${item.id}/breeding`} className="entity-tile-details breeding">
-              {t('farm.breeding')}
-            </Link>
-          </div>
-          <Link to={`/farm/livestock/${item.id}/movement`} className="entity-tile-details secondary">
-            {t('livestockMovement.title')}
-          </Link>
-          <Link to={`/farm/livestock/${item.id}`} className="entity-tile-details secondary">
-            {t('farm.individualAnimals')}
-            <ChevronRightIcon width={16} height={16} />
-          </Link>
-        </div>
+            <div className="entity-tile-actions">
+              <div className="entity-tile-actions-row">
+                <Link to={`/farm/livestock/${item.id}/production`} className="entity-tile-details">
+                  {t('production.title')}
+                </Link>
+                <Link to={`/farm/livestock/${item.id}/breeding`} className="entity-tile-details breeding">
+                  {t('farm.breeding')}
+                </Link>
+              </div>
+              <Link to={`/farm/livestock/${item.id}/movement`} className="entity-tile-details secondary">
+                {t('livestockMovement.title')}
+              </Link>
+              <Link to={`/farm/livestock/${item.id}`} className="entity-tile-details secondary">
+                {t('farm.individualAnimals')}
+                <ChevronRightIcon width={16} height={16} />
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
