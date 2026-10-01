@@ -1,40 +1,17 @@
-import rabbitIcon from '@/assets/animals/rabbit.png';
-import farmIcon from '@/assets/icons/farm.png';
-import harvestIcon from '@/assets/icons/harvest.png';
-import reportIcon from '@/assets/icons/report.png';
 import logo from '@/assets/logo.png';
-import animalsIcon from '@/assets/properties/animals.png';
-import balanceIcon from '@/assets/properties/balance.png';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import { easeInOut, easeOut, enter, mix, slideIn } from '@/promo/motion';
+import { activeIndex, NAV_ITEMS } from '@/promo/nav';
 import {
   clickTime,
   NAV_HEIGHT,
   navIndent,
   NAV_STEP,
   NAV_TOP,
-  SCREEN_COUNT,
   SIDEBAR_WIDTH,
   STAGE_IN,
 } from '@/promo/timeline';
 import { useClock } from '@/promo/use-clock';
-
-const NAV_ITEMS = [
-  { icon: farmIcon, label: ka.dashboard.myFarm },
-  { icon: harvestIcon, label: ka.dashboard.harvest },
-  { icon: balanceIcon, label: ka.harvestGrading.title },
-  { icon: animalsIcon, label: ka.farm.livestock },
-  { icon: rabbitIcon, label: ka.breedingEvent.title },
-  { icon: reportIcon, label: ka.dashboard.report },
-];
-
-function activeIndex(time: number): number {
-  let active = 0;
-  for (let index = 1; index < SCREEN_COUNT; index += 1) {
-    if (time >= clickTime(index)) active = index;
-  }
-  return active;
-}
 
 function Ripple({ index }: { index: number }) {
   const time = useClock();
@@ -68,7 +45,7 @@ export function Sidebar() {
     <div className="promo-side" style={{ width: SIDEBAR_WIDTH }}>
       <div className="promo-side-brand" style={slideIn(time, base, -20, 0.45)}>
         <img src={logo} alt="" />
-        <span>{ka.auth.appName}</span>
+        <span>{copy.auth.appName}</span>
       </div>
 
       <span

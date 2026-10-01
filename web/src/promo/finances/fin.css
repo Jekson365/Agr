@@ -1,0 +1,167 @@
+.promo-stage.is-post {
+  width: 1080px;
+  height: 1350px;
+}
+
+.promo-stage.is-post.is-square {
+  height: 1080px;
+}
+
+.promo-stage.is-post:not(.is-square) .promo-outro-copy {
+  transform: scale(1.1);
+}
+
+.social-post.is-finances .social-visual {
+  margin-top: 96px;
+}
+
+.social-post.is-square.is-finances .social-visual {
+  margin-top: 116px;
+}
+
+.fin-card {
+  width: 640px;
+  padding: 24px 28px 26px;
+}
+
+.fin-tabs {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 18px;
+  padding: 6px;
+  border-radius: 999px;
+  background: var(--color-surface-sunken);
+}
+
+.fin-tab-pill {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: calc(50% - 6px);
+  border-radius: 999px;
+  background: var(--color-green);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-green) 35%, transparent);
+}
+
+.fin-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 54px;
+  font-size: 24px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--color-on-accent) var(--fin-on, 0%), var(--color-muted));
+}
+
+.fin-tab img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.fin-faces {
+  overflow: hidden;
+}
+
+.fin-track {
+  display: flex;
+  width: 200%;
+}
+
+.fin-face {
+  box-sizing: border-box;
+  width: 50%;
+}
+
+.fin-face-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding: 0 14px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-muted);
+}
+
+.fin-total {
+  font-size: 36px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-green);
+}
+
+.fin-total.is-cost {
+  color: var(--color-dark);
+}
+
+.fin-rows {
+  height: 252px;
+  overflow: hidden;
+}
+
+.fin-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-sizing: border-box;
+  height: 84px;
+  padding: 0 14px;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--color-green-muted) var(--fin-fresh, 0%), transparent);
+}
+
+.fin-icons {
+  display: flex;
+  flex: none;
+  width: 104px;
+}
+
+.fin-icons img {
+  box-sizing: border-box;
+  width: 62px;
+  height: 62px;
+  padding: 8px;
+  border: 3px solid var(--color-surface);
+  border-radius: 20px;
+  background: var(--color-green-muted);
+  object-fit: contain;
+}
+
+.fin-icons img + img {
+  margin-left: -20px;
+}
+
+.fin-row-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fin-row-text strong {
+  overflow: hidden;
+  font-size: 23px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.fin-row-text span {
+  font-size: 18px;
+  color: var(--color-muted);
+}
+
+.fin-row-amount {
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.fin-row-amount.is-income {
+  color: var(--color-green);
+}

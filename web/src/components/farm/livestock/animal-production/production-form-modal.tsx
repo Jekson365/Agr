@@ -1,6 +1,7 @@
 import '@/components/farm/kind-picker.css';
 import { DateField } from '@/components/ui/date-field';
 import { todayIsoDate } from '@/components/ui/date-utils';
+import { realizationUnits } from '@/config/production';
 import { useLanguage } from '@/contexts/language-context';
 import type { AnimalProduction } from '@/types/animal-production';
 import type { ProductionType } from '@/types/production-type';
@@ -63,6 +64,7 @@ export function ProductionFormModal({
     form.isRealization || editingRecord != null
       ? []
       : productionTypes.filter((productionType) => producedTypeIds.includes(productionType.id));
+  const unitChoices = form.isRealization ? realizationUnits(units) : units;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -155,7 +157,7 @@ export function ProductionFormModal({
                 </span>
               ) : (
                 <div className="kind-row">
-                  {units.map((unit) => (
+                  {unitChoices.map((unit) => (
                     <button
                       key={unit.id}
                       type="button"

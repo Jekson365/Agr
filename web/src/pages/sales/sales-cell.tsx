@@ -104,7 +104,8 @@ function itemCell(sale: MarketSale, t: SalesCellContext['t']): ReactNode {
   if (sale.sourceKind) {
     tags.push(
       <span key="source" className="sales-tag">
-        {t(LISTING_SOURCE_KIND_LABEL_KEY[sale.sourceKind])} #{sale.sourceId}
+        {t(LISTING_SOURCE_KIND_LABEL_KEY[sale.sourceKind])}
+        {sale.sourceId != null && ` #${sale.sourceId}`}
       </span>
     );
   }

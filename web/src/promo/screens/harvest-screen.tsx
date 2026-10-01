@@ -1,24 +1,24 @@
 import cabbageIcon from '@/assets/goods/cabbage.png';
 import cucumberIcon from '@/assets/goods/cucumber.png';
 import tomatoIcon from '@/assets/goods/tomato.png';
-import ka from '@/locales/ka.json';
 import { formatCount } from '@/promo/figures';
+import { copy } from '@/promo/locale';
 import { backOut, easeInOut, enter, fadeUp, mix } from '@/promo/motion';
 import { useClock } from '@/promo/use-clock';
 import '@/promo/screens/harvest.css';
 
 const STAGES = [
-  { label: ka.harvest.statusPlanning, color: 'var(--color-blue)' },
-  { label: ka.harvest.statusPlanting, color: 'var(--color-stage-emergence)' },
-  { label: ka.harvest.statusFlowering, color: 'var(--color-stage-flowering)' },
-  { label: ka.harvest.statusRipening, color: 'var(--color-stage-ripening)' },
-  { label: ka.harvest.statusHarvested, color: 'var(--color-green)' },
+  { label: copy.harvest.statusPlanning, color: 'var(--color-blue)' },
+  { label: copy.harvest.statusPlanting, color: 'var(--color-stage-emergence)' },
+  { label: copy.harvest.statusFlowering, color: 'var(--color-stage-flowering)' },
+  { label: copy.harvest.statusRipening, color: 'var(--color-stage-ripening)' },
+  { label: copy.harvest.statusHarvested, color: 'var(--color-green)' },
 ];
 
 const ROWS = [
-  { label: ka.landing.harvest.sampleTomato, icon: tomatoIcon, planned: 1200, actual: 1340 },
-  { label: ka.landing.harvest.sampleCucumber, icon: cucumberIcon, planned: 800, actual: 742 },
-  { label: ka.landing.harvest.sampleCabbage, icon: cabbageIcon, planned: 400, actual: 455 },
+  { label: copy.landing.harvest.sampleTomato, icon: tomatoIcon, planned: 1200, actual: 1340 },
+  { label: copy.landing.harvest.sampleCucumber, icon: cucumberIcon, planned: 800, actual: 742 },
+  { label: copy.landing.harvest.sampleCabbage, icon: cabbageIcon, planned: 400, actual: 455 },
 ];
 
 const MAX = Math.max(...ROWS.flatMap((row) => [row.planned, row.actual]));
@@ -34,7 +34,7 @@ export function HarvestScreen({ start }: { start: number }) {
   return (
     <>
       <h3 className="promo-screen-title" style={fadeUp(time, base, 16)}>
-        {ka.dashboard.harvest}
+        {copy.dashboard.harvest}
       </h3>
 
       <div className="promo-card promo-steps" style={fadeUp(time, base + 0.04, 22)}>
@@ -58,15 +58,15 @@ export function HarvestScreen({ start }: { start: number }) {
 
       <div className="promo-card promo-compare" style={fadeUp(time, base + 0.12, 26)}>
         <div className="promo-card-head">
-          <span className="promo-card-title">{ka.harvest.comparisonTitle}</span>
+          <span className="promo-card-title">{copy.harvest.comparisonTitle}</span>
           <span className="promo-legend">
             <span className="promo-legend-item">
               <span className="promo-legend-dot is-planned" />
-              {ka.harvest.comparisonPlanned}
+              {copy.harvest.comparisonPlanned}
             </span>
             <span className="promo-legend-item">
               <span className="promo-legend-dot" />
-              {ka.harvest.comparisonActual}
+              {copy.harvest.comparisonActual}
             </span>
           </span>
         </div>
@@ -85,7 +85,7 @@ export function HarvestScreen({ start }: { start: number }) {
                 <div className="promo-compare-head">
                   <strong>{row.label}</strong>
                   <span className="promo-compare-figures">
-                    {formatCount(row.actual * grow)} / {formatCount(row.planned)} {ka.farm.unitKg}
+                    {formatCount(row.actual * grow)} / {formatCount(row.planned)} {copy.farm.unitKg}
                     <span
                       className={variance < 0 ? 'promo-chip is-warn' : 'promo-chip'}
                       style={{ opacity: Math.min(1, chip * 1.6), transform: `scale(${mix(0.4, 1, chip)})` }}

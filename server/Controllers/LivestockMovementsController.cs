@@ -69,15 +69,20 @@ public class LivestockMovementsController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
+        var movement = await livestockMovementRepository.GetByIdAsync(id);
+
         // And it is not removed by hand either: the realization record it belongs to takes it
         // back. Removing it here would put the animal back on the herd while it stayed realized.
-        if (await livestockMovementRepository.GetByIdAsync(id) is LivestockMovement existing
-            && existing.Source == LivestockMovementSource.Realization)
+        if (movement?.Source == LivestockMovementSource.Realization)
         {
             return Conflict(RealizationEntryMessage);
         }
 
-        var movement = await livestockMovementRepository.GetByIdAsync(id);
+        if (movement?.Source == LivestockMovementSource.Market)
+        {
+            return Conflict(MarketEntryMessage);
+        }
+
         var deleted = await livestockMovementRepository.DeleteAsync(id);
         if (!deleted)
         {
@@ -101,4 +106,6 @@ public class LivestockMovementsController(
     /// </summary>
     private const string RealizationEntryMessage =
         "A realization entry is written and removed with the animal's realization record.";
+
+    private const string MarketEntryMessage = "A sale entry is removed by deleting its sale.";
 }

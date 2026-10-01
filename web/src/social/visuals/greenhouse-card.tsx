@@ -1,5 +1,5 @@
 import { PREVIEW_GREENHOUSE } from '@/config/landing';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/field-cards.css';
 import '@/social/visuals/greenhouse-card.css';
@@ -14,9 +14,9 @@ export function GreenhouseCard() {
   return (
     <div className="social-card greenhouse-card">
       <div className="social-card-head">
-        <span className="social-card-title">{ka.landing.preview.greenhouseTitle}</span>
+        <span className="social-card-title">{copy.landing.preview.greenhouseTitle}</span>
         <span className="social-chip is-blue">
-          {total} {ka.landing.preview.unitSqm}
+          {total} {copy.landing.preview.unitSqm}
         </span>
       </div>
 
@@ -32,7 +32,7 @@ export function GreenhouseCard() {
             }}
           >
             <span className="greenhouse-bed-head" style={{ color: TINTS[index] }}>
-              {ka.landing.preview.section} {bed.section}
+              {copy.landing.preview.section} {bed.section}
             </span>
             <span className="greenhouse-bed-plants" style={{ gridTemplateColumns: `repeat(${COLUMNS[index]}, 1fr)` }}>
               {Array.from({ length: COLUMNS[index] * ROWS_PER_BED }, (_, plant) => (
@@ -40,7 +40,7 @@ export function GreenhouseCard() {
               ))}
             </span>
             <strong className="greenhouse-bed-area">
-              {bed.sqm} {ka.landing.preview.unitSqm}
+              {bed.sqm} {copy.landing.preview.unitSqm}
             </strong>
           </div>
         ))}

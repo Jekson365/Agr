@@ -1,7 +1,6 @@
 import { MARKET_SAMPLES } from '@/config/landing';
 import { useCurrency } from '@/contexts/currency-context';
-import ka from '@/locales/ka.json';
-import { tr } from '@/promo/figures';
+import { copy, tr } from '@/promo/locale';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/business-cards.css';
 
@@ -11,7 +10,7 @@ export function MarketCard() {
   return (
     <div className="social-card market-card">
       <div className="social-card-head">
-        <span className="social-card-title">{ka.landing.preview.marketTitle}</span>
+        <span className="social-card-title">{copy.landing.preview.marketTitle}</span>
       </div>
       {MARKET_SAMPLES.map((sample) => {
         const rent = sample.id === 'tractor';
@@ -28,7 +27,7 @@ export function MarketCard() {
               <span className="market-listing-meta">{tr(`landing.market.${sample.id}.location`)}</span>
             </span>
             <span className={rent ? 'social-chip is-amber' : 'social-chip'}>
-              {rent ? ka.market.typeRent : ka.market.typeSale}
+              {rent ? copy.market.typeRent : copy.market.typeSale}
             </span>
           </div>
         );

@@ -1,5 +1,5 @@
 import cowIcon from '@/assets/animals/cow.png';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import { backOut, enter, fadeUp, mix, popIn, slideIn } from '@/promo/motion';
 import { useClock } from '@/promo/use-clock';
 import type { BreedingStatus } from '@/types/breeding-event';
@@ -8,10 +8,10 @@ import '@/promo/screens/breeding.css';
 const STAGES: BreedingStatus[] = ['Breeding', 'PregnancyConfirmed', 'Completed'];
 
 const STAGE_LABEL: Record<BreedingStatus, string> = {
-  Breeding: ka.breedingEvent.statusBreeding,
-  PregnancyConfirmed: ka.breedingEvent.statusPregnancyConfirmed,
-  Completed: ka.breedingEvent.statusCompleted,
-  Failed: ka.breedingEvent.statusFailed,
+  Breeding: copy.breedingEvent.statusBreeding,
+  PregnancyConfirmed: copy.breedingEvent.statusPregnancyConfirmed,
+  Completed: copy.breedingEvent.statusCompleted,
+  Failed: copy.breedingEvent.statusFailed,
 };
 
 const STAGE_TONE: Record<BreedingStatus, string> = {
@@ -46,7 +46,7 @@ export function BreedingScreen({ start }: { start: number }) {
   return (
     <>
       <h3 className="promo-screen-title" style={fadeUp(time, base, 16)}>
-        {ka.breedingEvent.title}
+        {copy.breedingEvent.title}
       </h3>
 
       <div className="promo-card promo-breeding" style={fadeUp(time, base + 0.04, 24)}>
@@ -54,9 +54,9 @@ export function BreedingScreen({ start }: { start: number }) {
           <span className="promo-row-icon">
             <img src={cowIcon} alt="" />
           </span>
-          <strong>{ka.farm.cow}</strong>
+          <strong>{copy.farm.cow}</strong>
           <span className="promo-breeding-add" style={popIn(time, base + 0.2, 0.4, 0.6)}>
-            + {ka.breedingEvent.add}
+            + {copy.breedingEvent.add}
           </span>
         </div>
 
@@ -67,9 +67,9 @@ export function BreedingScreen({ start }: { start: number }) {
           return (
             <div key={`${pair.male}-${pair.female}`} className="promo-pair" style={slideIn(time, at, 60, 0.45)}>
               <div className="promo-pair-top">
-                <Parent code={pair.male} label={ka.breedingEvent.male} />
+                <Parent code={pair.male} label={copy.breedingEvent.male} />
                 <span className="promo-pair-join">×</span>
-                <Parent code={pair.female} label={ka.breedingEvent.female} />
+                <Parent code={pair.female} label={copy.breedingEvent.female} />
                 <span className={`promo-stage-badge ${STAGE_TONE[pair.status]}`} style={popIn(time, at + 0.5, 0.4, 0.5)}>
                   {STAGE_LABEL[pair.status]}
                 </span>
@@ -90,7 +90,7 @@ export function BreedingScreen({ start }: { start: number }) {
                 })}
                 {pair.offspring && (
                   <span className="promo-offspring" style={{ opacity: Math.min(1, born * 1.6), transform: `scale(${mix(0.4, 1, born)})` }}>
-                    +{pair.offspring} {ka.breedingEvent.resultRecorded}
+                    +{pair.offspring} {copy.breedingEvent.resultRecorded}
                   </span>
                 )}
               </div>

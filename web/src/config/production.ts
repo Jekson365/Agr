@@ -44,3 +44,8 @@ export const UNIT_LABEL_KEY: Record<string, string> = {
   Gram: 'production.unitGram',
   Dozen: 'production.unitDozen',
 };
+
+export function realizationUnits<T extends { name: string }>(units: T[]): T[] {
+  const kilograms = units.filter((unit) => unit.name === 'Kilogram');
+  return kilograms.length > 0 ? kilograms : units;
+}

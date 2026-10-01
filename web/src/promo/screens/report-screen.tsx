@@ -1,17 +1,17 @@
 import { REPORT_SHARES } from '@/config/landing';
-import ka from '@/locales/ka.json';
 import { formatCount } from '@/promo/figures';
+import { copy } from '@/promo/locale';
 import { easeInOut, enter, fadeUp, slideIn } from '@/promo/motion';
 import { useClock } from '@/promo/use-clock';
 import '@/promo/screens/report.css';
 
 const SHARE_LABELS: Record<string, string> = {
-  crop: ka.report.categoryCrop,
-  fruit: ka.report.categoryFruit,
-  livestock: ka.report.categoryLivestock,
+  crop: copy.report.categoryCrop,
+  fruit: copy.report.categoryFruit,
+  livestock: copy.report.categoryLivestock,
 };
 
-const QUARTERS = [ka.report.quarterQ1, ka.report.quarterQ2, ka.report.quarterQ3, ka.report.quarterQ4].map(
+const QUARTERS = [copy.report.quarterQ1, copy.report.quarterQ2, copy.report.quarterQ3, copy.report.quarterQ4].map(
   (label) => label.split(' · ')[0]
 );
 
@@ -37,12 +37,12 @@ export function ReportScreen({ start }: { start: number }) {
   return (
     <>
       <h3 className="promo-screen-title" style={fadeUp(time, base, 16)}>
-        {ka.dashboard.report}
+        {copy.dashboard.report}
       </h3>
 
       <div className="promo-card promo-share" style={fadeUp(time, base + 0.04, 24)}>
         <div className="promo-card-head">
-          <span className="promo-card-title">{ka.landing.reports.chartTitle}</span>
+          <span className="promo-card-title">{copy.landing.reports.chartTitle}</span>
         </div>
         <div className="promo-share-body">
           <div className="promo-donut" style={{ background: `conic-gradient(${donutStops(draw)})` }}>
@@ -68,11 +68,11 @@ export function ReportScreen({ start }: { start: number }) {
           <span className="promo-legend">
             <span className="promo-legend-item">
               <span className="promo-legend-dot" />
-              {ka.report.colRevenue}
+              {copy.report.colRevenue}
             </span>
             <span className="promo-legend-item">
               <span className="promo-legend-dot is-cost" />
-              {ka.report.colCost}
+              {copy.report.colCost}
             </span>
           </span>
         </div>

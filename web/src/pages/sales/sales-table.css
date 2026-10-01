@@ -9,7 +9,8 @@
 }
 
 .sales-table {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 0.875rem;
@@ -117,16 +118,19 @@
 }
 
 .sales-table td[data-col='buyer'] {
-  min-width: 130px;
+  min-width: 160px;
+  max-width: 220px;
   font-weight: 600;
 }
 
 .sales-table td[data-col='item'] {
-  min-width: 170px;
+  min-width: 240px;
+  max-width: 320px;
 }
 
 .sales-table td[data-col='address'] {
-  min-width: 140px;
+  min-width: 220px;
+  max-width: 300px;
 }
 
 .sales-table td[data-col='amount'] {

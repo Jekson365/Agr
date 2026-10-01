@@ -183,11 +183,22 @@ migration.
     group has none. Nothing enforces one-meat-type-per-group, so two groups *can* share a row.
 - **`LivestockDetails`** — the individual animal. `LivestockId` (cascade), `Code` (ear tag),
   `ImagePath`, `BornDate`, `Gender` (`Male|Female`, text), `ParentOneId` / `ParentTwoId`
-  (self-FK, **SetNull** — losing a parent must not delete the offspring).
+  (self-FK, **SetNull** — losing a parent must not delete the offspring). `MarketOrderId` (bare int →
+  master `MarketOrders`) is set while a per-animal sale holds the animal and `SoldOn` while it is
+  applied; such an animal refuses edit, delete and realization (409), is skipped by
+  `RemoveUnreferencedAsync`, and is absent from `GET /api/livestockdetails/available`.
 - **`LivestockMovements`** — head-count ledger. `LivestockId` (cascade), `Delta`, `Date`, `Note`,
-  `Source` ∈ `Manual|Birth|Gift|Purchase|Realization`. **The group's opening count is written as the
+  `Source` ∈ `Manual|Birth|Gift|Purchase|Realization|Market`, `MarketOrderId` (bare int, set on the
+  entries a per-animal sale wrote). **The group's opening count is written as the
   first `Manual` movement, not set on the row** (`LivestockController.Create` zeroes `Count`, logs
   the movement, then also creates that many `LivestockDetails` with codes like `C-1`).
+  `Realization` and `Market` entries are refused by `DELETE` — they go with their record or sale.
+- **Per-animal sales** — `POST /api/marketsales/manual` with `AnimalIds` stores the order as
+  `SourceKind = Livestock`, `SourceId = null`, `Quantity` = the animal count. The order is saved
+  first, then `MarketSaleInventoryService.ReserveAnimalsAsync` stamps the animals with one conditional
+  `ExecuteUpdate` (a lost race undoes it and answers 409), and applying writes one `Market` movement
+  per herd. Reversing removes those movements and clears `SoldOn`; deleting the sale also releases
+  `MarketOrderId`.
 - **`BreedingEvents`** — `LivestockId`, `MaleAnimalId`, `FemaleAnimalId` all nullable and **all
   SetNull**: the event outlives what it points at, and SetNull also stops the group→detail cascade
   reaching in by a second path. `Status` ∈ `Breeding|PregnancyConfirmed|Completed|Failed`, each stage

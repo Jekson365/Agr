@@ -16,6 +16,14 @@ public class LivestockDetailsController(
     ILivestockMovementRepository livestockMovementRepository,
     IFileStorageService fileStorageService) : ControllerBase
 {
+    private const string SoldMessage = "This animal has been sold, so its record can no longer be changed.";
+
+    [HttpGet("available")]
+    public async Task<ActionResult<IEnumerable<SaleAnimalDto>>> GetAvailableForSale()
+    {
+        return Ok(await livestockDetailRepository.GetAvailableForSaleAsync());
+    }
+
     /// <summary>
     /// A group's animals, or every animal on the farm when no group is named — which is what a
     /// family tree needs, since an animal's offspring are routinely put in a different group from
@@ -44,6 +52,8 @@ public class LivestockDetailsController(
             return Conflict(LivestockController.DeletedMessage);
         }
 
+        detail.SoldOn = null;
+        detail.MarketOrderId = null;
         var created = await livestockDetailRepository.AddAsync(detail);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
@@ -70,6 +80,11 @@ public class LivestockDetailsController(
             return Conflict("This animal has been realized, so its record can no longer be changed.");
         }
 
+        if (existing.MarketOrderId is not null)
+        {
+            return Conflict(SoldMessage);
+        }
+
         var oldImagePath = existing.ImagePath;
 
         var updated = await livestockDetailRepository.UpdateAsync(detail);
@@ -93,6 +108,11 @@ public class LivestockDetailsController(
         if (existing is null)
         {
             return NotFound();
+        }
+
+        if (existing.MarketOrderId is not null)
+        {
+            return Conflict(SoldMessage);
         }
 
         // Its production records cascade with it — see the matching guard in LivestockController.

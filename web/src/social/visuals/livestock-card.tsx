@@ -1,6 +1,6 @@
 import { PREVIEW_LIVESTOCK } from '@/config/landing';
-import ka from '@/locales/ka.json';
-import { formatCount, tr } from '@/promo/figures';
+import { formatCount } from '@/promo/figures';
+import { copy, tr } from '@/promo/locale';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/business-cards.css';
 
@@ -11,9 +11,9 @@ export function LivestockCard() {
   return (
     <div className="social-card livestock-card">
       <div className="social-card-head">
-        <span className="social-card-title">{ka.landing.preview.livestockTitle}</span>
+        <span className="social-card-title">{copy.landing.preview.livestockTitle}</span>
         <span className="social-chip">
-          {formatCount(TOTAL)} {ka.landing.preview.unitHead}
+          {formatCount(TOTAL)} {copy.landing.preview.unitHead}
         </span>
       </div>
       {PREVIEW_LIVESTOCK.map((group) => (
@@ -26,7 +26,7 @@ export function LivestockCard() {
             <span style={{ width: `${(group.count / MAX_HEAD) * 100}%` }} />
           </span>
           <strong className="livestock-count">
-            {group.count} {ka.landing.preview.unitHead}
+            {group.count} {copy.landing.preview.unitHead}
           </strong>
         </div>
       ))}

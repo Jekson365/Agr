@@ -165,10 +165,22 @@
   color: var(--social-accent);
 }
 
+.social-post:lang(en) .social-title {
+  text-wrap: balance;
+}
+
 .social-body {
   max-width: 900px;
   margin: 20px 0 0;
   font-size: var(--social-body-size);
   line-height: 1.45;
   color: var(--social-soft);
+}
+
+.social-post.is-portrait.is-harvest .social-body {
+  max-width: none;
+}
+
+.social-post.is-overview .social-title em {
+  display: block;
 }

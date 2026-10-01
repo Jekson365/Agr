@@ -1,0 +1,22 @@
+.overview-card {
+  width: 640px;
+  padding: 26px;
+}
+
+.overview-card .crops-grid {
+  gap: 12px;
+}
+
+.overview-tile {
+  padding: 14px 8px 12px;
+}
+
+.overview-tile img {
+  width: 60px;
+  height: 60px;
+}
+
+.overview-tile strong {
+  margin-top: 8px;
+  font-size: 22px;
+}

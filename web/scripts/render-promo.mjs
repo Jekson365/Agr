@@ -8,13 +8,29 @@ import puppeteer from 'puppeteer-core';
 import { createServer } from 'vite';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const output = path.resolve(root, process.argv[2] ?? 'promo/mtabari-promo.mp4');
+const VIDEOS = { harvest: 'harvest-cycle', reports: 'harvest-reports', packets: 'packets', finances: 'finances' };
+const video = Object.keys(VIDEOS).find((name) => process.argv.includes(`--${name}`)) ?? null;
+const post = video === 'finances';
+const square = post && process.argv.includes('--square');
+const mobile = !video && process.argv.includes('--mobile');
+const lang = process.argv.includes('--en') ? 'en' : 'ka';
+const [outputArg] = process.argv.slice(2).filter((arg) => !arg.startsWith('--'));
+const size = post
+  ? { width: 1080, height: square ? 1080 : 1350 }
+  : mobile
+    ? { width: 1080, height: 1920 }
+    : { width: 1920, height: 1080 };
+const variant = post ? `-${size.width}x${size.height}` : mobile ? '-mobile' : '';
+const fileName = `mtabari-${video ? VIDEOS[video] : 'promo'}${variant}${lang === 'en' ? '-en' : ''}.mp4`;
+const output = path.resolve(root, outputArg ?? `promo/${fileName}`);
 const fps = Number(process.env.PROMO_FPS ?? 60);
 const chrome = process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 
 const server = await createServer({ root, logLevel: 'error', server: { port: 5188, hmr: false } });
 await server.listen();
-const url = new URL('promo.html?render', server.resolvedUrls.local[0]).href;
+const format = mobile ? '&format=mobile' : square ? '&format=square' : '';
+const query = `render&lang=${lang}${format}${video ? `&video=${video}` : ''}`;
+const url = new URL(`promo.html?${query}`, server.resolvedUrls.local[0]).href;
 
 const browser = await puppeteer.launch({
   executablePath: chrome,
@@ -22,7 +38,7 @@ const browser = await puppeteer.launch({
   args: ['--hide-scrollbars', '--force-color-profile=srgb'],
 });
 const page = await browser.newPage();
-await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
+await page.setViewport({ ...size, deviceScaleFactor: 1 });
 await page.goto(url, { waitUntil: 'networkidle0' });
 await page.waitForFunction(() => typeof window.promoSeek === 'function');
 

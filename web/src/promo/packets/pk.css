@@ -1,0 +1,48 @@
+.pk-stage {
+  position: absolute;
+}
+
+.pk-stage .packets-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.pk-card {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface);
+  transform-origin: 50% 100%;
+}
+
+.pk-card.is-featured {
+  border-color: var(--color-green);
+}
+
+.pk-card .packet-badge,
+.pk-card .packet-amount {
+  display: inline-block;
+}
+
+.pk-card .packet-amount {
+  transform-origin: left center;
+}
+
+.pk-card .packet-row dd {
+  transform-origin: right center;
+}
+
+.pk-shine {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 45%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--color-green) 16%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}

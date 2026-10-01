@@ -1,5 +1,5 @@
 import logo from '@/assets/logo.png';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import type { SocialFormat } from '@/social/formats';
 import { MASCOTS } from '@/social/mascots';
 import type { SocialPost } from '@/social/posts';
@@ -7,7 +7,7 @@ import '@/social/social.css';
 import '@/social/social-footer.css';
 import '@/social/social-mascots.css';
 
-function CheckIcon() {
+export function CheckIcon() {
   return (
     <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
       <circle cx="12" cy="12" r="12" className="social-check-disc" />
@@ -16,7 +16,7 @@ function CheckIcon() {
   );
 }
 
-function ArrowIcon() {
+export function ArrowIcon() {
   return (
     <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <path d="M4 12h15" />
@@ -25,7 +25,7 @@ function ArrowIcon() {
   );
 }
 
-function Title({ text, accent }: { text: string; accent: string }) {
+export function Title({ text, accent }: { text: string; accent: string }) {
   const at = text.indexOf(accent);
   if (at < 0) return <h1 className="social-title">{text}</h1>;
   return (
@@ -40,6 +40,7 @@ function Title({ text, accent }: { text: string; accent: string }) {
 export function PostFrame({ post, format }: { post: SocialPost; format: SocialFormat }) {
   const { Visual, Backdrop } = post;
   const mascot = MASCOTS[post.mascot];
+  const companion = post.companion ? MASCOTS[post.companion] : null;
   const visual = (
     <div className="social-visual">
       <Visual />
@@ -56,7 +57,7 @@ export function PostFrame({ post, format }: { post: SocialPost; format: SocialFo
           <span className="social-brand-badge">
             <img src={logo} alt="" />
           </span>
-          {ka.auth.appName}
+          {copy.auth.appName}
         </span>
         <span className="social-url">mtabari.com.ge</span>
       </header>
@@ -83,11 +84,12 @@ export function PostFrame({ post, format }: { post: SocialPost; format: SocialFo
           ))}
         </ul>
         <span className="social-cta">
-          {ka.landing.hero.ctaPrimary}
+          {copy.landing.hero.ctaPrimary}
           <ArrowIcon />
         </span>
       </footer>
 
+      {companion && <img className={`social-mascot is-companion ${companion.className}`} src={companion.src} alt="" />}
       <img className={`social-mascot ${mascot.className}`} src={mascot.src} alt="" />
     </article>
   );

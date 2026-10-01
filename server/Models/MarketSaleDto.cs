@@ -91,6 +91,8 @@ public class CreateManualSaleRequest
     public decimal Quantity { get; set; }
     public decimal Price { get; set; }
 
+    public List<int> AnimalIds { get; set; } = [];
+
     public DateOnly? SoldOn { get; set; }
 
     public string BuyerName { get; set; } = string.Empty;

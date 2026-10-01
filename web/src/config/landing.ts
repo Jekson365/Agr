@@ -8,7 +8,6 @@ import tomatoIcon from '@/assets/goods/tomato.png';
 import calendarIcon from '@/assets/icons/calendar.png';
 import cameraIcon from '@/assets/icons/camera.png';
 import farmIcon from '@/assets/icons/farm.png';
-import greenhouseIcon from '@/assets/icons/greenhouse.png';
 import harvestIcon from '@/assets/icons/harvest.png';
 import mapIcon from '@/assets/icons/map.png';
 import marketIcon from '@/assets/icons/market.png';
@@ -119,7 +118,6 @@ export const MANAGE_CARDS: LandingCard[] = [
   { id: 'stock', icon: plantsIcon, points: 4 },
   { id: 'livestock', icon: animalsIcon, points: 4 },
   { id: 'fruits', icon: fruitsIcon, points: 6 },
-  { id: 'greenhouse', icon: greenhouseIcon, points: 4 },
 ];
 
 /** Section 4 — harvest management. */
@@ -153,7 +151,6 @@ export const REPORT_FEATURES: LandingCard[] = [
   { id: 'harvest', icon: harvestIcon, points: 0 },
   { id: 'financial', icon: balanceIcon, points: 0 },
   { id: 'livestock', icon: animalsIcon, points: 0 },
-  { id: 'greenhouse', icon: greenhouseIcon, points: 0 },
 ];
 
 /** Section 7 — the neighbourhood map. */
@@ -169,7 +166,7 @@ export const MAP_FEATURES: LandingCard[] = [
  *
  * These are search terms before they are questions. Georgian farmers looking for this kind of
  * product type "ფერმის მართვა", "ფერმის პროგრამა", "ფერმის აპლიკაცია", "ქართული ფერმა",
- * "თანამედროვე ფერმა", "ფერმის საიტი", "სათბურის მართვა" or "სათბურის აპლიკაცია" — and none of
+ * "თანამედროვე ფერმა" or "ფერმის საიტი" — and none of
  * those phrases appeared anywhere on this page, which is why it could not be found by them. Each
  * entry below carries one of them in its question and again in its answer, in the nominative the
  * search box gets rather than the genitive the marketing copy happens to use.
@@ -182,7 +179,6 @@ export const FAQ_ITEMS = [
   { id: 'management' },
   { id: 'software' },
   { id: 'app' },
-  { id: 'greenhouse' },
   { id: 'modern' },
   { id: 'georgian' },
   { id: 'site' },
@@ -198,8 +194,6 @@ export const SEO_KEYWORDS = [
   'ქართული ფერმა',
   'თანამედროვე ფერმა',
   'ფერმის საიტი',
-  'სათბურის მართვა',
-  'სათბურის აპლიკაცია',
 ];
 
 /** The box the mocked map is drawn in. The panel holds the same ratio, so a pin placed in these
@@ -283,7 +277,6 @@ export const PREVIEW_ICONS = {
   market: marketIcon,
   report: reportIcon,
   calendar: calendarIcon,
-  greenhouse: greenhouseIcon,
   plants: plantsIcon,
   fruits: fruitsIcon,
   balance: balanceIcon,

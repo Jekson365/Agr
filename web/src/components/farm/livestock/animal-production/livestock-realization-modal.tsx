@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { meatProductionTypeName } from '@/config/production';
+import { meatProductionTypeName, realizationUnits } from '@/config/production';
 import { useLanguage } from '@/contexts/language-context';
 import { createAnimalProduction } from '@/services/animal-production-service';
 import { ApiError } from '@/services/api-client';
@@ -98,7 +98,7 @@ export function LivestockRealizationModal({ open, animalId, livestockId, onClose
         // One animal: the one whose card this was opened from.
         ...makeEmptyForm(1),
         productionTypeId: meatTypeId,
-        unitId: unitList[0]?.id ?? null,
+        unitId: realizationUnits(unitList)[0]?.id ?? null,
         isRealization: true,
       });
     } catch {

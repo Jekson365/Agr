@@ -1,7 +1,6 @@
 import farmland from '@/assets/farmland-tall.png';
 import { MAP_SAMPLE_CROPS } from '@/config/landing';
-import ka from '@/locales/ka.json';
-import { tr } from '@/promo/figures';
+import { copy, tr } from '@/promo/locale';
 import { SOCIAL_FORMATS, type SocialFormat } from '@/social/formats';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/map-cards.css';
@@ -17,9 +16,9 @@ type Field = {
   pin: { x: number; y: number };
 };
 
-const OWN = { owner: 'own' as Owner, initial: 'T', name: ka.map.you };
-const NEIGHBOUR = { owner: 'neighbour' as Owner, initial: 'N', name: ka.landing.map.farmerNeighbour };
-const SELECTED = { owner: 'other' as Owner, selected: true, initial: 'L', name: ka.landing.map.farmerSelected };
+const OWN = { owner: 'own' as Owner, initial: 'T', name: copy.map.you };
+const NEIGHBOUR = { owner: 'neighbour' as Owner, initial: 'N', name: copy.landing.map.farmerNeighbour };
+const SELECTED = { owner: 'other' as Owner, selected: true, initial: 'L', name: copy.landing.map.farmerSelected };
 
 const FIELDS: Record<SocialFormat, Field[]> = {
   portrait: [
@@ -67,12 +66,12 @@ export function MapCard() {
       <div className="map-card-head">
         <span className="map-card-avatar">L</span>
         <span className="map-card-who">
-          <strong>{ka.landing.map.farmerSelected}</strong>
+          <strong>{copy.landing.map.farmerSelected}</strong>
           <span>
-            {ka.landing.market.tomato.location} · {ka.neighbours.away.replace('{distance}', '1.2 km')}
+            {copy.landing.market.tomato.location} · {copy.neighbours.away.replace('{distance}', '1.2 km')}
           </span>
         </span>
-        <span className="map-card-add">{ka.neighbours.add}</span>
+        <span className="map-card-add">{copy.neighbours.add}</span>
       </div>
       <div className="map-card-crops">
         {MAP_SAMPLE_CROPS.map((crop) => (
@@ -80,7 +79,7 @@ export function MapCard() {
             <img src={crop.icon} alt="" />
             <strong>{tr(crop.nameKey)}</strong>
             <span>
-              {crop.area} {ka.farm.areaUnit}
+              {crop.area} {copy.farm.areaUnit}
             </span>
           </span>
         ))}

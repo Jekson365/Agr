@@ -17,7 +17,11 @@ public partial class MarketSalesController
             return Unauthorized();
         }
 
-        if (request.Quantity <= 0)
+        var animalIds = request.AnimalIds.Distinct().ToList();
+        var bySingleAnimal = animalIds.Count > 0;
+        var quantity = bySingleAnimal ? animalIds.Count : request.Quantity;
+
+        if (quantity <= 0)
         {
             return BadRequest("Quantity must be positive.");
         }
@@ -27,7 +31,7 @@ public partial class MarketSalesController
         }
 
         var soldAt = MarketSalesPeriod.StartOfDayUtc(request.SoldOn ?? DateOnly.FromDateTime(DateTime.UtcNow));
-        var amount = decimal.Round(request.Price * request.Quantity, 2);
+        var amount = decimal.Round(request.Price * quantity, 2);
 
         var order = new MarketOrder
         {
@@ -35,18 +39,18 @@ public partial class MarketSalesController
             SellerId = sellerId,
             ItemTitle = request.ItemTitle.Trim(),
             ItemType = request.ItemType.Trim(),
-            ItemCategory = request.ItemCategory,
+            ItemCategory = bySingleAnimal ? ListingCategory.Livestock : request.ItemCategory,
             PriceUnit = request.PriceUnit.Trim(),
-            SourceKind = request.SourceKind,
-            SourceId = request.SourceId,
-            SourceUnitId = request.SourceUnitId,
+            SourceKind = bySingleAnimal ? ListingSourceKind.Livestock : request.SourceKind,
+            SourceId = bySingleAnimal ? null : request.SourceId,
+            SourceUnitId = bySingleAnimal ? null : request.SourceUnitId,
             BuyerName = request.BuyerName.Trim(),
             BuyerSurname = request.BuyerSurname.Trim(),
             BuyerPhone = request.BuyerPhone.Trim(),
             BuyerAddress = request.BuyerAddress.Trim(),
             BuyerCity = request.BuyerCity.Trim(),
             BuyerVillage = request.BuyerVillage.Trim(),
-            Quantity = request.Quantity,
+            Quantity = quantity,
             Amount = amount,
             Currency = "GEL",
             CommissionRate = 0m,
@@ -57,6 +61,11 @@ public partial class MarketSalesController
             CreatedAt = soldAt,
             PaidAt = soldAt,
         };
+
+        if (bySingleAnimal)
+        {
+            return await RecordAnimalSaleAsync(order, animalIds);
+        }
 
         var result = await inventory.ApplyAsync(order);
         if (result.Outcome == MarketSaleInventoryOutcome.Insufficient)
@@ -99,6 +108,7 @@ public partial class MarketSalesController
         }
 
         await inventory.ReverseAsync(order);
+        await inventory.ReleaseAsync(order);
 
         context.MarketOrders.Remove(order);
         await context.SaveChangesAsync();

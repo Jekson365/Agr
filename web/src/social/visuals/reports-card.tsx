@@ -1,15 +1,15 @@
 import { REPORT_SHARES } from '@/config/landing';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/business-cards.css';
 
 const SHARE_LABELS: Record<string, string> = {
-  crop: ka.report.categoryCrop,
-  fruit: ka.report.categoryFruit,
-  livestock: ka.report.categoryLivestock,
+  crop: copy.report.categoryCrop,
+  fruit: copy.report.categoryFruit,
+  livestock: copy.report.categoryLivestock,
 };
 
-const QUARTERS = [ka.report.quarterQ1, ka.report.quarterQ2, ka.report.quarterQ3, ka.report.quarterQ4].map(
+const QUARTERS = [copy.report.quarterQ1, copy.report.quarterQ2, copy.report.quarterQ3, copy.report.quarterQ4].map(
   (label) => label.split(' · ')[0]
 );
 
@@ -52,11 +52,11 @@ export function ReportsCard() {
         <span className="social-legend">
           <span>
             <i />
-            {ka.report.colRevenue}
+            {copy.report.colRevenue}
           </span>
           <span>
             <i className="is-cost" />
-            {ka.report.colCost}
+            {copy.report.colCost}
           </span>
         </span>
         <div className="reports-bars">

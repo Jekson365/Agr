@@ -18,7 +18,6 @@ import {
   // PACKET_ROWS,
   // PLAN_PACKETS,
   PREVIEW_BARS,
-  PREVIEW_GREENHOUSE,
   PREVIEW_ICONS,
   PREVIEW_LIVESTOCK,
   REPORT_FEATURES,
@@ -373,7 +372,6 @@ const PREVIEW_NAV = [
   { id: 'farm', icon: PREVIEW_ICONS.farm, labelKey: 'dashboard.myFarm' },
   { id: 'harvest', icon: PREVIEW_ICONS.harvest, labelKey: 'dashboard.harvest' },
   { id: 'livestock', icon: PREVIEW_ICONS.livestock, labelKey: 'farm.livestock' },
-  { id: 'greenhouse', icon: PREVIEW_ICONS.greenhouse, labelKey: 'farm.greenhouse' },
   { id: 'market', icon: PREVIEW_ICONS.market, labelKey: 'dashboard.marketplace' },
   { id: 'report', icon: PREVIEW_ICONS.report, labelKey: 'dashboard.report' },
 ];
@@ -520,28 +518,6 @@ function PreviewLivestock() {
   );
 }
 
-/** What is growing under cover, and where. */
-function PreviewGreenhouse() {
-  const { t } = useLanguage();
-
-  return (
-    <div className="preview-card">
-      <div className="preview-card-head">
-        <span className="preview-card-title">{t('landing.preview.greenhouseTitle')}</span>
-      </div>
-      {PREVIEW_GREENHOUSE.map((bed) => (
-        <PreviewRow
-          key={bed.id}
-          icon={bed.icon}
-          name={t(bed.nameKey)}
-          meta={`${t('landing.preview.section')} ${bed.section}`}
-          value={`${bed.sqm} ${t('landing.preview.unitSqm')}`}
-        />
-      ))}
-    </div>
-  );
-}
-
 /** The listings this farm has out, priced in the visitor's own currency. */
 function PreviewMarket() {
   const { t } = useLanguage();
@@ -609,7 +585,6 @@ const PREVIEW_SCREENS = {
   farm: PreviewFarm,
   harvest: PreviewHarvest,
   livestock: PreviewLivestock,
-  greenhouse: PreviewGreenhouse,
   market: PreviewMarket,
   report: PreviewReport,
 };
@@ -1115,9 +1090,6 @@ export function LandingPage() {
               <li>
                 <CheckIcon width={16} height={16} /> {t('landing.hero.trust2')}
               </li>
-              <li>
-                <CheckIcon width={16} height={16} /> {t('landing.hero.trust3')}
-              </li>
             </ul>
 
             <div className="landing-hero-preview" data-reveal>
@@ -1388,7 +1360,7 @@ export function LandingPage() {
             The only prose on the page written in the words a stranger types into Google rather
             than the words the product uses about itself — see the note over FAQ_ITEMS. Native
             <details> rather than a scripted accordion, for two reasons: a collapsed answer is
-            still in the DOM, so a crawler reads all seven whether or not it opens them, and the
+            still in the DOM, so a crawler reads all six whether or not it opens them, and the
             section still works for a reader the bundle never reached (the page is baked at build
             time, so there is one). */}
         <section id="faq" className="landing-section landing-alt" aria-labelledby="faq-title">

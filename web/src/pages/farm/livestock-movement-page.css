@@ -53,6 +53,10 @@
   color: var(--color-danger);
 }
 
+.movement-source.market {
+  color: var(--color-amber);
+}
+
 .movement-date {
   font-size: 0.8125rem;
   font-weight: 600;

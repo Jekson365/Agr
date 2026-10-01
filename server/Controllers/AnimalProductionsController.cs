@@ -33,6 +33,8 @@ public class AnimalProductionsController(
     /// claiming the same animal twice.</summary>
     private const string AlreadyRealizedMessage = "This animal has already been realized.";
 
+    private const string SoldAnimalMessage = "This animal has been sold, so it cannot be realized.";
+
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AnimalProduction>>> Get([FromQuery] int? animalId, [FromQuery] int? livestockId)
@@ -74,9 +76,14 @@ public class AnimalProductionsController(
                 return BadRequest(RealizationNeedsAnimalMessage);
             }
 
-            if (await livestockDetailRepository.GetByIdAsync(animalId) is null)
+            if (await livestockDetailRepository.GetByIdAsync(animalId) is not LivestockDetail animal)
             {
                 return NotFound();
+            }
+
+            if (animal.MarketOrderId is not null)
+            {
+                return Conflict(SoldAnimalMessage);
             }
 
             if (production.AnimalCount != 1)

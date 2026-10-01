@@ -25,9 +25,15 @@ body:has(.social-gallery) {
   margin-bottom: 40px;
 }
 
-.social-gallery-item {
+.social-gallery-item,
+.social-gallery-cover {
   display: block;
   zoom: 0.28;
   border-radius: 24px;
   overflow: hidden;
+}
+
+.social-gallery-cover {
+  width: max-content;
+  margin-bottom: 40px;
 }

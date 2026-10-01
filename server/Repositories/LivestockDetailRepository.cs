@@ -26,6 +26,26 @@ public class LivestockDetailRepository(AppDbContext context) : ILivestockDetailR
         return await context.LivestockDetails.AsNoTracking().OrderBy(d => d.Id).ToListAsync();
     }
 
+    public async Task<IReadOnlyList<SaleAnimalDto>> GetAvailableForSaleAsync()
+    {
+        return await LivestockSaleQueries.AvailableForSale(context)
+            .AsNoTracking()
+            .Join(context.Livestock, d => d.LivestockId, l => l.Id, (d, l) => new SaleAnimalDto
+            {
+                Id = d.Id,
+                Code = d.Code,
+                LivestockId = l.Id,
+                LivestockName = l.Name,
+                LivestockType = l.Type,
+                Gender = d.Gender,
+                BornDate = d.BornDate,
+                ImagePath = d.ImagePath,
+            })
+            .OrderBy(a => a.LivestockId)
+            .ThenBy(a => a.Id)
+            .ToListAsync();
+    }
+
     public async Task<LivestockDetail> AddAsync(LivestockDetail detail)
     {
         context.LivestockDetails.Add(detail);
@@ -114,6 +134,7 @@ public class LivestockDetailRepository(AppDbContext context) : ILivestockDetailR
 
         var free = await context.LivestockDetails
             .Where(d => newest.Contains(d.Id))
+            .Where(d => d.MarketOrderId == null)
             .Where(d => !context.MedicalRecords.Any(m => m.StockId == d.Id))
             .Where(d => !context.StockHistories.Any(h => h.StockId == d.Id))
             .Where(d => !context.AnimalProductions.Any(p => p.AnimalId == d.Id))

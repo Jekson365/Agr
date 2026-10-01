@@ -1,0 +1,42 @@
+.promo-stage.is-mobile {
+  width: 1080px;
+  height: 1920px;
+}
+
+.promo-caption.is-mobile {
+  top: 130px;
+  right: 70px;
+  bottom: auto;
+  left: 70px;
+  align-items: center;
+  justify-content: flex-start;
+  width: auto;
+  text-align: center;
+}
+
+.promo-caption.is-mobile .promo-caption-title {
+  margin-top: 26px;
+  font-size: 60px;
+}
+
+.promo-caption.is-mobile .promo-word {
+  margin: -0.12em 0.12em -0.24em;
+}
+
+.promo-caption.is-mobile .promo-caption-body {
+  margin-top: 22px;
+  font-size: 28px;
+  line-height: 1.5;
+}
+
+.promo-touch {
+  position: absolute;
+  border: 3px solid color-mix(in srgb, var(--color-dark) 35%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+  box-shadow: 0 10px 26px rgba(31, 42, 36, 0.25);
+}
+
+.promo-stage.is-mobile .promo-outro-copy {
+  transform: scale(1.25);
+}

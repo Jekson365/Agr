@@ -9,10 +9,14 @@ import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createManualSale } from '@/services/market-sale-service';
-import type { ListingCategory } from '@/types/market-listing';
+import type { ListingCategory, ListingSourceKind } from '@/types/market-listing';
 import type { MarketSale } from '@/types/market-sale';
+import type { SaleAnimal } from '@/types/sale-animal';
 import type { ListingSource } from './listing-source-options';
 import { ListingSourcePicker } from './listing-source-picker';
+import { ManualSaleBuyerFields, type SaleBuyer } from './manual-sale-buyer-fields';
+import { SaleAnimalPicker } from './sale-animal-picker';
+import { animalSaleItemType, animalSaleTitle } from './sale-animals';
 
 type Props = {
   open: boolean;
@@ -20,34 +24,37 @@ type Props = {
   onSaved: (sale: MarketSale) => void;
 };
 
+const ANIMAL_KINDS: ListingSourceKind[] = ['Livestock'];
+const NO_BUYER: SaleBuyer = { name: '', surname: '', phone: '' };
+
 export function ManualSaleModal({ open, onClose, onSaved }: Props) {
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
+  const [kind, setKind] = useState<ListingSourceKind | null>(null);
   const [source, setSource] = useState<ListingSource | null>(null);
+  const [animals, setAnimals] = useState<SaleAnimal[]>([]);
   const [titleInput, setTitleInput] = useState('');
   const [unitInput, setUnitInput] = useState('');
   const [quantityInput, setQuantityInput] = useState('');
   const [priceInput, setPriceInput] = useState('');
   const [soldOn, setSoldOn] = useState(todayIsoDate());
-  const [buyerName, setBuyerName] = useState('');
-  const [buyerSurname, setBuyerSurname] = useState('');
-  const [buyerPhone, setBuyerPhone] = useState('');
+  const [buyer, setBuyer] = useState<SaleBuyer>(NO_BUYER);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
+    setKind(null);
     setSource(null);
+    setAnimals([]);
     setTitleInput('');
     setUnitInput('');
     setQuantityInput('');
     setPriceInput('');
     setSoldOn(todayIsoDate());
-    setBuyerName('');
-    setBuyerSurname('');
-    setBuyerPhone('');
+    setBuyer(NO_BUYER);
     setError(null);
   }, [open]);
 
@@ -58,11 +65,23 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
     setUnitInput(next.unitLabel);
   }
 
+  function changeKind(next: ListingSourceKind | null) {
+    setKind(next);
+    setAnimals([]);
+    if (next === 'Livestock') setUnitInput(t('balance.unitHead'));
+  }
+
+  function pickAnimals(next: SaleAnimal[]) {
+    setAnimals(next);
+    setTitleInput(animalSaleTitle(next, t));
+  }
+
+  const byAnimal = kind === 'Livestock';
   const trimmedTitle = titleInput.trim();
-  const quantity = Math.max(0, parseFloat(quantityInput) || 0);
+  const quantity = byAnimal ? animals.length : Math.max(0, parseFloat(quantityInput) || 0);
   const price = Math.max(0, parseFloat(priceInput) || 0);
   const total = Math.round(quantity * price * 100) / 100;
-  const overAvailable = source != null && quantity > source.amount;
+  const overAvailable = !byAnimal && source != null && quantity > source.amount;
   const canSave = trimmedTitle !== '' && quantity > 0 && !overAvailable && !saving;
 
   async function handleSave() {
@@ -71,24 +90,26 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
     setError(null);
     try {
       const saved = await createManualSale({
-        sourceKind: source?.kind ?? null,
-        sourceId: source?.id ?? null,
-        sourceUnitId: source?.unitId ?? null,
+        sourceKind: byAnimal ? 'Livestock' : (source?.kind ?? null),
+        sourceId: byAnimal ? null : (source?.id ?? null),
+        sourceUnitId: byAnimal ? null : (source?.unitId ?? null),
         itemTitle: trimmedTitle,
-        itemType: source?.itemType ?? '',
-        itemCategory: (source?.category ?? 'Other') as ListingCategory,
+        itemType: byAnimal ? animalSaleItemType(animals) : (source?.itemType ?? ''),
+        itemCategory: (byAnimal ? 'Livestock' : (source?.category ?? 'Other')) as ListingCategory,
         priceUnit: unitInput.trim(),
         quantity,
         price,
+        animalIds: byAnimal ? animals.map((animal) => animal.id) : [],
         soldOn: soldOn || null,
-        buyerName: buyerName.trim(),
-        buyerSurname: buyerSurname.trim(),
-        buyerPhone: buyerPhone.trim(),
+        buyerName: buyer.name.trim(),
+        buyerSurname: buyer.surname.trim(),
+        buyerPhone: buyer.phone.trim(),
       });
       onSaved(saved);
       onClose();
     } catch (err) {
-      setError(err instanceof ApiError && err.status === 409 ? t('sales.notEnoughStock') : t('sales.manualSaveError'));
+      const conflict = err instanceof ApiError && err.status === 409;
+      setError(conflict ? t(byAnimal ? 'sales.animalsUnavailable' : 'sales.notEnoughStock') : t('sales.manualSaveError'));
     } finally {
       setSaving(false);
     }
@@ -99,7 +120,14 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
       <h2 className="form-title">{t('sales.manualTitle')}</h2>
 
       <div className="sale-form-grid">
-        <ListingSourcePicker selected={source} onSelect={applySource} />
+        <ListingSourcePicker
+          selected={source}
+          onSelect={applySource}
+          onKindChange={changeKind}
+          customKinds={ANIMAL_KINDS}
+        />
+
+        {byAnimal && <SaleAnimalPicker selected={animals} onChange={pickAnimals} />}
 
         <div className="field field-wide">
           <label>{t('sales.manualItem')}</label>
@@ -118,8 +146,13 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
 
         <div className="field">
           <label>{t('sales.manualQuantity')}</label>
-          <input value={quantityInput} onChange={(e) => setQuantityInput(e.target.value)} inputMode="decimal" />
-          {source && (
+          <input
+            value={byAnimal ? String(animals.length) : quantityInput}
+            onChange={(e) => setQuantityInput(e.target.value)}
+            readOnly={byAnimal}
+            inputMode="decimal"
+          />
+          {source && !byAnimal && (
             <span className={overAvailable ? 'limit-hint listing-quantity-over' : 'limit-hint'}>
               {t('market.availableToSell', { amount: source.amount, unit: source.unitLabel })}
             </span>
@@ -141,20 +174,7 @@ export function ManualSaleModal({ open, onClose, onSaved }: Props) {
           {total > 0 && <span className="limit-hint">{t('sales.manualTotal', { total: formatPrice(total) })}</span>}
         </div>
 
-        <div className="field">
-          <label>{t('sales.manualBuyerName')}</label>
-          <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} />
-        </div>
-
-        <div className="field">
-          <label>{t('sales.manualBuyerSurname')}</label>
-          <input value={buyerSurname} onChange={(e) => setBuyerSurname(e.target.value)} />
-        </div>
-
-        <div className="field">
-          <label>{t('sales.manualBuyerPhone')}</label>
-          <input type="tel" value={buyerPhone} onChange={(e) => setBuyerPhone(e.target.value)} />
-        </div>
+        <ManualSaleBuyerFields buyer={buyer} onChange={setBuyer} />
       </div>
 
       {error && <div className="error-banner">{error}</div>}

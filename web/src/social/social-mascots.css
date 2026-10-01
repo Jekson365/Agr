@@ -67,6 +67,10 @@
   --bottom: -52px;
 }
 
+.social-post.is-portrait.is-timeline .social-mascot.is-toma {
+  --bottom: -120px;
+}
+
 .social-post.is-square.is-map .social-mascot.is-maia {
   --size: 460px;
   --right: -30px;
@@ -77,4 +81,43 @@
   --size: 720px;
   --right: -170px;
   --bottom: -190px;
+}
+
+.social-post.is-portrait.is-paperwork .social-mascot.is-companion {
+  --size: 330px;
+  --right: -20px;
+  --bottom: 430px;
+}
+
+.social-post.is-square.is-paperwork .social-mascot.is-companion {
+  --size: 250px;
+  --right: -10px;
+  --bottom: 420px;
+}
+
+.social-post.is-portrait.is-animal-profile .social-mascot.is-maia {
+  --right: -84px;
+  --bottom: -96px;
+}
+
+.social-post.is-square.is-animal-profile .social-mascot.is-maia {
+  --right: -50px;
+  --bottom: -70px;
+}
+
+.social-post.is-portrait.is-overview .social-mascot.is-companion {
+  --size: 330px;
+  --right: -20px;
+  --bottom: 430px;
+}
+
+.social-post.is-square.is-overview .social-mascot.is-companion {
+  --size: 250px;
+  --right: -10px;
+  --bottom: 420px;
+}
+
+.social-post.is-portrait.is-overview .social-mascot.is-toma {
+  --right: -84px;
+  --bottom: -118px;
 }

@@ -1,4 +1,4 @@
-import { SEED_UNIT_OPTIONS } from '@/config/seed-kinds';
+import { SEED_UNIT_LABEL_KEY, SEED_UNIT_OPTIONS } from '@/config/seed-kinds';
 import { stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import type { SeedUnit } from '@/types/seed';
@@ -9,7 +9,7 @@ type Props = {
   amount: string;
   onAmountChange: (amount: string) => void;
   unit: SeedUnit;
-  onUnitChange: (unit: SeedUnit) => void;
+  onUnitChange?: (unit: SeedUnit) => void;
   /** The crop the seed belongs to, named in the hint. */
   stockType: StockType;
 };
@@ -40,7 +40,11 @@ export function StockSeedFields({ amount, onAmountChange, unit, onUnitChange, st
 
         <div className="field">
           <label>{t('farm.unit')}</label>
-          <UnitChips options={SEED_UNIT_OPTIONS} selected={unit} onSelect={onUnitChange} />
+          {onUnitChange ? (
+            <UnitChips options={SEED_UNIT_OPTIONS} selected={unit} onSelect={onUnitChange} />
+          ) : (
+            <span className="limit-hint field-fixed-value">{t(SEED_UNIT_LABEL_KEY[unit] ?? 'farm.unitKg')}</span>
+          )}
         </div>
 
         <span className="limit-hint">{t('seed.addWithStockHint', { crop: stockTypeLabel(stockType, t) })}</span>

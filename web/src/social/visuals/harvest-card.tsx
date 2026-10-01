@@ -1,23 +1,23 @@
 import cabbageIcon from '@/assets/goods/cabbage.png';
 import cucumberIcon from '@/assets/goods/cucumber.png';
 import tomatoIcon from '@/assets/goods/tomato.png';
-import ka from '@/locales/ka.json';
 import { formatCount } from '@/promo/figures';
+import { copy } from '@/promo/locale';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/field-cards.css';
 
 const STEPS = [
-  { label: ka.harvest.statusPlanning, color: 'var(--color-blue)' },
-  { label: ka.harvest.statusPlanting, color: 'var(--color-stage-emergence)' },
-  { label: ka.harvest.statusFlowering, color: 'var(--color-stage-flowering)' },
-  { label: ka.harvest.statusRipening, color: 'var(--color-stage-ripening)' },
-  { label: ka.harvest.statusHarvested, color: 'var(--color-green)' },
+  { label: copy.harvest.statusPlanning, color: 'var(--color-blue)' },
+  { label: copy.harvest.statusPlanting, color: 'var(--color-stage-emergence)' },
+  { label: copy.harvest.statusFlowering, color: 'var(--color-stage-flowering)' },
+  { label: copy.harvest.statusRipening, color: 'var(--color-stage-ripening)' },
+  { label: copy.harvest.statusHarvested, color: 'var(--color-green)' },
 ];
 
 const ROWS = [
-  { label: ka.landing.harvest.sampleTomato, icon: tomatoIcon, planned: 1200, actual: 1340 },
-  { label: ka.landing.harvest.sampleCucumber, icon: cucumberIcon, planned: 800, actual: 742 },
-  { label: ka.landing.harvest.sampleCabbage, icon: cabbageIcon, planned: 400, actual: 455 },
+  { label: copy.landing.harvest.sampleTomato, icon: tomatoIcon, planned: 1200, actual: 1340 },
+  { label: copy.landing.harvest.sampleCucumber, icon: cucumberIcon, planned: 800, actual: 742 },
+  { label: copy.landing.harvest.sampleCabbage, icon: cabbageIcon, planned: 400, actual: 455 },
 ];
 
 const MAX = Math.max(...ROWS.flatMap((row) => [row.planned, row.actual]));
@@ -36,7 +36,7 @@ export function HarvestCard() {
       </div>
 
       <div className="social-card-head harvest-head">
-        <span className="social-card-title">{ka.harvest.comparisonTitle}</span>
+        <span className="social-card-title">{copy.harvest.comparisonTitle}</span>
       </div>
 
       {ROWS.map((row) => {
@@ -55,7 +55,7 @@ export function HarvestCard() {
                 </span>
               </div>
               <span className="harvest-row-figures">
-                {formatCount(row.actual)} / {formatCount(row.planned)} {ka.farm.unitKg}
+                {formatCount(row.actual)} / {formatCount(row.planned)} {copy.farm.unitKg}
               </span>
               <span className="harvest-bars">
                 <span className="is-planned" style={{ width: `${(row.planned / MAX) * 100}%` }} />

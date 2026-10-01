@@ -9,7 +9,15 @@ public partial class MarketSaleInventoryService(AppDbContext context) : IMarketS
 {
     public async Task<MarketSaleInventoryResult> ApplyAsync(MarketOrder order)
     {
-        if (order.StockAppliedAt is not null || order.SourceKind is null || order.SourceId is null)
+        if (order.StockAppliedAt is not null || order.SourceKind is null)
+        {
+            return MarketSaleInventoryResult.Nothing();
+        }
+        if (IsAnimalSale(order))
+        {
+            return await ApplyAnimalsAsync(order);
+        }
+        if (order.SourceId is null)
         {
             return MarketSaleInventoryResult.Nothing();
         }
@@ -28,7 +36,16 @@ public partial class MarketSaleInventoryService(AppDbContext context) : IMarketS
 
     public async Task ReverseAsync(MarketOrder order)
     {
-        if (order.StockAppliedAt is null || order.SourceKind is null || order.SourceId is null)
+        if (order.StockAppliedAt is null || order.SourceKind is null)
+        {
+            return;
+        }
+        if (IsAnimalSale(order))
+        {
+            await ReverseAnimalsAsync(order);
+            return;
+        }
+        if (order.SourceId is null)
         {
             return;
         }

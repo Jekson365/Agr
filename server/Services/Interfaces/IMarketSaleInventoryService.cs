@@ -32,4 +32,8 @@ public interface IMarketSaleInventoryService
     Task<MarketSaleInventoryResult> ApplyAsync(MarketOrder order);
 
     Task ReverseAsync(MarketOrder order);
+
+    Task<bool> ReserveAnimalsAsync(int orderId, IReadOnlyCollection<int> animalIds);
+
+    Task ReleaseAsync(MarketOrder order);
 }

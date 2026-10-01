@@ -1145,6 +1145,17 @@ button.entity-tile-details:disabled:hover {
 
 /* And the card itself steps back: it is a record of an animal the farm kept, not one it works
    with. Nothing on it is clickable any more. */
+.entity-tile-sold {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+  font-size: calc(0.75rem * var(--tile-text-scale));
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.entity-tile.sold .entity-tile-media,
 .entity-tile.realized .entity-tile-media {
   opacity: 0.65;
 }

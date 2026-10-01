@@ -29,4 +29,8 @@ public class LivestockDetail
 
     /// <summary>The other parent — see <see cref="ParentOneId"/>.</summary>
     public int? ParentTwoId { get; set; }
+
+    public DateOnly? SoldOn { get; set; }
+
+    public int? MarketOrderId { get; set; }
 }

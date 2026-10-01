@@ -15,9 +15,13 @@ import { screenEnd, screenStart, WINDOW_BOX } from '@/promo/timeline';
 import { useClock } from '@/promo/use-clock';
 
 type Sticker = { src: string; size: number; tilt: number };
+type Spot = { x: number; y: number };
+type Anchors = { topRight: Spot; bottomLeft: Spot };
 
-const TOP_RIGHT = { x: WINDOW_BOX.x + WINDOW_BOX.width - 30, y: WINDOW_BOX.y + 6 };
-const BOTTOM_LEFT = { x: WINDOW_BOX.x + 10, y: WINDOW_BOX.y + WINDOW_BOX.height - 36 };
+const DESKTOP_ANCHORS: Anchors = {
+  topRight: { x: WINDOW_BOX.x + WINDOW_BOX.width - 30, y: WINDOW_BOX.y + 6 },
+  bottomLeft: { x: WINDOW_BOX.x + 10, y: WINDOW_BOX.y + WINDOW_BOX.height - 36 },
+};
 
 const GROUPS: [Sticker, Sticker][] = [
   [
@@ -52,12 +56,14 @@ function StickerImage({
   start,
   end,
   phase,
+  zoom,
 }: {
   sticker: Sticker;
-  anchor: { x: number; y: number };
+  anchor: Spot;
   start: number;
   end: number;
   phase: number;
+  zoom: number;
 }) {
   const time = useClock();
   const pop = enter(time, start, 0.6, backOut);
@@ -66,6 +72,7 @@ function StickerImage({
   const scale = pop * (1 - out);
   const bob = wave(time, 2.8, 9, phase);
   const turn = sticker.tilt + wave(time, 3.4, 3, phase) + mix(-30, 0, pop);
+  const size = sticker.size * zoom;
 
   return (
     <img
@@ -74,31 +81,32 @@ function StickerImage({
       alt=""
       style={{
         visibility: shown ? 'visible' : 'hidden',
-        width: sticker.size,
-        height: sticker.size,
-        left: anchor.x - sticker.size / 2,
-        top: anchor.y - sticker.size / 2,
+        width: size,
+        height: size,
+        left: anchor.x - size / 2,
+        top: anchor.y - size / 2,
         transform: `translateY(${bob}px) rotate(${turn}deg) scale(${scale})`,
       }}
     />
   );
 }
 
-export function Stickers() {
+export function Stickers({ anchors = DESKTOP_ANCHORS, zoom = 1 }: { anchors?: Anchors; zoom?: number }) {
   return (
     <>
       {GROUPS.map(([first, second], index) => {
         const start = screenStart(index) + (index === 0 ? 0.75 : 0.22);
         const end = screenEnd(index);
         return [
-          <StickerImage key={`${index}-a`} sticker={first} anchor={TOP_RIGHT} start={start} end={end} phase={index * 0.7} />,
+          <StickerImage key={`${index}-a`} sticker={first} anchor={anchors.topRight} start={start} end={end} phase={index * 0.7} zoom={zoom} />,
           <StickerImage
             key={`${index}-b`}
             sticker={second}
-            anchor={BOTTOM_LEFT}
+            anchor={anchors.bottomLeft}
             start={start + 0.12}
             end={end}
             phase={index * 0.7 + 1.3}
+            zoom={zoom}
           />,
         ];
       })}

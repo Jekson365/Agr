@@ -1,10 +1,9 @@
 import { KindCatalogField } from '@/components/farm/kind-catalog-field';
-import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY, STOCK_UNIT_OPTIONS } from '@/config/stock-kinds';
+import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import type { StockFormValues } from './stock-form';
 import { STOCK_KIND_CATALOG } from './stock-kind-catalog';
 import { StockSeedFields } from './stock-seed-fields';
-import { UnitChips } from './unit-chips';
 
 type Props = {
   open: boolean;
@@ -88,13 +87,7 @@ export function StockFormFields({ open, isEditing, values, formError, setField }
 
       <div className="field">
         <label>{t('farm.unit')}</label>
-        {isEditing ? (
-          <span className="limit-hint field-fixed-value">
-            {t(STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitKg')}
-          </span>
-        ) : (
-          <UnitChips options={STOCK_UNIT_OPTIONS} selected={values.unit} onSelect={(unit) => setField('unit', unit)} />
-        )}
+        <span className="limit-hint field-fixed-value">{t(STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitKg')}</span>
       </div>
 
       {!isEditing && (
@@ -102,7 +95,6 @@ export function StockFormFields({ open, isEditing, values, formError, setField }
           amount={values.seedAmount}
           onAmountChange={(amount) => setField('seedAmount', amount)}
           unit={values.seedUnit}
-          onUnitChange={(unit) => setField('seedUnit', unit)}
           stockType={values.type}
         />
       )}

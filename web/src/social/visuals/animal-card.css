@@ -1,0 +1,189 @@
+.passport-card {
+  --passport-female: var(--color-stage-flowering);
+  --passport-female-soft: color-mix(in srgb, var(--color-stage-flowering) 12%, var(--color-surface));
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 640px;
+  padding: 20px 28px 26px;
+}
+
+.passport-herd {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.passport-herd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+
+.passport-herd-chip img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.passport-herd-chip.is-active {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-green) 18%, transparent);
+  color: var(--color-green);
+}
+
+.passport-herd-chip.is-more {
+  padding: 6px 16px;
+}
+
+.passport-head {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.passport-avatar {
+  display: grid;
+  place-items: center;
+  width: 70px;
+  height: 70px;
+  border-radius: 22px;
+  background: var(--color-green-muted);
+}
+
+.passport-avatar img {
+  width: 54px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.passport-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.passport-name strong {
+  font-size: 30px;
+  letter-spacing: 0.01em;
+}
+
+.passport-name span {
+  font-size: 18px;
+  color: var(--color-muted);
+}
+
+.passport-gender {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px 8px 12px;
+  border-radius: 999px;
+  background: var(--passport-female-soft);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--passport-female);
+}
+
+.passport-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.passport-section-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.passport-weight-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.passport-weight-head .passport-section-title {
+  margin-right: auto;
+}
+
+.passport-weight-now {
+  font-size: 18px;
+  white-space: nowrap;
+  color: var(--color-muted);
+}
+
+.passport-weight-now strong {
+  font-size: 22px;
+  color: var(--color-dark);
+}
+
+.passport-spark {
+  display: block;
+  width: 100%;
+  height: 46px;
+  overflow: visible;
+}
+
+.passport-spark-area {
+  fill: color-mix(in srgb, var(--color-green) 14%, transparent);
+}
+
+.passport-spark-line {
+  fill: none;
+  stroke: var(--color-green);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.passport-spark-dot {
+  fill: var(--color-surface);
+  stroke: var(--color-green);
+  stroke-width: 4;
+}
+
+.passport-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.passport-visit {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: var(--color-surface-sunken);
+  color: var(--color-blue);
+}
+
+.passport-visit strong {
+  overflow: hidden;
+  font-size: 17px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-dark);
+}
+
+.passport-visit span {
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted);
+}

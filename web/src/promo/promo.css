@@ -124,6 +124,14 @@
   color: var(--promo-text-soft);
 }
 
+.promo-stage:lang(en) .promo-caption-title {
+  text-wrap: balance;
+}
+
+.promo-stage:lang(en) .promo-caption-body {
+  text-wrap: pretty;
+}
+
 .promo-sticker {
   position: absolute;
   object-fit: contain;

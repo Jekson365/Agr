@@ -1280,11 +1280,17 @@ namespace Server.Migrations.Tenant
                     b.Property<int>("LivestockId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("MarketOrderId")
+                        .HasColumnType("integer");
+
                     b.Property<int?>("ParentOneId")
                         .HasColumnType("integer");
 
                     b.Property<int?>("ParentTwoId")
                         .HasColumnType("integer");
+
+                    b.Property<DateOnly?>("SoldOn")
+                        .HasColumnType("date");
 
                     b.HasKey("Id");
 
@@ -1407,6 +1413,9 @@ namespace Server.Migrations.Tenant
                         .HasColumnType("integer");
 
                     b.Property<int>("LivestockId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("MarketOrderId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Note")

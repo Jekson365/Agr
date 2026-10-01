@@ -12,6 +12,8 @@ export type LivestockDetail = {
    *  animal entered on its own, and nulled again if a parent is later removed. */
   parentOneId: number | null;
   parentTwoId: number | null;
+  soldOn: string | null;
+  marketOrderId: number | null;
 };
 
-export type LivestockDetailInput = Omit<LivestockDetail, 'id'>;
+export type LivestockDetailInput = Omit<LivestockDetail, 'id' | 'soldOn' | 'marketOrderId'>;

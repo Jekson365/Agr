@@ -1,5 +1,10 @@
 import { apiFetch, uploadImage } from '@/services/api-client';
 import type { LivestockDetail, LivestockDetailInput } from '@/types/livestock-detail';
+import type { SaleAnimal } from '@/types/sale-animal';
+
+export function getSaleAnimals() {
+  return apiFetch<SaleAnimal[]>('/api/livestockdetails/available');
+}
 
 export function getLivestockDetails(livestockId: number) {
   return apiFetch<LivestockDetail[]>(`/api/livestockdetails?livestockId=${livestockId}`);

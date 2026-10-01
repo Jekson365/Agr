@@ -3,33 +3,33 @@ import cherryIcon from '@/assets/trees/cherry.png';
 import peachIcon from '@/assets/trees/peach.png';
 import pearIcon from '@/assets/trees/pear.png';
 import treesIcon from '@/assets/icons/trees.png';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import '@/social/visuals/cards.css';
 import '@/social/visuals/orchard-card.css';
 
 const ROWS = [
-  { icon: appleIcon, name: ka.farm.fruitApple, picked: [2] },
-  { icon: peachIcon, name: ka.farm.fruitPeach, picked: [] },
-  { icon: pearIcon, name: ka.farm.fruitPear, picked: [4] },
-  { icon: cherryIcon, name: ka.farm.fruitCherry, picked: [] },
+  { icon: appleIcon, name: copy.farm.fruitApple, picked: [2] },
+  { icon: peachIcon, name: copy.farm.fruitPeach, picked: [] },
+  { icon: pearIcon, name: copy.farm.fruitPear, picked: [4] },
+  { icon: cherryIcon, name: copy.farm.fruitCherry, picked: [] },
 ];
 
 const TREES_PER_ROW = 6;
 
 const CARE = [
-  { label: ka.treatment.typeSpraying, color: 'var(--color-blue)' },
-  { label: ka.treatment.typePruning, color: 'var(--color-violet)' },
-  { label: ka.treatment.typeFertilization, color: 'var(--color-amber)' },
-  { label: ka.treatment.typeIrrigation, color: 'var(--color-stage-fruit)' },
+  { label: copy.treatment.typeSpraying, color: 'var(--color-blue)' },
+  { label: copy.treatment.typePruning, color: 'var(--color-violet)' },
+  { label: copy.treatment.typeFertilization, color: 'var(--color-amber)' },
+  { label: copy.treatment.typeIrrigation, color: 'var(--color-stage-fruit)' },
 ];
 
 export function OrchardCard() {
   return (
     <div className="social-card orchard-card">
       <div className="social-card-head">
-        <span className="social-card-title">{ka.fruits.trees}</span>
+        <span className="social-card-title">{copy.fruits.trees}</span>
         <span className="social-chip">
-          {ROWS.length * TREES_PER_ROW} {ka.farm.unitPlant}
+          {ROWS.length * TREES_PER_ROW} {copy.farm.unitPlant}
         </span>
       </div>
 

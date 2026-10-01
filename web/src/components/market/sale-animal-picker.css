@@ -1,0 +1,175 @@
+.sale-animals {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sale-animals-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.sale-animals-toggle svg {
+  flex: none;
+  color: var(--color-muted);
+  transform: rotate(90deg);
+  transition: transform 0.15s ease;
+}
+
+.sale-animals-toggle.open {
+  border-color: var(--color-green);
+}
+
+.sale-animals-toggle.open svg {
+  transform: rotate(-90deg);
+}
+
+.sale-animals-panel {
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: 0 10px 24px var(--color-shadow);
+}
+
+.sale-animals-panel .sale-animals-search {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sale-animals-list {
+  max-height: 260px;
+  margin-top: 8px;
+  overflow-y: auto;
+}
+
+.sale-animals-group + .sale-animals-group {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border);
+}
+
+.sale-animals-head,
+.sale-animals-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-dark);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sale-animals-head:hover,
+.sale-animals-row:hover {
+  background: var(--color-surface-sunken);
+}
+
+.sale-animals-head {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.sale-animals-head img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.sale-animals-row {
+  padding-left: 22px;
+  font-size: 0.875rem;
+}
+
+.sale-animals-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.sale-animals-count,
+.sale-animals-meta {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.sale-animals-code {
+  font-weight: 700;
+}
+
+.sale-animals-box {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border: 2px solid var(--color-border);
+  border-radius: 5px;
+  background: var(--color-surface);
+}
+
+.sale-animals-row.checked .sale-animals-box,
+.sale-animals-head.checked .sale-animals-box {
+  border-color: var(--color-green);
+  background: var(--color-green);
+}
+
+.sale-animals-row.checked .sale-animals-box::after,
+.sale-animals-head.checked .sale-animals-box::after {
+  content: '';
+  width: 8px;
+  height: 4px;
+  border-bottom: 2px solid var(--color-on-accent);
+  border-left: 2px solid var(--color-on-accent);
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.sale-animals-head.mixed .sale-animals-box {
+  border-color: var(--color-green);
+  background: var(--color-green-muted);
+}
+
+.sale-animals-head.mixed .sale-animals-box::after {
+  content: '';
+  width: 8px;
+  height: 2px;
+  background: var(--color-green);
+}
+
+.sale-animals-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.sale-animals-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-green);
+  border-radius: 999px;
+  background: var(--color-green-muted);
+  color: var(--color-green);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}

@@ -2,16 +2,16 @@ import chickenIcon from '@/assets/animals/chicken.png';
 import sheepIcon from '@/assets/animals/sheep.png';
 import milkIcon from '@/assets/goods/milk.png';
 import { PREVIEW_LIVESTOCK } from '@/config/landing';
-import ka from '@/locales/ka.json';
-import { formatCount, tr } from '@/promo/figures';
+import { formatCount } from '@/promo/figures';
+import { copy, tr } from '@/promo/locale';
 import { enter, fadeUp, popIn, slideIn } from '@/promo/motion';
 import { useClock } from '@/promo/use-clock';
 import '@/promo/screens/livestock.css';
 
 const PRODUCTION = [
-  { icon: milkIcon, label: ka.production.typeMilk, value: 1240, unit: ka.farm.unitLiter },
-  { icon: chickenIcon, label: ka.production.typeEgg, value: 3600, unit: '' },
-  { icon: sheepIcon, label: ka.production.typeWool, value: 180, unit: ka.farm.unitKg },
+  { icon: milkIcon, label: copy.production.typeMilk, value: 1240, unit: copy.farm.unitLiter },
+  { icon: chickenIcon, label: copy.production.typeEgg, value: 3600, unit: '' },
+  { icon: sheepIcon, label: copy.production.typeWool, value: 180, unit: copy.farm.unitKg },
 ];
 
 const MAX_HEAD = Math.max(...PREVIEW_LIVESTOCK.map((group) => group.count));
@@ -23,12 +23,12 @@ export function LivestockScreen({ start }: { start: number }) {
   return (
     <>
       <h3 className="promo-screen-title" style={fadeUp(time, base, 16)}>
-        {ka.farm.livestock}
+        {copy.farm.livestock}
       </h3>
 
       <div className="promo-card promo-herd" style={fadeUp(time, base + 0.04, 24)}>
         <div className="promo-card-head">
-          <span className="promo-card-title">{ka.landing.preview.livestockTitle}</span>
+          <span className="promo-card-title">{copy.landing.preview.livestockTitle}</span>
         </div>
         {PREVIEW_LIVESTOCK.map((group, index) => {
           const at = base + 0.1 + index * 0.06;
@@ -43,7 +43,7 @@ export function LivestockScreen({ start }: { start: number }) {
                 <span style={{ width: `${(group.count / MAX_HEAD) * 100 * grow}%` }} />
               </span>
               <strong className="promo-herd-count">
-                {formatCount(group.count * grow)} {ka.landing.preview.unitHead}
+                {formatCount(group.count * grow)} {copy.landing.preview.unitHead}
               </strong>
             </div>
           );
@@ -52,7 +52,7 @@ export function LivestockScreen({ start }: { start: number }) {
 
       <div className="promo-card promo-yield" style={fadeUp(time, base + 0.3, 24)}>
         <div className="promo-card-head">
-          <span className="promo-card-title">{ka.production.title}</span>
+          <span className="promo-card-title">{copy.production.title}</span>
         </div>
         <div className="promo-yield-row">
           {PRODUCTION.map((item, index) => {

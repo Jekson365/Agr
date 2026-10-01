@@ -1,5 +1,5 @@
 /** Where a change in a group's head count came from — see server/Models/LivestockMovement.cs. */
-export type LivestockMovementSource = 'Manual' | 'Birth' | 'Gift' | 'Purchase' | 'Realization';
+export type LivestockMovementSource = 'Manual' | 'Birth' | 'Gift' | 'Purchase' | 'Realization' | 'Market';
 
 /** The ways a herd can grow, which are the ones offered when recording one by hand. Realization
  *  is absent on purpose: it marks a group rather than moving its count, and the entries carrying

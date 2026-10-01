@@ -1,17 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import { CardMenu } from '@/components/farm/card-menu';
 import '@/components/farm/farm-crud.css';
+import { AnimalTile } from '@/components/farm/livestock/animal-tile';
 import { LivestockRealizationModal } from '@/components/farm/livestock/animal-production/livestock-realization-modal';
 import { LivestockDetailFormModal } from '@/components/farm/livestock/livestock-detail-form-modal';
 import { StockFeedRow } from '@/components/farm/livestock/stock-feed-row';
-import { CalendarIcon, ChevronRightIcon, PawIcon } from '@/components/icons/misc-icons';
-import { formatAge } from '@/config/age';
-import { livestockImage } from '@/config/livestock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { getAllAnimalProductions } from '@/services/animal-production-service';
-import { resolveAssetUrl } from '@/services/api-client';
 import { getLivestockDetails } from '@/services/livestock-detail-service';
 import { getLivestockItem } from '@/services/livestock-service';
 import type { Livestock } from '@/types/livestock';
@@ -91,6 +87,12 @@ export function LivestockDetailPage() {
     setDetails((prev) => (isNew ? [...prev, detail] : prev.map((d) => (d.id === detail.id ? detail : d))));
   }
 
+  function closedRank(detail: LivestockDetail): number {
+    if (detail.marketOrderId != null) return 2;
+    return realizedIds.has(detail.id) ? 1 : 0;
+  }
+
+  const sortedDetails = [...details].sort((a, b) => closedRank(a) - closedRank(b));
 
   return (
     <div>
@@ -126,96 +128,16 @@ export function LivestockDetailPage() {
         <p className="empty-state">{t('livestockDetail.empty')}</p>
       ) : (
         <div className="entity-tile-grid">
-          {details.map((detail) => {
-            const age = formatAge(detail.bornDate, t);
-            const genderLabel = detail.gender ? t(detail.gender === 'Male' ? 'livestockDetail.male' : 'livestockDetail.female') : null;
-            const animalHref = `/farm/livestock/${livestockId}/animal/${detail.id}`;
-            // Realized: taken off the farm for its meat. Its record is closed — nothing to edit
-            // and nothing further to add — so the card shows what it was and stops there.
-            const realized = realizedIds.has(detail.id);
-            const media = (
-              <>
-                {/* An animal's own photo fills the panel the way a land's does; the kind's
-                    artwork is a flat mark, so it stays contained on the muted green. */}
-                {detail.imagePath ? (
-                  <img src={resolveAssetUrl(detail.imagePath)} alt="" className="entity-tile-photo" />
-                ) : livestock ? (
-                  <img src={livestockImage(livestock.type)} alt="" className="entity-tile-icon" />
-                ) : null}
-              </>
-            );
-            return (
-              <div key={detail.id} className={realized ? 'entity-tile realized' : 'entity-tile'}>
-                {realized ? (
-                  <div className="entity-tile-media">{media}</div>
-                ) : (
-                  <Link to={animalHref} className="entity-tile-media">
-                    {media}
-                  </Link>
-                )}
-
-                <div className="entity-tile-menu">
-                  {/* Edit only, and a realized animal keeps its record as it stands — so that one
-                      has no menu at all. */}
-                  <CardMenu onEdit={realized ? undefined : () => openEdit(detail)} />
-                </div>
-
-                <div className="entity-tile-body">
-                  <h2 className="entity-tile-title">{detail.code}</h2>
-
-                  {realized && (
-                    <div className="entity-tile-badges">
-                      <span className="entity-tile-realized">{t('production.realizedBadge')}</span>
-                    </div>
-                  )}
-
-                  {(age || genderLabel) && (
-                    <div className="entity-tile-meta">
-                      {age && (
-                        <div className="entity-tile-row">
-                          <CalendarIcon width={16} height={16} />
-                          <span>
-                            {t('farm.age')}: {age}
-                          </span>
-                        </div>
-                      )}
-                      {genderLabel && (
-                        <div className="entity-tile-row">
-                          <PawIcon width={16} height={16} />
-                          <span>{genderLabel}</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <span className="entity-tile-divider" />
-
-                  {/* A realized animal has neither: its details are closed, and it cannot be
-                      realized twice. The line in their place says why the card ends here. */}
-                  {realized ? (
-                    <p className="limit-hint">{t('production.realizedBlocked')}</p>
-                  ) : (
-                    <div className="entity-tile-actions">
-                      <Link to={animalHref} className="entity-tile-details">
-                        {t('common.details')}
-                        <ChevronRightIcon width={16} height={16} />
-                      </Link>
-                      {/* One animal at a time: a realization covers the animal whose card it was
-                          started from, which is why it is offered per card and not once for the
-                          herd. */}
-                      <button
-                        type="button"
-                        className="entity-tile-details secondary"
-                        onClick={() => setRealizationFor(detail)}
-                      >
-                        {t('production.realization')}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {sortedDetails.map((detail) => (
+            <AnimalTile
+              key={detail.id}
+              detail={detail}
+              livestock={livestock}
+              realized={realizedIds.has(detail.id)}
+              onEdit={openEdit}
+              onRealize={setRealizationFor}
+            />
+          ))}
         </div>
       )}
 

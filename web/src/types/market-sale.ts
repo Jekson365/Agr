@@ -43,6 +43,7 @@ export type ManualSaleInput = {
   priceUnit: string;
   quantity: number;
   price: number;
+  animalIds: number[];
   soldOn: string | null;
   buyerName: string;
   buyerSurname: string;

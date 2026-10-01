@@ -5,32 +5,18 @@ import { CardMenu } from '@/components/farm/card-menu';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/livestock/breeding/breeding.css';
-import { DateField } from '@/components/ui/date-field';
-import { formatLocalizedIsoDay, todayIsoDate } from '@/components/ui/date-utils';
-import { Modal } from '@/components/ui/modal';
+import { MovementFormModal } from '@/components/farm/livestock/movement-form-modal';
+import { formatLocalizedIsoDay } from '@/components/ui/date-utils';
+import {
+  LIVESTOCK_MOVEMENT_SOURCE_LABEL_KEY as SOURCE_LABEL_KEY,
+  LOCKED_MOVEMENT_SOURCES,
+} from '@/config/livestock-movement';
 import { useLanguage } from '@/contexts/language-context';
-import { ApiError } from '@/services/api-client';
 import { getLivestockItem } from '@/services/livestock-service';
-import {
-  createLivestockMovement,
-  deleteLivestockMovement,
-  getLivestockMovements,
-} from '@/services/livestock-movement-service';
+import { deleteLivestockMovement, getLivestockMovements } from '@/services/livestock-movement-service';
 import type { Livestock } from '@/types/livestock';
-import {
-  LIVESTOCK_MOVEMENT_SOURCES,
-  type LivestockMovement,
-  type LivestockMovementSource,
-} from '@/types/livestock-movement';
+import type { LivestockMovement } from '@/types/livestock-movement';
 import './livestock-movement-page.css';
-
-const SOURCE_LABEL_KEY: Record<LivestockMovementSource, string> = {
-  Manual: 'livestockMovement.sourceManual',
-  Birth: 'livestockMovement.sourceBirth',
-  Gift: 'livestockMovement.sourceGift',
-  Purchase: 'livestockMovement.sourcePurchase',
-  Realization: 'livestockMovement.sourceRealization',
-};
 
 /**
  * How a group came by the animals it has: every change to its head count, with what caused it.
@@ -51,12 +37,6 @@ export function LivestockMovementPage() {
   const [error, setError] = useState<string | null>(null);
 
   const [formOpen, setFormOpen] = useState(false);
-  const [quantityInput, setQuantityInput] = useState('1');
-  const [source, setSource] = useState<LivestockMovementSource>('Purchase');
-  const [date, setDate] = useState(todayIsoDate);
-  const [note, setNote] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; label: string } | null>(null);
 
   useEffect(() => {
@@ -76,45 +56,6 @@ export function LivestockMovementPage() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setLoading(false);
-    }
-  }
-
-  function openAdd() {
-    setQuantityInput('1');
-    setSource('Purchase');
-    setDate(todayIsoDate());
-    setNote('');
-    setFormError(null);
-    setFormOpen(true);
-  }
-
-  async function handleSubmit() {
-    const quantity = Math.max(0, parseInt(quantityInput, 10) || 0);
-    if (saving || quantity < 1 || !date) return;
-
-    setSaving(true);
-    setFormError(null);
-    try {
-      await createLivestockMovement({
-        livestockId,
-        // Only ways in are offered here, so this is always an addition. Animals leave by being
-        // taken off the group one at a time, which writes its own entry.
-        delta: quantity,
-        source,
-        date,
-        note: note.trim() || null,
-      });
-      setFormOpen(false);
-      // The group's count moved with it.
-      await load();
-    } catch (err) {
-      setFormError(
-        err instanceof ApiError && err.status === 409
-          ? t('livestockMovement.tooMany')
-          : t('livestockMovement.saveError')
-      );
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -152,7 +93,7 @@ export function LivestockMovementPage() {
             </span>
           )}
         </div>
-        <button type="button" className="add-button" onClick={openAdd} disabled={loading}>
+        <button type="button" className="add-button" onClick={() => setFormOpen(true)} disabled={loading}>
           + {t('livestockMovement.add')}
         </button>
       </div>
@@ -188,7 +129,7 @@ export function LivestockMovementPage() {
                 {/* A realization's entry is not this page's to remove: it was written with the
                     animal's realization record and goes back with it, so removing it here would
                     raise the head count while the animal stayed realized. */}
-                {movement.source !== 'Realization' && (
+                {!LOCKED_MOVEMENT_SOURCES.includes(movement.source) && (
                   <CardMenu
                     onDelete={() =>
                       setConfirmDelete({
@@ -208,57 +149,12 @@ export function LivestockMovementPage() {
         </>
       )}
 
-      <Modal open={formOpen} onClose={() => setFormOpen(false)}>
-        <h2 className="form-title">{t('livestockMovement.add')}</h2>
-
-        <div className="modal-form-grid">
-          <div className="field">
-            <label>{t('livestockMovement.quantity')}</label>
-            <input
-              type="number"
-              min={1}
-              value={quantityInput}
-              onChange={(e) => setQuantityInput(e.target.value)}
-            />
-          </div>
-
-          <div className="field">
-            <label>{t('livestockMovement.source')}</label>
-            <select value={source} onChange={(e) => setSource(e.target.value as LivestockMovementSource)}>
-              {LIVESTOCK_MOVEMENT_SOURCES.map((option) => (
-                <option key={option} value={option}>
-                  {t(SOURCE_LABEL_KEY[option])}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="field">
-            <label>{t('livestockMovement.date')}</label>
-            <DateField value={date} onChange={(value) => setDate(value ?? '')} clearable={false} />
-          </div>
-
-          <div className="field">
-            <label>{t('livestockMovement.note')}</label>
-            <input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder={t('livestockMovement.notePlaceholder')}
-            />
-          </div>
-
-          {formError && <div className="error-banner field-full">{formError}</div>}
-        </div>
-
-        <div className="modal-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => setFormOpen(false)}>
-            {t('common.cancel')}
-          </button>
-          <button type="button" className="btn" onClick={handleSubmit} disabled={saving}>
-            {t('common.add')}
-          </button>
-        </div>
-      </Modal>
+      <MovementFormModal
+        open={formOpen}
+        livestockId={livestockId}
+        onClose={() => setFormOpen(false)}
+        onSaved={load}
+      />
 
       <ConfirmDeleteModal
         open={!!confirmDelete}

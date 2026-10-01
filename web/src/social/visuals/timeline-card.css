@@ -1,0 +1,7 @@
+.timeline-card {
+  width: 640px;
+}
+
+.timeline-card .hcal-timeline {
+  zoom: 1.3;
+}

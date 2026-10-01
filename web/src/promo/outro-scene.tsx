@@ -1,11 +1,11 @@
 import logo from '@/assets/logo.png';
-import ka from '@/locales/ka.json';
+import { copy } from '@/promo/locale';
 import { easeInOut, enter, fadeUp, mix, popIn, wave } from '@/promo/motion';
 import { OUTRO_START } from '@/promo/timeline';
 import { useClock } from '@/promo/use-clock';
 import '@/promo/outro.css';
 
-const LETTERS = Array.from(ka.auth.appName);
+const LETTERS = Array.from(copy.auth.appName);
 
 function ArrowIcon() {
   return (
@@ -16,9 +16,8 @@ function ArrowIcon() {
   );
 }
 
-export function OutroScene() {
+export function OutroScene({ start = OUTRO_START }: { start?: number }) {
   const time = useClock();
-  const start = OUTRO_START;
   const cover = enter(time, start, 0.42, easeInOut);
   const shine = enter(time, start + 1.25, 0.7, easeInOut);
   const glow = time > start + 1.1 ? 0.5 + wave(time, 1.6, 0.5) : 0;
@@ -45,11 +44,11 @@ export function OutroScene() {
           })}
         </h2>
         <p className="promo-outro-tagline" style={fadeUp(time, start + 0.64, 20)}>
-          {ka.auth.tagline}
+          {copy.auth.tagline}
         </p>
         <span className="promo-outro-cta" style={popIn(time, start + 0.76, 0.55, 0.5)}>
           <span className="promo-outro-cta-glow" style={{ opacity: glow }} />
-          {ka.landing.hero.ctaPrimary}
+          {copy.landing.hero.ctaPrimary}
           <ArrowIcon />
           <span className="promo-outro-cta-clip">
             <span className="promo-outro-shine" style={{ transform: `translateX(${mix(-220, 620, shine)}px) skewX(-20deg)` }} />

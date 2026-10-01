@@ -8,18 +8,21 @@ import { loadSources, SOURCE_KIND_OPTIONS, type ListingSource } from './listing-
 type Props = {
   selected: ListingSource | null;
   onSelect: (source: ListingSource | null) => void;
+  onKindChange?: (kind: ListingSourceKind | null) => void;
+  customKinds?: ListingSourceKind[];
 };
 
-export function ListingSourcePicker({ selected, onSelect }: Props) {
+export function ListingSourcePicker({ selected, onSelect, onKindChange, customKinds = [] }: Props) {
   const { t } = useLanguage();
 
   const [kind, setKind] = useState<ListingSourceKind | null>(null);
   const [options, setOptions] = useState<ListingSource[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const custom = kind != null && customKinds.includes(kind);
 
   useEffect(() => {
-    if (!kind) {
+    if (!kind || custom) {
       setOptions([]);
       return;
     }
@@ -43,8 +46,10 @@ export function ListingSourcePicker({ selected, onSelect }: Props) {
   }, [kind]);
 
   function pickKind(next: ListingSourceKind) {
+    const nextKind = kind === next ? null : next;
     onSelect(null);
-    setKind(kind === next ? null : next);
+    setKind(nextKind);
+    onKindChange?.(nextKind);
   }
 
   return (
@@ -66,7 +71,7 @@ export function ListingSourcePicker({ selected, onSelect }: Props) {
         <span className="limit-hint">{t('market.sourceHint')}</span>
       </div>
 
-      {kind && (
+      {kind && !custom && (
         <div className="field field-full">
           <label>{t('market.sourceItemLabel')}</label>
           {loading ? (

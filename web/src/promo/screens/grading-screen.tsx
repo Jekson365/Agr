@@ -1,8 +1,8 @@
 import tomatoIcon from '@/assets/goods/tomato.png';
 import { rangeText } from '@/components/farm/assessment/criteria-draft';
 import { ASSESSMENT_GRADE_COLOR, ASSESSMENT_GRADE_FILL } from '@/config/assessment-grades';
-import ka from '@/locales/ka.json';
 import { formatCount } from '@/promo/figures';
+import { copy, LANGUAGE } from '@/promo/locale';
 import { easeInOut, enter, fadeUp, popIn, slideIn } from '@/promo/motion';
 import { useClock } from '@/promo/use-clock';
 import type { AssessmentGrade } from '@/types/harvest-assessment';
@@ -23,10 +23,15 @@ const WASTED = ROWS.reduce((sum, row) => sum + row.wasted, 0);
 const TOTAL = ROWS.reduce((sum, row) => sum + row.quantity, 0) + WASTED;
 const MAX = Math.max(...ROWS.map((row) => row.quantity));
 
-const { upTo, unitSize, unitWeight } = ka.assessment;
+const { upTo, unitSize, unitWeight } = copy.assessment;
 
 function figure(template: string, amount: number): string {
-  return template.replace('{amount}', formatCount(amount)).replace('{unit}', ka.farm.unitKg);
+  return template.replace('{amount}', formatCount(amount)).replace('{unit}', copy.farm.unitKg);
+}
+
+function range([from, to]: Range, unit: string): string {
+  if (LANGUAGE === 'en' && from === null && to !== null) return `${upTo} ${to} ${unit}`;
+  return rangeText(from, to, upTo, unit);
 }
 
 export function GradingScreen({ start }: { start: number }) {
@@ -37,7 +42,7 @@ export function GradingScreen({ start }: { start: number }) {
   return (
     <>
       <h3 className="promo-screen-title" style={fadeUp(time, base, 16)}>
-        {ka.harvestGrading.title}
+        {copy.harvestGrading.title}
       </h3>
 
       <div className="promo-card promo-grading" style={fadeUp(time, base + 0.04, 24)}>
@@ -45,12 +50,12 @@ export function GradingScreen({ start }: { start: number }) {
           <span className="promo-row-icon">
             <img src={tomatoIcon} alt="" />
           </span>
-          <strong>{ka.landing.harvest.sampleTomato}</strong>
+          <strong>{copy.landing.harvest.sampleTomato}</strong>
           <span className="promo-chip is-muted" style={popIn(time, base + 0.18, 0.4, 0.6)}>
-            {figure(ka.harvestGrading.harvested, TOTAL)}
+            {figure(copy.harvestGrading.harvested, TOTAL)}
           </span>
           <span className="promo-chip" style={popIn(time, base + 0.26, 0.4, 0.6)}>
-            {figure(ka.harvestGrading.graded, TOTAL * enter(time, base + 0.3, 0.8))}
+            {figure(copy.harvestGrading.graded, TOTAL * enter(time, base + 0.3, 0.8))}
           </span>
         </div>
 
@@ -62,11 +67,11 @@ export function GradingScreen({ start }: { start: number }) {
         </span>
 
         <div className="promo-grading-row is-header" style={fadeUp(time, base + 0.2, 8, 0.4)}>
-          <span>{ka.assessment.colGrade}</span>
-          <span>{ka.assessment.colSize}</span>
-          <span>{ka.assessment.colWeight}</span>
-          <span>{ka.harvestGrading.colQuantity}</span>
-          <span>{ka.harvestGrading.colWasted}</span>
+          <span>{copy.assessment.colGrade}</span>
+          <span>{copy.assessment.colSize}</span>
+          <span>{copy.assessment.colWeight}</span>
+          <span>{copy.harvestGrading.colQuantity}</span>
+          <span>{copy.harvestGrading.colWasted}</span>
         </div>
 
         {ROWS.map((row, index) => {
@@ -80,8 +85,8 @@ export function GradingScreen({ start }: { start: number }) {
               >
                 {row.grade}
               </span>
-              <span>{rangeText(row.size[0], row.size[1], upTo, unitSize)}</span>
-              <span>{rangeText(row.weight[0], row.weight[1], upTo, unitWeight)}</span>
+              <span>{range(row.size, unitSize)}</span>
+              <span>{range(row.weight, unitWeight)}</span>
               <span className="promo-grading-amount">
                 <span className="promo-grading-track">
                   <span
@@ -89,11 +94,11 @@ export function GradingScreen({ start }: { start: number }) {
                   />
                 </span>
                 <strong>
-                  {formatCount(row.quantity * grow)} {ka.farm.unitKg}
+                  {formatCount(row.quantity * grow)} {copy.farm.unitKg}
                 </strong>
               </span>
               <span className="promo-grading-wasted">
-                {formatCount(row.wasted * grow)} {ka.farm.unitKg}
+                {formatCount(row.wasted * grow)} {copy.farm.unitKg}
               </span>
             </div>
           );

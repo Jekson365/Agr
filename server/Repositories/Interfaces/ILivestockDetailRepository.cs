@@ -36,6 +36,8 @@ public interface ILivestockDetailRepository
     /// <summary>Every animal on the farm, across all groups.</summary>
     Task<IEnumerable<LivestockDetail>> GetAllAsync();
 
+    Task<IReadOnlyList<SaleAnimalDto>> GetAvailableForSaleAsync();
+
     Task<IEnumerable<LivestockDetail>> GetByLivestockAsync(int livestockId);
     Task<LivestockDetail?> GetByIdAsync(int id);
     Task<LivestockDetail> AddAsync(LivestockDetail detail);

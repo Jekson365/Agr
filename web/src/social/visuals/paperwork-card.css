@@ -1,0 +1,165 @@
+.paperwork-card {
+  --paperwork-paper: #f8f4e9;
+  --paperwork-rule: #cfdcec;
+  --paperwork-margin: #efa3a3;
+  --paperwork-ink: #34436b;
+  --paperwork-excel: #217346;
+  --paperwork-stain: rgba(125, 78, 36, 0.22);
+  --paperwork-night: #27324d;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 34px;
+  width: 660px;
+  padding: 28px;
+}
+
+.paperwork-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  min-width: 0;
+}
+
+.paperwork-label,
+.paperwork-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 8px 12px;
+  border-radius: 999px;
+  font-size: 21px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.paperwork-label.is-paper {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.paperwork-label.is-app {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.paperwork-label img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.paperwork-time.is-night {
+  background: var(--paperwork-night);
+  color: var(--color-on-overlay);
+}
+
+.paperwork-time.is-day {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.paperwork-desk {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 250px;
+}
+
+.paperwork-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px 16px 36px;
+  border-radius: 6px;
+  background:
+    linear-gradient(90deg, transparent 24px, var(--paperwork-margin) 24px 26px, transparent 26px),
+    repeating-linear-gradient(transparent 0 36px, var(--paperwork-rule) 36px 38px),
+    var(--paperwork-paper);
+  box-shadow: 0 10px 22px rgba(31, 42, 36, 0.14);
+  transform: rotate(-3deg);
+  font-family: 'Segoe Print', 'Ink Free', cursive;
+  color: var(--paperwork-ink);
+}
+
+.paperwork-scrawl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  font-size: 21px;
+}
+
+.paperwork-scrawl img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.paperwork-scrawl s {
+  opacity: 0.7;
+  text-decoration-color: var(--color-danger);
+  text-decoration-thickness: 3px;
+}
+
+.paperwork-scrawl.is-sum {
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+.paperwork-stain {
+  position: absolute;
+  top: 58px;
+  right: 16px;
+  width: 78px;
+  height: 78px;
+  border: 7px solid var(--paperwork-stain);
+  border-radius: 50%;
+}
+
+.paperwork-excel {
+  position: absolute;
+  right: -14px;
+  bottom: 0;
+  width: 196px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  box-shadow: 0 12px 24px rgba(31, 42, 36, 0.2);
+  transform: rotate(5deg);
+  font-family: Consolas, 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.paperwork-excel-bar {
+  display: flex;
+  gap: 8px;
+  padding: 5px 8px;
+  background: var(--paperwork-excel);
+  color: var(--color-on-accent);
+}
+
+.paperwork-excel-grid {
+  display: grid;
+  grid-template-columns: 22px 1fr 1fr;
+}
+
+.paperwork-excel-grid > * {
+  padding: 4px 6px;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.paperwork-excel-grid b {
+  background: var(--color-surface-sunken);
+  font-weight: 400;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.paperwork-excel-grid .is-error {
+  font-weight: 700;
+  color: var(--color-danger);
+}

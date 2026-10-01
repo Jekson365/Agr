@@ -1,22 +1,22 @@
 import { PREVIEW_BARS, PREVIEW_ICONS } from '@/config/landing';
-import ka from '@/locales/ka.json';
 import { countFigure, splitFigure } from '@/promo/figures';
+import { copy } from '@/promo/locale';
 import { enter, fadeUp, popIn } from '@/promo/motion';
 import { useClock } from '@/promo/use-clock';
 
 const STATS = [
-  { label: ka.landing.preview.statYield, figure: splitFigure(ka.landing.preview.statYieldValue), accent: false },
-  { label: ka.landing.preview.statHarvests, figure: splitFigure(ka.landing.preview.statHarvestsValue), accent: false },
-  { label: ka.landing.preview.statNet, figure: splitFigure(ka.landing.preview.statNetValue), accent: true },
+  { label: copy.landing.preview.statYield, figure: splitFigure(copy.landing.preview.statYieldValue), accent: false },
+  { label: copy.landing.preview.statHarvests, figure: splitFigure(copy.landing.preview.statHarvestsValue), accent: false },
+  { label: copy.landing.preview.statNet, figure: splitFigure(copy.landing.preview.statNetValue), accent: true },
 ];
 
 const TILES = [
-  { icon: PREVIEW_ICONS.land, label: ka.farm.land },
-  { icon: PREVIEW_ICONS.plants, label: ka.farm.plantStock },
-  { icon: PREVIEW_ICONS.fruits, label: ka.farm.fruits },
-  { icon: PREVIEW_ICONS.livestock, label: ka.farm.livestock },
-  { icon: PREVIEW_ICONS.harvest, label: ka.dashboard.harvest },
-  { icon: PREVIEW_ICONS.balance, label: ka.farm.balance },
+  { icon: PREVIEW_ICONS.land, label: copy.farm.land },
+  { icon: PREVIEW_ICONS.plants, label: copy.farm.plantStock },
+  { icon: PREVIEW_ICONS.fruits, label: copy.farm.fruits },
+  { icon: PREVIEW_ICONS.livestock, label: copy.farm.livestock },
+  { icon: PREVIEW_ICONS.harvest, label: copy.dashboard.harvest },
+  { icon: PREVIEW_ICONS.balance, label: copy.farm.balance },
 ];
 
 const PEAK = PREVIEW_BARS.length - 2;
@@ -28,7 +28,7 @@ export function DashboardScreen({ start }: { start: number }) {
   return (
     <>
       <h3 className="promo-screen-title" style={fadeUp(time, base, 16)}>
-        {ka.landing.preview.greeting}
+        {copy.landing.preview.greeting}
       </h3>
 
       <div className="promo-dash-stats">
@@ -46,7 +46,7 @@ export function DashboardScreen({ start }: { start: number }) {
       </div>
 
       <p className="promo-dash-label" style={fadeUp(time, base + 0.3, 10)}>
-        {ka.dashboard.quickAccess}
+        {copy.dashboard.quickAccess}
       </p>
       <div className="promo-dash-tiles">
         {TILES.map((tile, index) => (
@@ -59,8 +59,8 @@ export function DashboardScreen({ start }: { start: number }) {
 
       <div className="promo-card promo-dash-chart" style={fadeUp(time, base + 0.5, 26)}>
         <div className="promo-card-head">
-          <span className="promo-card-title">{ka.report.harvestRevenueTitle}</span>
-          <span className="promo-card-sub">{ka.landing.preview.chartSubtitle}</span>
+          <span className="promo-card-title">{copy.report.harvestRevenueTitle}</span>
+          <span className="promo-card-sub">{copy.landing.preview.chartSubtitle}</span>
         </div>
         <div className="promo-dash-bars">
           {PREVIEW_BARS.map((height, index) => (
