@@ -1,5 +1,5 @@
 import { apiFetch } from '@/services/api-client';
-import type { AdminUser, PremiumRequest } from '@/types/admin';
+import type { AdminUser, AdminUserOverview, PremiumRequest } from '@/types/admin';
 import type { StoragePlan } from '@/types/auth';
 import type { Configuration } from '@/types/configuration';
 
@@ -59,6 +59,14 @@ export function setManagementAccess(userId: number, value: boolean): Promise<Adm
     method: 'PUT',
     body: JSON.stringify({ value }),
   });
+}
+
+export function getUserOverview(userId: number): Promise<AdminUserOverview> {
+  return apiFetch<AdminUserOverview>(`/api/admin/users/${userId}/overview`);
+}
+
+export function migrateUserDatabase(userId: number): Promise<void> {
+  return apiFetch<void>(`/api/admin/users/${userId}/migrate`, { method: 'POST' });
 }
 
 export function deleteUser(userId: number): Promise<void> {

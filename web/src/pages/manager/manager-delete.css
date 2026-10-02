@@ -4,6 +4,22 @@
   gap: 8px;
 }
 
+.manager-user-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.manager-user-link:hover {
+  color: var(--color-green);
+  text-decoration: underline;
+}
+
+.manager-details-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .manager-delete-button {
   border-color: var(--color-danger-border);
   color: var(--color-danger);

@@ -53,6 +53,7 @@ import { OwnerRoute } from '@/routes/owner-route';
 import { SuperAdminRoute } from '@/routes/super-admin-route';
 import { ManagerPage } from '@/pages/manager/manager-page';
 import { VisitorsPage } from '@/pages/manager/visitors/visitors-page';
+import { UserDetailPage } from '@/pages/manager/user-detail/user-detail-page';
 import { ManagementRoute } from '@/routes/management-route';
 import { OnboardingRoute } from '@/routes/onboarding-route';
 import { ProtectedRoute } from '@/routes/protected-route';
@@ -83,7 +84,6 @@ function App() {
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
       </Route>
-
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<OnboardingRoute />}>
@@ -175,6 +175,7 @@ function App() {
           <Route element={<SuperAdminRoute />}>
             <Route path="/manager" element={<ManagerPage />} />
             <Route path="/manager/visitors" element={<VisitorsPage />} />
+            <Route path="/manager/users/:id" element={<UserDetailPage />} />
           </Route>
           {/* Field, orchard and greenhouse harvests on one timeline, so it sits outside the
               crop-farming gate that covers the field's own pages. */}
@@ -190,7 +191,6 @@ function App() {
         </Route>
         </Route>
       </Route>
-
       <Route path="/404" element={<NotFoundPage />} />
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>

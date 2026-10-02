@@ -65,16 +65,26 @@ public class TenantDatabaseProvisioner(
         var databaseName = $"farm_user_{userId}";
         NpgsqlConnection.ClearPool(new NpgsqlConnection(connectionProvider.BuildConnectionString(databaseName)));
 
-        var maintenanceConnectionString = configuration.GetConnectionString("master")
-            ?? throw new InvalidOperationException("Missing 'master' connection string.");
-
-        await using var connection = new NpgsqlConnection(maintenanceConnectionString);
+        await using var connection = new NpgsqlConnection(MaintenanceConnectionString());
         await connection.OpenAsync();
         await using var drop = new NpgsqlCommand($"DROP DATABASE IF EXISTS {QuoteIdentifier(databaseName)} WITH (FORCE)", connection);
         await drop.ExecuteNonQueryAsync();
 
         logger.LogInformation("Dropped tenant database {Database}.", databaseName);
     }
+
+    public async Task<bool> ExistsAsync(int userId)
+    {
+        await using var connection = new NpgsqlConnection(MaintenanceConnectionString());
+        await connection.OpenAsync();
+        await using var exists = new NpgsqlCommand("SELECT 1 FROM pg_database WHERE datname = @name", connection);
+        exists.Parameters.AddWithValue("name", $"farm_user_{userId}");
+        return await exists.ExecuteScalarAsync() is not null;
+    }
+
+    private string MaintenanceConnectionString() =>
+        configuration.GetConnectionString("master")
+        ?? throw new InvalidOperationException("Missing 'master' connection string.");
 
     private static string QuoteIdentifier(string identifier) =>
         $"\"{identifier.Replace("\"", "\"\"")}\"";

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { STORAGE_PLAN_LABEL_KEY, STORAGE_PLANS } from '@/config/plan-benefits';
 import { useLanguage } from '@/contexts/language-context';
@@ -73,10 +75,10 @@ export function ManagerUsersTable({
                         )}
                       </span>
                       <span className="manager-user-text">
-                        <span className="manager-user-name">
+                        <Link to={`/manager/users/${u.id}`} className="manager-user-name manager-user-link">
                           {`${u.name} ${u.surname}`.trim() || '—'}
                           {u.isSuperAdmin && <span className="manager-badge admin">{t('manager.superAdmin')}</span>}
-                        </span>
+                        </Link>
                         <span className="manager-user-sub">{u.city || u.country || '—'}</span>
                       </span>
                     </div>
@@ -121,6 +123,9 @@ export function ManagerUsersTable({
                   </td>
                   <td>
                     <div className="manager-row-actions">
+                      <Link to={`/manager/users/${u.id}`} className="btn btn-secondary manager-config-button manager-details-link">
+                        {t('managerUser.details')}
+                      </Link>
                       <button type="button" className="btn btn-secondary manager-config-button" onClick={() => onConfigure(u)}>
                         {t('manager.configurations')}
                       </button>

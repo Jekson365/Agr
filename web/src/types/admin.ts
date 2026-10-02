@@ -47,3 +47,59 @@ export type PremiumRequest = {
   isPremium: boolean;
   grantedAt: string | null;
 };
+
+export type TenantDatabaseStatus = 'Ready' | 'Missing' | 'Outdated';
+
+export type AdminPlot = {
+  id: number;
+  farmId: number;
+  area: number;
+  crop: string;
+};
+
+export type AdminFarm = {
+  id: number;
+  name: string;
+  imagePath: string;
+  area: number;
+  location: string;
+  isRemoved: boolean;
+  plots: AdminPlot[];
+};
+
+export type AdminStock = {
+  id: number;
+  type: string;
+  name: string;
+  amount: number;
+  unit: string;
+  isDeleted: boolean;
+};
+
+export type AdminLivestock = {
+  id: number;
+  type: string;
+  name: string;
+  count: number;
+  farmName: string;
+  isDeleted: boolean;
+};
+
+export type AdminTreeStock = {
+  id: number;
+  type: string;
+  name: string;
+  amount: number;
+  unit: string;
+  farmName: string;
+  isDeleted: boolean;
+};
+
+export type AdminUserOverview = {
+  user: AdminUser;
+  database: TenantDatabaseStatus;
+  farms: AdminFarm[];
+  stocks: AdminStock[];
+  livestock: AdminLivestock[];
+  treeStocks: AdminTreeStock[];
+};

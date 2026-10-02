@@ -126,6 +126,13 @@ plain `SellerId` — and drops `farm_user_{id}` through `TenantDatabaseProvision
 (`DROP DATABASE … WITH (FORCE)`); a failed drop rolls the account back. It refuses the caller's
 own account and any `IsSuperAdmin` account. Uploaded files are not removed.
 
+**Reading one account's farm** is `GET /api/admin/users/{id}/overview` (`AdminController.Overview.cs`):
+farms with plots, stocks, livestock groups and tree stocks, read from that tenant through
+`OpenTenantAsync`. It answers `Database: Missing` when there is no `farm_user_{id}` and `Outdated`
+when that database has pending migrations — it never migrates on a read; `POST
+/api/admin/users/{id}/migrate` does that on the operator's request (the same `ProvisionAsync` a
+login runs).
+
 ### `MarketListings`
 Self-contained snapshot of something offered for sale/rent. `SellerId` → `Users` (cascade).
 `Type`/`Category`/`Status` are text enums (`Sale|Rent`, `Stock|TreeStock|Livestock|Equipment|TreeProduct|Other`,

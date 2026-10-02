@@ -10,4 +10,6 @@ public interface ITenantDatabaseProvisioner
     Task ProvisionAsync(int userId);
 
     Task DropAsync(int userId);
+
+    Task<bool> ExistsAsync(int userId);
 }

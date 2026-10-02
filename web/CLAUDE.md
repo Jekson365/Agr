@@ -105,6 +105,8 @@ older four (`greenhouse`, `livestock`, `fruitstock`, `marketplace`, `calendar`) 
   behind `SuperAdminRoute` (non-operators land on `/404`) and shows the visitor analytics. The
   beacon feeding it is `components/analytics/visit-tracker.tsx`, mounted in `main.tsx` beside
   `<App />`; it records every path except `/manager*`, 600 ms after the route settles.
+- `/manager/users/:id` (same guard) is one account's farm — lands with plots, stocks, livestock and
+  fruit stocks — opened from that account's row on `/manager`.
 
 ---
 
