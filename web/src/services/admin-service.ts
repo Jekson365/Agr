@@ -61,6 +61,10 @@ export function setManagementAccess(userId: number, value: boolean): Promise<Adm
   });
 }
 
+export function deleteUser(userId: number): Promise<void> {
+  return apiFetch<void>(`/api/admin/users/${userId}`, { method: 'DELETE' });
+}
+
 export function setUserPlan(userId: number, plan: StoragePlan): Promise<AdminUser> {
   return apiFetch<AdminUser>(`/api/admin/users/${userId}/plan`, {
     method: 'PUT',

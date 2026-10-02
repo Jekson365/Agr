@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import type { AdminUser } from '@/types/admin';
 import type { StoragePlan } from '@/types/auth';
+import './manager-delete.css';
 import './manager-plan-select.css';
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
   /** Lets an account into the farm software, or shuts it out. Absent for the operator's own row. */
   onManagementAccess: (user: AdminUser, value: boolean) => void;
   onPlan: (user: AdminUser, plan: StoragePlan) => void;
+  onDelete: (user: AdminUser) => void;
   /** The row currently being written, so only its own control goes quiet. */
   busyId: number | null;
   operatorId: number | null;
@@ -27,6 +29,7 @@ export function ManagerUsersTable({
   onConfigure,
   onManagementAccess,
   onPlan,
+  onDelete,
   busyId,
   operatorId,
 }: Props) {
@@ -117,9 +120,21 @@ export function ManagerUsersTable({
                     </label>
                   </td>
                   <td>
-                    <button type="button" className="btn btn-secondary manager-config-button" onClick={() => onConfigure(u)}>
-                      {t('manager.configurations')}
-                    </button>
+                    <div className="manager-row-actions">
+                      <button type="button" className="btn btn-secondary manager-config-button" onClick={() => onConfigure(u)}>
+                        {t('manager.configurations')}
+                      </button>
+                      {!u.isSuperAdmin && u.id !== operatorId && (
+                        <button
+                          type="button"
+                          className="btn btn-secondary manager-config-button manager-delete-button"
+                          disabled={busyId === u.id}
+                          onClick={() => onDelete(u)}
+                        >
+                          {t('manager.deleteUser')}
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -8,4 +8,6 @@ public interface ITenantDatabaseProvisioner
 {
     /// <summary>Ensures the user's database exists and its schema is up to date.</summary>
     Task ProvisionAsync(int userId);
+
+    Task DropAsync(int userId);
 }

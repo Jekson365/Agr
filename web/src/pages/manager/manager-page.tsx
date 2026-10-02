@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
 import {
   approvePremiumRequest,
+  deleteUser,
   getAdminUsers,
   getPremiumRequests,
   rejectPremiumRequest,
@@ -15,6 +16,7 @@ import {
 } from '@/services/admin-service';
 import type { AdminUser, PremiumRequest } from '@/types/admin';
 import type { StoragePlan } from '@/types/auth';
+import { DeleteUserModal } from './delete-user-modal';
 import { ManagerPremiumList } from './manager-premium-list';
 import { ManagerUsersTable } from './manager-users-table';
 import { UserConfigurationsModal } from './user-configurations-modal';
@@ -44,6 +46,7 @@ export function ManagerPage() {
   const [configuring, setConfiguring] = useState<AdminUser | null>(null);
   /** The row whose farm access is being written, so only its own checkbox goes quiet. */
   const [accessBusyId, setAccessBusyId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState<AdminUser | null>(null);
 
   useEffect(() => {
     load();
@@ -97,6 +100,13 @@ export function ManagerPage() {
     }
   }
 
+  async function removeUser(target: AdminUser) {
+    await deleteUser(target.id);
+    setUsers((prev) => prev.filter((u) => u.id !== target.id));
+    setRequests((prev) => prev.filter((r) => r.sellerId !== target.id));
+    setDeleting(null);
+  }
+
   const changeAccess = (target: AdminUser, value: boolean) => writeRow(target.id, () => setManagementAccess(target.id, value));
   const changePlan = (target: AdminUser, plan: StoragePlan) => writeRow(target.id, () => setUserPlan(target.id, plan));
 
@@ -145,6 +155,7 @@ export function ManagerPage() {
           onConfigure={setConfiguring}
           onManagementAccess={changeAccess}
           onPlan={changePlan}
+          onDelete={setDeleting}
           busyId={accessBusyId}
           operatorId={user?.id ?? null}
         />
@@ -155,6 +166,7 @@ export function ManagerPage() {
       )}
 
       <UserConfigurationsModal user={configuring} onClose={() => setConfiguring(null)} />
+      <DeleteUserModal user={deleting} onClose={() => setDeleting(null)} onConfirm={removeUser} />
     </div>
   );
 }

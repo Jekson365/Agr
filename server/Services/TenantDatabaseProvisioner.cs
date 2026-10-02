@@ -60,6 +60,22 @@ public class TenantDatabaseProvisioner(
         await db.Database.MigrateAsync();
     }
 
+    public async Task DropAsync(int userId)
+    {
+        var databaseName = $"farm_user_{userId}";
+        NpgsqlConnection.ClearPool(new NpgsqlConnection(connectionProvider.BuildConnectionString(databaseName)));
+
+        var maintenanceConnectionString = configuration.GetConnectionString("master")
+            ?? throw new InvalidOperationException("Missing 'master' connection string.");
+
+        await using var connection = new NpgsqlConnection(maintenanceConnectionString);
+        await connection.OpenAsync();
+        await using var drop = new NpgsqlCommand($"DROP DATABASE IF EXISTS {QuoteIdentifier(databaseName)} WITH (FORCE)", connection);
+        await drop.ExecuteNonQueryAsync();
+
+        logger.LogInformation("Dropped tenant database {Database}.", databaseName);
+    }
+
     private static string QuoteIdentifier(string identifier) =>
         $"\"{identifier.Replace("\"", "\"\"")}\"";
 }

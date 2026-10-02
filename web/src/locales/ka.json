@@ -1647,7 +1647,12 @@
     "colFarmAccess": "ფერმის პროგრამა",
     "farmAccessOn": "აქვს წვდომა",
     "farmAccessOff": "არ აქვს",
-    "farmAccessHint": "მონიშვნა აძლევს ფერმის მართვის პროგრამაზე წვდომას."
+    "farmAccessHint": "მონიშვნა აძლევს ფერმის მართვის პროგრამაზე წვდომას.",
+    "deleteUser": "წაშლა",
+    "deleteUserTitle": "ანგარიშის წაშლა",
+    "deleteUserBody": "„{name}“-ის ანგარიში, მისი ფერმის მონაცემთა ბაზა და მარკეტის განცხადებები სამუდამოდ წაიშლება. ამის დაბრუნება შეუძლებელია.",
+    "deleteUserTypeToConfirm": "დასადასტურებლად ჩაწერეთ: {value}",
+    "deleteUserConfirm": "სამუდამოდ წაშლა"
   },
   "visitors": {
     "title": "ვიზიტორები",

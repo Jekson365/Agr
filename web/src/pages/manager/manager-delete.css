@@ -1,0 +1,45 @@
+.manager-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.manager-delete-button {
+  border-color: var(--color-danger-border);
+  color: var(--color-danger);
+}
+
+.manager-delete-button:hover:not(:disabled) {
+  background: var(--color-danger-bg);
+}
+
+.manager-delete-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  color: var(--color-dark);
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.manager-delete-input {
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.manager-delete-input:focus {
+  outline: 2px solid var(--color-danger);
+  outline-offset: -1px;
+}
+
+.manager-delete-label + .error-banner {
+  margin-bottom: 4px;
+}

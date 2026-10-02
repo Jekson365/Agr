@@ -119,6 +119,13 @@ Identity, profile, plan, quota, coins. Notable columns:
 | `ScanCount`, `LastScanDate` | AI plant-scan daily quota; count resets when the date rolls over. |
 | `Latitude` / `Longitude` | `double precision`, nullable — the profile map pin, distinct from farm boundaries. |
 
+**Deleting an account** is the operator's `DELETE /api/admin/users/{id}` (`AdminController.Delete.cs`,
+the delete button on `/manager`). Inside one master transaction it removes the row — listings,
+neighbour links and coin awards cascade, `SiteVisits.UserId` goes null, `MarketOrders` keep their
+plain `SellerId` — and drops `farm_user_{id}` through `TenantDatabaseProvisioner.DropAsync`
+(`DROP DATABASE … WITH (FORCE)`); a failed drop rolls the account back. It refuses the caller's
+own account and any `IsSuperAdmin` account. Uploaded files are not removed.
+
 ### `MarketListings`
 Self-contained snapshot of something offered for sale/rent. `SellerId` → `Users` (cascade).
 `Type`/`Category`/`Status` are text enums (`Sale|Rent`, `Stock|TreeStock|Livestock|Equipment|TreeProduct|Other`,
