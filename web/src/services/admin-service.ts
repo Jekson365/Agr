@@ -61,6 +61,10 @@ export function setManagementAccess(userId: number, value: boolean): Promise<Adm
   });
 }
 
+export function getDatabaseSizes(): Promise<Record<string, number>> {
+  return apiFetch<Record<string, number>>('/api/admin/users/database-sizes');
+}
+
 export function getUserOverview(userId: number): Promise<AdminUserOverview> {
   return apiFetch<AdminUserOverview>(`/api/admin/users/${userId}/overview`);
 }

@@ -82,6 +82,30 @@ public class TenantDatabaseProvisioner(
         return await exists.ExecuteScalarAsync() is not null;
     }
 
+    public async Task<Dictionary<int, long>> GetSizesAsync()
+    {
+        const string prefix = "farm_user_";
+        await using var connection = new NpgsqlConnection(MaintenanceConnectionString());
+        await connection.OpenAsync();
+        await using var command = new NpgsqlCommand(
+            "SELECT datname, pg_database_size(datname) FROM pg_database WHERE datallowconn AND starts_with(datname, @prefix)",
+            connection);
+        command.CommandTimeout = 180;
+        command.Parameters.AddWithValue("prefix", prefix);
+
+        var sizes = new Dictionary<int, long>();
+        await using var reader = await command.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            if (int.TryParse(reader.GetString(0)[prefix.Length..], out var userId))
+            {
+                sizes[userId] = reader.GetInt64(1);
+            }
+        }
+
+        return sizes;
+    }
+
     private string MaintenanceConnectionString() =>
         configuration.GetConnectionString("master")
         ?? throw new InvalidOperationException("Missing 'master' connection string.");

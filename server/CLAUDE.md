@@ -131,7 +131,9 @@ farms with plots, stocks, livestock groups and tree stocks, read from that tenan
 `OpenTenantAsync`. It answers `Database: Missing` when there is no `farm_user_{id}` and `Outdated`
 when that database has pending migrations — it never migrates on a read; `POST
 /api/admin/users/{id}/migrate` does that on the operator's request (the same `ProvisionAsync` a
-login runs).
+login runs). `GET /api/admin/users/database-sizes` answers `{ userId: bytes }` for every
+`farm_user_*` database (`pg_database_size`); `/manager` fetches it apart from the user list, since
+sizing walks each database's files (milliseconds on the Linux server, over a minute on a Windows dev box).
 
 ### `MarketListings`
 Self-contained snapshot of something offered for sale/rent. `SellerId` → `Users` (cascade).

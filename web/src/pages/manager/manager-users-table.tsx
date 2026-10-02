@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
+import { formatBytes } from '@/components/ui/format-bytes';
 import { STORAGE_PLAN_LABEL_KEY, STORAGE_PLANS } from '@/config/plan-benefits';
 import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
@@ -19,10 +20,15 @@ type Props = {
   onManagementAccess: (user: AdminUser, value: boolean) => void;
   onPlan: (user: AdminUser, plan: StoragePlan) => void;
   onDelete: (user: AdminUser) => void;
+  sizes: Record<string, number> | null;
   /** The row currently being written, so only its own control goes quiet. */
   busyId: number | null;
   operatorId: number | null;
 };
+
+function sizeLabel(bytes: number | undefined): string {
+  return bytes === undefined ? '—' : formatBytes(bytes);
+}
 
 export function ManagerUsersTable({
   users,
@@ -32,6 +38,7 @@ export function ManagerUsersTable({
   onManagementAccess,
   onPlan,
   onDelete,
+  sizes,
   busyId,
   operatorId,
 }: Props) {
@@ -57,6 +64,7 @@ export function ManagerUsersTable({
                 <th>{t('manager.colContact')}</th>
                 <th>{t('manager.colPlan')}</th>
                 <th className="numeric">{t('manager.colListings')}</th>
+                <th className="numeric">{t('manager.colDatabase')}</th>
                 <th>{t('manager.colJoined')}</th>
                 <th>{t('manager.colFarmAccess')}</th>
                 <th />
@@ -105,6 +113,9 @@ export function ManagerUsersTable({
                     </select>
                   </td>
                   <td className="numeric">{u.listingCount}</td>
+                  <td className="numeric manager-user-sub">
+                    {sizes === null ? '…' : sizeLabel(sizes[u.id])}
+                  </td>
                   <td className="manager-user-sub">{formatLocalizedIsoDate(u.createdAt, language)}</td>
                   <td>
                     {/* An operator changing their own would have no way back in, so their row

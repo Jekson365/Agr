@@ -12,4 +12,6 @@ public interface ITenantDatabaseProvisioner
     Task DropAsync(int userId);
 
     Task<bool> ExistsAsync(int userId);
+
+    Task<Dictionary<int, long>> GetSizesAsync();
 }

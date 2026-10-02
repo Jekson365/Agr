@@ -9,6 +9,7 @@ import {
   approvePremiumRequest,
   deleteUser,
   getAdminUsers,
+  getDatabaseSizes,
   getPremiumRequests,
   rejectPremiumRequest,
   setManagementAccess,
@@ -47,9 +48,13 @@ export function ManagerPage() {
   /** The row whose farm access is being written, so only its own checkbox goes quiet. */
   const [accessBusyId, setAccessBusyId] = useState<number | null>(null);
   const [deleting, setDeleting] = useState<AdminUser | null>(null);
+  const [sizes, setSizes] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
     load();
+    getDatabaseSizes()
+      .then(setSizes)
+      .catch(() => setSizes({}));
   }, []);
 
   async function load() {
@@ -156,6 +161,7 @@ export function ManagerPage() {
           onManagementAccess={changeAccess}
           onPlan={changePlan}
           onDelete={setDeleting}
+          sizes={sizes}
           busyId={accessBusyId}
           operatorId={user?.id ?? null}
         />
