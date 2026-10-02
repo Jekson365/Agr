@@ -22,6 +22,7 @@ public class ManagementAccessMiddleware(RequestDelegate next)
         "/api/sellers",
         "/api/marketlistings",
         "/api/marketorders",
+        "/api/visits",
         // Platform operations, not farm management — and it carries its own, stronger gate: every
         // action there re-reads IsSuperAdmin. Gating it here as well would let an operator lock
         // themselves out of the page that grants the access they just removed.

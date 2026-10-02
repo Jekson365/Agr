@@ -1,0 +1,20 @@
+.visitors-map {
+  height: 21rem;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-green-muted);
+  isolation: isolate;
+}
+
+.visitors-map-dot {
+  fill: var(--color-green);
+  fill-opacity: 0.5;
+  stroke: var(--color-green);
+  stroke-width: 1.5;
+}
+
+@media (max-width: 640px) {
+  .visitors-map {
+    height: 16rem;
+  }
+}

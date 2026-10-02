@@ -9,8 +9,6 @@ using Server.Integrations.OpenAi;
 using Server.Integrations.SmsService;
 using Server.Integrations.WeatherApi;
 using Server.Models.Bog;
-using Server.Repositories;
-using Server.Repositories.Interfaces;
 using Server.Services;
 using Server.Services.Interfaces;
 
@@ -37,77 +35,8 @@ builder.Services.AddScoped<ITenantConnectionProvider, TenantConnectionProvider>(
 builder.Services.AddScoped<ITenantDatabaseProvisioner, TenantDatabaseProvisioner>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<IFarmRepository, FarmRepository>();
-builder.Services.AddScoped<ILivestockRepository, LivestockRepository>();
-builder.Services.AddScoped<ILivestockDetailRepository, LivestockDetailRepository>();
-builder.Services.AddScoped<IBreedingEventRepository, BreedingEventRepository>();
-builder.Services.AddScoped<ILivestockMovementRepository, LivestockMovementRepository>();
-builder.Services.AddScoped<ILandPlotRepository, LandPlotRepository>();
-builder.Services.AddScoped<IStockRepository, StockRepository>();
-builder.Services.AddScoped<IConfigurationRepository, ConfigurationRepository>();
-builder.Services.AddScoped<IGreenhouseRepository, GreenhouseRepository>();
-builder.Services.AddScoped<IGreenhouseHarvestRepository, GreenhouseHarvestRepository>();
-builder.Services.AddScoped<IGreenhouseStockRepository, GreenhouseStockRepository>();
-builder.Services.AddScoped<IGreenhouseStockMovementRepository, GreenhouseStockMovementRepository>();
-builder.Services.AddScoped<IGreenhouseSeedRepository, GreenhouseSeedRepository>();
-builder.Services.AddScoped<IGreenhouseHarvestItemRepository, GreenhouseHarvestItemRepository>();
-builder.Services.AddScoped<IGreenhouseHarvestSeedRepository, GreenhouseHarvestSeedRepository>();
-builder.Services.AddScoped<IGreenhouseHarvestResultRepository, GreenhouseHarvestResultRepository>();
-builder.Services.AddScoped<IGreenhouseHarvestChemicalRepository, GreenhouseHarvestChemicalRepository>();
-builder.Services.AddScoped<IGreenhouseFloorRepository, GreenhouseFloorRepository>();
-builder.Services.AddScoped<IGreenhouseSectionRepository, GreenhouseSectionRepository>();
-builder.Services.AddScoped<IGreenhouseSectionStockRepository, GreenhouseSectionStockRepository>();
-builder.Services.AddScoped<IStockKindRepository, StockKindRepository>();
-builder.Services.AddScoped<ILivestockKindRepository, LivestockKindRepository>();
-builder.Services.AddScoped<IFruitKindRepository, FruitKindRepository>();
-builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
-builder.Services.AddScoped<ISeedMovementRepository, SeedMovementRepository>();
-builder.Services.AddScoped<ISeedRepository, SeedRepository>();
-builder.Services.AddScoped<IHarvestSeedRepository, HarvestSeedRepository>();
-builder.Services.AddScoped<IHarvestTreeRepository, HarvestTreeRepository>();
-builder.Services.AddScoped<IHarvestChemicalRepository, HarvestChemicalRepository>();
-builder.Services.AddScoped<IHarvestEventRepository, HarvestEventRepository>();
-builder.Services.AddScoped<IHarvestStatusChangeRepository, HarvestStatusChangeRepository>();
-builder.Services.AddScoped<ITreeSeedlingRepository, TreeSeedlingRepository>();
-builder.Services.AddScoped<IOrchardBlockRepository, OrchardBlockRepository>();
-builder.Services.AddScoped<ITreeTreatmentRepository, TreeTreatmentRepository>();
-builder.Services.AddScoped<ITreeSpotTreatmentRepository, TreeSpotTreatmentRepository>();
-builder.Services.AddScoped<ITreeProductRepository, TreeProductRepository>();
-builder.Services.AddScoped<ITreeProductMovementRepository, TreeProductMovementRepository>();
-builder.Services.AddScoped<IHarvestProductRepository, HarvestProductRepository>();
-builder.Services.AddScoped<IStockHistoryRepository, StockHistoryRepository>();
-builder.Services.AddScoped<IStockPhotoRepository, StockPhotoRepository>();
-builder.Services.AddScoped<ISoilInvestigationRepository, SoilInvestigationRepository>();
-builder.Services.AddScoped<IMedicalRecordRepository, MedicalRecordRepository>();
-builder.Services.AddScoped<IStockFeedRepository, StockFeedRepository>();
-builder.Services.AddScoped<ITreeStockRepository, TreeStockRepository>();
-builder.Services.AddScoped<ITreeStockMovementRepository, TreeStockMovementRepository>();
-builder.Services.AddScoped<IHarvestStockSync, HarvestStockSync>();
-builder.Services.AddScoped<IHarvestRepository, HarvestRepository>();
-builder.Services.AddScoped<IHarvestItemRepository, HarvestItemRepository>();
-builder.Services.AddScoped<IHarvestResultRepository, HarvestResultRepository>();
-builder.Services.AddScoped<IHarvestAssessmentRepository, HarvestAssessmentRepository>();
-builder.Services.AddScoped<IAssessmentCriteriaRepository, AssessmentCriteriaRepository>();
-builder.Services.AddScoped<IProductionTypeRepository, ProductionTypeRepository>();  
-builder.Services.AddScoped<IUnitRepository, UnitRepository>();
-builder.Services.AddScoped<IAnimalProductionRepository, AnimalProductionRepository>();
-builder.Services.AddScoped<IProductionMovementRepository, ProductionMovementRepository>();
-builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
-builder.Services.AddScoped<ICalendarEventRepository, CalendarEventRepository>();
-builder.Services.AddScoped<IPlantScanHistoryRepository, PlantScanHistoryRepository>();
-builder.Services.AddScoped<IReportRepository, ReportRepository>();
-builder.Services.AddScoped<IMarketListingRepository, MarketListingRepository>();
-builder.Services.AddScoped<INeighbourRepository, NeighbourRepository>();
-builder.Services.AddScoped<INeighbourTerritoryService, NeighbourTerritoryService>();
-builder.Services.AddScoped<IEquipmentRepository, EquipmentRepository>();
-builder.Services.AddScoped<IFileStorageService, FileStorageService>();
-builder.Services.AddScoped<ISoilFertilityScoringService, SoilFertilityScoringService>();
-builder.Services.AddScoped<IPlanLimitService, PlanLimitService>();
-builder.Services.AddScoped<IPlanLimitLock, PlanLimitLock>();
-builder.Services.AddScoped<ICoinService, CoinService>();
-builder.Services.AddScoped<IMarketSaleInventoryService, MarketSaleInventoryService>();
+builder.Services.AddDomainServices();
+builder.Services.AddVisitTracking(builder.Configuration);
 
 // WeatherAPI.com integration (see server/Integrations/WeatherApi). Registered as a typed
 // HttpClient so the API key stays server-side and calls are pooled/retried by the factory.
@@ -202,6 +131,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseVisitTracking();
 app.UseCors("ExpoClient");
 
 app.UseStaticFiles();

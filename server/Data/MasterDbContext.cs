@@ -15,6 +15,7 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
     public DbSet<Neighbour> Neighbours => Set<Neighbour>();
     public DbSet<NeighbourCoinAward> NeighbourCoinAwards => Set<NeighbourCoinAward>();
     public DbSet<PhoneVerificationCode> PhoneVerificationCodes => Set<PhoneVerificationCode>();
+    public DbSet<SiteVisit> SiteVisits => Set<SiteVisit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -142,5 +143,20 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .WithMany()
             .HasForeignKey(a => a.UserBId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<SiteVisit>()
+            .Property(v => v.Device)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<SiteVisit>().HasIndex(v => v.CreatedAt);
+        modelBuilder.Entity<SiteVisit>().HasIndex(v => v.VisitorId);
+        modelBuilder.Entity<SiteVisit>().HasIndex(v => v.SessionId);
+        modelBuilder.Entity<SiteVisit>().HasIndex(v => new { v.Ip, v.CreatedAt });
+
+        modelBuilder.Entity<SiteVisit>()
+            .HasOne<User>()
+            .WithMany()
+            .HasForeignKey(v => v.UserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

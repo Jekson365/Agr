@@ -101,6 +101,10 @@ older four (`greenhouse`, `livestock`, `fruitstock`, `marketplace`, `calendar`) 
 - `/farm/fruits/products` and `/farm/fruits/products/:id` are live routes whose nav entry is
   commented out in `nav-items.ts` — reachable only by URL or from within the fruits page.
 - `/scanner` is commented out in both.
+- `/manager/visitors` is **hidden on purpose**: no nav entry and no link from `/manager`. It sits
+  behind `SuperAdminRoute` (non-operators land on `/404`) and shows the visitor analytics. The
+  beacon feeding it is `components/analytics/visit-tracker.tsx`, mounted in `main.tsx` beside
+  `<App />`; it records every path except `/manager*`, 600 ms after the route settles.
 
 ---
 

@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 
+import { VisitTracker } from '@/components/analytics/visit-tracker'
 import { AuthProvider } from '@/contexts/auth-context'
 import { ConfigurationProvider } from '@/contexts/configuration-context'
 import { CurrencyProvider } from '@/contexts/currency-context'
@@ -21,6 +22,7 @@ createRoot(document.getElementById('root')!).render(
               {/* Inside AuthProvider: the settings live in the signed-in user's own database. */}
               <ConfigurationProvider>
                 <CurrencyProvider>
+                  <VisitTracker />
                   <App />
                 </CurrencyProvider>
               </ConfigurationProvider>

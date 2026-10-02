@@ -16,7 +16,7 @@ physical.
 | | `MasterDbContext` | `AppDbContext` |
 |---|---|---|
 | Database | `master` (single, shared) | `farm_user_{userId}` (one per user) |
-| Holds | users, marketplace, neighbours, SMS codes | everything else (farm domain) |
+| Holds | users, marketplace, neighbours, SMS codes, site visits | everything else (farm domain) |
 | Connection | `ConnectionStrings:master` | same host/credentials, `Database=` swapped |
 | Migrations | `Migrations/Master/` | `Migrations/Tenant/` |
 | Applied when | app startup (`Program.cs`) | every register/login/Google sign-in |
@@ -142,6 +142,17 @@ because the send-rate limits are counted from them. **Nothing writes to it today
 /api/auth/phone/register` and `phone/login` (`AuthController.Phone.cs`) take a number and a password
 with no SMS code, and there is no send-code route. The table, `PhoneVerificationService` and the SMS
 integration remain for when verification is wanted back.
+
+### `SiteVisits`
+One row per page view of the web SPA, written by the anonymous `POST /api/visits`
+(`VisitsController`, rate-limited to 120/min per IP, open in `ManagementAccessMiddleware`).
+`VisitorId` (localStorage) and `SessionId` (30 min idle) are client-generated; `UserId` is set from
+the token when one is sent (**SetNull** FK). `Device` is a text enum (`Desktop|Mobile|Tablet|Bot`),
+parsed with the browser and OS by `Services/UserAgentParser.cs`. The IP comes from
+`VisitorAddress.Resolve` (`X-Forwarded-For` via `UseForwardedHeaders`, falling back to `X-Real-IP`
+behind a loopback proxy), and its location is copied from a row with the same IP in the last 7 days
+before `IpGeolocation` is asked. Read only through `GET /api/admin/visits/summary` and
+`/api/admin/visits/sessions` (`AdminController.Visits.cs`).
 
 ---
 
@@ -345,7 +356,8 @@ without this it kept working as a free extra herd.
 ## 7. API conventions
 
 - `[ApiController]` + `[Route("api/[controller]")]` + `[Authorize]` on every controller except
-  `AuthController` (mixed) and `ProductsController` (broken, see above).
+  `AuthController` (mixed), `VisitsController` (anonymous beacon) and `ProductsController` (broken,
+  see above).
 - Routes are the controller name lower-cased: `FarmsController` → `/api/farms`,
   **`LivestockController` → `/api/livestock`** (not `livestocks`), `EquipmentController` →
   `/api/equipment`, `StockHistoryController` → `/api/stockhistory`.
@@ -464,6 +476,7 @@ dotnet ef migrations add <Name> --context MasterDbContext -o Migrations/Master
 | `OpenAi` | `POST /api/plantscan/analyze` | `gpt-4o-mini`, 60 s timeout; results saved to `PlantScanHistories`; quota-metered per plan. |
 | `SmsService` | phone verification | smsservice.ge (`bi.msg.ge`), 15 s timeout. **Currently unused** — phone sign-up does not send codes. |
 | `Google:ClientId` | `POST /api/auth/google` | ID token verified against Google's keys with this as audience; unverified email is rejected. |
+| `IpGeolocation` | `POST /api/visits` | ipwho.is, no key, 1,000 lookups/day free, 5 s timeout; `Enabled: false` turns lookups off. Private/loopback IPs are never sent. |
 
 ---
 

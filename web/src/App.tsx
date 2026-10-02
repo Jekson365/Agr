@@ -10,7 +10,6 @@ import { FruitsPage } from '@/pages/farm/fruits-page';
 import { NurseryPage } from '@/pages/farm/nursery/nursery-page';
 import { TreatmentPage } from '@/pages/farm/treatment/treatment-page';
 import { GreenhouseDetailPage } from '@/pages/farm/greenhouse-detail-page';
-// import { GreenhouseHarvestDetailPage } from '@/pages/farm/greenhouse-harvest-detail-page';
 import { GreenhouseHarvestPage } from '@/pages/farm/greenhouse-harvest-page';
 import { GreenhousePage } from '@/pages/farm/greenhouse-page';
 import { GreenhouseSeedsPage } from '@/pages/farm/greenhouse-seeds-page';
@@ -53,6 +52,7 @@ import { ConfigRoute } from '@/routes/config-route';
 import { OwnerRoute } from '@/routes/owner-route';
 import { SuperAdminRoute } from '@/routes/super-admin-route';
 import { ManagerPage } from '@/pages/manager/manager-page';
+import { VisitorsPage } from '@/pages/manager/visitors/visitors-page';
 import { ManagementRoute } from '@/routes/management-route';
 import { OnboardingRoute } from '@/routes/onboarding-route';
 import { ProtectedRoute } from '@/routes/protected-route';
@@ -86,7 +86,6 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />
-
         <Route element={<OnboardingRoute />}>
         <Route element={<AppShell />}>
           {/* The marketplace and the account's own profile are open to every signed-in account,
@@ -175,6 +174,7 @@ function App() {
               every endpoint behind it checks again — it is a permission, not a convenience. */}
           <Route element={<SuperAdminRoute />}>
             <Route path="/manager" element={<ManagerPage />} />
+            <Route path="/manager/visitors" element={<VisitorsPage />} />
           </Route>
           {/* Field, orchard and greenhouse harvests on one timeline, so it sits outside the
               crop-farming gate that covers the field's own pages. */}
