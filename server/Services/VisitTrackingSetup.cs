@@ -15,6 +15,7 @@ public static class VisitTrackingSetup
 
     public static IServiceCollection AddVisitTracking(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<VisitTrackingOptions>(configuration.GetSection(VisitTrackingOptions.SectionName));
         services.Configure<IpGeolocationOptions>(configuration.GetSection(IpGeolocationOptions.SectionName));
         services.AddHttpClient<IIpGeolocationClient, IpWhoIsClient>((sp, client) =>
         {

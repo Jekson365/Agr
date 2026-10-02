@@ -152,7 +152,9 @@ parsed with the browser and OS by `Services/UserAgentParser.cs`. The IP comes fr
 `VisitorAddress.Resolve` (`X-Forwarded-For` via `UseForwardedHeaders`, falling back to `X-Real-IP`
 behind a loopback proxy), and its location is copied from a row with the same IP in the last 7 days
 before `IpGeolocation` is asked. Read only through `GET /api/admin/visits/summary` and
-`/api/admin/visits/sessions` (`AdminController.Visits.cs`).
+`/api/admin/visits/sessions` (`AdminController.Visits.cs`). Every read leaves out each `VisitorId`
+that has ever carried the id of an account in `VisitTracking:ExcludedEmails` (the operator's own
+browsing), including that browser's anonymous visits; the rows are still recorded, just never counted.
 
 ---
 

@@ -13,7 +13,8 @@ public partial class SiteVisitRepository
     public async Task<VisitSummaryDto> GetSummaryAsync(VisitFilter filter)
     {
         var window = VisitWindow.For(filter.Days, filter.TimeZone);
-        var visits = Period(window.SinceUtc, filter.IncludeBots);
+        var excluded = await ExcludedVisitorIdsAsync();
+        var visits = Period(window.SinceUtc, filter.IncludeBots, excluded);
 
         return new VisitSummaryDto
         {
@@ -25,9 +26,9 @@ public partial class SiteVisitRepository
                 .Where(g => g.Select(v => v.SessionId).Distinct().Count() > 1)
                 .CountAsync(),
             SignedInUsers = await visits.Where(v => v.UserId != null).Select(v => v.UserId).Distinct().CountAsync(),
-            Bots = await context.SiteVisits.CountAsync(v => v.CreatedAt >= window.SinceUtc && v.Device == VisitDevice.Bot),
+            Bots = await Period(window.SinceUtc, true, excluded).CountAsync(v => v.Device == VisitDevice.Bot),
             Unit = window.Unit,
-            Buckets = await BucketsAsync(window, filter.IncludeBots),
+            Buckets = await BucketsAsync(window, filter.IncludeBots, excluded),
             Countries = await TopAsync(visits.Select(v => new VisitKeyed { Key = v.CountryCode, Detail = v.Country, VisitorId = v.VisitorId })),
             Cities = await TopAsync(visits.Select(v => new VisitKeyed { Key = v.City, Detail = v.CountryCode, VisitorId = v.VisitorId })),
             Pages = await TopAsync(visits.Select(v => new VisitKeyed { Key = v.Path, Detail = "", VisitorId = v.VisitorId })),
@@ -39,18 +40,21 @@ public partial class SiteVisitRepository
         };
     }
 
-    private async Task<List<VisitBucketDto>> BucketsAsync(VisitWindow window, bool includeBots)
+    private async Task<List<VisitBucketDto>> BucketsAsync(VisitWindow window, bool includeBots, List<string> excluded)
     {
         var unit = window.Unit.ToString().ToLowerInvariant();
         var zone = window.Zone.Id;
         var since = window.SinceUtc;
+        var skipped = excluded.ToArray();
 
         var rows = await context.Database.SqlQuery<VisitBucketDto>($"""
             SELECT date_trunc({unit}, "CreatedAt" AT TIME ZONE {zone}) AS "Start",
                    COUNT(*)::int AS "Views",
                    COUNT(DISTINCT "VisitorId")::int AS "Visitors"
             FROM "SiteVisits"
-            WHERE "CreatedAt" >= {since} AND ({includeBots} OR "Device" <> 'Bot')
+            WHERE "CreatedAt" >= {since}
+              AND ({includeBots} OR "Device" <> 'Bot')
+              AND NOT ("VisitorId" = ANY({skipped}))
             GROUP BY 1
             """).ToListAsync();
 

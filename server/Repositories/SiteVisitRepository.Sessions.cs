@@ -11,7 +11,8 @@ public partial class SiteVisitRepository
         var since = string.IsNullOrWhiteSpace(filter.VisitorId)
             ? VisitWindow.For(filter.Days, filter.TimeZone).SinceUtc
             : VisitWindow.Beginning;
-        var visits = Matching(filter, since);
+        var excluded = await ExcludedVisitorIdsAsync();
+        var visits = Matching(filter, since, excluded);
 
         var total = await visits.Select(v => v.SessionId).Distinct().CountAsync();
         var sessionIds = await visits
