@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -16,6 +17,7 @@ public class FarmsController(
     IPlanLimitLock planLimitLock) : ControllerBase
 {
     [HttpGet]
+    [SeedWhileProvisioning(typeof(Farm))]
     public async Task<ActionResult<IEnumerable<Farm>>> GetAll()
     {
         return Ok(await farmRepository.GetAllAsync());

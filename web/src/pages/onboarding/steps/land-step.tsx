@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { ImageField } from '@/components/farm/image-field';
 import { TerritoryMap } from '@/components/farm/land/territory-map';
 import { TerritoryModal } from '@/components/farm/land/territory-modal';
 import { formatArea, territoryAreaHectares, type TerritoryPoint } from '@/config/territory';
@@ -24,10 +23,6 @@ export function LandStep({ value, onChange }: Props) {
   const mapCenter =
     user?.latitude != null && user?.longitude != null ? { lat: user.latitude, lng: user.longitude } : null;
   const territoryArea = territoryAreaHectares(value.territory);
-
-  function pickImage(file: File) {
-    onChange({ ...value, imageFile: file, imagePreview: URL.createObjectURL(file) });
-  }
 
   function handleTerritorySaved(points: TerritoryPoint[]) {
     const measured = territoryAreaHectares(points);
@@ -60,7 +55,7 @@ export function LandStep({ value, onChange }: Props) {
             />
           </div>
 
-          <div className="field">
+          <div className="field onboarding-field-wide">
             <label>{t('farm.location')}</label>
             <input
               value={value.location}
@@ -68,14 +63,6 @@ export function LandStep({ value, onChange }: Props) {
               placeholder={t('farm.locationPlaceholder')}
             />
           </div>
-
-          <ImageField
-            label={t('farm.image')}
-            chooseLabel={t('farm.chooseImage')}
-            changeLabel={t('farm.changeImage')}
-            previewUrl={value.imagePreview}
-            onPick={pickImage}
-          />
 
           <div className="field onboarding-field-wide">
             <label>{t('landTerritory.label')}</label>

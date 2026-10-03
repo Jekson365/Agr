@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -14,6 +15,7 @@ public class FruitKindsController(
     IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpGet]
+    [SeedWhileProvisioning(typeof(FruitKind))]
     public async Task<ActionResult<IEnumerable<FruitKind>>> GetAll()
     {
         return Ok(await fruitKindRepository.GetAllAsync());

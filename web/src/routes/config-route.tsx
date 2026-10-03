@@ -1,5 +1,8 @@
 import { Navigate, Outlet } from 'react-router-dom';
 
+import { ModuleLocked } from '@/components/farm/module-locked';
+import { lockedModule } from '@/config/farm-modules';
+import { useAuth } from '@/contexts/auth-context';
 import { useConfiguration } from '@/contexts/configuration-context';
 
 /**
@@ -12,17 +15,21 @@ import { useConfiguration } from '@/contexts/configuration-context';
  */
 export function ConfigRoute({ name }: { name: string }) {
   const { loaded, loadError, isOn } = useConfiguration();
+  const { user } = useAuth();
 
   if (!loaded) {
     return null;
   }
 
+  const locked = lockedModule(user, name);
+  const content = locked ? <ModuleLocked module={locked} /> : <Outlet />;
+
   // A failed settings request reads every name as off. Denying on that would turn one bad response
   // into a tenant locked out of their own farm, so an unanswered question lets the page through —
   // the sidebar still stops offering the link, and the next successful fetch settles it.
   if (loadError) {
-    return <Outlet />;
+    return content;
   }
 
-  return isOn(name) ? <Outlet /> : <Navigate to="/404" replace />;
+  return isOn(name) ? content : <Navigate to="/404" replace />;
 }

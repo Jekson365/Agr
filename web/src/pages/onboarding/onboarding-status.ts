@@ -1,34 +1,48 @@
-import type { User } from '@/types/auth';
-import { CROP_FARMING_CONFIG, LIVESTOCK_CONFIG } from '@/types/configuration';
+import type { FarmModule, User } from '@/types/auth';
+import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG } from '@/types/configuration';
 import type { Farm } from '@/types/farm';
 
-export type OnboardingStepKey = 'profile' | 'land' | 'stock' | 'livestock';
+export type OnboardingStepKey = 'profile' | 'module' | 'land' | 'stock' | 'livestock' | 'fruit';
 
 export type OnboardingData = {
   farms: Farm[];
   stockCount: number;
   livestockCount: number;
+  fruitCount: number;
 };
 
-const ALL_STEPS: OnboardingStepKey[] = ['profile', 'land', 'stock', 'livestock'];
+const ALL_STEPS: OnboardingStepKey[] = ['profile', 'module', 'land', 'stock', 'livestock', 'fruit'];
 
 const STEP_CONFIG: Partial<Record<OnboardingStepKey, string>> = {
   stock: CROP_FARMING_CONFIG,
   livestock: LIVESTOCK_CONFIG,
+  fruit: FRUIT_STOCK_CONFIG,
 };
+
+const STEP_MODULE: Partial<Record<OnboardingStepKey, FarmModule>> = {
+  stock: 'Crop',
+  livestock: 'Livestock',
+  fruit: 'Fruit',
+};
+
+const UNCHOSEN_MODULE_STEPS: OnboardingStepKey[] = ['stock', 'livestock'];
 
 export const ONBOARDING_STEP_LABEL_KEY: Record<OnboardingStepKey, string> = {
   profile: 'onboarding.stepProfile',
+  module: 'onboarding.stepModule',
   land: 'onboarding.stepLand',
   stock: 'onboarding.stepStock',
   livestock: 'onboarding.stepLivestock',
+  fruit: 'onboarding.stepFruit',
 };
 
 export const ONBOARDING_STEP_TEXT_KEY: Record<OnboardingStepKey, string> = {
   profile: 'onboarding.stepTextProfile',
+  module: 'onboarding.stepTextModule',
   land: 'onboarding.stepTextLand',
   stock: 'onboarding.stepTextStock',
   livestock: 'onboarding.stepTextLivestock',
+  fruit: 'onboarding.stepTextFruit',
 };
 
 export function requiredSteps(isOn: (name: string) => boolean): OnboardingStepKey[] {
@@ -42,16 +56,35 @@ export function activeFarms(farms: Farm[]): Farm[] {
   return farms.filter((farm) => !farm.isRemoved);
 }
 
+export function isStepOpen(step: OnboardingStepKey, user: User, chosen: FarmModule | null): boolean {
+  if (step === 'module') {
+    return !!user.needsModuleChoice || user.freeModule != null;
+  }
+  const module = STEP_MODULE[step];
+  if (module === undefined) {
+    return true;
+  }
+  const picked = user.freeModule ?? chosen;
+  if (picked != null) {
+    return picked === module;
+  }
+  return !user.needsModuleChoice && UNCHOSEN_MODULE_STEPS.includes(step);
+}
+
 export function isStepDone(step: OnboardingStepKey, user: User, data: OnboardingData): boolean {
   switch (step) {
     case 'profile':
-      return (user.farmName ?? '').trim() !== '' && user.latitude != null && user.longitude != null;
+      return (user.farmName ?? '').trim() !== '';
+    case 'module':
+      return !user.needsModuleChoice;
     case 'land':
       return activeFarms(data.farms).length > 0;
     case 'stock':
       return data.stockCount > 0;
     case 'livestock':
       return data.livestockCount > 0;
+    case 'fruit':
+      return data.fruitCount > 0;
   }
 }
 
@@ -60,7 +93,9 @@ export function unfinishedSteps(
   user: User,
   data: OnboardingData
 ): OnboardingStepKey[] {
-  return steps.filter((step) => !isStepDone(step, user, data));
+  return steps.filter(
+    (step) => !isStepDone(step, user, data) && (!!user.needsModuleChoice || isStepOpen(step, user, null))
+  );
 }
 
 const STORAGE_KEY = 'farm.onboarding.done';

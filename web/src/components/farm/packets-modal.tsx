@@ -66,6 +66,10 @@ export function PacketsModal({ open, message, onClose }: Props) {
               </p>
 
               <dl className="packet-rows">
+                <div className="packet-row">
+                  <dt>{t('modules.packetRow')}</dt>
+                  <dd>{t(PLAN_BY_PACKET[packet.id] === 'Free' ? 'modules.packetOne' : 'modules.packetAll')}</dd>
+                </div>
                 {PACKET_ROWS.map((row) => {
                   const off = row.kind === 'boolean' && !packet.limits[row.id];
                   return (

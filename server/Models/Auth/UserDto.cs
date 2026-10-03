@@ -56,6 +56,9 @@ public class UserDto
     public int? MaxFruitKinds { get; set; }
     public bool BalanceAllowed { get; set; }
     public bool EquipmentAllowed { get; set; }
+    public FarmModule? FreeModule { get; set; }
+    public List<FarmModule> AllowedModules { get; set; } = [];
+    public bool NeedsModuleChoice { get; set; }
 
     public static UserDto From(User user) => new()
     {
@@ -94,5 +97,8 @@ public class UserDto
         MaxFruitKinds = PlanLimits.MaxFruitKinds(user.Plan),
         BalanceAllowed = PlanLimits.BalanceAllowed(user.Plan),
         EquipmentAllowed = PlanLimits.EquipmentAllowed(user.Plan),
+        FreeModule = user.FreeModule,
+        AllowedModules = ModuleAccess.AllowedFor(user),
+        NeedsModuleChoice = ModuleAccess.NeedsChoice(user),
     };
 }

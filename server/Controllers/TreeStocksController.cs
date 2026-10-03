@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -20,6 +21,7 @@ public partial class TreeStocksController(
     private const string DeletedMessage = "This fruit was removed.";
 
     [HttpGet]
+    [SeedWhileProvisioning(typeof(TreeStock))]
     public async Task<ActionResult<IEnumerable<TreeStock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
         return Ok(await treeStockRepository.GetAllAsync(includeDeleted));

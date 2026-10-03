@@ -1,9 +1,5 @@
-import { ImagesIcon } from '@/components/icons/misc-icons';
-import { ProfileImagePicker } from '@/components/profile/profile-image-picker';
 import { LocationPickerMap } from '@/components/ui/location-picker-map';
-import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
-import { resolveAssetUrl } from '@/services/api-client';
 import type { ProfileDraft } from '../onboarding-draft';
 
 type Props = {
@@ -12,20 +8,12 @@ type Props = {
 };
 
 export function FarmProfileStep({ value, onChange }: Props) {
-  const { user } = useAuth();
   const { t } = useLanguage();
-
-  const existingIcon = user?.farmImagePath ?? '';
-  const previewUrl = value.iconPreview ?? (existingIcon ? resolveAssetUrl(existingIcon) : null);
-
-  function pickIcon(file: File) {
-    onChange({ ...value, iconFile: file, iconPreview: URL.createObjectURL(file) });
-  }
 
   return (
     <div className="onboarding-step">
       <div className="onboarding-fields">
-        <div className="field">
+        <div className="field onboarding-field-wide">
           <label>{t('profile.farmName')}</label>
           <input
             value={value.farmName}
@@ -33,14 +21,6 @@ export function FarmProfileStep({ value, onChange }: Props) {
             placeholder={t('profile.farmNamePlaceholder')}
           />
         </div>
-
-        <ProfileImagePicker
-          label={t('profile.farmIcon')}
-          previewUrl={previewUrl}
-          placeholder={<ImagesIcon width={24} height={24} />}
-          square
-          onPick={pickIcon}
-        />
 
         <div className="field onboarding-field-wide">
           <label>{t('profile.location')}</label>

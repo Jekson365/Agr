@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -28,6 +29,7 @@ public class LivestockController(
     private const string TypeSettledMessage = "A livestock group keeps the type it was created with.";
 
     [HttpGet]
+    [SeedWhileProvisioning(typeof(Livestock))]
     public async Task<ActionResult<IEnumerable<Livestock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
         return Ok(await livestockRepository.GetAllAsync(includeDeleted));
@@ -51,6 +53,7 @@ public class LivestockController(
 
         try
         {
+            await planLimitService.EnsureModuleAllowedAsync(FarmModule.Livestock);
             var currentCount = (await livestockRepository.GetAllAsync()).Count();
             await planLimitService.EnsureCanAddLivestockAsync(currentCount);
         }

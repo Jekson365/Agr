@@ -17,6 +17,7 @@ public partial class StocksController
         await using var planLock = await planLimitLock.AcquireAsync(PlanResource.Stock);
         try
         {
+            await planLimitService.EnsureModuleAllowedAsync(FarmModule.Crop);
             var currentCount = (await stockRepository.GetAllAsync()).Count();
             await planLimitService.EnsureCanAddStockAsync(currentCount);
         }
@@ -55,6 +56,7 @@ public partial class StocksController
         await using var planLock = await planLimitLock.AcquireAsync(PlanResource.Stock);
         try
         {
+            await planLimitService.EnsureModuleAllowedAsync(FarmModule.Crop);
             var currentCount = (await stockRepository.GetAllAsync()).Count();
             await planLimitService.EnsureCanAddStockAsync(currentCount);
         }

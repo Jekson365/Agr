@@ -1,5 +1,6 @@
 export type UserRole = 'Owner' | 'Member';
 export type StoragePlan = 'Free' | 'Medium' | 'Premium';
+export type FarmModule = 'Crop' | 'Livestock' | 'Fruit';
 
 export type User = {
   id: number;
@@ -41,6 +42,9 @@ export type User = {
   maxFruitKinds: number | null;
   balanceAllowed: boolean;
   equipmentAllowed: boolean;
+  freeModule?: FarmModule | null;
+  allowedModules?: FarmModule[];
+  needsModuleChoice?: boolean;
 };
 
 export type AuthResponse = {

@@ -142,6 +142,17 @@
   margin-left: auto;
 }
 
+.sidebar-link-locked .sidebar-link-icon {
+  opacity: 0.55;
+}
+
+.sidebar-lock-icon {
+  width: 16px;
+  height: 16px;
+  margin-left: auto;
+  color: var(--color-muted);
+}
+
 /* Folded away, but the page you're on is inside it — the lit child link can't say so itself. */
 .sidebar-group.has-active-child > .sidebar-group-header .sidebar-link {
   color: var(--color-green);

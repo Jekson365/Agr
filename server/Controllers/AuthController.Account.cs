@@ -78,6 +78,21 @@ public partial class AuthController
     }
 
     [Authorize]
+    [HttpPut("free-module")]
+    public async Task<ActionResult<UserDto>> ChooseFreeModule(ChooseFreeModuleRequest request)
+    {
+        var user = await userRepository.ChooseFreeModuleAsync(currentTenant.UserId, request.Module);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        return user.FreeModule == request.Module
+            ? Ok(UserDto.From(user))
+            : Conflict("A free module has already been chosen for this account.");
+    }
+
+    [Authorize]
     [HttpPost("profile/upload-image")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(25_000_000)]

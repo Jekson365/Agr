@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -11,6 +12,7 @@ namespace Server.Controllers;
 public class ProductionTypesController(IProductionTypeRepository productionTypeRepository) : ControllerBase
 {
     [HttpGet]
+    [SeedWhileProvisioning(typeof(ProductionType))]
     public async Task<ActionResult<IEnumerable<ProductionType>>> GetAll()
     {
         return Ok(await productionTypeRepository.GetAllAsync());

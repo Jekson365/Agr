@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Server.Data;
 using Server.Models;
 using Server.Services.Interfaces;
@@ -47,6 +48,24 @@ public class PlanLimitService(MasterDbContext masterDb, ICurrentTenant currentTe
         {
             throw new InvalidOperationException(
                 "Equipment isn't available on your plan. Upgrade your plan to access it.");
+        }
+    }
+
+    public async Task EnsureModuleAllowedAsync(FarmModule module)
+    {
+        var user = await GetUserAsync();
+        if (ModuleAccess.NeedsChoice(user))
+        {
+            await masterDb.Users
+                .Where(u => u.Id == user.Id && u.FreeModule == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(u => u.FreeModule, module));
+            await masterDb.Entry(user).ReloadAsync();
+        }
+
+        if (!ModuleAccess.Allows(user, module))
+        {
+            throw new InvalidOperationException(
+                "This module isn't included in your plan. Upgrade your plan to use it.");
         }
     }
 

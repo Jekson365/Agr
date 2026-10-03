@@ -28,11 +28,16 @@ builder.Services.AddDbContext<MasterDbContext>(options =>
 
 // Per-user domain database; the connection is resolved per request from the caller's user id.
 builder.Services.AddDbContext<AppDbContext>((sp, options) =>
-    options.UseNpgsql(sp.GetRequiredService<ITenantConnectionProvider>().GetConnectionString()));
+    options.UseNpgsql(sp.GetRequiredService<ITenantConnectionProvider>().GetConnectionString())
+        .AddInterceptors(sp.GetRequiredService<TenantReadyInterceptor>()));
 
 builder.Services.AddScoped<ICurrentTenant, CurrentTenant>();
 builder.Services.AddScoped<ITenantConnectionProvider, TenantConnectionProvider>();
 builder.Services.AddScoped<ITenantDatabaseProvisioner, TenantDatabaseProvisioner>();
+builder.Services.AddSingleton<TenantProvisioningQueue>();
+builder.Services.AddSingleton<ITenantProvisioningQueue>(sp => sp.GetRequiredService<TenantProvisioningQueue>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<TenantProvisioningQueue>());
+builder.Services.AddSingleton<TenantReadyInterceptor>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddDomainServices();

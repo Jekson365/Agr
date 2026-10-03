@@ -36,6 +36,7 @@ public partial class TreeStocksController
 
         try
         {
+            await planLimitService.EnsureModuleAllowedAsync(FarmModule.Fruit);
             var currentCount = (await treeStockRepository.GetAllAsync()).Count();
             await planLimitService.EnsureCanAddFruitAsync(currentCount);
         }

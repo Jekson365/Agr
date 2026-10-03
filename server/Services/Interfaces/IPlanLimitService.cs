@@ -1,3 +1,5 @@
+using Server.Models;
+
 namespace Server.Services.Interfaces;
 
 /// <summary>
@@ -30,6 +32,7 @@ public interface IPlanLimitService
     Task EnsureFruitWithinLimitAsync(int currentCount);
     Task EnsureBalanceAllowedAsync();
     Task EnsureEquipmentAllowedAsync();
+    Task EnsureModuleAllowedAsync(FarmModule module);
 
     /// <summary>Throws if the user has already used up today's AI plant-scan quota.</summary>
     Task EnsureCanScanAsync();

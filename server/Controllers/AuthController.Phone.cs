@@ -47,7 +47,7 @@ public partial class AuthController
             return Conflict(PhoneTaken);
         }
 
-        await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+        provisioningQueue.StartNewFarm(user.Id);
         await coinService.GrantWelcomeBonusAsync(user);
         await coinService.GrantDailyBonusAsync(user);
 
@@ -70,7 +70,7 @@ public partial class AuthController
 
         if (user.HasManagementAccess)
         {
-            await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+            await provisioningQueue.ProvisionAsync(user.Id);
         }
 
         await coinService.GrantWelcomeBonusAsync(user);

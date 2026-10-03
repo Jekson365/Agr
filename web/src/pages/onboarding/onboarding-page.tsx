@@ -5,6 +5,7 @@ import mascotImage from '@/assets/mascot-intro.png';
 
 import { LanguageToggle } from '@/components/ui/language-toggle';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { fruitTypeLabel } from '@/config/fruit-kinds';
 import { meatProductionTypeName } from '@/config/production';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -15,22 +16,20 @@ import { emptyDraft, isStepReady, type OnboardingDraft } from './onboarding-draf
 import { OnboardingProgress } from './onboarding-progress';
 import {
   activeFarms,
+  isStepOpen,
   markOnboardingDone,
   ONBOARDING_STEP_TEXT_KEY,
   type OnboardingStepKey,
 } from './onboarding-status';
+import { OnboardingStepView } from './onboarding-step-view';
 import { emptyProgress, submitErrorKey, submitOnboarding, type SubmitProgress } from './onboarding-submit';
-import { FarmProfileStep } from './steps/farm-profile-step';
-import { LandStep } from './steps/land-step';
-import { LivestockStep } from './steps/livestock-step';
-import { StockStep } from './steps/stock-step';
 import { OnboardingWelcome } from './onboarding-welcome';
 import { useOnboardingStatus } from './use-onboarding-status';
 import './onboarding-page.css';
 import './onboarding-step.css';
 
 export function OnboardingPage() {
-  const { user, signOut, updateProfile } = useAuth();
+  const { user, signOut, updateProfile, refreshUser } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const check = useOnboardingStatus();
@@ -64,12 +63,15 @@ export function OnboardingPage() {
     return null;
   }
 
-  const current = todo[index];
-  const isLast = index === todo.length - 1;
-  const hasFarm = existingFarmId != null || todo.includes('land');
+  const openFor = (list: OnboardingStepKey[]) =>
+    user ? list.filter((step) => isStepOpen(step, user, draft.module)) : list;
+  const steps = openFor(todo);
+  const current = steps[index];
+  const isLast = index === steps.length - 1;
+  const hasFarm = existingFarmId != null || steps.includes('land');
 
   function goToStep(step: OnboardingStepKey) {
-    const position = todo!.indexOf(step);
+    const position = steps.indexOf(step);
     if (position !== -1 && position <= reached && !saving) {
       setIndex(position);
     }
@@ -93,12 +95,14 @@ export function OnboardingPage() {
     setError(null);
     try {
       await submitOnboarding({
-        steps: todo!,
+        steps,
         draft,
         user,
         progress: progressRef.current,
         updateProfile,
+        refreshUser,
         meatTypeName: (groupName) => meatProductionTypeName(groupName, t),
+        fruitProductName: (type) => fruitTypeLabel(type, t),
       });
       markOnboardingDone(user.id);
       setFinished(true);
@@ -106,27 +110,6 @@ export function OnboardingPage() {
       setError(t(submitErrorKey(err)));
     } finally {
       setSaving(false);
-    }
-  }
-
-  function renderStep(step: OnboardingStepKey) {
-    switch (step) {
-      case 'profile':
-        return (
-          <FarmProfileStep value={draft.profile} onChange={(profile) => setDraft({ ...draft, profile })} />
-        );
-      case 'land':
-        return <LandStep value={draft.land} onChange={(land) => setDraft({ ...draft, land })} />;
-      case 'stock':
-        return <StockStep value={draft.stock} onChange={(stock) => setDraft({ ...draft, stock })} />;
-      case 'livestock':
-        return (
-          <LivestockStep
-            value={draft.livestock}
-            hasFarm={hasFarm}
-            onChange={(livestock) => setDraft({ ...draft, livestock })}
-          />
-        );
     }
   }
 
@@ -156,7 +139,7 @@ export function OnboardingPage() {
                   </span>
                   <div className="onboarding-header-text">
                     <span className="onboarding-counter">
-                      {t('onboarding.stepCounter', { current: index + 1, total: todo.length })}
+                      {t('onboarding.stepCounter', { current: index + 1, total: steps.length })}
                     </span>
                     <p className="onboarding-subtitle">{t(ONBOARDING_STEP_TEXT_KEY[current])}</p>
                   </div>
@@ -164,15 +147,19 @@ export function OnboardingPage() {
               )}
 
               <OnboardingProgress
-                steps={check.steps}
-                todo={todo}
+                steps={openFor(check.steps)}
+                todo={steps}
                 index={index}
                 reached={reached}
                 onSelect={goToStep}
               />
 
               <div className="onboarding-body">
-                {finished ? <OnboardingDone onContinue={goToApp} /> : renderStep(current)}
+                {finished ? (
+                  <OnboardingDone onContinue={goToApp} />
+                ) : (
+                  <OnboardingStepView step={current} draft={draft} hasFarm={hasFarm} onChange={setDraft} />
+                )}
               </div>
 
               {!finished && (

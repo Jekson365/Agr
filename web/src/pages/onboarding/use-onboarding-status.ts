@@ -5,6 +5,7 @@ import { useConfiguration } from '@/contexts/configuration-context';
 import { getFarms } from '@/services/farm-service';
 import { getLivestock } from '@/services/livestock-service';
 import { getStock } from '@/services/stock-service';
+import { getTreeStock } from '@/services/tree-stock-service';
 import type { Farm } from '@/types/farm';
 import {
   isOnboardingDoneMarked,
@@ -48,10 +49,14 @@ export function useOnboardingStatus(): OnboardingCheck {
       getFarms(),
       steps.includes('stock') ? getStock() : Promise.resolve([]),
       steps.includes('livestock') ? getLivestock() : Promise.resolve([]),
+      steps.includes('fruit') ? getTreeStock() : Promise.resolve([]),
     ])
-      .then(([farms, stock, livestock]) => {
+      .then(([farms, stock, livestock, fruit]) => {
         if (cancelled) return;
-        setState({ data: { farms, stockCount: stock.length, livestockCount: livestock.length }, enforced: true });
+        setState({
+          data: { farms, stockCount: stock.length, livestockCount: livestock.length, fruitCount: fruit.length },
+          enforced: true,
+        });
       })
       .catch(() => {
         if (!cancelled) setState({ data: null, enforced: false });

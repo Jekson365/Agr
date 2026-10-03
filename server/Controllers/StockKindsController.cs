@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -14,6 +15,7 @@ public class StockKindsController(
     IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpGet]
+    [SeedWhileProvisioning(typeof(StockKind))]
     public async Task<ActionResult<IEnumerable<StockKind>>> GetAll()
     {
         return Ok(await stockKindRepository.GetAllAsync());

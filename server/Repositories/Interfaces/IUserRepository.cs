@@ -16,6 +16,7 @@ public interface IUserRepository
     Task<User> AddAsync(User user);
     Task<User?> UpdateProfileAsync(int id, UpdateProfileRequest request);
     Task<User?> UpdateLocationAsync(int id, UpdateLocationRequest request);
+    Task<User?> ChooseFreeModuleAsync(int id, FarmModule module);
 
     /// <summary>
     /// Marks the account a marketplace seller and records what it trades under. Re-registering

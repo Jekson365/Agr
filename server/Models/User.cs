@@ -111,6 +111,10 @@ public class User
     /// <summary>Image-upload storage tier; caps <see cref="StorageUsedBytes"/> (see <see cref="StoragePlanLimits"/>).</summary>
     public StoragePlan Plan { get; set; } = StoragePlan.Free;
 
+    public FarmModule? FreeModule { get; set; }
+
+    public bool AllModulesIncluded { get; set; }
+
     /// <summary>Running total of bytes used by this user's uploaded images, updated by <see cref="Services.FileStorageService"/>.</summary>
     public long StorageUsedBytes { get; set; }
 

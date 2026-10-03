@@ -1,11 +1,14 @@
 import { parseAmount } from '@/components/farm/stock/stock-form/stock-form';
+import { TREE_PRODUCT_DEFAULT_UNIT } from '@/config/fruit-kinds';
 import { ApiError } from '@/services/api-client';
 import { serializeTerritory } from '@/config/territory';
-import { updateLocation, uploadProfileImage } from '@/services/auth-service';
-import { createFarm, uploadFarmImage } from '@/services/farm-service';
+import { chooseFreeModule, updateLocation } from '@/services/auth-service';
+import { createFarm } from '@/services/farm-service';
 import { createLivestock } from '@/services/livestock-service';
 import { ensureProductionType } from '@/services/production-type-service';
 import { createStockWithSeed } from '@/services/stock-service';
+import { createTreeProduct, deleteTreeProduct } from '@/services/tree-product-service';
+import { createTreeStock } from '@/services/tree-stock-service';
 import type { UpdateProfileRequest, User } from '@/types/auth';
 import type { OnboardingDraft } from './onboarding-draft';
 import type { OnboardingStepKey } from './onboarding-status';
@@ -29,7 +32,9 @@ type SubmitInput = {
   user: User;
   progress: SubmitProgress;
   updateProfile: (request: UpdateProfileRequest) => Promise<void>;
+  refreshUser: () => Promise<void>;
   meatTypeName: (groupName: string) => string;
+  fruitProductName: (type: string) => string;
 };
 
 export async function submitOnboarding(input: SubmitInput): Promise<void> {
@@ -46,18 +51,45 @@ async function saveStep(step: OnboardingStepKey, input: SubmitInput): Promise<vo
   switch (step) {
     case 'profile':
       return saveProfile(input);
+    case 'module':
+      return saveModule(input);
     case 'land':
       return saveLand(input);
     case 'stock':
       return saveStock(input);
     case 'livestock':
       return saveLivestock(input);
+    case 'fruit':
+      return saveFruit(input);
+  }
+}
+
+async function saveModule({ draft, refreshUser }: SubmitInput): Promise<void> {
+  if (draft.module === null) return;
+  await chooseFreeModule(draft.module);
+  await refreshUser();
+}
+
+async function saveFruit({ draft, fruitProductName }: SubmitInput): Promise<void> {
+  const { type, name, amount } = draft.fruit;
+  const product = await createTreeProduct({ name: fruitProductName(type), unit: TREE_PRODUCT_DEFAULT_UNIT });
+  try {
+    await createTreeStock({
+      type,
+      name: name.trim(),
+      amount: parseAmount(amount),
+      unit: 'Plant',
+      landPlotId: null,
+      treeProductId: product.id,
+    });
+  } catch (err) {
+    await deleteTreeProduct(product.id).catch(() => {});
+    throw err;
   }
 }
 
 async function saveProfile({ draft, user, updateProfile }: SubmitInput): Promise<void> {
-  const { farmName, iconFile, point } = draft.profile;
-  const farmImagePath = iconFile ? await uploadProfileImage(iconFile) : (user.farmImagePath ?? '');
+  const { farmName, point } = draft.profile;
   if (point) {
     await updateLocation(point.lat, point.lng);
   }
@@ -70,16 +102,15 @@ async function saveProfile({ draft, user, updateProfile }: SubmitInput): Promise
     birthDate: user.birthDate ? user.birthDate.slice(0, 10) : null,
     imagePath: user.imagePath ?? '',
     farmName: farmName.trim(),
-    farmImagePath,
+    farmImagePath: user.farmImagePath ?? '',
   });
 }
 
 async function saveLand({ draft, progress }: SubmitInput): Promise<void> {
-  const { name, area, location, imageFile, territory } = draft.land;
-  const imagePath = imageFile ? await uploadFarmImage(imageFile) : '';
+  const { name, area, location, territory } = draft.land;
   const created = await createFarm({
     name: name.trim(),
-    imagePath,
+    imagePath: '',
     area: Math.max(0, parseFloat(area) || 0),
     location: location.trim(),
     boundary: serializeTerritory(territory),

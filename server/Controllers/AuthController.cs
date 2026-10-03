@@ -13,7 +13,7 @@ namespace Server.Controllers;
 public partial class AuthController(
     IUserRepository userRepository,
     ITokenService tokenService,
-    ITenantDatabaseProvisioner tenantDatabaseProvisioner,
+    ITenantProvisioningQueue provisioningQueue,
     ICurrentTenant currentTenant,
     IFileStorageService fileStorageService,
     ICoinService coinService,
@@ -45,7 +45,7 @@ public partial class AuthController(
         await userRepository.AddAsync(user);
 
         // ...then provision that user's own database (farm_user_{id}) and apply its migrations.
-        await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+        provisioningQueue.StartNewFarm(user.Id);
 
         // Registering is the first way into the system, so the joining bonus is paid here rather
         // than waiting for a separate sign-in that never comes. Signing up is also an arrival, so
@@ -117,7 +117,7 @@ public partial class AuthController(
         // access later needs no extra step — the login after it provisions.
         if (user.HasManagementAccess)
         {
-            await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+            await provisioningQueue.ProvisionAsync(user.Id);
         }
 
         // Only pays anyone who has never been paid — an account from before the coin system gets

@@ -153,4 +153,13 @@ public class UserRepository(MasterDbContext context) : IUserRepository
         await context.SaveChangesAsync();
         return user;
     }
+
+    public async Task<User?> ChooseFreeModuleAsync(int id, FarmModule module)
+    {
+        await context.Users
+            .Where(u => u.Id == id && u.FreeModule == null)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(u => u.FreeModule, module));
+
+        return await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+    }
 }

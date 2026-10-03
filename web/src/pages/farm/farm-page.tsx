@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import animalsIcon from '@/assets/properties/animals.png';
@@ -5,6 +6,9 @@ import equipmentIcon from '@/assets/properties/equipment.png';
 import fruitsIcon from '@/assets/properties/fruits.png';
 import landIcon from '@/assets/properties/land.png';
 import plantsIcon from '@/assets/properties/plants.png';
+import { PacketsModal } from '@/components/farm/packets-modal';
+import { LockIcon } from '@/components/icons/misc-icons';
+import { lockedModule } from '@/config/farm-modules';
 import { useAuth } from '@/contexts/auth-context';
 import { useConfiguration } from '@/contexts/configuration-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -45,6 +49,7 @@ export function FarmPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { isOn } = useConfiguration();
+  const [lockedName, setLockedName] = useState<string | null>(null);
 
   const sections = SECTIONS.filter(
     (section) =>
@@ -56,15 +61,41 @@ export function FarmPage() {
     <div>
       <h1 className="farm-page-title">{t('farm.title')}</h1>
       <div className="farm-section-grid">
-        {sections.map((section) => (
-          <Link key={section.key} to={section.to} className="farm-section-item">
-            <span className="farm-section-icon">
-              <img src={section.icon} alt="" />
-            </span>
-            <span className="farm-section-label">{t(section.labelKey)}</span>
-          </Link>
-        ))}
+        {sections.map((section) => {
+          const label = t(section.labelKey);
+          const body = (
+            <>
+              <span className="farm-section-icon">
+                <img src={section.icon} alt="" />
+              </span>
+              <span className="farm-section-label">{label}</span>
+            </>
+          );
+
+          return lockedModule(user, section.requiresConfig) ? (
+            <button
+              key={section.key}
+              type="button"
+              className="farm-section-item locked"
+              title={t('modules.lockedBadge')}
+              onClick={() => setLockedName(label)}
+            >
+              {body}
+              <LockIcon className="farm-section-lock" aria-hidden="true" />
+            </button>
+          ) : (
+            <Link key={section.key} to={section.to} className="farm-section-item">
+              {body}
+            </Link>
+          );
+        })}
       </div>
+
+      <PacketsModal
+        open={lockedName !== null}
+        message={t('modules.packetsMessage', { name: lockedName ?? '' })}
+        onClose={() => setLockedName(null)}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Server.Models;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
+using Server.Services;
 
 namespace Server.Controllers;
 
@@ -25,6 +26,7 @@ public partial class StocksController(
     /// pages that have to put a name to a harvest or plot recorded against one.
     /// </summary>
     [HttpGet]
+    [SeedWhileProvisioning(typeof(Stock))]
     public async Task<ActionResult<IEnumerable<Stock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
         return Ok(await stockRepository.GetAllAsync(includeDeleted));

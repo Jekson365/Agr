@@ -2,6 +2,7 @@ import { apiFetch, uploadImage } from '@/services/api-client';
 import type {
   AuthResponse,
   DailyBonusResponse,
+  FarmModule,
   GoogleAuthRequest,
   LoginRequest,
   PhoneLoginRequest,
@@ -73,5 +74,12 @@ export function updateLocation(latitude: number, longitude: number) {
   return apiFetch<User>('/api/auth/profile/location', {
     method: 'PUT',
     body: JSON.stringify({ latitude, longitude }),
+  });
+}
+
+export function chooseFreeModule(module: FarmModule) {
+  return apiFetch<User>('/api/auth/free-module', {
+    method: 'PUT',
+    body: JSON.stringify({ module }),
   });
 }

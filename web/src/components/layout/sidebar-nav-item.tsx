@@ -1,6 +1,8 @@
 import { NavLink, useLocation } from 'react-router-dom';
 
 import { ChevronDownIcon } from '@/components/icons/nav-icons';
+import { SidebarLockedItem } from '@/components/layout/sidebar-locked-item';
+import { lockedModule } from '@/config/farm-modules';
 import { isNavItemVisible, type NavItem } from '@/config/nav-items';
 import { useAuth } from '@/contexts/auth-context';
 import { useConfiguration } from '@/contexts/configuration-context';
@@ -32,6 +34,10 @@ export function SidebarNavItem({ item, groupKey, collapsed, onToggle }: NavItemP
   const { user } = useAuth();
   const { isOn } = useConfiguration();
   const { pathname } = useLocation();
+
+  if (lockedModule(user, item.requiresConfig)) {
+    return <SidebarLockedItem item={item} />;
+  }
 
   const children = item.children?.filter((child) => isNavItemVisible(child, user, isOn));
   const hasChildren = !!children?.length;

@@ -57,13 +57,13 @@ public partial class AuthController
             await userRepository.AddAsync(user);
 
             // Provision the new user's own database (farm_user_{id}) and apply its migrations.
-            await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+            provisioningQueue.StartNewFarm(user.Id);
         }
         else
         {
             // Existing account (registered with a password or a previous Google sign-in): just
             // bring its database up to date, exactly like Login does.
-            await tenantDatabaseProvisioner.ProvisionAsync(user.Id);
+            await provisioningQueue.ProvisionAsync(user.Id);
         }
 
         // Both branches are a first sign-in as far as the bonus is concerned — it pays once, and

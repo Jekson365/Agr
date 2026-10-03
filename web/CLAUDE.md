@@ -81,6 +81,11 @@ src/
 **`/` is the marketing page and sits outside both guards** — signed-in visitors can still read it.
 The app proper lives under `/main`. Unmatched paths redirect to `/404`.
 
+For the three module switches (`CropFarming`, `livestock`, `fruitstock`) `ConfigRoute` also renders
+`ModuleLocked` — an upgrade screen that opens `PacketsModal` — when the account's plan doesn't include
+that module (`user.allowedModules`; see `config/farm-modules.ts` and server §8). The sidebar and the
+`/farm` tiles show such a module with a lock rather than hiding it.
+
 `ConfigRoute` has two deliberate non-obvious behaviours, both about not locking a tenant out:
 - while `!loaded` it renders `null` (before the settings arrive every name reads as off, and
   redirecting on that would bounce someone off a page they are entitled to);
@@ -287,6 +292,7 @@ lives, so pages stay thin and mobile can borrow the maths.
 | `territory` | Farm boundary JSON → map polygons. |
 | `market-listing`, `harvest-status`, `harvest-target`, `crop`, `age`, `configuration-labels` | Option lists and label maps. |
 | `landing` | The marketing page's packet/pricing data, reused by `PacketsModal` so caps are stated once. |
+| `farm-modules` | The three farm modules (label, icon, switch) and `lockedModule(user, switch)` — the one check the route guard, sidebar, `/farm` tiles and purchase modal share. A stored user without `allowedModules` (a session from before modules) reads as everything allowed. |
 
 The rule this encodes: **the server sends raw catalog names, never display text** — translations and
 artwork are client-side, and duplicating either server-side would fork them.

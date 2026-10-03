@@ -62,6 +62,10 @@ public class MasterDbContext(DbContextOptions<MasterDbContext> options) : DbCont
             .Property(u => u.Plan)
             .HasConversion<string>();
 
+        modelBuilder.Entity<User>()
+            .Property(u => u.FreeModule)
+            .HasConversion<string>();
+
         // Email is a login identifier, unique across all users — but an account registered by phone
         // has none, and every one of those would otherwise collide on the empty string.
         modelBuilder.Entity<User>()

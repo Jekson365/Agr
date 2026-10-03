@@ -54,7 +54,10 @@ public partial class AdminController
     }
 
     [HttpPost("users/{id:int}/migrate")]
-    public async Task<IActionResult> MigrateUserDatabase(int id, [FromServices] ITenantDatabaseProvisioner provisioner)
+    public async Task<IActionResult> MigrateUserDatabase(
+        int id,
+        [FromServices] ITenantDatabaseProvisioner provisioner,
+        [FromServices] ITenantProvisioningQueue provisioningQueue)
     {
         var op = await GetOperatorAsync();
         if (op is null)
@@ -72,7 +75,7 @@ public partial class AdminController
             return Conflict("This account has no farm database.");
         }
 
-        await provisioner.ProvisionAsync(id);
+        await provisioningQueue.ProvisionAsync(id);
 
         logger.LogInformation(
             "Farm database of account {UserId} brought up to date by operator {OperatorId} ({Email})",

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { PlusIcon } from '@/components/icons/misc-icons';
 import { Modal } from '@/components/ui/modal';
 import { todayIsoDate } from '@/components/ui/date-utils';
+import { isModuleAllowed } from '@/config/farm-modules';
 import { useAuth } from '@/contexts/auth-context';
 import { useConfiguration } from '@/contexts/configuration-context';
 import { useCurrency } from '@/contexts/currency-context';
@@ -65,9 +66,9 @@ export function PurchaseModal({ open, editing, onClose, onSaved }: Props) {
     setLoading(true);
 
     loadPurchaseTargets(t, {
-      livestock: isOn(LIVESTOCK_CONFIG),
-      fruits: isOn(FRUIT_STOCK_CONFIG),
-      crops: isOn(CROP_FARMING_CONFIG),
+      livestock: isOn(LIVESTOCK_CONFIG) && isModuleAllowed(user, 'Livestock'),
+      fruits: isOn(FRUIT_STOCK_CONFIG) && isModuleAllowed(user, 'Fruit'),
+      crops: isOn(CROP_FARMING_CONFIG) && isModuleAllowed(user, 'Crop'),
       equipment: equipmentAllowed,
     })
       .then((loaded) => {
