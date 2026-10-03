@@ -4,6 +4,7 @@ import carrotIcon from '@/assets/goods/carrot.png';
 import cornIcon from '@/assets/goods/corn.png';
 import cucumberIcon from '@/assets/goods/cucumber.png';
 import eggplantIcon from '@/assets/goods/eggplant.png';
+import grapeIcon from '@/assets/goods/grape.png';
 import milkIcon from '@/assets/goods/milk.png';
 import onionIcon from '@/assets/goods/onion.png';
 import potatoIcon from '@/assets/goods/potato.png';
@@ -32,6 +33,7 @@ export const STOCK_KIND_IMAGE: Record<string, string> = {
   Carrot: carrotIcon,
   Corn: cornIcon,
   Onion: onionIcon,
+  Grape: grapeIcon,
 };
 
 export const STOCK_TYPE_LABEL_KEY: Record<string, string> = {
@@ -47,6 +49,7 @@ export const STOCK_TYPE_LABEL_KEY: Record<string, string> = {
   Carrot: 'farm.stockCarrot',
   Corn: 'farm.stockCorn',
   Onion: 'farm.stockOnion',
+  Grape: 'farm.stockGrape',
 };
 
 export const STOCK_UNIT_OPTIONS: { value: string; labelKey: string }[] = [

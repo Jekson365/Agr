@@ -28,6 +28,7 @@ public static class BuiltInKinds
         new() { Id = 10, Name = "Carrot" },
         new() { Id = 11, Name = "Corn" },
         new() { Id = 12, Name = "Onion" },
+        new() { Id = 13, Name = "Grape" },
     ];
 
     public static readonly FruitKind[] Fruit =
