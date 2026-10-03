@@ -39,7 +39,10 @@ export function SidebarNavItem({ item, groupKey, collapsed, onToggle }: NavItemP
     return <SidebarLockedItem item={item} />;
   }
 
-  const children = item.children?.filter((child) => isNavItemVisible(child, user, isOn));
+  const isLocked = (entry: NavItem) => (lockedModule(user, entry.requiresConfig) ? 1 : 0);
+  const children = item.children
+    ?.filter((child) => isNavItemVisible(child, user, isOn))
+    .sort((a, b) => isLocked(a) - isLocked(b));
   const hasChildren = !!children?.length;
   const isCollapsed = hasChildren && collapsed.has(groupKey);
   const label = t(item.labelKey);
