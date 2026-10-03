@@ -104,5 +104,6 @@ export function buildVisit(path: string): VisitInput {
     viewportWidth: window.innerWidth,
     viewportHeight: window.innerHeight,
     touchPoints: navigator.maxTouchPoints,
+    webdriver: navigator.webdriver === true,
   };
 }

@@ -46,6 +46,11 @@ public class VisitRecorder(
         };
 
         await LocateAsync(visit);
+        if (BotSignals.IsBot(visit, request.Webdriver))
+        {
+            visit.Device = VisitDevice.Bot;
+        }
+
         await visits.AddAsync(visit);
     }
 

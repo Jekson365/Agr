@@ -17,6 +17,7 @@ export type VisitInput = {
   viewportWidth: number;
   viewportHeight: number;
   touchPoints: number;
+  webdriver: boolean;
 };
 
 export type VisitFilter = {

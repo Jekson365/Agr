@@ -185,7 +185,10 @@ One row per page view of the web SPA, written by the anonymous `POST /api/visits
 (`VisitsController`, rate-limited to 120/min per IP, open in `ManagementAccessMiddleware`).
 `VisitorId` (localStorage) and `SessionId` (30 min idle) are client-generated; `UserId` is set from
 the token when one is sent (**SetNull** FK). `Device` is a text enum (`Desktop|Mobile|Tablet|Bot`),
-parsed with the browser and OS by `Services/UserAgentParser.cs`. The IP comes from
+parsed with the browser and OS by `Services/UserAgentParser.cs`; after the location lookup,
+`Services/BotSignals.cs` also files as `Bot` a visit that reports `navigator.webdriver`, headless
+Chrome's 800×600 screen or `Etc/Unknown` time zone, or a hosting network (Cloudflare, Akamai and
+Fastly are left out — they relay iCloud Private Relay users). Reads hide bots unless asked. The IP comes from
 `VisitorAddress.Resolve` (`X-Forwarded-For` via `UseForwardedHeaders`, falling back to `X-Real-IP`
 behind a loopback proxy), and its location is copied from a row with the same IP in the last 7 days
 before `IpGeolocation` is asked. Read only through `GET /api/admin/visits/summary` and

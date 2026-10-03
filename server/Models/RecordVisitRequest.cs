@@ -16,4 +16,5 @@ public class RecordVisitRequest
     public int ViewportWidth { get; set; }
     public int ViewportHeight { get; set; }
     public int TouchPoints { get; set; }
+    public bool Webdriver { get; set; }
 }
