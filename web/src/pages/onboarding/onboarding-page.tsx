@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { homePathFor } from '@/routes/home-path';
 import { OnboardingActions } from './onboarding-actions';
 import { OnboardingDone } from './onboarding-done';
+import { OnboardingLoading } from './onboarding-loading';
 import { emptyDraft, isStepReady, type OnboardingDraft } from './onboarding-draft';
 import { OnboardingProgress } from './onboarding-progress';
 import {
@@ -130,6 +131,8 @@ export function OnboardingPage() {
         <div className="onboarding-card">
           {!started ? (
             <OnboardingWelcome onStart={() => setStarted(true)} />
+          ) : saving ? (
+            <OnboardingLoading />
           ) : (
             <>
               {!finished && (

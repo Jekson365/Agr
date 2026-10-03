@@ -12,7 +12,7 @@ namespace Server.Controllers;
 public class ProductionTypesController(IProductionTypeRepository productionTypeRepository) : ControllerBase
 {
     [HttpGet]
-    [SeedWhileProvisioning(typeof(ProductionType))]
+    [SeedUntilFarmExists(typeof(ProductionType))]
     public async Task<ActionResult<IEnumerable<ProductionType>>> GetAll()
     {
         return Ok(await productionTypeRepository.GetAllAsync());

@@ -17,7 +17,7 @@ public class FarmsController(
     IPlanLimitLock planLimitLock) : ControllerBase
 {
     [HttpGet]
-    [SeedWhileProvisioning(typeof(Farm))]
+    [SeedUntilFarmExists(typeof(Farm))]
     public async Task<ActionResult<IEnumerable<Farm>>> GetAll()
     {
         return Ok(await farmRepository.GetAllAsync());

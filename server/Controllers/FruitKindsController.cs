@@ -15,7 +15,7 @@ public class FruitKindsController(
     IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpGet]
-    [SeedWhileProvisioning(typeof(FruitKind))]
+    [SeedUntilFarmExists(typeof(FruitKind))]
     public async Task<ActionResult<IEnumerable<FruitKind>>> GetAll()
     {
         return Ok(await fruitKindRepository.GetAllAsync());

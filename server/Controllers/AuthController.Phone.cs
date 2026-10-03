@@ -47,7 +47,6 @@ public partial class AuthController
             return Conflict(PhoneTaken);
         }
 
-        provisioningQueue.StartNewFarm(user.Id);
         await coinService.GrantWelcomeBonusAsync(user);
         await coinService.GrantDailyBonusAsync(user);
 
@@ -68,7 +67,7 @@ public partial class AuthController
             return Unauthorized("Invalid phone number or password.");
         }
 
-        if (user.HasManagementAccess)
+        if (user.HasManagementAccess && user.DatabaseCreatedAt is not null)
         {
             await provisioningQueue.ProvisionAsync(user.Id);
         }

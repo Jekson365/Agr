@@ -115,6 +115,8 @@ public class User
 
     public bool AllModulesIncluded { get; set; }
 
+    public DateTime? DatabaseCreatedAt { get; set; }
+
     /// <summary>Running total of bytes used by this user's uploaded images, updated by <see cref="Services.FileStorageService"/>.</summary>
     public long StorageUsedBytes { get; set; }
 

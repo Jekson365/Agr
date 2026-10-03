@@ -19,8 +19,9 @@ and the Expo Router app at the repo root.
   `curl -s -o /dev/null -w "%{http_code}" http://localhost:5080/api/auth/me` until it responds).
 - **Auth is required for everything except `/api/auth/register` and `/api/auth/login`.**
   Register body is `{"name","email","password"}` (not `fullName`) — returns `{token, user}`.
-  Registering (or logging in) provisions/migrates that user's own tenant database
-  (`farm_user_{id}`), which is the real way to prove a new EF Core migration applies cleanly —
+  Registering creates only the account. `POST /api/auth/farm` with that token (what onboarding's
+  last step calls) creates and migrates the user's own tenant database (`farm_user_{id}`), and a
+  login migrates one that exists — the real way to prove a new EF Core migration applies cleanly,
   no separate "run migrations" step needed.
 - Controller routes are pluralized from the resource, e.g. `FarmsController` → `/api/farms`,
   `LivestockController` → `/api/livestock` (not `/api/livestocks`).

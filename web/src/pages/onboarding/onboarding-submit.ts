@@ -2,7 +2,7 @@ import { parseAmount } from '@/components/farm/stock/stock-form/stock-form';
 import { TREE_PRODUCT_DEFAULT_UNIT } from '@/config/fruit-kinds';
 import { ApiError } from '@/services/api-client';
 import { serializeTerritory } from '@/config/territory';
-import { chooseFreeModule, updateLocation } from '@/services/auth-service';
+import { chooseFreeModule, createFarmDatabase, updateLocation } from '@/services/auth-service';
 import { createFarm } from '@/services/farm-service';
 import { createLivestock } from '@/services/livestock-service';
 import { ensureProductionType } from '@/services/production-type-service';
@@ -16,10 +16,11 @@ import type { OnboardingStepKey } from './onboarding-status';
 export type SubmitProgress = {
   saved: Set<OnboardingStepKey>;
   farmId: number | null;
+  databaseReady: boolean;
 };
 
 export function emptyProgress(existingFarmId: number | null): SubmitProgress {
-  return { saved: new Set<OnboardingStepKey>(), farmId: existingFarmId };
+  return { saved: new Set<OnboardingStepKey>(), farmId: existingFarmId, databaseReady: false };
 }
 
 export function submitErrorKey(error: unknown): string {
@@ -39,6 +40,11 @@ type SubmitInput = {
 
 export async function submitOnboarding(input: SubmitInput): Promise<void> {
   const { steps, progress } = input;
+
+  if (!progress.databaseReady) {
+    await createFarmDatabase();
+    progress.databaseReady = true;
+  }
 
   for (const step of steps) {
     if (progress.saved.has(step)) continue;

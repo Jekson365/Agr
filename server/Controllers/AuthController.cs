@@ -30,7 +30,7 @@ public partial class AuthController(
             return Conflict("An account with this email already exists.");
         }
 
-        // Create the user row in the master database first so it receives its identity id...
+        // Create the user row in the master database so it receives its identity id.
         // A farm can sell what it produces, so signing up here carries the marketplace with it —
         // only the reverse direction needs granting (see User.IsSeller).
         var user = new User
@@ -43,9 +43,6 @@ public partial class AuthController(
             SellerRegisteredAt = DateTime.UtcNow,
         };
         await userRepository.AddAsync(user);
-
-        // ...then provision that user's own database (farm_user_{id}) and apply its migrations.
-        provisioningQueue.StartNewFarm(user.Id);
 
         // Registering is the first way into the system, so the joining bonus is paid here rather
         // than waiting for a separate sign-in that never comes. Signing up is also an arrival, so
@@ -110,12 +107,11 @@ public partial class AuthController(
             return Unauthorized("Invalid email or password.");
         }
 
-        // Bring the user's database up to date on every login. This is idempotent — it creates
-        // the database if it is somehow missing and applies any migrations added since last time.
-        // Skipped for an account that cannot open the management software: it has nothing to keep
-        // in there, and the database it would get is one per shop that nothing ever reads. Granting
-        // access later needs no extra step — the login after it provisions.
-        if (user.HasManagementAccess)
+        // Bring the user's database up to date on every login. This is idempotent — it applies any
+        // migrations added since last time. Skipped for an account that cannot open the management
+        // software: it has nothing to keep in there, and the database it would get is one per shop
+        // that nothing ever reads.
+        if (user.HasManagementAccess && user.DatabaseCreatedAt is not null)
         {
             await provisioningQueue.ProvisionAsync(user.Id);
         }

@@ -15,7 +15,7 @@ public class StockKindsController(
     IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpGet]
-    [SeedWhileProvisioning(typeof(StockKind))]
+    [SeedUntilFarmExists(typeof(StockKind))]
     public async Task<ActionResult<IEnumerable<StockKind>>> GetAll()
     {
         return Ok(await stockKindRepository.GetAllAsync());

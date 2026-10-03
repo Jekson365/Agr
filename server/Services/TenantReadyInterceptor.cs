@@ -16,7 +16,7 @@ public sealed class TenantReadyInterceptor(ITenantProvisioningQueue provisioning
     {
         if (TryReadUserId(connection, out var userId))
         {
-            await provisioningQueue.WaitUntilReadyAsync(userId).WaitAsync(cancellationToken);
+            await provisioningQueue.EnsureFarmAsync(userId).WaitAsync(cancellationToken);
         }
 
         return result;
@@ -29,7 +29,7 @@ public sealed class TenantReadyInterceptor(ITenantProvisioningQueue provisioning
     {
         if (TryReadUserId(connection, out var userId))
         {
-            provisioningQueue.WaitUntilReadyAsync(userId).GetAwaiter().GetResult();
+            provisioningQueue.EnsureFarmAsync(userId).GetAwaiter().GetResult();
         }
 
         return result;

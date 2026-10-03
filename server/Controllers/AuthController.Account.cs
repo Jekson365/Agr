@@ -78,6 +78,25 @@ public partial class AuthController
     }
 
     [Authorize]
+    [HttpPost("farm")]
+    public async Task<IActionResult> CreateFarmDatabase()
+    {
+        var user = await userRepository.GetByIdAsync(currentTenant.UserId);
+        if (user is null)
+        {
+            return NotFound();
+        }
+
+        if (!user.HasManagementAccess)
+        {
+            return Forbid();
+        }
+
+        await provisioningQueue.ProvisionAsync(user.Id);
+        return NoContent();
+    }
+
+    [Authorize]
     [HttpPut("free-module")]
     public async Task<ActionResult<UserDto>> ChooseFreeModule(ChooseFreeModuleRequest request)
     {

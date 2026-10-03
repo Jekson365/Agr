@@ -55,11 +55,8 @@ public partial class AuthController
                 SellerRegisteredAt = DateTime.UtcNow,
             };
             await userRepository.AddAsync(user);
-
-            // Provision the new user's own database (farm_user_{id}) and apply its migrations.
-            provisioningQueue.StartNewFarm(user.Id);
         }
-        else
+        else if (user.DatabaseCreatedAt is not null)
         {
             // Existing account (registered with a password or a previous Google sign-in): just
             // bring its database up to date, exactly like Login does.

@@ -26,7 +26,7 @@ public partial class StocksController(
     /// pages that have to put a name to a harvest or plot recorded against one.
     /// </summary>
     [HttpGet]
-    [SeedWhileProvisioning(typeof(Stock))]
+    [SeedUntilFarmExists(typeof(Stock))]
     public async Task<ActionResult<IEnumerable<Stock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
         return Ok(await stockRepository.GetAllAsync(includeDeleted));

@@ -15,7 +15,7 @@ public class LivestockKindsController(
     IFileStorageService fileStorageService) : ControllerBase
 {
     [HttpGet]
-    [SeedWhileProvisioning(typeof(LivestockKind))]
+    [SeedUntilFarmExists(typeof(LivestockKind))]
     public async Task<ActionResult<IEnumerable<LivestockKind>>> GetAll()
     {
         return Ok(await livestockKindRepository.GetAllAsync());

@@ -18,7 +18,7 @@ namespace Server.Controllers;
 public class ConfigurationsController(IConfigurationRepository configurationRepository) : ControllerBase
 {
     [HttpGet]
-    [SeedWhileProvisioning(typeof(Configuration))]
+    [SeedUntilFarmExists(typeof(Configuration))]
     public async Task<ActionResult<IEnumerable<Configuration>>> GetAll()
     {
         return Ok(await configurationRepository.GetAllAsync());

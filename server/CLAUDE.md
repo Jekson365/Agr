@@ -19,7 +19,7 @@ physical.
 | Holds | users, marketplace, neighbours, SMS codes, site visits | everything else (farm domain) |
 | Connection | `ConnectionStrings:master` | same host/credentials, `Database=` swapped |
 | Migrations | `Migrations/Master/` | `Migrations/Tenant/` |
-| Applied when | app startup (`Program.cs`) | every login/Google sign-in; in the background on register |
+| Applied when | app startup (`Program.cs`) | end of onboarding (`POST /api/auth/farm`), first farm access, then every login |
 
 Wiring (`Program.cs`, `Services/TenantConnectionProvider.cs`, `Services/CurrentTenant.cs`):
 
@@ -42,23 +42,25 @@ Consequences that bite:
 - **`TenantDatabaseProvisioner.ProvisionAsync` is idempotent** — `CREATE DATABASE IF NOT EXISTS`
   (checked via `pg_database`) then `Database.MigrateAsync()`. Logging in (which awaits it) is
   therefore the real way to prove a new tenant migration applies; there is no separate migrate step.
-- **A new account's database is created in the background.** The ~100 tenant migrations take
-  10–20 s, so `register`, `phone/register` and a first Google sign-in call
-  `ITenantProvisioningQueue.StartNewFarm` and answer at once — the client goes straight to
-  onboarding. Every run goes through that singleton queue (`Services/TenantProvisioningQueue.cs`),
-  so a login, or the operator's `migrate`, joins a run already in progress instead of racing it.
-  - `TenantReadyInterceptor` sits on `AppDbContext` and holds each tenant connection until that
-    user's run has finished (it reads the id from the `farm_user_{id}` database name), so a request
-    that arrives early waits instead of failing. A failed run is retried by the next such request.
-    The provisioner and the cross-tenant readers build their own options, without the interceptor —
-    the provisioner must, or it would wait on itself.
-  - While a **new** farm is being prepared, list actions marked
-    `[SeedWhileProvisioning(typeof(T))]` answer from the model's `HasData` seed (empty for tables
-    with none) without opening a connection: configurations, farms, stocks, livestock and the
-    stock-kind, livestock-kind and production-type catalogs — everything onboarding reads before
-    its final save. A new endpoint onboarding reads needs the attribute too, or it simply waits.
-  - Runs are tracked in memory. The queue is a hosted service, so a normal shutdown waits for
-    runs in flight; after a crash mid-run, the database is finished at that user's next login.
+- **A farm database is created only when onboarding is done.** Registering (any route) creates
+  the `Users` row and nothing else; `Users.DatabaseCreatedAt` stays null until the database exists.
+  Onboarding's last step calls `POST /api/auth/farm` behind a loading screen (the ~100 tenant
+  migrations take 10–20 s), then saves what was entered. Login migrates only databases that
+  exist. Every run goes through the singleton `Services/TenantProvisioningQueue.cs`, so a login
+  or the operator's `migrate` joins a run already in progress instead of racing it; a successful
+  run stamps `DatabaseCreatedAt`.
+  - Until then, list actions marked `[SeedUntilFarmExists(typeof(T))]` answer from the model's
+    `HasData` seed (empty for tables with none) without opening a connection: configurations,
+    farms, stocks, livestock, tree stocks and the stock-kind, livestock-kind, fruit-kind and
+    production-type catalogs — everything onboarding reads. A new endpoint onboarding reads needs
+    the attribute too, or it creates the database early.
+  - `TenantReadyInterceptor` sits on `AppDbContext` (it reads the id from the `farm_user_{id}`
+    database name): a connection to a farm that doesn't exist yet creates it first, and one that
+    arrives during a run waits for it. That on-demand path is how the Expo app, which has no
+    onboarding, gets its database. The provisioner and the cross-tenant readers build their own
+    options without the interceptor — the provisioner must, or it would wait on itself.
+  - The `AddDatabaseCreatedAt` migration stamped every account whose `farm_user_{id}` existed.
+    The queue is a hosted service, so a normal shutdown waits for runs in flight.
 - **The only cross-tenant read** is `Services/NeighbourTerritoryService.cs`, which opens other
   users' databases directly via `ITenantConnectionProvider.BuildConnectionString(...)` to draw farm
   boundaries on a map. Capped at `MaxFarmers = 60` databases and `RadiusKm = 10`.
@@ -132,6 +134,7 @@ Identity, profile, plan, quota, coins. Notable columns:
 | `DbName` | `farm_user_{Id}`, assigned in `UserRepository.AddAsync` once the identity exists. |
 | `Plan` | `Free` \| `Medium` \| `Premium` (text) — see §8. |
 | `FreeModule` / `AllModulesIncluded` | The one farm module (`Crop`\|`Livestock`\|`Fruit`, text) a Free account picked in onboarding through `PUT /api/auth/free-module` — set once; a different value answers 409. `AllModulesIncluded` grandfathers accounts older than modules: the `AddFarmModules` migration set it on every existing row. See §8. |
+| `DatabaseCreatedAt` | When `farm_user_{id}` was created — null until the account finishes onboarding (or a client without onboarding first opens it). See §1. |
 | `StorageUsedBytes` | Running total maintained by `FileStorageService` on every upload/delete. |
 | `Coins`, `WelcomeBonusGrantedAt`, `LastDailyBonusOn` | See §8. |
 | `ScanCount`, `LastScanDate` | AI plant-scan daily quota; count resets when the date rolls over. |

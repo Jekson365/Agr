@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Microsoft.EntityFrameworkCore;
+using Server.Data;
 using Server.Services.Interfaces;
 
 namespace Server.Services;
@@ -8,14 +10,8 @@ public sealed class TenantProvisioningQueue(
     ILogger<TenantProvisioningQueue> logger) : ITenantProvisioningQueue, IHostedService
 {
     private readonly ConcurrentDictionary<int, Task> runs = new();
-    private readonly ConcurrentDictionary<int, byte> newFarms = new();
+    private readonly ConcurrentDictionary<int, byte> createdFarms = new();
     private readonly Lock gate = new();
-
-    public void StartNewFarm(int userId)
-    {
-        newFarms[userId] = 0;
-        _ = ProvisionAsync(userId);
-    }
 
     public Task ProvisionAsync(int userId)
     {
@@ -42,17 +38,37 @@ public sealed class TenantProvisioningQueue(
         }
     }
 
-    public Task WaitUntilReadyAsync(int userId)
+    public async Task EnsureFarmAsync(int userId)
     {
-        if (!runs.TryGetValue(userId, out var run))
+        if (!await IsFarmCreatedAsync(userId))
         {
-            return Task.CompletedTask;
+            await ProvisionAsync(userId);
+            return;
         }
 
-        return run.IsFaulted ? ProvisionAsync(userId) : run;
+        if (runs.TryGetValue(userId, out var run))
+        {
+            await (run.IsFaulted ? ProvisionAsync(userId) : run);
+        }
     }
 
-    public bool IsPreparingNewFarm(int userId) => newFarms.ContainsKey(userId);
+    public async Task<bool> IsFarmCreatedAsync(int userId)
+    {
+        if (createdFarms.ContainsKey(userId))
+        {
+            return true;
+        }
+
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var master = scope.ServiceProvider.GetRequiredService<MasterDbContext>();
+        var created = await master.Users.AnyAsync(u => u.Id == userId && u.DatabaseCreatedAt != null);
+        if (created)
+        {
+            createdFarms[userId] = 0;
+        }
+
+        return created;
+    }
 
     public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
@@ -66,7 +82,12 @@ public sealed class TenantProvisioningQueue(
             await using var scope = scopeFactory.CreateAsyncScope();
             var provisioner = scope.ServiceProvider.GetRequiredService<ITenantDatabaseProvisioner>();
             await provisioner.ProvisionAsync(userId);
-            newFarms.TryRemove(userId, out _);
+
+            var master = scope.ServiceProvider.GetRequiredService<MasterDbContext>();
+            await master.Users
+                .Where(u => u.Id == userId && u.DatabaseCreatedAt == null)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(u => u.DatabaseCreatedAt, DateTime.UtcNow));
+            createdFarms[userId] = 0;
         }
         catch (Exception ex)
         {

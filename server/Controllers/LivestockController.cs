@@ -29,7 +29,7 @@ public class LivestockController(
     private const string TypeSettledMessage = "A livestock group keeps the type it was created with.";
 
     [HttpGet]
-    [SeedWhileProvisioning(typeof(Livestock))]
+    [SeedUntilFarmExists(typeof(Livestock))]
     public async Task<ActionResult<IEnumerable<Livestock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
         return Ok(await livestockRepository.GetAllAsync(includeDeleted));

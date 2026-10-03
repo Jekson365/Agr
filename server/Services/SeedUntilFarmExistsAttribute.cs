@@ -8,14 +8,14 @@ using Server.Services.Interfaces;
 namespace Server.Services;
 
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class SeedWhileProvisioningAttribute(Type rowType) : ActionFilterAttribute
+public sealed class SeedUntilFarmExistsAttribute(Type rowType) : ActionFilterAttribute
 {
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var services = context.HttpContext.RequestServices;
         var userId = services.GetRequiredService<ICurrentTenant>().UserId;
 
-        if (services.GetRequiredService<ITenantProvisioningQueue>().IsPreparingNewFarm(userId))
+        if (!await services.GetRequiredService<ITenantProvisioningQueue>().IsFarmCreatedAsync(userId))
         {
             context.Result = new OkObjectResult(ReadSeed(services.GetRequiredService<AppDbContext>()));
             return;

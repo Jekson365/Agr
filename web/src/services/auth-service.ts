@@ -77,6 +77,10 @@ export function updateLocation(latitude: number, longitude: number) {
   });
 }
 
+export function createFarmDatabase() {
+  return apiFetch<void>('/api/auth/farm', { method: 'POST' });
+}
+
 export function chooseFreeModule(module: FarmModule) {
   return apiFetch<User>('/api/auth/free-module', {
     method: 'PUT',

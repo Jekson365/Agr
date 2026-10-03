@@ -21,7 +21,7 @@ public partial class TreeStocksController(
     private const string DeletedMessage = "This fruit was removed.";
 
     [HttpGet]
-    [SeedWhileProvisioning(typeof(TreeStock))]
+    [SeedUntilFarmExists(typeof(TreeStock))]
     public async Task<ActionResult<IEnumerable<TreeStock>>> GetAll([FromQuery] bool includeDeleted = false)
     {
         return Ok(await treeStockRepository.GetAllAsync(includeDeleted));
