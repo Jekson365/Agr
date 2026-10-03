@@ -17,6 +17,16 @@ export function ModuleStep({ value, onChange }: Props) {
 
   return (
     <div className="onboarding-step">
+      <div className="module-choice-warning" role="note">
+        <span className="module-choice-warning-mark" aria-hidden="true">
+          !
+        </span>
+        <div>
+          <strong className="module-choice-warning-title">{t('onboarding.moduleWarningTitle')}</strong>
+          <p className="module-choice-warning-text">{t('onboarding.moduleWarningText')}</p>
+        </div>
+      </div>
+
       <div className="module-choice" role="radiogroup" aria-label={t('onboarding.stepModule')}>
         {modules.map((entry) => {
           const selected = entry.module === value;
@@ -39,7 +49,6 @@ export function ModuleStep({ value, onChange }: Props) {
           );
         })}
       </div>
-      <p className="limit-hint module-choice-note">{t('onboarding.moduleNote')}</p>
     </div>
   );
 }
