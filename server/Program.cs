@@ -42,6 +42,7 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 
 builder.Services.AddDomainServices();
 builder.Services.AddVisitTracking(builder.Configuration);
+builder.Services.AddNewUserNotices(builder.Configuration);
 
 // WeatherAPI.com integration (see server/Integrations/WeatherApi). Registered as a typed
 // HttpClient so the API key stays server-side and calls are pooled/retried by the factory.

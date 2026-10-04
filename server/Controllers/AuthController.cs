@@ -17,6 +17,7 @@ public partial class AuthController(
     ICurrentTenant currentTenant,
     IFileStorageService fileStorageService,
     ICoinService coinService,
+    INewUserNotifier newUserNotifier,
     IConfiguration configuration) : ControllerBase
 {
     [AllowAnonymous]
@@ -43,6 +44,7 @@ public partial class AuthController(
             SellerRegisteredAt = DateTime.UtcNow,
         };
         await userRepository.AddAsync(user);
+        newUserNotifier.Notify(user, "ელფოსტა");
 
         // Registering is the first way into the system, so the joining bonus is paid here rather
         // than waiting for a separate sign-in that never comes. Signing up is also an arrival, so
@@ -85,6 +87,7 @@ public partial class AuthController(
             SellerRegisteredAt = DateTime.UtcNow,
         };
         await userRepository.AddAsync(user);
+        newUserNotifier.Notify(user, "მარკეტპლეისი");
 
         await coinService.GrantWelcomeBonusAsync(user);
         await coinService.GrantDailyBonusAsync(user);

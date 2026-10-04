@@ -55,6 +55,7 @@ public partial class AuthController
                 SellerRegisteredAt = DateTime.UtcNow,
             };
             await userRepository.AddAsync(user);
+            newUserNotifier.Notify(user, "Google");
         }
         else if (user.DatabaseCreatedAt is not null)
         {

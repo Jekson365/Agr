@@ -47,6 +47,7 @@ public partial class AuthController
             return Conflict(PhoneTaken);
         }
 
+        newUserNotifier.Notify(user, "ტელეფონი");
         await coinService.GrantWelcomeBonusAsync(user);
         await coinService.GrantDailyBonusAsync(user);
 
