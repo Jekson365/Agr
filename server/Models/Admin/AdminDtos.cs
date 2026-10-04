@@ -33,6 +33,10 @@ public class AdminUserDto
     /// whether an account is active, without opening it.</summary>
     public int ListingCount { get; set; }
 
+    public List<FarmModule> AllowedModules { get; set; } = [];
+    public FarmModule? FreeModule { get; set; }
+    public bool NeedsModuleChoice { get; set; }
+
     public static AdminUserDto From(User user, int listingCount) => new()
     {
         Id = user.Id,
@@ -51,6 +55,9 @@ public class AdminUserDto
         IsSeller = user.IsSeller,
         CreatedAt = user.CreatedAt,
         ListingCount = listingCount,
+        AllowedModules = ModuleAccess.AllowedFor(user),
+        FreeModule = user.FreeModule,
+        NeedsModuleChoice = ModuleAccess.NeedsChoice(user),
     };
 }
 

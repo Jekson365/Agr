@@ -1649,6 +1649,8 @@
     "colUser": "მომხმარებელი",
     "colContact": "კონტაქტი",
     "colPlan": "პაკეტი",
+    "colModules": "მოდულები",
+    "modulesNotChosen": "არ აურჩევია",
     "colListings": "განცხადებები",
     "colJoined": "რეგისტრაცია",
     "superAdmin": "ადმინი",

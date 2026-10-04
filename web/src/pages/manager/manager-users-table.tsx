@@ -8,6 +8,7 @@ import { resolveAssetUrl } from '@/services/api-client';
 import type { AdminUser } from '@/types/admin';
 import type { StoragePlan } from '@/types/auth';
 import './manager-delete.css';
+import { ManagerModulesCell } from './manager-modules-cell';
 import './manager-plan-select.css';
 
 type Props = {
@@ -63,6 +64,7 @@ export function ManagerUsersTable({
                 <th>{t('manager.colUser')}</th>
                 <th>{t('manager.colContact')}</th>
                 <th>{t('manager.colPlan')}</th>
+                <th>{t('manager.colModules')}</th>
                 <th className="numeric">{t('manager.colListings')}</th>
                 <th className="numeric">{t('manager.colDatabase')}</th>
                 <th>{t('manager.colJoined')}</th>
@@ -111,6 +113,9 @@ export function ManagerUsersTable({
                         </option>
                       ))}
                     </select>
+                  </td>
+                  <td>
+                    <ManagerModulesCell user={u} />
                   </td>
                   <td className="numeric">{u.listingCount}</td>
                   <td className="numeric manager-user-sub">
