@@ -181,6 +181,6 @@
   max-width: none;
 }
 
-.social-post.is-overview .social-title em {
+.social-post:is(.is-overview, .is-harvest-compare) .social-title em {
   display: block;
 }

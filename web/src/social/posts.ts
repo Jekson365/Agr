@@ -3,6 +3,7 @@ import type { ComponentType } from 'react';
 import cowIcon from '@/assets/animals/cow.png';
 import coinIcon from '@/assets/coin.png';
 import milkIcon from '@/assets/goods/milk.png';
+import tomatoIcon from '@/assets/goods/tomato.png';
 import calendarIcon from '@/assets/icons/calendar.png';
 import farmIcon from '@/assets/icons/farm.png';
 import financesIcon from '@/assets/icons/finances.png';
@@ -23,6 +24,7 @@ import type { PostCopy, PostSlug } from '@/social/copy/post-copy';
 import type { SocialFormat } from '@/social/formats';
 import type { MascotId } from '@/social/mascots';
 import { AnimalCard } from '@/social/visuals/animal-card';
+import { CompareCard } from '@/social/visuals/compare-card';
 import { CropsCard } from '@/social/visuals/crops-card';
 import { GreenhouseCard } from '@/social/visuals/greenhouse-card';
 import { HarvestCard } from '@/social/visuals/harvest-card';
@@ -141,5 +143,12 @@ export const SOCIAL_POSTS: SocialPost[] = [
     mascot: 'toma',
     companion: 'maia',
     Visual: OverviewCard,
+  }),
+  post('harvest-compare', {
+    theme: 'light',
+    icon: reportIcon,
+    mascot: 'tomaCalm',
+    sticker: tomatoIcon,
+    Visual: CompareCard,
   }),
 ];

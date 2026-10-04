@@ -10,7 +10,8 @@ export type PostSlug =
   | 'timeline'
   | 'paperwork'
   | 'animal-profile'
-  | 'overview';
+  | 'overview'
+  | 'harvest-compare';
 
 export type PostCopy = {
   eyebrow: string;
@@ -29,6 +30,14 @@ export type PaperworkLabels = {
   paper: string;
   paperTime: string;
   appTime: string;
+};
+
+export type CompareLabels = {
+  previous: string;
+  current: string;
+  versus: string;
+  before: string;
+  profit: string;
 };
 
 export type AnimalLabels = {

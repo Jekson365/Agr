@@ -1,5 +1,12 @@
 import ka from '@/locales/ka.json';
-import type { AnimalLabels, CoverCopy, PaperworkLabels, PostCopy, PostSlug } from '@/social/copy/post-copy';
+import type {
+  AnimalLabels,
+  CompareLabels,
+  CoverCopy,
+  PaperworkLabels,
+  PostCopy,
+  PostSlug,
+} from '@/social/copy/post-copy';
 
 const lead = (text: string) => text.split(/ — |: /)[0];
 
@@ -90,6 +97,13 @@ export const KA_POSTS: Record<PostSlug, PostCopy> = {
     body: 'მიწიდან ბაზრამდე — ყველაფერი, რაც ფერმას სჭირდება.',
     points: ['ტელეფონშიც და კომპიუტერშიც', 'სრულად ქართულ ენაზე'],
   },
+  'harvest-compare': {
+    eyebrow: 'სტატისტიკა',
+    title: 'შეადარე წინა მოსავალს',
+    accent: 'წინა მოსავალს',
+    body: 'ნახე, რამდენით გაიზარდა შენი მოსავალი.',
+    points: ['მოსავალი, შემოსავალი, მოგება', 'ყველა მოსავალი ერთ გრაფიკზე'],
+  },
 };
 
 export const KA_COVER: CoverCopy = {
@@ -101,6 +115,14 @@ export const KA_ANIMAL: AnimalLabels = {
   vaccination: 'ვაქცინაცია',
   checkup: 'გასინჯვა',
   genetics: 'გენეტიკა',
+};
+
+export const KA_COMPARE: CompareLabels = {
+  previous: 'წინა მოსავალი',
+  current: 'მიმდინარე',
+  versus: 'წინა მოსავალთან შედარებით',
+  before: 'წინა',
+  profit: 'წმინდა მოგება',
 };
 
 export const KA_PAPERWORK: PaperworkLabels = {

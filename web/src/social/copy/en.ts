@@ -1,5 +1,12 @@
 import en from '@/locales/en.json';
-import type { AnimalLabels, CoverCopy, PaperworkLabels, PostCopy, PostSlug } from '@/social/copy/post-copy';
+import type {
+  AnimalLabels,
+  CompareLabels,
+  CoverCopy,
+  PaperworkLabels,
+  PostCopy,
+  PostSlug,
+} from '@/social/copy/post-copy';
 
 const { harvest, market, reports, map } = en.landing;
 
@@ -90,6 +97,13 @@ export const EN_POSTS: Record<PostSlug, PostCopy> = {
     body: 'From the land to the market — everything a farm needs.',
     points: ['On your phone and computer', 'Automatic reports'],
   },
+  'harvest-compare': {
+    eyebrow: 'Statistics',
+    title: 'Compare with your last harvest',
+    accent: 'your last harvest',
+    body: 'See how much your harvest has grown.',
+    points: ['Yield, revenue and profit', 'Every harvest on one chart'],
+  },
 };
 
 export const EN_COVER: CoverCopy = {
@@ -101,6 +115,14 @@ export const EN_ANIMAL: AnimalLabels = {
   vaccination: 'Vaccination',
   checkup: 'Check-up',
   genetics: 'Genetics',
+};
+
+export const EN_COMPARE: CompareLabels = {
+  previous: 'Last harvest',
+  current: 'This harvest',
+  versus: 'compared with the last harvest',
+  before: 'Was',
+  profit: 'Net profit',
 };
 
 export const EN_PAPERWORK: PaperworkLabels = {
