@@ -71,7 +71,7 @@ export function MoneySection({ harvest, yieldRows, catalogs, plotArea, chemicalT
         <HarvestMoneyForm harvest={harvest} onSaved={onHarvestSaved} />
       </section>
 
-      <HarvestComparison rows={yieldRows} catalogs={catalogs} />
+      <HarvestComparison rows={yieldRows} catalogs={catalogs} kind={harvest.kind} />
     </>
   );
 }

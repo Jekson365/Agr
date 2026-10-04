@@ -4,12 +4,14 @@ import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import { pickKeyPrefix } from '@/components/harvest/harvest-pick-options';
 import { HarvestTreeFormModal } from '@/components/harvest/harvest-tree-form-modal';
 import { useLanguage } from '@/contexts/language-context';
-import { deleteHarvestTree } from '@/services/harvest-tree-service';
+import { deleteHarvestTree, updateHarvestTree } from '@/services/harvest-tree-service';
 import type { HarvestKind } from '@/types/harvest';
+import type { HarvestItem } from '@/types/harvest-item';
 import type { HarvestTree } from '@/types/harvest-tree';
 import { HarvestEntryList, type EntryRow } from './harvest-entry-list';
 import { targetFor, treeInfoFor, type Catalogs } from './harvest-detail-lookups';
-import { PickedAmountInput } from './picked-amount-input';
+import { AmountField } from './amount-field';
+import { saveWinePlan } from './wine-plan';
 
 type Props = {
   kind: HarvestKind;
@@ -23,12 +25,24 @@ type Props = {
    *  only then is the weight asked for. */
   canRecordHarvested: boolean;
   onChanged: (next: HarvestTree[]) => void;
+  items: HarvestItem[];
+  onItemsChanged: (next: HarvestItem[]) => void;
 };
 
 /** Which orchard was picked — fruit harvests only. One per harvest: its costs, revenue and
  *  grading all answer for that one orchard. Editable in any status: unlike sowing, picking happens
  *  at harvest time, so it is usually recorded once done. */
-export function TreeSection({ kind, harvestId, harvestTrees, catalogs, canEdit, canRecordHarvested, onChanged }: Props) {
+export function TreeSection({
+  kind,
+  harvestId,
+  harvestTrees,
+  catalogs,
+  canEdit,
+  canRecordHarvested,
+  onChanged,
+  items,
+  onItemsChanged,
+}: Props) {
   const { t } = useLanguage();
   const prefix = pickKeyPrefix(kind);
   const inlineResult = kind === 'Wine';
@@ -78,15 +92,31 @@ export function TreeSection({ kind, harvestId, harvestTrees, catalogs, canEdit, 
           inlineResult
             ? (id) => {
                 const tree = harvestTrees.find((h) => h.id === id);
-                return tree ? (
-                  <PickedAmountInput
-                    tree={tree}
-                    label={t(`${prefix}.amountHarvested`)}
-                    unitLabel={t('farm.unitKg')}
-                    disabled={!canEdit || !canRecordHarvested}
-                    onSaved={(saved) => onChanged(harvestTrees.map((h) => (h.id === saved.id ? saved : h)))}
-                  />
-                ) : null;
+                if (!tree || tree.stockId == null) return null;
+                const stockId = tree.stockId;
+                const plan = items.find((item) => item.stockId === stockId);
+                return (
+                  <>
+                    <AmountField
+                      caption={t('harvest.comparisonPlanned')}
+                      amount={plan?.amount ?? 0}
+                      unitLabel={t('farm.unitKg')}
+                      disabled={!canEdit || canRecordHarvested}
+                      onSave={async (amount) => onItemsChanged(await saveWinePlan(harvestId, stockId, plan, amount))}
+                    />
+                    <AmountField
+                      caption={t('harvest.comparisonActual')}
+                      amount={tree.harvestedAmount}
+                      unitLabel={t('farm.unitKg')}
+                      disabled={!canEdit || !canRecordHarvested}
+                      onSave={async (harvestedAmount) => {
+                        const saved: HarvestTree = { ...tree, harvestedAmount };
+                        await updateHarvestTree(tree.id, saved);
+                        onChanged(harvestTrees.map((h) => (h.id === saved.id ? saved : h)));
+                      }}
+                    />
+                  </>
+                );
               }
             : undefined
         }

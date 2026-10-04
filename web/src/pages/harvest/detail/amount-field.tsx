@@ -1,44 +1,40 @@
 import { useEffect, useState } from 'react';
 
 import { useLanguage } from '@/contexts/language-context';
-import { updateHarvestTree } from '@/services/harvest-tree-service';
-import type { HarvestTree } from '@/types/harvest-tree';
-import './picked-amount-input.css';
+import './amount-field.css';
 
 type Props = {
-  tree: HarvestTree;
-  label: string;
+  caption: string;
+  amount: number;
   unitLabel: string;
   disabled: boolean;
-  onSaved: (saved: HarvestTree) => void;
+  onSave: (amount: number) => Promise<void>;
 };
 
 function shown(amount: number): string {
   return amount > 0 ? String(amount) : '';
 }
 
-export function PickedAmountInput({ tree, label, unitLabel, disabled, onSaved }: Props) {
+export function AmountField({ caption, amount, unitLabel, disabled, onSave }: Props) {
   const { t } = useLanguage();
-  const [value, setValue] = useState(shown(tree.harvestedAmount));
+  const [value, setValue] = useState(shown(amount));
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    setValue(shown(tree.harvestedAmount));
-  }, [tree.harvestedAmount]);
+    setValue(shown(amount));
+  }, [amount]);
 
   async function save() {
-    const amount = Math.max(0, parseFloat(value) || 0);
-    if (amount === tree.harvestedAmount) {
-      setValue(shown(amount));
+    const next = Math.max(0, parseFloat(value) || 0);
+    if (next === amount) {
+      setValue(shown(next));
       return;
     }
     setSaving(true);
     setFailed(false);
     try {
-      const updated: HarvestTree = { ...tree, harvestedAmount: amount };
-      await updateHarvestTree(tree.id, updated);
-      onSaved(updated);
+      await onSave(next);
     } catch {
       setFailed(true);
     } finally {
@@ -47,7 +43,8 @@ export function PickedAmountInput({ tree, label, unitLabel, disabled, onSaved }:
   }
 
   return (
-    <label className={failed ? 'picked-amount failed' : 'picked-amount'} title={failed ? t('farm.saveError') : label}>
+    <label className={failed ? 'picked-amount failed' : 'picked-amount'} title={failed ? t('farm.saveError') : caption}>
+      <span className="picked-amount-caption">{caption}</span>
       <input
         type="number"
         step="0.01"
@@ -55,8 +52,8 @@ export function PickedAmountInput({ tree, label, unitLabel, disabled, onSaved }:
         inputMode="decimal"
         value={value}
         disabled={disabled || saving}
-        placeholder={label}
-        aria-label={label}
+        placeholder="0"
+        aria-label={caption}
         onChange={(e) => setValue(e.target.value)}
         onBlur={save}
         onKeyDown={(e) => {

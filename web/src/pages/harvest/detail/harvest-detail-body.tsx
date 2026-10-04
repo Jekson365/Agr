@@ -89,6 +89,8 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
           canEdit={!countsInBalance(harvest.status)}
           canRecordHarvested={isPicked(harvest.status)}
           onChanged={detail.setHarvestTrees}
+          items={items}
+          onItemsChanged={detail.setItems}
         />
       )}
 

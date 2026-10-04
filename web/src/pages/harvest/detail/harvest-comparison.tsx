@@ -1,12 +1,14 @@
 import type { YieldRow } from '@/config/harvest-analysis';
 import { useLanguage } from '@/contexts/language-context';
-import { rawUnitFor, round2, targetFor, unitLabelFor, type Catalogs } from './harvest-detail-lookups';
+import type { HarvestKind } from '@/types/harvest';
+import { round2, unitLabelFor, yieldRawUnitFor, yieldTargetFor, type Catalogs } from './harvest-detail-lookups';
 import './harvest-detail-money.css';
 import './harvest-detail-panels.css';
 
 type Props = {
   rows: YieldRow[];
   catalogs: Catalogs;
+  kind: HarvestKind;
 };
 
 /**
@@ -14,7 +16,7 @@ type Props = {
  * its own heading, so a row still reads as "planned 100 kg, actual 120 kg" when it wraps onto two
  * lines — a table's meaning lives in a header row that scrolls away.
  */
-export function HarvestComparison({ rows, catalogs }: Props) {
+export function HarvestComparison({ rows, catalogs, kind }: Props) {
   const { t } = useLanguage();
 
   if (!rows.some((row) => row.actual > 0)) return null;
@@ -24,11 +26,11 @@ export function HarvestComparison({ rows, catalogs }: Props) {
       <h2 className="hd-panel-title">{t('harvest.comparisonTitle')}</h2>
       <div className="hd-rows">
         {rows.map((row) => {
-          const target = targetFor(catalogs, row.stockId, row.treeStockId, t);
+          const target = yieldTargetFor(catalogs, kind, row.stockId, row.treeStockId, t);
           // Results are always recorded in the good's own unit, but a plan carries its own.
           // Subtracting across two different units would be nonsense, so a variance is only
           // shown when both sides are in the same one.
-          const comparable = row.plannedUnit == null || row.plannedUnit === rawUnitFor(catalogs, row.stockId, row.treeStockId);
+          const comparable = row.plannedUnit == null || row.plannedUnit === yieldRawUnitFor(catalogs, kind, row.stockId, row.treeStockId);
           const tone = !comparable || row.variance === 0 ? '' : row.variance > 0 ? ' up' : ' down';
           const pct = row.varianceRatio == null ? '' : ` (${row.varianceRatio > 0 ? '+' : ''}${Math.round(row.varianceRatio * 100)}%)`;
 
