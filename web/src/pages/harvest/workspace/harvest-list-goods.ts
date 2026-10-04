@@ -27,7 +27,7 @@ export function buildHarvestGoods(
   const planned = new Map<number, Set<string>>();
 
   for (const row of results) add(picked, row.harvestId, row.stockId, row.treeStockId);
-  for (const row of trees) add(picked, row.harvestId, null, row.treeStockId);
+  for (const row of trees) add(picked, row.harvestId, row.stockId, row.treeStockId);
   for (const row of items) add(planned, row.harvestId, row.stockId, row.treeStockId);
 
   const goods = new Map<number, TargetInfo[]>();

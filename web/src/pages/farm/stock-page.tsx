@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { CardMenu } from '@/components/farm/card-menu';
@@ -13,6 +13,7 @@ import { StockFormModal } from '@/components/farm/stock/stock-form/stock-form-mo
 import { StockSeedLink } from '@/components/farm/stock/stock-seed-link';
 import { ChevronRightIcon, LeafIcon } from '@/components/icons/misc-icons';
 import { seedForStock } from '@/config/seed-kinds';
+import { CROP_AREA, type StockArea } from '@/config/stock-areas';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useAuth } from '@/contexts/auth-context';
 import { useLanguage } from '@/contexts/language-context';
@@ -21,7 +22,7 @@ import { deleteStock, getStock } from '@/services/stock-service';
 import type { Seed } from '@/types/seed';
 import type { Stock } from '@/types/stock';
 
-export function StockPage() {
+export function StockPage({ area = CROP_AREA }: { area?: StockArea }) {
   const { t } = useLanguage();
   const { user } = useAuth();
 
@@ -34,15 +35,14 @@ export function StockPage() {
   const [editingItem, setEditingItem] = useState<Stock | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; name: string } | null>(null);
 
-  useEffect(() => {
-    load();
-  }, []);
-
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [stockList, seedList] = await Promise.all([getStock(), getSeeds()]);
+      const [stockList, seedList] = await Promise.all([
+        getStock(false, area.category),
+        area.seed ? getSeeds() : Promise.resolve([]),
+      ]);
       setStock(stockList);
       setSeeds(seedList);
     } catch (err) {
@@ -50,9 +50,13 @@ export function StockPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [area]);
 
-  const limit = usePlanLimit(user?.maxStockKinds, stock.length, t('farm.plantStock'));
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const limit = usePlanLimit(user?.maxStockKinds, stock.length, t(area.titleKey));
 
   function openAdd() {
     if (limit.blocksAdd()) return;
@@ -100,12 +104,12 @@ export function StockPage() {
       </Link>
 
       <div className="page-header">
-        <h1 className="page-title">{t('farm.plantStock')}</h1>
+        <h1 className="page-title">{t(area.titleKey)}</h1>
         <div className="page-header-actions">
           <LimitCounter count={limit.count} max={limit.max} onClick={() => limit.showPackets()} />
           {/* Enabled even at the cap — clicking it answers with the available packets. */}
           <button type="button" className="add-button" onClick={openAdd}>
-            + {t('farm.addStock')}
+            + {t(area.addKey)}
           </button>
         </div>
       </div>
@@ -127,7 +131,7 @@ export function StockPage() {
             const seed = seedForStock(seeds, item);
             return (
               <div key={item.id} className="entity-tile">
-                <Link to={`/farm/stock/${item.id}`} className="entity-tile-media">
+                <Link to={`${area.stockPath}/${item.id}`} className="entity-tile-media">
                   <img src={stockKindImage(item.type)} alt="" className="entity-tile-icon" />
                 </Link>
 
@@ -152,7 +156,7 @@ export function StockPage() {
 
                   <span className="entity-tile-divider" />
 
-                  <Link to={`/farm/stock/${item.id}`} className="entity-tile-details">
+                  <Link to={`${area.stockPath}/${item.id}`} className="entity-tile-details">
                     {t('common.details')}
                     <ChevronRightIcon width={16} height={16} />
                   </Link>
@@ -160,7 +164,7 @@ export function StockPage() {
               </div>
             );
           })}
-          {limit.atLimit && <UpgradeTile resource={t('farm.plantStock')} onClick={() => limit.showPackets()} />}
+          {limit.atLimit && <UpgradeTile resource={t(area.titleKey)} onClick={() => limit.showPackets()} />}
         </div>
       )}
 
@@ -170,6 +174,7 @@ export function StockPage() {
         onClose={() => setFormOpen(false)}
         onSaved={handleSaved}
         onLimitReached={handleLimitReached}
+        area={area}
       />
 
       <PacketsModal

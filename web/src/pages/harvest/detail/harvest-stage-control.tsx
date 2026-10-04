@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { isApplyingTransition, isDestructiveTransition, stockMovingRows } from '@/config/harvest-analysis';
+import { pickedYieldCount } from '@/config/harvest-kind';
 import { stageDates } from '@/config/harvest-stage-dates';
 import { HARVEST_STATUS_LABEL_KEY } from '@/config/harvest-status';
 import { HARVEST_STATUS_BLOCK_KEY, harvestStatusBlock, type HarvestProgress } from '@/config/harvest-status-gate';
@@ -27,10 +28,7 @@ export function HarvestStageControl({ harvest, detail }: Props) {
   const progress: HarvestProgress = {
     kind: harvest.kind,
     seedCount: harvestSeeds.length,
-    resultCount:
-      harvest.kind === 'Fruit'
-        ? harvestTrees.filter((tree) => tree.harvestedAmount > 0).length
-        : results.length,
+    resultCount: pickedYieldCount(harvest.kind, harvestTrees, results),
   };
 
   const dates = useMemo(() => stageDates(statusChanges), [statusChanges]);

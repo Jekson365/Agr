@@ -27,8 +27,12 @@ public partial class ReportRepository
     private static decimal ValueOf(AnimalProduction record) =>
         record.TotalPrice ?? (record.PricePerUnit is decimal price ? record.Quantity * price : 0m);
 
-    private static HarvestKind KindOf(ReportCategory category) =>
-        category == ReportCategory.Fruit ? HarvestKind.Fruit : HarvestKind.Crop;
+    private static HarvestKind KindOf(ReportCategory category) => category switch
+    {
+        ReportCategory.Fruit => HarvestKind.Fruit,
+        ReportCategory.Wine => HarvestKind.Wine,
+        _ => HarvestKind.Crop,
+    };
 
     public async Task<ReportOverview> GetOverviewAsync(ReportCategory category, ReportPeriod period)
     {
@@ -107,10 +111,10 @@ public partial class ReportRepository
 
         // Fruit yield is recorded against the trees picked; a crop's against its results. What was
         // only planned counts for neither — see CropYield.
-        var results = category == ReportCategory.Fruit
+        var results = PicksPlants(category)
             ? []
             : await context.HarvestResults.AsNoTracking().Where(r => harvestIds.Contains(r.HarvestId)).ToListAsync();
-        var trees = category == ReportCategory.Fruit
+        var trees = PicksPlants(category)
             ? await context.HarvestTrees.AsNoTracking().Where(tr => harvestIds.Contains(tr.HarvestId)).ToListAsync()
             : [];
 
@@ -122,7 +126,7 @@ public partial class ReportRepository
         // list and the per-harvest groups below, so the picker and the bars can't disagree.
         var yieldByHarvest = harvests.ToDictionary(
             harvest => harvest.Id,
-            harvest => category == ReportCategory.Fruit
+            harvest => PicksPlants(category)
                 ? []
                 : CropYield([.. results.Where(r => r.HarvestId == harvest.Id)]));
         var treesByHarvest = trees.GroupBy(tr => tr.HarvestId).ToDictionary(g => g.Key, g => g.ToList());
@@ -132,16 +136,16 @@ public partial class ReportRepository
         var seenSeries = new HashSet<string>();
         foreach (var harvest in harvests)
         {
-            if (category == ReportCategory.Fruit)
+            if (PicksPlants(category))
             {
                 foreach (var tree in treesByHarvest.GetValueOrDefault(harvest.Id) ?? [])
                 {
-                    var key = $"t{tree.TreeStockId}";
-                    if (!seenSeries.Add(key))
+                    var key = PickedKey(tree);
+                    if (key is null || !seenSeries.Add(key))
                     {
                         continue;
                     }
-                    overview.Series.Add(TreeSeries(key, tree.TreeStockId, treeStocks, treeProducts));
+                    overview.Series.Add(PickedSeries(key, tree, stocks, treeStocks, treeProducts));
                 }
                 continue;
             }
@@ -165,11 +169,14 @@ public partial class ReportRepository
             overview.Value.Add(new ReportValuePoint { Day = iso, Value = harvest.Revenue ?? 0m });
 
             var values = new Dictionary<string, decimal>();
-            if (category == ReportCategory.Fruit)
+            if (PicksPlants(category))
             {
                 foreach (var tree in treesByHarvest.GetValueOrDefault(harvest.Id) ?? [])
                 {
-                    var key = $"t{tree.TreeStockId}";
+                    if (PickedKey(tree) is not { } key)
+                    {
+                        continue;
+                    }
                     values[key] = values.GetValueOrDefault(key) + tree.HarvestedAmount;
                 }
             }

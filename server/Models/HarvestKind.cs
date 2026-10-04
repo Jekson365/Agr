@@ -10,4 +10,5 @@ public enum HarvestKind
 {
     Crop,
     Fruit,
+    Wine,
 }

@@ -7,11 +7,12 @@ namespace Server.Repositories;
 
 public class StockRepository(AppDbContext context, IStockMovementRepository stockMovementRepository) : IStockRepository
 {
-    public async Task<IEnumerable<Stock>> GetAllAsync(bool includeDeleted = false)
+    public async Task<IEnumerable<Stock>> GetAllAsync(bool includeDeleted = false, StockCategory? category = null)
     {
         return await context.Stocks
             .AsNoTracking()
             .Where(s => includeDeleted || !s.IsDeleted)
+            .Where(s => category == null || s.Category == category)
             .OrderBy(s => s.Id)
             .ToListAsync();
     }
@@ -19,6 +20,11 @@ public class StockRepository(AppDbContext context, IStockMovementRepository stoc
     public async Task<Stock?> GetByIdAsync(int id)
     {
         return await context.Stocks.FindAsync(id);
+    }
+
+    public Task<bool> ExistsByTreeProductAsync(int treeProductId)
+    {
+        return context.Stocks.AnyAsync(s => s.TreeProductId == treeProductId);
     }
 
     public async Task<Stock> AddAsync(Stock stock)
@@ -31,6 +37,7 @@ public class StockRepository(AppDbContext context, IStockMovementRepository stoc
             await LogMovementAsync(stock.Id, stock.Amount, StockMovementSource.Manual);
         }
 
+        await WineProductLink.EnsureAsync(context, stock.Id);
         return stock;
     }
 
@@ -44,12 +51,13 @@ public class StockRepository(AppDbContext context, IStockMovementRepository stoc
 
         var delta = stock.Amount - existing.Amount;
 
-        existing.Type = stock.Type;
+        existing.Type = existing.Category == StockCategory.Wine ? Stock.WineType : stock.Type;
         existing.Name = stock.Name;
         existing.Amount = stock.Amount;
-        existing.Unit = stock.Unit;
+        existing.Unit = existing.Category == StockCategory.Wine ? StockUnit.Plant : stock.Unit;
 
         await context.SaveChangesAsync();
+        await WineProductLink.RenameAsync(context, existing);
 
         if (delta != 0)
         {

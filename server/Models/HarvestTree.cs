@@ -11,7 +11,8 @@ public class HarvestTree
 {
     public int Id { get; set; }
     public int HarvestId { get; set; }
-    public int TreeStockId { get; set; }
+    public int? TreeStockId { get; set; }
+    public int? StockId { get; set; }
 
     /// <summary>Number of trees picked, in the same unit the orchard is counted in ("ძირი").</summary>
     public decimal Amount { get; set; }

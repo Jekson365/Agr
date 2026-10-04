@@ -9,11 +9,12 @@ import { getStock } from '@/services/stock-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import type { HarvestItem } from '@/types/harvest-item';
 import type { HarvestResult } from '@/types/harvest-result';
-import type { Stock } from '@/types/stock';
+import type { Stock, StockCategory } from '@/types/stock';
 import type { TreeStock } from '@/types/tree-stock';
 
 type Props = {
   open: boolean;
+  category?: StockCategory;
   harvestId: number;
   editingResult: HarvestResult | null;
   /** The harvest's planned items — only used to list those targets first, since they're the
@@ -26,6 +27,7 @@ type Props = {
 
 export function HarvestResultFormModal({
   open,
+  category = 'Crop',
   harvestId,
   editingResult,
   plannedItems,
@@ -57,7 +59,7 @@ export function HarvestResultFormModal({
   async function loadTargets() {
     setTargetsLoading(true);
     try {
-      const [stockList, treeStockList] = await Promise.all([getStock(true), getTreeStock(true)]);
+      const [stockList, treeStockList] = await Promise.all([getStock(true, category), getTreeStock(true)]);
       // Picked fruit is weighed into plant stock, so an orchard isn't a result target. Only a
       // row already pointing at tree stock keeps that option, so it stays editable — a removed
       // orchard included, since dropping it would retarget that row on the next save.

@@ -1,14 +1,18 @@
 import { apiFetch } from '@/services/api-client';
 import type { Seed, SeedUnit } from '@/types/seed';
-import type { Stock, StockInput } from '@/types/stock';
+import type { Stock, StockCategory, StockInput } from '@/types/stock';
 
 /**
  * The stock on hand. Removed stock is left out — that is what keeps it off the stock page and out
  * of every picker. Pass `includeDeleted` where a removed row still has to be named: the harvests,
  * reports and plots recorded against it hold its id and nothing else.
  */
-export function getStock(includeDeleted = false) {
-  return apiFetch<Stock[]>(`/api/stocks${includeDeleted ? '?includeDeleted=true' : ''}`);
+export function getStock(includeDeleted = false, category?: StockCategory) {
+  const query = new URLSearchParams();
+  if (includeDeleted) query.set('includeDeleted', 'true');
+  if (category) query.set('category', category);
+  const search = query.toString();
+  return apiFetch<Stock[]>(`/api/stocks${search ? `?${search}` : ''}`);
 }
 
 export function getStockItem(id: number) {

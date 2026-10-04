@@ -48,7 +48,7 @@ export function buildTargets(rows: TargetRows, harvests: TimelineHarvest[]): Map
 
   for (const row of rows.items) add(row.harvestId, targetOf(row.stockId, row.treeStockId));
   for (const row of rows.results) add(row.harvestId, targetOf(row.stockId, row.treeStockId));
-  for (const row of rows.trees) add(row.harvestId, `tree:${row.treeStockId}`);
+  for (const row of rows.trees) add(row.harvestId, targetOf(row.stockId, row.treeStockId));
 
   return targets;
 }

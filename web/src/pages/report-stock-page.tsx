@@ -131,7 +131,7 @@ export function ReportStockPage() {
     try {
       const [reportRows, products, productMovements, harvests, harvestProducts] = await Promise.all([
         getStockMovementReport(),
-        getTreeProducts(),
+        getTreeProducts('Fruit'),
         getTreeProductMovements(),
         getHarvests('Fruit'),
         getHarvestProducts(),

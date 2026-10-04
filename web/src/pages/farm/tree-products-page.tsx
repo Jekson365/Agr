@@ -36,7 +36,7 @@ export function TreeProductsPage() {
     setLoading(true);
     setError(null);
     try {
-      const [productList, movementList] = await Promise.all([getTreeProducts(), getTreeProductMovements()]);
+      const [productList, movementList] = await Promise.all([getTreeProducts('Fruit'), getTreeProductMovements()]);
       setProducts(productList);
       setMovements(movementList);
     } catch (err) {

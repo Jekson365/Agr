@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { buildYieldRows, treeActualRows } from '@/config/harvest-analysis';
+import { picksPlants } from '@/config/harvest-kind';
 import { useLanguage } from '@/contexts/language-context';
 import { getFarm } from '@/services/farm-service';
 import { getHarvestChemicals } from '@/services/harvest-chemical-service';
@@ -127,7 +128,7 @@ export function useHarvestDetail(harvestId: number) {
   // Planned against actual, with the actual side read from whichever record the harvest's kind
   // keeps it on. Derived once here so every panel reading it agrees.
   const yieldRows = useMemo(
-    () => buildYieldRows(items, harvest?.kind === 'Fruit' ? treeActualRows(harvestTrees) : results),
+    () => buildYieldRows(items, picksPlants(harvest?.kind) ? treeActualRows(harvestTrees) : results),
     [items, results, harvestTrees, harvest?.kind]
   );
 

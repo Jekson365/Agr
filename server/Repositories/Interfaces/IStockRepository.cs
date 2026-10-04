@@ -9,10 +9,11 @@ public interface IStockRepository
     /// <paramref name="includeDeleted"/> asks for them, which only the pages that put a name to
     /// history already recorded against a stock (harvests, reports, land plots) need.
     /// </summary>
-    Task<IEnumerable<Stock>> GetAllAsync(bool includeDeleted = false);
+    Task<IEnumerable<Stock>> GetAllAsync(bool includeDeleted = false, StockCategory? category = null);
 
     /// <summary>Any stock, deleted or not — history pages look one up by the id they hold.</summary>
     Task<Stock?> GetByIdAsync(int id);
+    Task<bool> ExistsByTreeProductAsync(int treeProductId);
 
     Task<Stock> AddAsync(Stock stock);
     Task<bool> UpdateAsync(Stock stock);

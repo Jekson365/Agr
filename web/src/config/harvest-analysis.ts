@@ -118,10 +118,12 @@ export function stockMovingRows(rows: YieldRow[]): YieldRow[] {
  * reaches the balances in step with `harvestedAmount` — so this is where a fruit harvest's yield
  * is read from. Trees picked but not yet weighed carry nothing and are left out.
  */
-export function treeActualRows(trees: { treeStockId: number; harvestedAmount: number }[]): ActualRow[] {
+export function treeActualRows(
+  trees: { stockId: number | null; treeStockId: number | null; harvestedAmount: number }[]
+): ActualRow[] {
   return trees
     .filter((tree) => tree.harvestedAmount > 0)
-    .map((tree) => ({ stockId: null, treeStockId: tree.treeStockId, amount: tree.harvestedAmount }));
+    .map((tree) => ({ stockId: tree.stockId, treeStockId: tree.treeStockId, amount: tree.harvestedAmount }));
 }
 
 export type HarvestEconomics = {

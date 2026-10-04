@@ -8,6 +8,7 @@ import '@/components/farm/record-list.css';
 import { AssessmentCriteriaCard } from '@/components/farm/assessment/assessment-criteria-card';
 import { StockGradeCharts } from '@/components/farm/stock/stock-grade-charts';
 import { StockPhotoHistoryView } from '@/components/farm/stock/stock-photo-history-view';
+import { stockAreaOf } from '@/config/stock-areas';
 import { STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import { formatLocalizedIsoDateTime } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
@@ -74,8 +75,8 @@ export function StockHistoryPage() {
 
   return (
     <div>
-      <Link to="/farm/stock" className="back-link">
-        ← {t('farm.plantStock')}
+      <Link to={stockAreaOf(stock?.category).stockPath} className="back-link">
+        ← {t(stockAreaOf(stock?.category).titleKey)}
       </Link>
 
       <div className="page-header">

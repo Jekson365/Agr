@@ -31,7 +31,7 @@ export function harvestStatusBlock(
   if (next === current) return null;
   if (countsInBalance(current)) return 'settled';
   // Sowing is a crop's step: an orchard is picked, never planted each season.
-  if (progress.kind !== 'Fruit' && progress.seedCount === 0 && crossesSowing(current, next)) return 'seeds';
+  if (progress.kind === 'Crop' && progress.seedCount === 0 && crossesSowing(current, next)) return 'seeds';
   if (progress.resultCount === 0 && isApplyingTransition(current, next)) return 'results';
   return null;
 }

@@ -41,7 +41,7 @@ export function HarvestTimelineCard({
   const stages =
     harvest.source === 'greenhouse'
       ? GREENHOUSE_HARVEST_STATUSES
-      : harvestStatusesFor(harvest.source === 'fruit' ? 'Fruit' : 'Crop', harvest.status);
+      : harvestStatusesFor(harvest.kind ?? (harvest.source === 'fruit' ? 'Fruit' : 'Crop'), harvest.status);
   const settled = countsInBalance(harvest.status);
 
   const spaceRight = window.innerWidth - anchor.right;

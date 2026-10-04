@@ -47,6 +47,7 @@ public partial class ReportRepository(AppDbContext context) : IReportRepository
                     Name = stock.Name,
                     Type = stock.Type,
                     Unit = stock.Unit.ToString(),
+                    Category = stock.Category,
                     Delta = movement.Delta,
                     Source = movement.Source,
                     IsDeleted = stock.IsDeleted,

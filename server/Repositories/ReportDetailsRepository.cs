@@ -59,7 +59,7 @@ public partial class ReportRepository
     private async Task<List<ReportDayHarvest>> HarvestDayAsync(ReportCategory category, DateOnly day)
     {
         var kind = KindOf(category);
-        var isFruit = category == ReportCategory.Fruit;
+        var isFruit = PicksPlants(category);
 
         var harvests = await context.Harvests.AsNoTracking()
             .Where(h => h.Kind == kind && h.Status == HarvestStatus.TransferredToBalance && h.Date == day)
@@ -106,7 +106,7 @@ public partial class ReportRepository
                 Input = isFruit
                     ? [.. trees
                         .Where(tr => tr.HarvestId == harvest.Id)
-                        .Select(tr => GoodFromTree(tr.TreeStockId, tr.Amount, treeStocks))
+                        .Select(tr => PickedInput(tr, stocks, treeStocks))
                         .OfType<ReportGood>()]
                     : [.. seeds
                         .Where(s => s.HarvestId == harvest.Id)
@@ -117,7 +117,7 @@ public partial class ReportRepository
                 Harvested = isFruit
                     ? [.. trees
                         .Where(tr => tr.HarvestId == harvest.Id && tr.HarvestedAmount > 0)
-                        .Select(tr => GoodFromTreeProduce(tr.TreeStockId, tr.HarvestedAmount, treeStocks, treeProducts))
+                        .Select(tr => PickedYield(tr, stocks, treeStocks, treeProducts))
                         .OfType<ReportGood>()]
                     : [.. CropYield([.. results.Where(r => r.HarvestId == harvest.Id)])
                         .Select(yield => GoodFromTarget(yield.StockId, yield.TreeStockId, yield.Amount, string.Empty, stocks, treeStocks))

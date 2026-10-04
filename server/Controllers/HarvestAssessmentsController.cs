@@ -50,9 +50,9 @@ public class HarvestAssessmentsController(
         // The sheet splits the pick, so it cannot come to more than the pick. Checked here as well
         // as in the client: the record behind the figure can change under an open sheet. An
         // orchard's pick is on the trees it took the fruit off, not on a result row.
-        var harvested = harvest.Kind == HarvestKind.Fruit
+        var harvested = harvest.Kind is HarvestKind.Fruit or HarvestKind.Wine
             ? (await harvestTreeRepository.GetAsync(sheet.HarvestId))
-                .Where(tree => tree.TreeStockId == sheet.TreeStockId)
+                .Where(tree => tree.StockId == sheet.StockId && tree.TreeStockId == sheet.TreeStockId)
                 .Sum(tree => tree.HarvestedAmount)
             : (await harvestResultRepository.GetAsync(sheet.HarvestId))
                 .Where(result => result.StockId == sheet.StockId && result.TreeStockId == sheet.TreeStockId)

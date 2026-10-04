@@ -1,6 +1,8 @@
 import { Suspense, useEffect, useState } from 'react';
 
 import { countsInBalance, isPicked } from '@/config/harvest-analysis';
+import { picksPlants } from '@/config/harvest-kind';
+import { stockCategoryOf } from '@/config/stock-areas';
 import type { Harvest } from '@/types/harvest';
 import { HarvestSectionNav, type HarvestSection } from './harvest-section-nav';
 import { HarvestSectionTabs } from './harvest-section-tabs';
@@ -31,11 +33,11 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
 
   // An orchard records its yield on the trees it picked, so it has no separate result section:
   // a HarvestResult against a tree stock would move the orchard's tree count, not its produce.
-  const isFruit = harvest.kind === 'Fruit';
-  const inputSection: HarvestSection = isFruit ? 'trees' : 'seeds';
+  const picks = picksPlants(harvest.kind);
+  const inputSection: HarvestSection = harvest.kind === 'Wine' ? 'vines' : picks ? 'trees' : 'seeds';
   const sections: HarvestSection[] = isPicked(harvest.status)
-    ? isFruit
-      ? ['overview', 'trees', 'money', 'grading', 'chemicals']
+    ? picks
+      ? ['overview', inputSection, 'money', 'grading', 'chemicals']
       : ['result', 'seeds', 'overview', 'grading', 'chemicals', 'money']
     : [inputSection, 'chemicals'];
 
@@ -50,6 +52,7 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
   const counts: Partial<Record<HarvestSection, number>> = {
     seeds: harvestSeeds.length,
     trees: harvestTrees.length,
+    vines: harvestTrees.length,
     result: results.length,
   };
 
@@ -77,8 +80,9 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
         />
       )}
 
-      {active === 'trees' && (
+      {(active === 'trees' || active === 'vines') && (
         <TreeSection
+          kind={harvest.kind}
           harvestId={harvestId}
           harvestTrees={harvestTrees}
           catalogs={catalogs}
@@ -97,6 +101,7 @@ export function HarvestDetailBody({ harvestId, harvest, detail, nav }: Props) {
           catalogs={catalogs}
           canEdit={isPicked(harvest.status) && !countsInBalance(harvest.status)}
           onChanged={detail.setResults}
+          category={stockCategoryOf(harvest.kind)}
         />
       )}
 

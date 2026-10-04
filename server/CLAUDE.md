@@ -133,7 +133,7 @@ Identity, profile, plan, quota, coins. Notable columns:
 | `Role` | `Owner` \| `Member` (text). Everyone self-registering gets `Owner`. Not actually enforced anywhere yet. |
 | `DbName` | `farm_user_{Id}`, assigned in `UserRepository.AddAsync` once the identity exists. |
 | `Plan` | `Free` \| `Medium` \| `Premium` (text) — see §8. |
-| `FreeModule` / `AllModulesIncluded` | The one farm module (`Crop`\|`Livestock`\|`Fruit`, text) a Free account picked in onboarding through `PUT /api/auth/free-module` — set once; a different value answers 409. `AllModulesIncluded` grandfathers accounts older than modules: the `AddFarmModules` migration set it on every existing row. See §8. |
+| `FreeModule` / `AllModulesIncluded` | The one farm module (`Crop`\|`Livestock`\|`Fruit`\|`Wine`, text) a Free account picked in onboarding through `PUT /api/auth/free-module` — set once; a different value answers 409. `AllModulesIncluded` grandfathers accounts older than modules: the `AddFarmModules` migration set it on every existing row. See §8. |
 | `DatabaseCreatedAt` | When `farm_user_{id}` was created — null until the account finishes onboarding (or a client without onboarding first opens it). See §1. |
 | `StorageUsedBytes` | Running total maintained by `FileStorageService` on every upload/delete. |
 | `Coins`, `WelcomeBonusGrantedAt`, `LastDailyBonusOn` | See §8. |
@@ -211,7 +211,7 @@ six tables plus `__EFMigrationsHistory`, because EF will not re-seed a migration
 | `LivestockKinds` | `Name` unique. Built-ins 1–11: Cow, Sheep, Chicken, Turkey, Pig, Cat, Dog, Duck, Goat, Rabbit, Rooster. |
 | `ProductionTypes` | 1 Milk, 2 Egg, 3 Wool, 4 Honey, **7 Manure, 8 Silk**. Ids **5 and 6 are deliberately vacant** — they were Meat and Leather, dropped rather than reassigned so old rows keep their meaning. Users can add more. |
 | `Units` | 1 Kilogram/kg, 2 Liter/L, 3 Piece/pcs, 4 Gram/g, 5 Dozen/dz. |
-| `Configurations` | `Name` unique feature switches, `Value` is 0/1. Seeded: `greenhouse=0`, `CropFarming=1`, `livestock=1`, `fruitstock=1`, `marketplace=1`, `calendar=1`. New settings ship as new seeded rows, never new columns. |
+| `Configurations` | `Name` unique feature switches, `Value` is 0/1. Seeded: `greenhouse=0`, `CropFarming=1`, `livestock=1`, `fruitstock=1`, `marketplace=1`, `calendar=1`, `winemaking=1` (id 7, also inserted into existing tenants by the `AddWinemaking` migration). New settings ship as new seeded rows, never new columns. |
 
 `Data/BuiltInKinds.cs` is the shared list — both the seeding and the repositories' delete guards read
 it, and matching is **by name, case-insensitive** so a restored/re-seeded database still works. The
@@ -276,12 +276,17 @@ migration.
 
 ### 5.4 Crop stock and seed
 - **`Stocks`** — a good held. `Type` (StockKind name), `Name` (optional label), `Amount`,
-  `Unit` ∈ `Kilogram|Quantity|Liter` (text), `IsDeleted`.
+  `Unit` ∈ `Kilogram|Quantity|Liter|Plant` (text), `IsDeleted`, and `Category` ∈ `Crop|Wine` (text,
+  default `Crop`, settled at creation). `Wine` is the winemaking module's vines: the same table and
+  machinery as crop stock, but always `Type` `Grape` (`Stock.WineType`) and `Plant` (ძირი) — create
+  and update coerce both — and **no seed**: wine stock is created through `POST /api/stocks` only
+  (`with-seed` is crop-only) and a wine harvest records no `HarvestSeeds`. Each wine stock owns one `TreeProduct` (`Stock.TreeProductId`, unique, SetNull; `TreeProduct.Category = Wine`, kg), created with the stock (`WineProductLink`) and renamed with it — that product's ledger is the wine balance page. Fruit pages ask `GET /api/treeproducts?category=Fruit`. `GET /api/stocks` takes
+  `?category=`; plan caps count per category.
 - **`Seeds`** — sowing input, deliberately separate from `Stocks`. `Type` is a **StockKind** name so
   seed and produce share a catalog. `Unit` ∈ `Kilogram|Gram|Quantity`. `IsDeleted`.
   Created together with its stock by `POST /api/stocks/with-seed`, and soft-deleted with it —
-  matched **by `Type` + `Name`**, since there is no key between them, and kept if another live stock
-  still holds that crop+label.
+  matched **by `Type` + `Name`**, since there is no key between them, and kept if another live crop
+  stock still holds that crop+label.
 - **`StockMovements`** — `StockId` (cascade), `Delta`, `Source` ∈ `Manual|Harvest|Market`,
   `HarvestItemId` (cascade), `HarvestResultId` (cascade), `MarketListingId` (bare int).
 - **`SeedMovements`** — `SeedId` (cascade), `HarvestSeedId` (cascade), `Delta`,
@@ -305,7 +310,7 @@ migration.
   a harvest is re-marked harvested.
 
 ### 5.6 Harvests (field and orchard)
-`Harvests` — `Title`, `Date`, `Status` ∈ `Planning|Planting|Harvested`, `Kind` ∈ `Crop|Fruit`,
+`Harvests` — `Title`, `Date`, `Status` ∈ `Planning|Planting|Harvested`, `Kind` ∈ `Crop|Fruit|Wine` (`Wine` follows every crop rule),
 `ExpectedHarvestDate` (the plan; `Date` is the record date and what reporting groups by),
 `FarmId` (cascade), `LandPlotId` (cascade), `EquipmentCost`/`WorkersCost`/`FuelCost`/`OtherCost`,
 `Revenue` — all money nullable.
@@ -315,7 +320,7 @@ migration.
 | `HarvestItems` | `HarvestId` cascade + exactly one of `StockId`/`TreeStockId` (both cascade) | **Planned** amount. `Unit` is a free string (a `StockUnit` *or* `TreeStockUnit` name); blank falls back to the target's own unit. **Moves no balance.** |
 | `HarvestResults` | same shape | **Actual** yield. The only thing that moves stock, and only while the harvest is `Harvested`. |
 | `HarvestSeeds` | `HarvestId` + `SeedId`, both cascade | Seed sown. Adding one deducts the seed and writes the owning `SeedMovement`. |
-| `HarvestTrees` | `HarvestId` + `TreeStockId`, both cascade | Trees picked (`Amount`) and produce taken off them (`HarvestedAmount`). Picking **consumes nothing** — the trees are still standing. |
+| `HarvestTrees` | `HarvestId` + exactly one of `TreeStockId` (fruit) / `StockId` (wine vines), all cascade | Trees or vines picked (`Amount`) and produce taken off them (`HarvestedAmount`; kg of grapes for wine, booked to the vineyard's own grape `TreeProduct` exactly as fruit is to its orchard's). Picking **consumes nothing** — the plants are still standing. A `Wine` harvest works like `Fruit`: one vineyard per harvest, no results, no seed. |
 | `HarvestChemicals` | `HarvestId` cascade | `Name`, `Date`, `Cost`. Folds into expenses, moves no balance. |
 | `HarvestProducts` | `HarvestId` cascade + `TreeProductId` **Restrict** | A fruit harvest's yield, booked against the tree's product rather than into plant `Stock`. Restrict is why deleting a referenced `TreeProduct` returns a conflict rather than a 500. |
 
@@ -453,8 +458,8 @@ re-restrict from. Note the two-tier check: `EnsureCanAddX` (`>=` limit → refus
 `EnsureXWithinLimit` (`>` limit → refuse) guards *edits*, so someone exactly at their cap — or over
 it after a downgrade — can still maintain what they have.
 
-**Modules.** The farm is three modules — `Crop`, `Livestock`, `Fruit` (`Models/FarmModule.cs`). A
-Free account gets only the one it chose in onboarding; Medium and Premium get all three, and so does
+**Modules.** The farm is four modules — `Crop`, `Livestock`, `Fruit`, `Wine` (`Models/FarmModule.cs`). A
+Free account gets only the one it chose in onboarding; Medium and Premium get all four, and so does
 any account with `AllModulesIncluded`. `Models/ModuleAccess.cs` is the rule, echoed in `UserDto` as
 `AllowedModules` and `NeedsModuleChoice` (Free, farm access, nothing chosen, not grandfathered).
 Creating a module's root row — a stock (both routes), a herd, an orchard — calls

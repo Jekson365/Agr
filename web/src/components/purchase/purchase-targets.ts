@@ -97,7 +97,7 @@ export async function loadPurchaseTargets(t: Translate, areas: PurchaseAreas): P
       maybe(areas.livestock, () => getUnits()),
       maybe(areas.fruits, () => getTreeStock()),
       maybe(areas.fruits, () => getFruitKinds()),
-      maybe(areas.fruits, () => getTreeProducts()),
+      maybe(areas.fruits, () => getTreeProducts('Fruit')),
       maybe(areas.crops, () => getStock()),
       maybe(areas.crops, () => getSeeds()),
       maybe(areas.equipment, () => getEquipment()),

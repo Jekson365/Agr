@@ -6,7 +6,7 @@ import { chooseFreeModule, createFarmDatabase, updateLocation } from '@/services
 import { createFarm } from '@/services/farm-service';
 import { createLivestock } from '@/services/livestock-service';
 import { ensureProductionType } from '@/services/production-type-service';
-import { createStockWithSeed } from '@/services/stock-service';
+import { createStock, createStockWithSeed } from '@/services/stock-service';
 import { createTreeProduct, deleteTreeProduct } from '@/services/tree-product-service';
 import { createTreeStock } from '@/services/tree-stock-service';
 import type { UpdateProfileRequest, User } from '@/types/auth';
@@ -67,6 +67,8 @@ async function saveStep(step: OnboardingStepKey, input: SubmitInput): Promise<vo
       return saveLivestock(input);
     case 'fruit':
       return saveFruit(input);
+    case 'wine':
+      return saveWine(input);
   }
 }
 
@@ -134,6 +136,11 @@ async function saveStock({ draft }: SubmitInput): Promise<void> {
     seedAmount: parseAmount(seedAmount),
     seedUnit,
   });
+}
+
+async function saveWine({ draft }: SubmitInput): Promise<void> {
+  const { type, name, amount, unit } = draft.wine;
+  await createStock({ type, name: name.trim(), amount: parseAmount(amount), unit, category: 'Wine' });
 }
 
 async function saveLivestock({ draft, progress, meatTypeName }: SubmitInput): Promise<void> {

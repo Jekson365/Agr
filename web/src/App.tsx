@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from '@/components/layout/app-shell';
+import { CROP_AREA, WINE_AREA } from '@/config/stock-areas';
 import { LoginPage } from '@/pages/auth/login-page';
 import { AnimalHistoryPage } from '@/pages/farm/animal-history-page';
 import { EquipmentPage } from '@/pages/farm/equipment-page';
@@ -23,14 +24,10 @@ import { LivestockDetailPage } from '@/pages/farm/livestock-detail-page';
 import { LivestockMovementPage } from '@/pages/farm/livestock-movement-page';
 import { LivestockPage } from '@/pages/farm/livestock-page';
 import { LivestockProductionPage } from '@/pages/farm/livestock-production-page';
-import { SeedHistoryPage } from '@/pages/farm/seed-history-page';
-import { StockHistoryPage } from '@/pages/farm/stock-history-page';
-import { StockPage } from '@/pages/farm/stock-page';
 import { TreeProductHistoryPage } from '@/pages/farm/tree-product-history-page';
 import { TreeProductsPage } from '@/pages/farm/tree-products-page';
 import { TreeStockHistoryPage } from '@/pages/farm/tree-stock-history-page';
 import { HarvestDetailPage } from '@/pages/harvest/harvest-detail-page';
-import { HarvestGradingPage } from '@/pages/harvest/grading/harvest-grading-page';
 import { HarvestCalendarPage } from '@/pages/harvest/calendar/harvest-calendar-page';
 import { HarvestTimelinePage } from '@/pages/harvest/timeline/harvest-timeline-page';
 import { HarvestWorkspacePage } from '@/pages/harvest/workspace/harvest-workspace-page';
@@ -58,9 +55,9 @@ import { ManagementRoute } from '@/routes/management-route';
 import { OnboardingRoute } from '@/routes/onboarding-route';
 import { ProtectedRoute } from '@/routes/protected-route';
 import { PublicOnlyRoute } from '@/routes/public-route';
+import { stockAreaRoutes } from '@/routes/stock-area-routes';
 import {
   CALENDAR_CONFIG,
-  CROP_FARMING_CONFIG,
   FRUIT_STOCK_CONFIG,
   GREENHOUSE_CONFIG,
   LIVESTOCK_CONFIG,
@@ -69,7 +66,6 @@ import {
 import { FruitsBalancePage } from './pages/farm/balance/fruits-balance-page';
 import { GreenhouseBalancePage } from './pages/farm/balance/greenhouse-balance-page';
 import { LivestockBalancePage } from './pages/farm/balance/livestock-balance-page';
-import { StockBalancePage } from './pages/farm/balance/stock-balance-page';
 import { GreenhouseHarvestDetailPage } from './pages/farm/greenhouse-harvest/greenhouse-harvest-detail-page';
 
 function App() {
@@ -122,15 +118,8 @@ function App() {
 
           {/* Crop farming is the field's whole plant side: what it grows, the seed it sows and the
               stock it holds. The harvest routes live here too — they are the group's own page. */}
-          <Route element={<ConfigRoute name={CROP_FARMING_CONFIG} />}>
-            <Route path="/farm/stock" element={<StockPage />} />
-            <Route path="/farm/stock/balance" element={<StockBalancePage />} />
-            <Route path="/farm/stock/:id" element={<StockHistoryPage />} />
-            <Route path="/farm/seeds/:id" element={<SeedHistoryPage />} />
-            <Route path="/harvest" element={<HarvestWorkspacePage />} />
-            <Route path="/harvest/detail/:id" element={<HarvestDetailPage />} />
-            <Route path="/harvest/grading/:id" element={<HarvestGradingPage />} />
-          </Route>
+          {stockAreaRoutes(CROP_AREA)}
+          {stockAreaRoutes(WINE_AREA)}
 
           <Route element={<ConfigRoute name={FRUIT_STOCK_CONFIG} />}>
             <Route path="/farm/fruits" element={<FruitsPage />} />

@@ -1,8 +1,9 @@
+import grapeIcon from '@/assets/goods/grape.png';
 import animalsIcon from '@/assets/properties/animals.png';
 import fruitsIcon from '@/assets/properties/fruits.png';
 import plantsIcon from '@/assets/properties/plants.png';
 import type { FarmModule, User } from '@/types/auth';
-import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG } from '@/types/configuration';
+import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG, WINE_CONFIG } from '@/types/configuration';
 
 export type FarmModuleInfo = {
   module: FarmModule;
@@ -33,6 +34,13 @@ export const FARM_MODULES: FarmModuleInfo[] = [
     textKey: 'onboarding.moduleTextFruit',
     icon: fruitsIcon,
     config: FRUIT_STOCK_CONFIG,
+  },
+  {
+    module: 'Wine',
+    labelKey: 'wine.title',
+    textKey: 'onboarding.moduleTextWine',
+    icon: grapeIcon,
+    config: WINE_CONFIG,
   },
 ];
 

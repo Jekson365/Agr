@@ -116,6 +116,7 @@ export function yieldRawUnitFor(
     const produce = produceOf(catalogs, treeStockId);
     if (produce) return produce.unit;
   }
+  if (kind === 'Wine' && stockId != null) return 'Kilogram';
   return rawUnitFor(catalogs, stockId, treeStockId);
 }
 
@@ -128,6 +129,7 @@ export function yieldTargetFor(
   t: Translate
 ): TargetInfo | null {
   const target = targetFor(catalogs, stockId, treeStockId, t);
+  if (target != null && kind === 'Wine' && stockId != null) return { ...target, unitLabel: t('farm.unitKg') };
   if (target == null || kind !== 'Fruit' || treeStockId == null) return target;
   const produce = produceOf(catalogs, treeStockId);
   return produce ? { ...target, unitLabel: t(TREE_PRODUCT_UNIT_LABEL_KEY[produce.unit] ?? '') } : target;

@@ -1,6 +1,7 @@
 import coinIcon from '@/assets/coin.png';
 import harvestIcon from '@/assets/icons/harvest.png';
 import reportIcon from '@/assets/icons/report.png';
+import grapeIcon from '@/assets/goods/grape.png';
 import fruitsIcon from '@/assets/properties/fruits.png';
 import gradingIcon from '@/assets/properties/balance.png';
 import plantsIcon from '@/assets/properties/plants.png';
@@ -8,12 +9,13 @@ import seedIcon from '@/assets/seed.png';
 import { useLanguage } from '@/contexts/language-context';
 import './harvest-nav-rail.css';
 
-export type HarvestSection = 'overview' | 'seeds' | 'trees' | 'result' | 'money' | 'grading' | 'chemicals';
+export type HarvestSection = 'overview' | 'seeds' | 'trees' | 'vines' | 'result' | 'money' | 'grading' | 'chemicals';
 
 export const HARVEST_SECTION_ICON: Record<HarvestSection, string> = {
   overview: reportIcon,
   seeds: seedIcon,
   trees: fruitsIcon,
+  vines: grapeIcon,
   result: harvestIcon,
   money: coinIcon,
   grading: gradingIcon,
@@ -24,6 +26,7 @@ export const HARVEST_SECTION_LABEL_KEY: Record<HarvestSection, string> = {
   overview: 'harvest.navOverview',
   seeds: 'harvest.navSeeds',
   trees: 'harvest.navTrees',
+  vines: 'harvest.navVines',
   result: 'harvest.navResult',
   money: 'harvest.navMoney',
   grading: 'harvestGrading.action',

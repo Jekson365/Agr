@@ -20,20 +20,15 @@ export const GREENHOUSE_HARVEST_STATUSES: HarvestStatus[] = HARVEST_STATUSES.fil
   (status) => status !== 'TransferredToBalance'
 );
 
-const FRUIT_SKIPPED_STATUSES: HarvestStatus[] = ['Planting', 'Emergence'];
-
-const FRUIT_HARVEST_STATUSES: HarvestStatus[] = HARVEST_STATUSES.filter(
-  (status) => !FRUIT_SKIPPED_STATUSES.includes(status)
-);
+const SKIPPED_STATUSES: Record<HarvestKind, HarvestStatus[]> = {
+  Crop: [],
+  Fruit: ['Planting', 'Emergence'],
+  Wine: ['Planting', 'Emergence'],
+};
 
 export function harvestStatusesFor(kind: HarvestKind, current?: HarvestStatus | null): HarvestStatus[] {
-  if (kind !== 'Fruit') return HARVEST_STATUSES;
-  if (current != null && FRUIT_SKIPPED_STATUSES.includes(current)) {
-    return HARVEST_STATUSES.filter(
-      (status) => !FRUIT_SKIPPED_STATUSES.includes(status) || status === current
-    );
-  }
-  return FRUIT_HARVEST_STATUSES;
+  const skipped = SKIPPED_STATUSES[kind];
+  return HARVEST_STATUSES.filter((status) => !skipped.includes(status) || status === current);
 }
 
 export const HARVEST_STATUS_LABEL_KEY: Record<HarvestStatus, string> = {

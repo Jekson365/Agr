@@ -11,12 +11,14 @@ namespace Server.Controllers;
 public class TreeProductsController(
     ITreeProductRepository treeProductRepository,
     IHarvestProductRepository harvestProductRepository,
-    ITreeStockRepository treeStockRepository) : ControllerBase
+    ITreeStockRepository treeStockRepository,
+    IStockRepository stockRepository) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TreeProduct>>> GetAll()
+    public async Task<ActionResult<IEnumerable<TreeProduct>>> GetAll([FromQuery] TreeProductCategory? category)
     {
-        return Ok(await treeProductRepository.GetAllAsync());
+        var products = await treeProductRepository.GetAllAsync();
+        return Ok(category is null ? products : products.Where(p => p.Category == category));
     }
 
     [HttpGet("{id:int}")]
@@ -64,6 +66,11 @@ public class TreeProductsController(
         if (await treeStockRepository.ExistsByTreeProductAsync(id))
         {
             return Conflict("A fruit tree still produces this.");
+        }
+
+        if (await stockRepository.ExistsByTreeProductAsync(id))
+        {
+            return Conflict("A vineyard still produces this.");
         }
 
         var deleted = await treeProductRepository.DeleteAsync(id);

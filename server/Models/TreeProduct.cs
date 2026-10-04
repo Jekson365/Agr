@@ -20,4 +20,6 @@ public class TreeProduct
     public string Name { get; set; } = string.Empty;
 
     public TreeProductUnit Unit { get; set; }
+
+    public TreeProductCategory Category { get; set; } = TreeProductCategory.Fruit;
 }

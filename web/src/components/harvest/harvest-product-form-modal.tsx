@@ -38,7 +38,7 @@ export function HarvestProductFormModal({ open, harvestId, editingProduct, onClo
   async function loadProducts() {
     setLoading(true);
     try {
-      const productList = await getTreeProducts();
+      const productList = await getTreeProducts('Fruit');
       setProducts(productList);
       setSelectedId(editingProduct?.treeProductId ?? productList[0]?.id ?? null);
     } catch {

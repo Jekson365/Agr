@@ -6,4 +6,5 @@ public enum StockUnit
     Kilogram,
     Quantity,
     Liter,
+    Plant,
 }

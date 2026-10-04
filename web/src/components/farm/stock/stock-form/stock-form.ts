@@ -1,3 +1,4 @@
+import { CROP_AREA, type StockArea } from '@/config/stock-areas';
 import type { SeedUnit } from '@/types/seed';
 import type { Stock, StockType, StockUnit } from '@/types/stock';
 
@@ -17,14 +18,14 @@ export type StockFormValues = {
 
 /** The form as it opens: the row being edited, or blank for a new one. The type is filled in by
  * the catalog field once its list arrives, when there is nothing to preset it to. */
-export function makeInitialValues(editingStock: Stock | null): StockFormValues {
+export function makeInitialValues(editingStock: Stock | null, area: StockArea = CROP_AREA): StockFormValues {
   return {
-    type: editingStock?.type ?? '',
+    type: editingStock?.type ?? area.fixedType ?? '',
     name: editingStock?.name ?? '',
     amount: editingStock ? String(editingStock.amount) : '',
-    unit: editingStock?.unit ?? 'Kilogram',
+    unit: editingStock?.unit ?? area.defaultUnit,
     seedAmount: '',
-    seedUnit: 'Kilogram',
+    seedUnit: area.seed?.defaultUnit ?? 'Kilogram',
   };
 }
 

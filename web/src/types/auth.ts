@@ -1,6 +1,6 @@
 export type UserRole = 'Owner' | 'Member';
 export type StoragePlan = 'Free' | 'Medium' | 'Premium';
-export type FarmModule = 'Crop' | 'Livestock' | 'Fruit';
+export type FarmModule = 'Crop' | 'Livestock' | 'Fruit' | 'Wine';
 
 export type User = {
   id: number;

@@ -1,14 +1,17 @@
 import { useState } from 'react';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
+import { pickKeyPrefix } from '@/components/harvest/harvest-pick-options';
 import { HarvestTreeFormModal } from '@/components/harvest/harvest-tree-form-modal';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteHarvestTree } from '@/services/harvest-tree-service';
+import type { HarvestKind } from '@/types/harvest';
 import type { HarvestTree } from '@/types/harvest-tree';
 import { HarvestEntryList, type EntryRow } from './harvest-entry-list';
-import { treeInfoFor, type Catalogs } from './harvest-detail-lookups';
+import { targetFor, treeInfoFor, type Catalogs } from './harvest-detail-lookups';
 
 type Props = {
+  kind: HarvestKind;
   harvestId: number;
   harvestTrees: HarvestTree[];
   catalogs: Catalogs;
@@ -24,15 +27,19 @@ type Props = {
 /** Which orchard was picked — fruit harvests only. One per harvest: its costs, revenue and
  *  grading all answer for that one orchard. Editable in any status: unlike sowing, picking happens
  *  at harvest time, so it is usually recorded once done. */
-export function TreeSection({ harvestId, harvestTrees, catalogs, canEdit, canRecordHarvested, onChanged }: Props) {
+export function TreeSection({ kind, harvestId, harvestTrees, catalogs, canEdit, canRecordHarvested, onChanged }: Props) {
   const { t } = useLanguage();
+  const prefix = pickKeyPrefix(kind);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<HarvestTree | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<{ id: number; label: string } | null>(null);
 
   const rows: EntryRow[] = harvestTrees.map((picked) => {
-    const info = treeInfoFor(catalogs, picked.treeStockId, t);
+    const info =
+      picked.stockId != null
+        ? targetFor(catalogs, picked.stockId, null, t)
+        : treeInfoFor(catalogs, picked.treeStockId ?? 0, t);
     return {
       id: picked.id,
       icon: info?.icon ?? '',
@@ -56,13 +63,13 @@ export function TreeSection({ harvestId, harvestTrees, catalogs, canEdit, canRec
   return (
     <>
       <HarvestEntryList
-        title={t('harvestTree.title')}
+        title={t(`${prefix}.title`)}
         rows={rows}
-        emptyText={t('harvestTree.empty')}
-        addLabel={t('harvestTree.add')}
+        emptyText={t(`${prefix}.empty`)}
+        addLabel={t(`${prefix}.add`)}
         canEdit={canEdit}
         canAdd={harvestTrees.length === 0}
-        capText={t('harvestTree.onlyOne')}
+        capText={t(`${prefix}.onlyOne`)}
         scrollable
         onAdd={() => {
           setEditing(null);
@@ -77,6 +84,7 @@ export function TreeSection({ harvestId, harvestTrees, catalogs, canEdit, canRec
 
       <HarvestTreeFormModal
         open={formOpen}
+        kind={kind}
         harvestId={harvestId}
         editingTree={editing}
         existingTrees={harvestTrees}

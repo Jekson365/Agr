@@ -96,6 +96,19 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             .Property(s => s.Unit)
             .HasConversion<string>();
 
+        modelBuilder.Entity<Stock>()
+            .Property(s => s.Category)
+            .HasConversion<string>();
+        modelBuilder.Entity<Stock>()
+            .HasOne<TreeProduct>()
+            .WithMany()
+            .HasForeignKey(s => s.TreeProductId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<Stock>()
+            .HasIndex(s => s.TreeProductId)
+            .IsUnique()
+            .HasFilter("\"TreeProductId\" IS NOT NULL");
+
         // Store tree stock's unit as its readable name (e.g. "Box"). Type is a plain string (a
         // FruitKind name) so it needs no conversion.
         modelBuilder.Entity<TreeStock>()
@@ -121,7 +134,8 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             new Configuration { Id = 3, Name = "livestock", Value = 1 },
             new Configuration { Id = 4, Name = "fruitstock", Value = 1 },
             new Configuration { Id = 5, Name = "marketplace", Value = 1 },
-            new Configuration { Id = 6, Name = "calendar", Value = 1 });
+            new Configuration { Id = 6, Name = "calendar", Value = 1 },
+            new Configuration { Id = 7, Name = "winemaking", Value = 1 });
 
         // The three seeded catalogs live in BuiltInKinds, which the repositories also read to
         // refuse deleting one of them.
@@ -524,6 +538,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
         modelBuilder.Entity<TreeProduct>()
             .Property(p => p.Unit)
             .HasConversion<string>();
+        modelBuilder.Entity<TreeProduct>()
+            .Property(p => p.Category)
+            .HasConversion<string>();
         // A tree is assigned one product it grows; deleting that product just clears the link.
         modelBuilder.Entity<TreeStock>()
             .HasOne<TreeProduct>()
@@ -580,6 +597,11 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             .HasOne<TreeStock>()
             .WithMany()
             .HasForeignKey(h => h.TreeStockId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<HarvestTree>()
+            .HasOne<Stock>()
+            .WithMany()
+            .HasForeignKey(h => h.StockId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // A chemical applied to a harvest belongs to it; deleting the harvest removes its

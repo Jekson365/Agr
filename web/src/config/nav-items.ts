@@ -17,6 +17,7 @@ import fruitsIcon from '@/assets/properties/fruits.png';
 import landIcon from '@/assets/properties/land.png';
 import plantsIcon from '@/assets/properties/plants.png';
 import seedIcon from '@/assets/seed.png';
+import { WINE_NAV_ITEM } from '@/config/nav-wine';
 import type { StoragePlan } from '@/types/auth';
 import {
   CALENDAR_CONFIG,
@@ -102,6 +103,7 @@ export const QUICK_ACCESS_ITEMS: NavItem[] = [
           // { to: '/farm/fruits/products', labelKey: 'treeProduct.title', icon: fruitsIcon },
         ],
       },
+      WINE_NAV_ITEM,
       {
         // The group's own row is still the list of herds; only the balance hangs off it, so it
         // stays a link rather than becoming a heading. No `end` on the header, matching the

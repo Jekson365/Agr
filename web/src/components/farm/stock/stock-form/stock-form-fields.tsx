@@ -1,4 +1,5 @@
 import { KindCatalogField } from '@/components/farm/kind-catalog-field';
+import type { StockArea } from '@/config/stock-areas';
 import { stockKindImage, stockTypeLabel, STOCK_UNIT_LABEL_KEY } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import type { StockFormValues } from './stock-form';
@@ -11,9 +12,10 @@ type Props = {
   values: StockFormValues;
   formError: string | null;
   setField: <K extends keyof StockFormValues>(key: K, value: StockFormValues[K]) => void;
+  area: StockArea;
 };
 
-export function StockFormFields({ open, isEditing, values, formError, setField }: Props) {
+export function StockFormFields({ open, isEditing, values, formError, setField, area }: Props) {
   const { t } = useLanguage();
 
   return (
@@ -22,7 +24,7 @@ export function StockFormFields({ open, isEditing, values, formError, setField }
           terms — its plan reads back this kind and unit, and its results moved the balance by
           that many of them — and the seed it was created with grows into this crop. So an edit
           shows the row back rather than offering to move it under all of that. */}
-      {isEditing ? (
+      {isEditing || area.fixedType ? (
         <div className="field">
           <label>{t('farm.type')}</label>
           <span className="limit-hint field-fixed-value">
@@ -62,7 +64,7 @@ export function StockFormFields({ open, isEditing, values, formError, setField }
           <input
             value={values.name}
             onChange={(e) => setField('name', e.target.value)}
-            placeholder={t('farm.stockNamePlaceholder')}
+            placeholder={t(area.namePlaceholderKey)}
           />
         )}
       </div>
@@ -90,7 +92,7 @@ export function StockFormFields({ open, isEditing, values, formError, setField }
         <span className="limit-hint field-fixed-value">{t(STOCK_UNIT_LABEL_KEY[values.unit] ?? 'farm.unitKg')}</span>
       </div>
 
-      {!isEditing && (
+      {!isEditing && area.seed && (
         <StockSeedFields
           amount={values.seedAmount}
           onAmountChange={(amount) => setField('seedAmount', amount)}

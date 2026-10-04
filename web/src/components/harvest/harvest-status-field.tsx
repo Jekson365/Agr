@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import '@/components/farm/kind-picker.css';
+import { pickedYieldCount } from '@/config/harvest-kind';
 import { HARVEST_STATUS_LABEL_KEY, harvestStatusesFor } from '@/config/harvest-status';
 import { HARVEST_STATUS_BLOCK_KEY, harvestStatusBlock, type HarvestProgress } from '@/config/harvest-status-gate';
 import { useLanguage } from '@/contexts/language-context';
@@ -32,8 +33,7 @@ export function HarvestStatusField({ harvest, value, onChange }: Props) {
           kind: harvest.kind,
           seedCount: seeds.length,
           // A fruit harvest's yield is recorded on the trees it picked, not as a result row.
-          resultCount:
-            harvest.kind === 'Fruit' ? trees.filter((tree) => tree.harvestedAmount > 0).length : results.length,
+          resultCount: pickedYieldCount(harvest.kind, trees, results),
         });
       })
       .catch(() => {});

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { cropLabel } from '@/config/crop';
 import { daysUntilExpected, isOverdue, isPicked } from '@/config/harvest-analysis';
+import { harvestListPath } from '@/config/stock-areas';
 import { useLanguage } from '@/contexts/language-context';
 import type { Farm } from '@/types/farm';
 import type { Harvest } from '@/types/harvest';
@@ -25,7 +26,7 @@ export function HarvestDetailHeader({ harvest, farm, plot }: Props) {
 
   return (
     <>
-      <Link to="/harvest" className="hd-back">
+      <Link to={harvestListPath(harvest.kind)} className="hd-back">
         ← {t('harvest.title')}
       </Link>
 

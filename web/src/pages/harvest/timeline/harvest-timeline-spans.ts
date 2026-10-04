@@ -1,7 +1,8 @@
 import { toIsoDate } from '@/components/ui/date-utils';
 import { isOverdue } from '@/config/harvest-analysis';
+import { harvestDetailPath } from '@/config/stock-areas';
 import type { GreenhouseHarvest } from '@/types/greenhouse-harvest';
-import type { Harvest, HarvestStatus } from '@/types/harvest';
+import type { Harvest, HarvestKind, HarvestStatus } from '@/types/harvest';
 
 export const MIN_DAYS = 3;
 export const MAX_DAYS = 180;
@@ -16,6 +17,7 @@ export type TimelineHarvest = {
   end: string;
   status: HarvestStatus;
   source: TimelineSource;
+  kind?: HarvestKind;
   path: string;
   overdue: boolean;
 };
@@ -48,7 +50,8 @@ export function fromHarvest(harvest: Harvest): TimelineHarvest {
     ...range(harvest),
     status: harvest.status,
     source: fruit ? 'fruit' : 'crop',
-    path: fruit ? `/farm/fruits/harvest/${harvest.id}` : `/harvest/detail/${harvest.id}`,
+    kind: harvest.kind,
+    path: harvestDetailPath(harvest.kind, harvest.id),
     overdue: isOverdue(harvest),
   };
 }

@@ -35,7 +35,7 @@ export function HarvestInfoPanels({ harvest, detail }: Props) {
       value: harvest.expectedHarvestDate ? formatLocalizedIsoDate(harvest.expectedHarvestDate, language) : dash,
     },
     { label: t('harvest.statusLabel'), value: t(HARVEST_STATUS_LABEL_KEY[harvest.status]) },
-    { label: t('harvestSeed.title'), value: sown || dash },
+    ...(harvest.kind === 'Wine' ? [] : [{ label: t('harvestSeed.title'), value: sown || dash }]),
   ];
 
   const fieldRows: Row[] = [

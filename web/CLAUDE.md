@@ -81,7 +81,7 @@ src/
 **`/` is the marketing page and sits outside both guards** — signed-in visitors can still read it.
 The app proper lives under `/main`. Unmatched paths redirect to `/404`.
 
-For the three module switches (`CropFarming`, `livestock`, `fruitstock`) `ConfigRoute` also renders
+For the four module switches (`CropFarming`, `livestock`, `fruitstock`, `winemaking`) `ConfigRoute` also renders
 `ModuleLocked` — an upgrade screen that opens `PacketsModal` — when the account's plan doesn't include
 that module (`user.allowedModules`; see `config/farm-modules.ts` and server §8). The sidebar and the
 `/farm` tiles show such a module with a lock rather than hiding it.
@@ -96,9 +96,9 @@ Gating a feature area means **two** edits: a `ConfigRoute` wrapper in `App.tsx` 
 `requiresConfig` on the nav entry in `config/nav-items.ts`. Hiding the sidebar link alone leaves
 the URL reachable by bookmark or old link.
 
-The five switch names are exported as constants from `types/configuration.ts` — import those,
+The switch names are exported as constants from `types/configuration.ts` — import those,
 never a string literal. Note **`CROP_FARMING_CONFIG` is `'CropFarming'`, PascalCase**, while the
-older four (`greenhouse`, `livestock`, `fruitstock`, `marketplace`, `calendar`) are lowercase.
+others (`greenhouse`, `livestock`, `fruitstock`, `marketplace`, `calendar`, `winemaking`) are lowercase.
 
 ### Known dead/orphaned routes
 - `src/pages/farm/livestock-balance/` (6 files) is **unreachable** — its route and import are
@@ -292,7 +292,8 @@ lives, so pages stay thin and mobile can borrow the maths.
 | `territory` | Farm boundary JSON → map polygons. |
 | `market-listing`, `harvest-status`, `harvest-target`, `crop`, `age`, `configuration-labels` | Option lists and label maps. |
 | `landing` | The marketing page's packet/pricing data, reused by `PacketsModal` so caps are stated once. |
-| `farm-modules` | The three farm modules (label, icon, switch) and `lockedModule(user, switch)` — the one check the route guard, sidebar, `/farm` tiles and purchase modal share. A stored user without `allowedModules` (a session from before modules) reads as everything allowed. |
+| `stock-areas` | Crop vs wine stock: category, harvest kind, paths, units. `StockPage`, `StockBalancePage`, the stock form and onboarding's stock step take an `area`; `routes/stock-area-routes.tsx` mounts both areas' routes (`/farm/stock`… and `/farm/wine`…). Wine is the same stock machinery filtered by `category`, always grape in ძირი, with no seed (`seed: null`): no seed fields, seed link, seed tab or sowing gate (`harvest-status-gate.ts`). |
+| `farm-modules` | The four farm modules (label, icon, switch) and `lockedModule(user, switch)` — the one check the route guard, sidebar, `/farm` tiles and purchase modal share. A stored user without `allowedModules` (a session from before modules) reads as everything allowed. |
 
 The rule this encodes: **the server sends raw catalog names, never display text** — translations and
 artwork are client-side, and duplicating either server-side would fork them.

@@ -48,7 +48,7 @@ export function FruitsBalancePage() {
     setError(null);
     try {
       const [productList, movementList, movementRows, listingList, orchardList, bandRows] = await Promise.all([
-        getTreeProducts(),
+        getTreeProducts('Fruit'),
         getTreeProductMovements(),
         getStockMovementReport(),
         getMarketListings({ mine: true }),

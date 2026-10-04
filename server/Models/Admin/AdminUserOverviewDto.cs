@@ -8,6 +8,7 @@ public class AdminUserOverviewDto
     public List<AdminStockDto> Stocks { get; set; } = [];
     public List<AdminLivestockDto> Livestock { get; set; } = [];
     public List<AdminTreeStockDto> TreeStocks { get; set; } = [];
+    public List<AdminHarvestDto> Harvests { get; set; } = [];
 }
 
 public class AdminFarmDto
@@ -58,4 +59,27 @@ public class AdminTreeStockDto
     public TreeStockUnit Unit { get; set; }
     public string FarmName { get; set; } = string.Empty;
     public bool IsDeleted { get; set; }
+}
+
+public class AdminHarvestDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public HarvestKind Kind { get; set; }
+    public HarvestStatus Status { get; set; }
+    public DateOnly Date { get; set; }
+    public DateOnly? ExpectedHarvestDate { get; set; }
+    public string FarmName { get; set; } = string.Empty;
+    public decimal? Revenue { get; set; }
+    public decimal Cost { get; set; }
+    public List<AdminHarvestYieldDto> Yields { get; set; } = [];
+}
+
+public class AdminHarvestYieldDto
+{
+    public string Source { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public string Unit { get; set; } = string.Empty;
 }

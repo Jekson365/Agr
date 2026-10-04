@@ -1,10 +1,12 @@
 export type TreeProductUnit = 'Kilogram' | 'Box' | 'Quantity';
+export type TreeProductCategory = 'Fruit' | 'Wine';
 
 /** A kind of produce a tree yields — a standalone catalog entry, assigned to trees. */
 export type TreeProduct = {
   id: number;
   name: string;
   unit: TreeProductUnit;
+  category?: TreeProductCategory;
 };
 
 export type TreeProductInput = Omit<TreeProduct, 'id'>;

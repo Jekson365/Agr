@@ -12,7 +12,7 @@ public interface IHarvestTreeRepository
     /// of it were picked is one number, not several. Pass the row being edited as
     /// <paramref name="excludeId"/> so it doesn't clash with itself.
     /// </summary>
-    Task<bool> ExistsForHarvestAsync(int harvestId, int treeStockId, int? excludeId = null);
+    Task<bool> ExistsForHarvestAsync(int harvestId, int? stockId, int? treeStockId, int? excludeId = null);
 
     /// <summary>
     /// Whether this harvest already picks an orchard at all. A fruit harvest covers one orchard:

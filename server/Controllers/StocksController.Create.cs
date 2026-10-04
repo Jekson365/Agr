@@ -14,11 +14,17 @@ public partial class StocksController
             return BadRequest(invalid);
         }
 
+        if (stock.Category == StockCategory.Wine)
+        {
+            stock.Type = Stock.WineType;
+            stock.Unit = StockUnit.Plant;
+        }
+
         await using var planLock = await planLimitLock.AcquireAsync(PlanResource.Stock);
         try
         {
-            await planLimitService.EnsureModuleAllowedAsync(FarmModule.Crop);
-            var currentCount = (await stockRepository.GetAllAsync()).Count();
+            await planLimitService.EnsureModuleAllowedAsync(ModuleOf(stock.Category));
+            var currentCount = (await stockRepository.GetAllAsync(category: stock.Category)).Count();
             await planLimitService.EnsureCanAddStockAsync(currentCount);
         }
         catch (InvalidOperationException ex)
@@ -57,7 +63,7 @@ public partial class StocksController
         try
         {
             await planLimitService.EnsureModuleAllowedAsync(FarmModule.Crop);
-            var currentCount = (await stockRepository.GetAllAsync()).Count();
+            var currentCount = (await stockRepository.GetAllAsync(category: StockCategory.Crop)).Count();
             await planLimitService.EnsureCanAddStockAsync(currentCount);
         }
         catch (InvalidOperationException ex)
@@ -88,4 +94,7 @@ public partial class StocksController
         await planLock.CommitAsync();
         return Ok(new StockWithSeedResponse { Stock = stock, Seed = seed });
     }
+
+    private static FarmModule ModuleOf(StockCategory category) =>
+        category == StockCategory.Wine ? FarmModule.Wine : FarmModule.Crop;
 }

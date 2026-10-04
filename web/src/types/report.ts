@@ -1,3 +1,4 @@
+import type { StockCategory } from '@/types/stock';
 import type { StockMovementSource } from '@/types/stock-movement';
 
 /** One row of the plant/fruit stock-movement report — a movement joined with the product it
@@ -10,6 +11,7 @@ export type StockMovementReportRow = {
   name: string;
   type: string;
   unit: string;
+  category?: StockCategory | null;
   delta: number;
   source: StockMovementSource;
   /** Whether the good has since been removed from stock. The movement still happened, so a report
@@ -23,7 +25,7 @@ export type StockMovementReportRow = {
 /** Which catalog a row's `typeName` belongs to — picks the label and icon lookup on this side. */
 export type ReportGoodKind = 'stock' | 'tree' | 'treeProduct' | 'seed' | 'productionType';
 
-export type ReportCategory = 'crop' | 'livestock' | 'fruit' | 'greenhouse';
+export type ReportCategory = 'crop' | 'livestock' | 'fruit' | 'greenhouse' | 'wine';
 
 /**
  * The period filter, sent to the server rather than applied here. `all` needs no other field.

@@ -4,6 +4,7 @@ import { STOCK_UNIT_LABEL_KEY, stockKindImage, stockTypeLabel } from '@/config/s
 import { useLanguage } from '@/contexts/language-context';
 import type { AdminUserOverview } from '@/types/admin';
 import { formatAmount } from './user-detail-format';
+import { UserDetailHarvests } from './user-detail-harvests';
 import { UserDetailLands } from './user-detail-lands';
 import { UserDetailSection, type DetailItem } from './user-detail-section';
 
@@ -49,6 +50,7 @@ export function UserDetailHoldings({ overview }: Props) {
         <UserDetailSection title={t('managerUser.livestock')} items={livestock} />
         <UserDetailSection title={t('managerUser.fruits')} items={fruits} />
       </div>
+      <UserDetailHarvests harvests={overview.harvests} />
     </div>
   );
 }

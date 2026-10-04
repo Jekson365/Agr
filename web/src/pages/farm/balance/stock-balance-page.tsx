@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
+import { CROP_AREA, type StockArea } from '@/config/stock-areas';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { getHarvestAssessments } from '@/services/harvest-assessment-service';
@@ -19,7 +20,7 @@ import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './p
  * the marketplace is already holding. A reading of the holding and nothing more: listing more of
  * it is done from the marketplace itself.
  */
-export function StockBalancePage() {
+export function StockBalancePage({ area = CROP_AREA }: { area?: StockArea }) {
   const { t } = useLanguage();
 
   const [adjustOpen, setAdjustOpen] = useState(false);
@@ -58,12 +59,13 @@ export function StockBalancePage() {
   const listed = listedTotals(listings);
   // Plant stock is the one table that reports the holdings themselves, so removed goods belong in
   // it directly rather than as an appendix.
-  const balances = balancesByProduct(rows, 'stock', t, 'include');
+  const areaRows = rows.filter((row) => (row.category ?? 'Crop') === area.category);
+  const balances = balancesByProduct(areaRows, 'stock', t, 'include');
 
   /** The kind behind each row, keyed the way balancesByProduct keys its balances. A balance
    *  carries the figures alone, so the artwork and the crop name are resolved back through this
    *  rather than widened into the shared row type. */
-  const kindByKey = new Map(rows.map((row) => [`stock:${row.stockId}`, row.type]));
+  const kindByKey = new Map(areaRows.map((row) => [`stock:${row.stockId}`, row.type]));
 
   function iconFor(row: ProductBalance) {
     const type = kindByKey.get(row.key);
@@ -94,8 +96,8 @@ export function StockBalancePage() {
 
   return (
     <BalanceLayout
-      backTo="/farm/stock"
-      backLabel={t('farm.plantStock')}
+      backTo={area.stockPath}
+      backLabel={t(area.titleKey)}
       loading={loading}
       error={error}
       onRetry={load}

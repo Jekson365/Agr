@@ -1,3 +1,4 @@
+import { WINE_AREA } from '@/config/stock-areas';
 import type { OnboardingDraft } from './onboarding-draft';
 import type { OnboardingStepKey } from './onboarding-status';
 import { FarmProfileStep } from './steps/farm-profile-step';
@@ -34,5 +35,7 @@ export function OnboardingStepView({ step, draft, hasFarm, onChange }: Props) {
       );
     case 'fruit':
       return <FruitStep value={draft.fruit} onChange={(fruit) => onChange({ ...draft, fruit })} />;
+    case 'wine':
+      return <StockStep value={draft.wine} area={WINE_AREA} onChange={(wine) => onChange({ ...draft, wine })} />;
   }
 }

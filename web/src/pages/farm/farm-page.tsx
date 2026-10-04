@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import grapeIcon from '@/assets/goods/grape.png';
 import animalsIcon from '@/assets/properties/animals.png';
 import equipmentIcon from '@/assets/properties/equipment.png';
 import fruitsIcon from '@/assets/properties/fruits.png';
@@ -12,10 +13,10 @@ import { lockedModule } from '@/config/farm-modules';
 import { useAuth } from '@/contexts/auth-context';
 import { useConfiguration } from '@/contexts/configuration-context';
 import { useLanguage } from '@/contexts/language-context';
-import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG } from '@/types/configuration';
+import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG, WINE_CONFIG } from '@/types/configuration';
 import './farm-page.css';
 
-type SectionKey = 'land' | 'livestock' | 'stock' | 'fruits' | 'balance' | 'equipment';
+type SectionKey = 'land' | 'livestock' | 'stock' | 'fruits' | 'wine' | 'balance' | 'equipment';
 
 const SECTIONS: {
   key: SectionKey;
@@ -41,6 +42,7 @@ const SECTIONS: {
     requiresConfig: CROP_FARMING_CONFIG,
   },
   { key: 'fruits', labelKey: 'farm.fruits', icon: fruitsIcon, to: '/farm/fruits', requiresConfig: FRUIT_STOCK_CONFIG },
+  { key: 'wine', labelKey: 'wine.title', icon: grapeIcon, to: '/farm/wine', requiresConfig: WINE_CONFIG },
   // No balance tile: each holding now carries its own, reached from that holding's area.
   { key: 'equipment', labelKey: 'equipment.title', icon: equipmentIcon, to: '/farm/equipment' },
 ];

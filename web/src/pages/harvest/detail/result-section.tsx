@@ -2,11 +2,13 @@ import { useState } from 'react';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import { HarvestResultFormModal } from '@/components/harvest/harvest-result-form-modal';
+import { stockAreaOf } from '@/config/stock-areas';
 import { useLanguage } from '@/contexts/language-context';
 import { deleteHarvestResult } from '@/services/harvest-result-service';
 import type { HarvestItem } from '@/types/harvest-item';
 import type { HarvestResult } from '@/types/harvest-result';
 import type { HarvestSeed } from '@/types/harvest-seed';
+import type { StockCategory } from '@/types/stock';
 import { HarvestEntryList, type EntryRow } from './harvest-entry-list';
 import { sownTypesFor, targetFor, type Catalogs } from './harvest-detail-lookups';
 
@@ -19,12 +21,14 @@ type Props = {
   /** Results belong to a finished harvest; before that the section explains itself instead. */
   canEdit: boolean;
   onChanged: (next: HarvestResult[]) => void;
+  category: StockCategory;
 };
 
-export function ResultSection({ harvestId, results, items, harvestSeeds, catalogs, canEdit, onChanged }: Props) {
+export function ResultSection({ harvestId, results, items, harvestSeeds, catalogs, canEdit, onChanged, category }: Props) {
   const { t } = useLanguage();
 
-  const sownTypes = sownTypesFor(catalogs, harvestSeeds);
+  const fixedType = stockAreaOf(category).fixedType;
+  const sownTypes = fixedType ? [fixedType] : sownTypesFor(catalogs, harvestSeeds);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<HarvestResult | null>(null);
@@ -78,6 +82,7 @@ export function ResultSection({ harvestId, results, items, harvestSeeds, catalog
 
       <HarvestResultFormModal
         open={formOpen}
+        category={category}
         harvestId={harvestId}
         editingResult={editing}
         plannedItems={items}

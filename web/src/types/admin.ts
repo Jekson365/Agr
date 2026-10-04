@@ -1,5 +1,6 @@
 import type { ListingCategory, ListingStatus, ListingType } from '@/types/market-listing';
 import type { StoragePlan } from '@/types/auth';
+import type { HarvestKind, HarvestStatus } from '@/types/harvest';
 
 /**
  * A registered account, as the manager page sees it. Narrower than the server's `User` on purpose —
@@ -102,4 +103,26 @@ export type AdminUserOverview = {
   stocks: AdminStock[];
   livestock: AdminLivestock[];
   treeStocks: AdminTreeStock[];
+  harvests: AdminHarvest[];
+};
+
+export type AdminHarvestYield = {
+  source: 'stock' | 'tree' | 'product';
+  type: string;
+  name: string;
+  amount: number;
+  unit: string;
+};
+
+export type AdminHarvest = {
+  id: number;
+  title: string;
+  kind: HarvestKind;
+  status: HarvestStatus;
+  date: string;
+  expectedHarvestDate: string | null;
+  farmName: string;
+  revenue: number | null;
+  cost: number;
+  yields: AdminHarvestYield[];
 };

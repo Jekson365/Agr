@@ -29,3 +29,5 @@ export const MARKETPLACE_CONFIG = 'marketplace';
 
 /** The setting that reveals the calendar. */
 export const CALENDAR_CONFIG = 'calendar';
+
+export const WINE_CONFIG = 'winemaking';

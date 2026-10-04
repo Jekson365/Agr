@@ -31,10 +31,11 @@ public class HarvestTreeRepository(
         return await context.HarvestTrees.FindAsync(id);
     }
 
-    public async Task<bool> ExistsForHarvestAsync(int harvestId, int treeStockId, int? excludeId = null)
+    public async Task<bool> ExistsForHarvestAsync(int harvestId, int? stockId, int? treeStockId, int? excludeId = null)
     {
         return await context.HarvestTrees
             .AnyAsync(h => h.HarvestId == harvestId
+                && h.StockId == stockId
                 && h.TreeStockId == treeStockId
                 && (excludeId == null || h.Id != excludeId));
     }
@@ -49,7 +50,7 @@ public class HarvestTreeRepository(
         context.HarvestTrees.Add(harvestTree);
         await context.SaveChangesAsync();
 
-        await SyncProduceAsync(harvestTree.HarvestId, harvestTree.TreeStockId, harvestTree.HarvestedAmount);
+        await SyncProduceAsync(harvestTree.HarvestId, harvestTree.StockId, harvestTree.TreeStockId, harvestTree.HarvestedAmount);
         return harvestTree;
     }
 
@@ -61,9 +62,11 @@ public class HarvestTreeRepository(
             return false;
         }
 
-        var previousStockId = existing.TreeStockId;
+        var previousStockId = existing.StockId;
+        var previousTreeStockId = existing.TreeStockId;
 
         existing.TreeStockId = harvestTree.TreeStockId;
+        existing.StockId = harvestTree.StockId;
         existing.Amount = harvestTree.Amount;
         existing.HarvestedAmount = harvestTree.HarvestedAmount;
         // HarvestId is fixed once created.
@@ -71,12 +74,12 @@ public class HarvestTreeRepository(
         await context.SaveChangesAsync();
 
         // Moved to another orchard: the one it left has nothing from this harvest any more.
-        if (previousStockId != existing.TreeStockId)
+        if (previousStockId != existing.StockId || previousTreeStockId != existing.TreeStockId)
         {
-            await SyncProduceAsync(existing.HarvestId, previousStockId, 0);
+            await SyncProduceAsync(existing.HarvestId, previousStockId, previousTreeStockId, 0);
         }
 
-        await SyncProduceAsync(existing.HarvestId, existing.TreeStockId, existing.HarvestedAmount);
+        await SyncProduceAsync(existing.HarvestId, existing.StockId, existing.TreeStockId, existing.HarvestedAmount);
         return true;
     }
 
@@ -88,12 +91,12 @@ public class HarvestTreeRepository(
             return false;
         }
 
-        var (harvestId, treeStockId) = (existing.HarvestId, existing.TreeStockId);
+        var (harvestId, stockId, treeStockId) = (existing.HarvestId, existing.StockId, existing.TreeStockId);
 
         context.HarvestTrees.Remove(existing);
         await context.SaveChangesAsync();
 
-        await SyncProduceAsync(harvestId, treeStockId, 0);
+        await SyncProduceAsync(harvestId, stockId, treeStockId, 0);
         return true;
     }
 
@@ -106,7 +109,8 @@ public class HarvestTreeRepository(
     {
         return await context.HarvestTrees
             .AsNoTracking()
-            .Select(h => h.TreeStockId)
+            .Where(h => h.TreeStockId != null)
+            .Select(h => h.TreeStockId!.Value)
             .Distinct()
             .ToListAsync();
     }
@@ -118,12 +122,16 @@ public class HarvestTreeRepository(
     /// keeps the balance honest: nothing harvested means no row at all. An orchard with no product
     /// named has nowhere to accrue, so its harvested amount stays a plain record of the picking.
     /// </summary>
-    private async Task SyncProduceAsync(int harvestId, int treeStockId, decimal harvestedAmount)
+    private async Task SyncProduceAsync(int harvestId, int? stockId, int? treeStockId, decimal harvestedAmount)
     {
-        var treeProductId = await context.TreeStocks
-            .Where(s => s.Id == treeStockId)
-            .Select(s => s.TreeProductId)
-            .FirstOrDefaultAsync();
+        var treeProductId = stockId is int vineyardId
+            ? await WineProductLink.EnsureAsync(context, vineyardId)
+            : treeStockId is null
+                ? null
+                : await context.TreeStocks
+                    .Where(s => s.Id == treeStockId)
+                    .Select(s => s.TreeProductId)
+                    .FirstOrDefaultAsync();
 
         if (treeProductId is not int productId)
         {

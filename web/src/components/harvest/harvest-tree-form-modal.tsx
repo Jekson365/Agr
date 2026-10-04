@@ -1,34 +1,28 @@
 import { useEffect, useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
-import { fruitKindImage, fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import { ApiError } from '@/services/api-client';
 import { createHarvestTree, updateHarvestTree } from '@/services/harvest-tree-service';
-import { getTreeProducts } from '@/services/tree-product-service';
-import { getTreeStock } from '@/services/tree-stock-service';
+import type { HarvestKind } from '@/types/harvest';
 import type { HarvestTree } from '@/types/harvest-tree';
-import type { TreeProduct } from '@/types/tree-product';
-import type { TreeStock } from '@/types/tree-stock';
+import { loadPickOptions, pickKeyPrefix, pickTarget, pickTargetId, type PickOption } from './harvest-pick-options';
 import './harvest.css';
 
 type Props = {
   open: boolean;
+  kind: HarvestKind;
   harvestId: number;
   editingTree: HarvestTree | null;
-  /** What this harvest already records as picked, so those orchards stay out of the picker. */
   existingTrees: HarvestTree[];
-  /** True once the harvest is marked harvested. What came off the trees is weighed at picking
-   *  time, so before that the row records the orchard and the trees alone. */
   canRecordHarvested: boolean;
   onClose: () => void;
   onSaved: (harvestTree: HarvestTree, isNew: boolean) => void;
 };
 
-/** Records how many trees of an orchard were picked. The orchard's own count is untouched —
- * the fruit that came off them is recorded as a result, by weight, against plant stock. */
 export function HarvestTreeFormModal({
   open,
+  kind,
   harvestId,
   editingTree,
   existingTrees,
@@ -37,12 +31,10 @@ export function HarvestTreeFormModal({
   onSaved,
 }: Props) {
   const { t } = useLanguage();
+  const prefix = pickKeyPrefix(kind);
 
-  /** The orchards still free to record — the farm's fruit, minus what this harvest already picked. */
-  const [treeStocks, setTreeStocks] = useState<TreeStock[]>([]);
-  /** Whether the farm holds any fruit at all — "none exist" and "all picked already" differ. */
-  const [hadAnyTrees, setHadAnyTrees] = useState(false);
-  const [treeProducts, setTreeProducts] = useState<TreeProduct[]>([]);
+  const [options, setOptions] = useState<PickOption[]>([]);
+  const [hadAny, setHadAny] = useState(false);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [amountInput, setAmountInput] = useState('');
@@ -51,66 +43,43 @@ export function HarvestTreeFormModal({
   const [formError, setFormError] = useState<string | null>(null);
 
   const isEditing = editingTree != null;
+  const editingTargetId = editingTree ? pickTargetId(kind, editingTree) : null;
 
   useEffect(() => {
     if (!open) return;
     setAmountInput(editingTree ? String(editingTree.amount) : '');
     setHarvestedInput(editingTree ? String(editingTree.harvestedAmount) : '');
     setFormError(null);
-    loadTreeStocks();
+    loadOptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, editingTree]);
 
-  async function loadTreeStocks() {
+  async function loadOptions() {
     setLoading(true);
     try {
-      // Removed orchards come back too, but only so an existing row that names one keeps naming it
-      // (filtered below) — a picking can't be recorded against fruit that is out of use.
-      const [list, productList] = await Promise.all([getTreeStock(true), getTreeProducts()]);
-      setHadAnyTrees(list.some((stock) => !stock.isDeleted));
-      setTreeProducts(productList);
-
-      // An orchard is picked once per harvest, so the ones already recorded are off the list. The
-      // row being edited doesn't count against itself — its own orchard has to stay pickable, even
-      // once removed, since dropping it would silently repoint that row at another orchard.
+      const list = await loadPickOptions(kind, t);
+      setHadAny(list.some((option) => !option.isDeleted));
       const picked = new Set(
-        existingTrees.filter((tree) => tree.id !== editingTree?.id).map((tree) => tree.treeStockId)
+        existingTrees.filter((tree) => tree.id !== editingTree?.id).map((tree) => pickTargetId(kind, tree))
       );
       const free = list.filter(
-        (stock) => !picked.has(stock.id) && (!stock.isDeleted || stock.id === editingTree?.treeStockId)
+        (option) => !picked.has(option.id) && (!option.isDeleted || option.id === editingTargetId)
       );
-
-      setTreeStocks(free);
-      setSelectedId(editingTree?.treeStockId ?? free[0]?.id ?? null);
+      setOptions(free);
+      setSelectedId(editingTargetId ?? free[0]?.id ?? null);
     } catch {
-      setTreeStocks([]);
-      setTreeProducts([]);
+      setOptions([]);
       setSelectedId(null);
     } finally {
       setLoading(false);
     }
   }
 
-  function labelFor(treeStock: TreeStock): string {
-    const fruit = fruitTypeLabel(treeStock.type, t);
-    return treeStock.name.trim() ? `${fruit} · ${treeStock.name}` : fruit;
-  }
-
-  const selected = treeStocks.find((s) => s.id === selectedId) ?? null;
+  const selected = options.find((option) => option.id === selectedId) ?? null;
   const amount = parseFloat(amountInput) || 0;
-  // Before the harvest is marked harvested the field isn't offered, so a row already carrying a
-  // weight keeps it rather than being zeroed by a save made from an earlier status.
   const harvestedAmount = canRecordHarvested
     ? Math.max(0, parseFloat(harvestedInput) || 0)
     : editingTree?.harvestedAmount ?? 0;
-  // The produce unit for the selected orchard's assigned product, shown next to the harvested field.
-  const harvestedUnit = (() => {
-    const product = selected != null ? treeProducts.find((p) => p.id === selected.treeProductId) : null;
-    // Every product is created in kilograms; Box and Quantity only exist on rows entered while
-    // the unit was still a choice, so those keep reading in the unit they were recorded under.
-    return product ? t(TREE_PRODUCT_UNIT_LABEL_KEY[product.unit] ?? 'farm.unitKg') : t('farm.unitKg');
-  })();
-  // You can't pick more trees than the orchard holds, but picking doesn't consume them either.
   const overAvailable = selected != null && amount > selected.amount;
   const canSubmit = selected != null && amount > 0 && !overAvailable && !saving;
 
@@ -120,20 +89,20 @@ export function HarvestTreeFormModal({
     setSaving(true);
     setFormError(null);
     try {
+      const target = pickTarget(kind, selectedId);
       if (isEditing) {
-        const updated: HarvestTree = { ...editingTree, treeStockId: selectedId, amount, harvestedAmount };
+        const updated: HarvestTree = { ...editingTree, ...target, amount, harvestedAmount };
         await updateHarvestTree(updated.id, updated);
         onSaved(updated, false);
       } else {
-        const created = await createHarvestTree({ harvestId, treeStockId: selectedId, amount, harvestedAmount });
+        const created = await createHarvestTree({ harvestId, ...target, amount, harvestedAmount });
         onSaved(created, true);
       }
       onClose();
     } catch (err) {
-      // The server refuses an orchard this harvest picked meanwhile (e.g. from another session).
       setFormError(
         err instanceof ApiError && err.status === 409
-          ? t(editingTree ? 'harvestTree.alreadyPicked' : 'harvestTree.onlyOne')
+          ? t(editingTree ? `${prefix}.alreadyPicked` : `${prefix}.onlyOne`)
           : t('farm.saveError')
       );
     } finally {
@@ -143,38 +112,36 @@ export function HarvestTreeFormModal({
 
   return (
     <Modal open={open} onClose={onClose}>
-      <h2 className="form-title">{isEditing ? t('harvestTree.edit') : t('harvestTree.add')}</h2>
+      <h2 className="form-title">{isEditing ? t(`${prefix}.edit`) : t(`${prefix}.add`)}</h2>
 
       <div className="form-fields">
         <div className="field">
-          <label>{t('farm.fruits')}</label>
+          <label>{t(kind === 'Wine' ? 'wine.stockTitle' : 'farm.fruits')}</label>
           {loading ? (
             <span className="limit-hint">…</span>
-          ) : treeStocks.length === 0 ? (
-            <p className="limit-hint">{t(hadAnyTrees ? 'harvestTree.allPicked' : 'harvestTree.noTrees')}</p>
+          ) : options.length === 0 ? (
+            <p className="limit-hint">{t(hadAny ? `${prefix}.allPicked` : `${prefix}.noTrees`)}</p>
           ) : (
             <div className="kind-row">
-              {treeStocks.map((treeStock) => (
+              {options.map((option) => (
                 <button
-                  key={treeStock.id}
+                  key={option.id}
                   type="button"
-                  className={selectedId === treeStock.id ? 'kind-chip active' : 'kind-chip'}
-                  onClick={() => setSelectedId(treeStock.id)}
+                  className={selectedId === option.id ? 'kind-chip active' : 'kind-chip'}
+                  onClick={() => setSelectedId(option.id)}
                 >
-                  <img src={fruitKindImage(treeStock.type)} className="kind-chip-icon" alt="" />
-                  <span>{labelFor(treeStock)}</span>
-                  {/* Only the row already recorded against it keeps a removed orchard on this
-                      list — say so, or it reads as an ordinary choice. */}
-                  {treeStock.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
+                  <img src={option.icon} className="kind-chip-icon" alt="" />
+                  <span>{option.label}</span>
+                  {option.isDeleted && <span className="removed-chip">{t('balance.removed')}</span>}
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        {treeStocks.length > 0 && (
+        {options.length > 0 && (
           <div className="field">
-            <label>{t('harvestTree.amountPicked')}</label>
+            <label>{t(`${prefix}.amountPicked`)}</label>
             <input
               value={amountInput}
               onChange={(e) => setAmountInput(e.target.value)}
@@ -183,18 +150,15 @@ export function HarvestTreeFormModal({
             />
             {selected && (
               <span className={overAvailable ? 'limit-hint listing-quantity-over' : 'limit-hint'}>
-                {t('harvestTree.available', {
-                  amount: selected.amount,
-                  unit: t(TREE_STOCK_UNIT_LABEL_KEY[selected.unit] ?? 'farm.unitPlant'),
-                })}
+                {t(`${prefix}.available`, { amount: selected.amount, unit: selected.unitLabel })}
               </span>
             )}
           </div>
         )}
 
-        {treeStocks.length > 0 && (
+        {options.length > 0 && (
           <div className="field">
-            <label>{t('harvestTree.amountHarvested')}</label>
+            <label>{t(`${prefix}.amountHarvested`)}</label>
             {canRecordHarvested ? (
               <span className="harvest-tree-weight">
                 <input
@@ -203,10 +167,10 @@ export function HarvestTreeFormModal({
                   placeholder="0"
                   inputMode="decimal"
                 />
-                <span className="harvest-tree-unit">{harvestedUnit}</span>
+                <span className="harvest-tree-unit">{selected?.harvestedUnitLabel ?? t('farm.unitKg')}</span>
               </span>
             ) : (
-              <p className="limit-hint">{t('harvestTree.harvestedLater')}</p>
+              <p className="limit-hint">{t(`${prefix}.harvestedLater`)}</p>
             )}
           </div>
         )}
@@ -218,7 +182,7 @@ export function HarvestTreeFormModal({
         <button type="button" className="btn btn-secondary" onClick={onClose}>
           {t('common.cancel')}
         </button>
-        {treeStocks.length > 0 && (
+        {options.length > 0 && (
           <button type="button" className="btn" onClick={handleSubmit} disabled={!canSubmit}>
             {isEditing ? t('common.save') : t('common.add')}
           </button>

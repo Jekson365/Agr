@@ -5,4 +5,5 @@ public enum FarmModule
     Crop,
     Livestock,
     Fruit,
+    Wine,
 }

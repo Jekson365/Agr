@@ -12,7 +12,7 @@ export type HarvestStatus =
 
 /** Crop harvests consume sown seed; fruit harvests pick standing trees. Both yield produce by
  * weight into plant stock, and each has its own tab. */
-export type HarvestKind = 'Crop' | 'Fruit';
+export type HarvestKind = 'Crop' | 'Fruit' | 'Wine';
 
 export type Harvest = {
   id: number;

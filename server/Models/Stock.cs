@@ -3,6 +3,8 @@ namespace Server.Models;
 /// <summary>A good the farm currently holds, e.g. 120 kg of beans.</summary>
 public class Stock
 {
+    public const string WineType = "Grape";
+
     public int Id { get; set; }
 
     /// <summary>The stock kind's name (see <see cref="StockKind"/>) — either a built-in default
@@ -14,6 +16,10 @@ public class Stock
     public string Name { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public StockUnit Unit { get; set; }
+
+    public StockCategory Category { get; set; } = StockCategory.Crop;
+
+    public int? TreeProductId { get; set; }
 
     /// <summary>
     /// Set when the stock is removed from the stock page. The row stays — harvest plans, results,

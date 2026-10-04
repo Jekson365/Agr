@@ -12,7 +12,8 @@ import type { Harvest } from '@/types/harvest';
 import type { AssessmentCriteria } from '@/types/assessment-criteria';
 import type { HarvestAssessment } from '@/types/harvest-assessment';
 import type { HarvestResult } from '@/types/harvest-result';
-import { targetFor, type Catalogs } from '@/pages/harvest/detail/harvest-detail-lookups';
+import { picksPlants } from '@/config/harvest-kind';
+import { yieldTargetFor, type Catalogs } from '@/pages/harvest/detail/harvest-detail-lookups';
 
 /** A good this harvest brought in: what the tabs name, and what one sheet is written against. */
 export type GradedGood = {
@@ -62,13 +63,13 @@ export function useHarvestGrading(harvestId: number) {
       // fruit harvest grades are read from there. Each row keeps its tree's id, which is only
       // ever an identity within this sheet — grading writes assessments, never results.
       const rows: HarvestResult[] =
-        item.kind === 'Fruit'
+        picksPlants(item.kind)
           ? treeList
               .filter((tree) => tree.harvestedAmount > 0)
               .map((tree) => ({
                 id: tree.id,
                 harvestId: tree.harvestId,
-                stockId: null,
+                stockId: tree.stockId,
                 treeStockId: tree.treeStockId,
                 amount: tree.harvestedAmount,
               }))
@@ -110,7 +111,9 @@ export function useHarvestGrading(harvestId: number) {
       found.harvested += result.amount;
       continue;
     }
-    const target = targetFor(catalogs, result.stockId, result.treeStockId, t);
+    const target = harvest
+      ? yieldTargetFor(catalogs, harvest.kind, result.stockId, result.treeStockId, t)
+      : null;
     goods.push({
       key,
       stockId: result.stockId,

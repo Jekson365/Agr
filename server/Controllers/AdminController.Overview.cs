@@ -141,5 +141,7 @@ public partial class AdminController
                 ? farmNames.GetValueOrDefault(farmId, string.Empty)
                 : string.Empty,
         }).ToList();
+
+        overview.Harvests = await ReadHarvestsAsync(db, farmNames);
     }
 }

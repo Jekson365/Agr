@@ -1,28 +1,31 @@
 import type { FarmModule, User } from '@/types/auth';
-import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG } from '@/types/configuration';
+import { CROP_FARMING_CONFIG, FRUIT_STOCK_CONFIG, LIVESTOCK_CONFIG, WINE_CONFIG } from '@/types/configuration';
 import type { Farm } from '@/types/farm';
 
-export type OnboardingStepKey = 'profile' | 'module' | 'land' | 'stock' | 'livestock' | 'fruit';
+export type OnboardingStepKey = 'profile' | 'module' | 'land' | 'stock' | 'livestock' | 'fruit' | 'wine';
 
 export type OnboardingData = {
   farms: Farm[];
   stockCount: number;
   livestockCount: number;
   fruitCount: number;
+  wineCount: number;
 };
 
-const ALL_STEPS: OnboardingStepKey[] = ['profile', 'module', 'land', 'stock', 'livestock', 'fruit'];
+const ALL_STEPS: OnboardingStepKey[] = ['profile', 'module', 'land', 'stock', 'livestock', 'fruit', 'wine'];
 
 const STEP_CONFIG: Partial<Record<OnboardingStepKey, string>> = {
   stock: CROP_FARMING_CONFIG,
   livestock: LIVESTOCK_CONFIG,
   fruit: FRUIT_STOCK_CONFIG,
+  wine: WINE_CONFIG,
 };
 
 const STEP_MODULE: Partial<Record<OnboardingStepKey, FarmModule>> = {
   stock: 'Crop',
   livestock: 'Livestock',
   fruit: 'Fruit',
+  wine: 'Wine',
 };
 
 const UNCHOSEN_MODULE_STEPS: OnboardingStepKey[] = ['stock', 'livestock'];
@@ -34,6 +37,7 @@ export const ONBOARDING_STEP_LABEL_KEY: Record<OnboardingStepKey, string> = {
   stock: 'onboarding.stepStock',
   livestock: 'onboarding.stepLivestock',
   fruit: 'onboarding.stepFruit',
+  wine: 'onboarding.stepWine',
 };
 
 export const ONBOARDING_STEP_TEXT_KEY: Record<OnboardingStepKey, string> = {
@@ -43,6 +47,7 @@ export const ONBOARDING_STEP_TEXT_KEY: Record<OnboardingStepKey, string> = {
   stock: 'onboarding.stepTextStock',
   livestock: 'onboarding.stepTextLivestock',
   fruit: 'onboarding.stepTextFruit',
+  wine: 'onboarding.stepTextWine',
 };
 
 export function requiredSteps(isOn: (name: string) => boolean): OnboardingStepKey[] {
@@ -85,6 +90,8 @@ export function isStepDone(step: OnboardingStepKey, user: User, data: Onboarding
       return data.livestockCount > 0;
     case 'fruit':
       return data.fruitCount > 0;
+    case 'wine':
+      return data.wineCount > 0;
   }
 }
 

@@ -8,9 +8,10 @@ namespace Server.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class HarvestTreesController(
+public partial class HarvestTreesController(
     IHarvestTreeRepository harvestTreeRepository,
-    IHarvestRepository harvestRepository) : ControllerBase
+    IHarvestRepository harvestRepository,
+    IStockRepository stockRepository) : ControllerBase
 {
     private const string BalancedMessage =
         "This harvest's produce is already on the balances, so what it picked is settled.";
@@ -59,12 +60,23 @@ public class HarvestTreesController(
             return BadRequest("Amount must be positive.");
         }
 
-        if (await SettledAsync(harvestTree.HarvestId))
+        var harvest = await harvestRepository.GetByIdAsync(harvestTree.HarvestId);
+        if (harvest is null)
+        {
+            return NotFound();
+        }
+
+        if (await TargetErrorAsync(harvest, harvestTree) is { } targetError)
+        {
+            return BadRequest(targetError);
+        }
+
+        if (harvest.Status.CountsInBalance())
         {
             return Conflict(BalancedMessage);
         }
 
-        if (harvestTree.HarvestedAmount > 0 && !await PickedAsync(harvestTree.HarvestId))
+        if (harvestTree.HarvestedAmount > 0 && !harvest.Status.IsPicked())
         {
             return Conflict(NotHarvestedMessage);
         }
@@ -72,7 +84,8 @@ public class HarvestTreesController(
         if (await harvestTreeRepository.HasAnyForHarvestAsync(harvestTree.HarvestId))
         {
             return Conflict(
-                await harvestTreeRepository.ExistsForHarvestAsync(harvestTree.HarvestId, harvestTree.TreeStockId)
+                await harvestTreeRepository.ExistsForHarvestAsync(
+                    harvestTree.HarvestId, harvestTree.StockId, harvestTree.TreeStockId)
                     ? AlreadyPickedMessage
                     : OneOrchardMessage);
         }
@@ -98,21 +111,33 @@ public class HarvestTreesController(
             return NotFound();
         }
 
-        if (await SettledAsync(existing.HarvestId))
+        var harvest = await harvestRepository.GetByIdAsync(existing.HarvestId);
+        if (harvest is null)
+        {
+            return NotFound();
+        }
+
+        if (await TargetErrorAsync(harvest, harvestTree) is { } targetError)
+        {
+            return BadRequest(targetError);
+        }
+
+        if (harvest.Status.CountsInBalance())
         {
             return Conflict(BalancedMessage);
         }
 
         // A row recorded while the harvest was picked keeps its weight if the status is walked
         // back, so only a change to the figure is refused — not the figure already on the row.
-        if (harvestTree.HarvestedAmount != existing.HarvestedAmount && !await PickedAsync(existing.HarvestId))
+        if (harvestTree.HarvestedAmount != existing.HarvestedAmount && !harvest.Status.IsPicked())
         {
             return Conflict(NotHarvestedMessage);
         }
 
         // The harvest a row belongs to is fixed once created, so that's the harvest the orchard
         // has to be unpicked in — not whatever harvest the request happens to name.
-        if (await harvestTreeRepository.ExistsForHarvestAsync(existing.HarvestId, harvestTree.TreeStockId, id))
+        if (await harvestTreeRepository.ExistsForHarvestAsync(
+                existing.HarvestId, harvestTree.StockId, harvestTree.TreeStockId, id))
         {
             return Conflict(AlreadyPickedMessage);
         }
@@ -130,27 +155,13 @@ public class HarvestTreesController(
             return NotFound();
         }
 
-        if (await SettledAsync(existing.HarvestId))
+        var harvest = await harvestRepository.GetByIdAsync(existing.HarvestId);
+        if (harvest is not null && harvest.Status.CountsInBalance())
         {
             return Conflict(BalancedMessage);
         }
 
         var deleted = await harvestTreeRepository.DeleteAsync(id);
         return deleted ? NoContent() : NotFound();
-    }
-
-    /// <summary>Whether the harvest has booked its produce. Editing a picking afterwards would
-    /// rewrite the product balance it wrote, the same way a result would.</summary>
-    /// <summary>Whether the harvest has reached the point where what came off the trees is known.</summary>
-    private async Task<bool> PickedAsync(int harvestId)
-    {
-        var harvest = await harvestRepository.GetByIdAsync(harvestId);
-        return harvest is not null && harvest.Status.IsPicked();
-    }
-
-    private async Task<bool> SettledAsync(int harvestId)
-    {
-        var harvest = await harvestRepository.GetByIdAsync(harvestId);
-        return harvest is not null && harvest.Status.CountsInBalance();
     }
 }

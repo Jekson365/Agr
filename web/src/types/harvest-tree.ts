@@ -3,7 +3,8 @@
 export type HarvestTree = {
   id: number;
   harvestId: number;
-  treeStockId: number;
+  treeStockId: number | null;
+  stockId: number | null;
   /** Number of trees picked, in the orchard's own count unit. */
   amount: number;
   /** How much produce came off those trees, in the tree stock's assigned product unit. */

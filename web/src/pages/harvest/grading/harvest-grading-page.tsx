@@ -5,6 +5,7 @@ import { formatLocalizedIsoDate } from '@/components/ui/date-utils';
 import { useLanguage } from '@/contexts/language-context';
 import { getHarvest } from '@/services/harvest-service';
 import { useEffect, useState } from 'react';
+import { harvestDetailPath } from '@/config/stock-areas';
 import type { Harvest } from '@/types/harvest';
 import { GradingSection } from './grading-section';
 import './harvest-grading.css';
@@ -31,7 +32,7 @@ export function HarvestGradingPage() {
 
   return (
     <div className="hg-page">
-      <Link to={`/harvest/detail/${harvestId}`} className="back-link">
+      <Link to={harvest ? harvestDetailPath(harvest.kind, harvest.id) : `/harvest/detail/${harvestId}`} className="back-link">
         ← {harvest?.title ?? t('harvest.title')}
       </Link>
 

@@ -7,6 +7,7 @@ public enum ReportCategory
     Livestock,
     Fruit,
     Greenhouse,
+    Wine,
 }
 
 /// <summary>How the period filter is expressed. Mirrors the chips on the report's filter panel.</summary>

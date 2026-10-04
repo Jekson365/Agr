@@ -62,6 +62,7 @@ export const STOCK_UNIT_LABEL_KEY: Record<string, string> = {
   Kilogram: 'farm.unitKg',
   Quantity: 'farm.unitQuantity',
   Liter: 'farm.unitLiter',
+  Plant: 'farm.unitPlant',
 };
 
 /** A stock type's display label: its translation if it's a known built-in, otherwise its raw

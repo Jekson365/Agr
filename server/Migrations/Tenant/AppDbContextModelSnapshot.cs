@@ -281,6 +281,12 @@ namespace Server.Migrations.Tenant
                             Id = 6,
                             Name = "calendar",
                             Value = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "winemaking",
+                            Value = 1
                         });
                 });
 
@@ -1168,12 +1174,17 @@ namespace Server.Migrations.Tenant
                     b.Property<decimal>("HarvestedAmount")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("TreeStockId")
+                    b.Property<int?>("StockId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TreeStockId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("HarvestId");
+
+                    b.HasIndex("StockId");
 
                     b.HasIndex("TreeStockId");
 
@@ -3099,12 +3110,19 @@ namespace Server.Migrations.Tenant
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("TreeProductId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -3115,6 +3133,10 @@ namespace Server.Migrations.Tenant
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("TreeProductId")
+                        .IsUnique()
+                        .HasFilter("\"TreeProductId\" IS NOT NULL");
 
                     b.ToTable("Stocks");
                 });
@@ -3359,6 +3381,10 @@ namespace Server.Migrations.Tenant
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -3993,11 +4019,15 @@ namespace Server.Migrations.Tenant
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Server.Models.Stock", null)
+                        .WithMany()
+                        .HasForeignKey("StockId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Server.Models.TreeStock", null)
                         .WithMany()
                         .HasForeignKey("TreeStockId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Server.Models.LandPlot", b =>
@@ -4214,6 +4244,14 @@ namespace Server.Migrations.Tenant
                         .HasForeignKey("RuleSetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.Stock", b =>
+                {
+                    b.HasOne("Server.Models.TreeProduct", null)
+                        .WithMany()
+                        .HasForeignKey("TreeProductId")
+                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Server.Models.StockFeed", b =>

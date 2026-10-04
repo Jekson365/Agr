@@ -27,9 +27,11 @@ public partial class StocksController(
     /// </summary>
     [HttpGet]
     [SeedUntilFarmExists(typeof(Stock))]
-    public async Task<ActionResult<IEnumerable<Stock>>> GetAll([FromQuery] bool includeDeleted = false)
+    public async Task<ActionResult<IEnumerable<Stock>>> GetAll(
+        [FromQuery] bool includeDeleted = false,
+        [FromQuery] StockCategory? category = null)
     {
-        return Ok(await stockRepository.GetAllAsync(includeDeleted));
+        return Ok(await stockRepository.GetAllAsync(includeDeleted, category));
     }
 
     [HttpGet("{id:int}")]
@@ -134,11 +136,11 @@ public partial class StocksController(
         // so it goes out of use at the same time. Matched on type and name, which is all the two
         // share — there is no key between them, which is also why another stock still holding that
         // same crop and label keeps the seed: it reads as that stock's seed just as much.
-        var stillHeld = (await stockRepository.GetAllAsync())
+        var stillHeld = (await stockRepository.GetAllAsync(category: StockCategory.Crop))
             .Any(s => s.Id != id
                 && string.Equals(s.Type.Trim(), existing.Type.Trim(), StringComparison.OrdinalIgnoreCase)
                 && string.Equals(s.Name.Trim(), existing.Name.Trim(), StringComparison.OrdinalIgnoreCase));
-        if (!stillHeld)
+        if (!stillHeld && existing.Category == StockCategory.Crop)
         {
             await seedRepository.SoftDeleteByCropAsync(existing.Type, existing.Name);
         }

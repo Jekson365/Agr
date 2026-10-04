@@ -47,14 +47,21 @@ export function useOnboardingStatus(): OnboardingCheck {
     setState(null);
     Promise.all([
       getFarms(),
-      steps.includes('stock') ? getStock() : Promise.resolve([]),
+      steps.includes('stock') ? getStock(false, 'Crop') : Promise.resolve([]),
       steps.includes('livestock') ? getLivestock() : Promise.resolve([]),
       steps.includes('fruit') ? getTreeStock() : Promise.resolve([]),
+      steps.includes('wine') ? getStock(false, 'Wine') : Promise.resolve([]),
     ])
-      .then(([farms, stock, livestock, fruit]) => {
+      .then(([farms, stock, livestock, fruit, wine]) => {
         if (cancelled) return;
         setState({
-          data: { farms, stockCount: stock.length, livestockCount: livestock.length, fruitCount: fruit.length },
+          data: {
+            farms,
+            stockCount: stock.length,
+            livestockCount: livestock.length,
+            fruitCount: fruit.length,
+            wineCount: wine.length,
+          },
           enforced: true,
         });
       })

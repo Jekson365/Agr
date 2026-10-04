@@ -14,7 +14,7 @@ import { MultiSelect } from '@/components/ui/multi-select';
 import { useConfiguration } from '@/contexts/configuration-context';
 import { useCurrency } from '@/contexts/currency-context';
 import { useLanguage } from '@/contexts/language-context';
-import { GREENHOUSE_CONFIG } from '@/types/configuration';
+import { GREENHOUSE_CONFIG, WINE_CONFIG } from '@/types/configuration';
 import { getReportDay, getReportOverview, getReportSeries } from '@/services/report-service';
 import type {
   ReportDayDetails,
@@ -25,7 +25,7 @@ import type {
 } from '@/types/report';
 import './report-page.css';
 
-type Category = 'crop' | 'livestock' | 'fruit' | 'greenhouse';
+type Category = 'crop' | 'livestock' | 'fruit' | 'greenhouse' | 'wine';
 type RevenueDatum = BarDatum & { day: string };
 
 /** A selectable series (a stock / orchard / production type) for the grouped chart. */
@@ -43,6 +43,7 @@ const CATEGORY_OPTIONS: { value: Category; labelKey: string }[] = [
   { value: 'crop', labelKey: 'report.categoryCrop' },
   { value: 'livestock', labelKey: 'report.categoryLivestock' },
   { value: 'fruit', labelKey: 'report.categoryFruit' },
+  { value: 'wine', labelKey: 'report.categoryWine' },
   { value: 'greenhouse', labelKey: 'report.categoryGreenhouse' },
 ];
 
@@ -220,6 +221,7 @@ export function ReportPage() {
   useEffect(() => {
     if (!configLoaded || configLoadError) return;
     if (category === 'greenhouse' && !isOn(GREENHOUSE_CONFIG)) setCategory('crop');
+    if (category === 'wine' && !isOn(WINE_CONFIG)) setCategory('crop');
   }, [category, configLoaded, configLoadError, isOn]);
 
   // Cells 1 and 2. The server does the aggregation, so a period change is a request rather than a
@@ -458,7 +460,7 @@ export function ReportPage() {
 
       <div className="report-category-row filter-row">
         {/* Greenhouse only shows up once that configuration is switched on for this tenant. */}
-        {CATEGORY_OPTIONS.filter((opt) => opt.value !== 'greenhouse' || isOn(GREENHOUSE_CONFIG)).map((opt) => (
+        {CATEGORY_OPTIONS.filter((opt) => (opt.value !== 'greenhouse' || isOn(GREENHOUSE_CONFIG)) && (opt.value !== 'wine' || isOn(WINE_CONFIG))).map((opt) => (
           <button
             key={opt.value}
             type="button"
@@ -639,9 +641,11 @@ export function ReportPage() {
                           const detailHref =
                             category === 'greenhouse'
                               ? `/farm/greenhouse/harvest/${harvest.harvestId}`
-                              : harvest.isFruit
-                                ? `/farm/fruits/harvest/${harvest.harvestId}`
-                                : `/harvest/detail/${harvest.harvestId}`;
+                              : category === 'wine'
+                                ? `/farm/wine/harvest/${harvest.harvestId}`
+                                : harvest.isFruit
+                                  ? `/farm/fruits/harvest/${harvest.harvestId}`
+                                  : `/harvest/detail/${harvest.harvestId}`;
                           return (
                             <Link key={harvest.harvestId} to={detailHref} className="report-detail-card">
                               <span className="report-detail-title">{harvest.title}</span>

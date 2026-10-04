@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
 import { isPlanLimitError } from '@/config/plan-benefits';
+import { CROP_AREA, type StockArea } from '@/config/stock-areas';
 import { useLanguage } from '@/contexts/language-context';
-import { createStockWithSeed, updateStock } from '@/services/stock-service';
+import { createStock, createStockWithSeed, updateStock } from '@/services/stock-service';
 import type { Seed } from '@/types/seed';
 import type { Stock } from '@/types/stock';
 import { isFormComplete, makeInitialValues, parseAmount, type StockFormValues } from './stock-form';
@@ -16,14 +17,15 @@ type Props = {
   onSaved: (stock: Stock, isNew: boolean, seed?: Seed) => void;
   /** Called instead of showing an inline error when the plan cap is what refused the write. */
   onLimitReached?: (message: string) => void;
+  area?: StockArea;
 };
 
 /** Add or edit a plant stock. A new one is created together with its crop's seed; an edit only
  * touches the stock itself. */
-export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitReached }: Props) {
+export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitReached, area = CROP_AREA }: Props) {
   const { t } = useLanguage();
 
-  const [values, setValues] = useState<StockFormValues>(() => makeInitialValues(editingStock));
+  const [values, setValues] = useState<StockFormValues>(() => makeInitialValues(editingStock, area));
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -31,10 +33,10 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
 
   useEffect(() => {
     if (!open) return;
-    setValues(makeInitialValues(editingStock));
+    setValues(makeInitialValues(editingStock, area));
     setFormError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editingStock]);
+  }, [open, editingStock, area]);
 
   const setField = <K extends keyof StockFormValues>(key: K, value: StockFormValues[K]) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -60,16 +62,20 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
         return;
       }
 
-      // One call makes the stock and its seed together, so a failure leaves neither behind.
-      const { stock, seed } = await createStockWithSeed({
-        type: values.type,
-        name,
-        amount,
-        unit: values.unit,
-        seedAmount: parseAmount(values.seedAmount),
-        seedUnit: values.seedUnit,
-      });
-      onSaved(stock, true, seed);
+      if (area.seed) {
+        // One call makes the stock and its seed together, so a failure leaves neither behind.
+        const { stock, seed } = await createStockWithSeed({
+          type: values.type,
+          name,
+          amount,
+          unit: values.unit,
+          seedAmount: parseAmount(values.seedAmount),
+          seedUnit: values.seedUnit,
+        });
+        onSaved(stock, true, seed);
+      } else {
+        onSaved(await createStock({ type: values.type, name, amount, unit: values.unit, category: area.category }), true);
+      }
       onClose();
     } catch (err) {
       if (isPlanLimitError(err) && onLimitReached) {
@@ -84,7 +90,7 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
 
   return (
     <Modal open={open} onClose={onClose} className="stock-form-modal">
-      <h2 className="form-title">{isEditing ? t('farm.editStock') : t('farm.addStock')}</h2>
+      <h2 className="form-title">{isEditing ? t('farm.editStock') : t(area.addKey)}</h2>
 
       <StockFormFields
         open={open}
@@ -92,6 +98,7 @@ export function StockFormModal({ open, editingStock, onClose, onSaved, onLimitRe
         values={values}
         formError={formError}
         setField={setField}
+        area={area}
       />
 
       {/* Every field an existing stock shows is settled at this point, so there is nothing for a

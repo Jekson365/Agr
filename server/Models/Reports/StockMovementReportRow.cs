@@ -20,6 +20,7 @@ public class StockMovementReportRow
     /// <summary>The unit's readable name (e.g. "Kilogram", "Box") — plain string since Stock and
     /// TreeStock draw from different unit enums.</summary>
     public string Unit { get; set; } = string.Empty;
+    public StockCategory? Category { get; set; }
     public decimal Delta { get; set; }
     public StockMovementSource Source { get; set; }
 

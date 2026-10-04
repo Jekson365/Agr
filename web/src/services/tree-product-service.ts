@@ -3,12 +3,13 @@ import type {
   HarvestProduct,
   HarvestProductInput,
   TreeProduct,
+  TreeProductCategory,
   TreeProductInput,
   TreeProductMovement,
 } from '@/types/tree-product';
 
-export function getTreeProducts() {
-  return apiFetch<TreeProduct[]>('/api/treeproducts');
+export function getTreeProducts(category?: TreeProductCategory) {
+  return apiFetch<TreeProduct[]>(`/api/treeproducts${category ? `?category=${category}` : ''}`);
 }
 
 export function createTreeProduct(product: TreeProductInput) {
