@@ -72,10 +72,6 @@ export function GreenhousePage() {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('farm.greenhouse')}</h1>
         <button type="button" className="add-button" onClick={openAdd}>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/tabs.css';
@@ -78,10 +77,6 @@ export function SalesPage() {
 
   return (
     <div>
-      <Link to="/farm/land" className="back-link">
-        ← {t('dashboard.myFarm')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('sales.listTitle')}</h1>
         <button type="button" className="add-button" onClick={() => setAddOpen(true)}>

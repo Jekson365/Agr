@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import { KindCatalogField, type KindCatalog } from '@/components/farm/kind-catalog-field';
@@ -48,10 +47,6 @@ export function KindTypesPage() {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('kindTypes.title')}</h1>
       </div>

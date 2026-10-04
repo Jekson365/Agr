@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import '@/components/farm/tabs.css';
@@ -127,10 +126,6 @@ export function ManagerPage() {
 
   return (
     <div>
-      <Link to="/farm/land" className="back-link">
-        ← {t('dashboard.myFarm')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('manager.title')}</h1>
       </div>

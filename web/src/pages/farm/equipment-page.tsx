@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import equipmentPlaceholder from '@/assets/properties/equipment.png';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
@@ -71,10 +70,6 @@ export function EquipmentPage() {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('equipment.title')}</h1>
         <button type="button" className="add-button" onClick={openAdd}>

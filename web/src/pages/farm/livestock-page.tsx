@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
 import '@/components/farm/farm-crud.css';
@@ -87,10 +86,6 @@ export function LivestockPage() {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('farm.livestock')}</h1>
         <div className="page-header-actions">

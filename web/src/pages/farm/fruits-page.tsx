@@ -85,10 +85,6 @@ export function FruitsPage() {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('farm.fruits')}</h1>
         <div className="page-header-actions">

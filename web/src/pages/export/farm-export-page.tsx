@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 
 import '@/components/farm/farm-crud.css';
 import { useAuth } from '@/contexts/auth-context';
@@ -46,10 +45,6 @@ export function FarmExportPage() {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t('export.title')}</h1>
         <button type="button" className="add-button" onClick={() => window.print()} disabled={loading || error != null}>

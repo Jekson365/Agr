@@ -99,10 +99,6 @@ export function StockPage({ area = CROP_AREA }: { area?: StockArea }) {
 
   return (
     <div>
-      <Link to="/farm" className="back-link">
-        ← {t('farm.title')}
-      </Link>
-
       <div className="page-header">
         <h1 className="page-title">{t(area.titleKey)}</h1>
         <div className="page-header-actions">
