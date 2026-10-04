@@ -25,6 +25,7 @@ type Props = {
   scrollable?: boolean;
   /** Shown in place of the add button while a row is being entered inline. */
   addForm?: ReactNode;
+  rowActions?: (id: number) => ReactNode;
   onAdd?: () => void;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
@@ -46,6 +47,7 @@ export function HarvestEntryList({
   capText,
   scrollable,
   addForm,
+  rowActions,
   onAdd,
   onEdit,
   onDelete,
@@ -71,7 +73,9 @@ export function HarvestEntryList({
                   {row.removed && <span className="hd-removed">{t('balance.removed')}</span>}
                 </span>
               </span>
-              {canEdit && (
+              {rowActions ? (
+                <span className="hd-row-actions">{rowActions(row.id)}</span>
+              ) : canEdit && (
                 <span className="hd-row-actions">
                   <button type="button" className="hd-button" onClick={() => onEdit(row.id)}>
                     {t('common.edit')}

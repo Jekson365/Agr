@@ -9,6 +9,7 @@ import type { HarvestKind } from '@/types/harvest';
 import type { HarvestTree } from '@/types/harvest-tree';
 import { HarvestEntryList, type EntryRow } from './harvest-entry-list';
 import { targetFor, treeInfoFor, type Catalogs } from './harvest-detail-lookups';
+import { PickedAmountInput } from './picked-amount-input';
 
 type Props = {
   kind: HarvestKind;
@@ -30,6 +31,7 @@ type Props = {
 export function TreeSection({ kind, harvestId, harvestTrees, catalogs, canEdit, canRecordHarvested, onChanged }: Props) {
   const { t } = useLanguage();
   const prefix = pickKeyPrefix(kind);
+  const inlineResult = kind === 'Wine';
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<HarvestTree | null>(null);
@@ -71,6 +73,23 @@ export function TreeSection({ kind, harvestId, harvestTrees, catalogs, canEdit, 
         canAdd={harvestTrees.length === 0}
         capText={t(`${prefix}.onlyOne`)}
         scrollable
+        note={inlineResult && canEdit && !canRecordHarvested && harvestTrees.length > 0 ? t(`${prefix}.harvestedLater`) : undefined}
+        rowActions={
+          inlineResult
+            ? (id) => {
+                const tree = harvestTrees.find((h) => h.id === id);
+                return tree ? (
+                  <PickedAmountInput
+                    tree={tree}
+                    label={t(`${prefix}.amountHarvested`)}
+                    unitLabel={t('farm.unitKg')}
+                    disabled={!canEdit || !canRecordHarvested}
+                    onSaved={(saved) => onChanged(harvestTrees.map((h) => (h.id === saved.id ? saved : h)))}
+                  />
+                ) : null;
+              }
+            : undefined
+        }
         onAdd={() => {
           setEditing(null);
           setFormOpen(true);
