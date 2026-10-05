@@ -31,6 +31,7 @@ public class TreeProductMovementRepository(AppDbContext context) : ITreeProductM
                 Id = movement.Id,
                 TreeProductId = movement.TreeProductId,
                 HarvestProductId = movement.HarvestProductId,
+                WineBatchGrapeId = movement.WineBatchGrapeId,
                 Delta = movement.Delta,
                 Source = movement.Source,
                 Note = movement.Note,

@@ -3,7 +3,9 @@ export type BalanceAdjustTarget =
   | { kind: 'treeStock'; treeStockId: number }
   | { kind: 'treeProduct'; treeProductId: number }
   | { kind: 'production'; productionTypeId: number; unitId: number }
-  | { kind: 'greenhouseStock'; greenhouseStockId: number };
+  | { kind: 'greenhouseStock'; greenhouseStockId: number }
+  | { kind: 'wine'; wineBatchId: number }
+  | { kind: 'wineBottle'; wineBatchId: number; wineBottlingId: number };
 
 export type BalanceAdjustOption = {
   key: string;

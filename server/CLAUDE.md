@@ -198,7 +198,7 @@ browsing), including that browser's anonymous visits; the rows are still recorde
 
 ---
 
-## 5. Tenant database (`AppDbContext`) — 48 tables
+## 5. Tenant database (`AppDbContext`) — 77 tables
 
 ### 5.1 Reference / seeded data
 Seeded by `HasData`, so it arrives through migrations. `scripts/truncate_tenant.py` preserves these
@@ -352,6 +352,39 @@ so it shares none of `Harvest`'s machinery. It reuses `StockKind` names, `StockU
   `PreventionTips` are `text[]`.
 - **`Products`** — scaffolding leftover from the template. `ProductsController` has no `[Authorize]`
   and will therefore throw when it resolves `AppDbContext`. Not part of the domain.
+
+### 5.9 Wine cellar („მარანი“, `Data/AppDbContext.Wine.cs`, module `Wine`)
+- **`WineBatches`** — one wine lot: `Name`, `Vintage`, `Color` ∈ `Red|White|Amber|Rose` and `Method` ∈
+  `Qvevri|Tank|Barrel` (both unused: the web client neither sends nor shows them, so new batches store
+  `Red` and `Qvevri`), `Stage` ∈ `Fermenting|Aging|Bottled` (history in `WineStageChanges`; the web
+  client no longer offers `Aging`, but old rows keep it, so the member stays),
+  `StartDate`, `Notes`, `IsDeleted`. **No stored balance** — liters and bottles are sums of its
+  `WineMovements`; `WineBatchRepository.Summary.cs` returns them with grape kg, produced liters, costs,
+  revenue, counts and latest readings, so `GET /api/winebatches` is one request per page.
+- **`WineBatchGrapes`** — grapes put in: `WineBatchId` (cascade) + `TreeProductId` (Restrict; only a
+  `Category = Wine` grape product) + `Amount` kg, one row per vineyard per batch. Each row owns one
+  negative `TreeProductMovement` (`Source = Winemaking`, `WineBatchGrapeId` cascade) edited in place, so
+  deleting the row hands the grapes back. Availability is re-checked server-side (409).
+- **`WineMovements`** — the batch ledger: `Delta` (liters), `BottleDelta`, `Source` ∈
+  `Production|Bottling|Loss|Manual|Market`, owner links `WineBottlingId` / `WineOperationId` (cascade),
+  `MarketOrderId` (bare int, only when the order already had an id) and `Revenue` (the sale amount).
+  `Production` is the pressed liters — `PUT /api/winebatches/{id}/liters`, refused below what already
+  left. Only `Manual` rows can be deleted from `/api/winemovements`; the rest go with their record or sale.
+  **Bottles are kept per bottling**: `WineBottlingId` is also set on every sale or adjustment that moves
+  bottles, naming the bottling they belong to, so a bottling's bottles left is the sum of `BottleDelta`
+  over its id — and its size, the only place one is recorded, says what kind of bottle they are. A
+  bottle sale or adjustment without a bottling of that batch answers 400, one past what the bottling
+  holds 409. The bottling's own movement is the one with `Source = Bottling`; look it up that way.
+- **`WineMeasurements`** (all readings optional, range-checked), **`WineBottlings`** (size × count → one
+  `Bottling` movement, refused past the liters; a count below what already left the bottling, or a
+  delete once any sale or adjustment names it, answers 409) and
+  **`WineOperations`** (cellar work with optional `Cost`; `LitersLost` writes a `Loss` movement).
+- **Sales**: `ListingSourceKind.WineBottle` / `WineBulk` (`SourceId` = batch) and `ListingCategory.Wine`;
+  a `WineBottle` listing or order carries its bottling in `SourceUnitId`.
+  `Services/MarketSaleInventoryService.Wine.cs` applies and reverses them, manual sales refuse fractional
+  bottles, and a listing's „mark sold“ posts `POST /api/winemovements/sale`.
+- **Delete**: a batch with nothing but its pressing is hard-deleted (grapes refunded through the cascade);
+  otherwise it is soft-deleted and refuses new records (409, `WineBatchesController.DeletedMessage`).
 
 ---
 

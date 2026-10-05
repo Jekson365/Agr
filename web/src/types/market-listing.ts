@@ -1,5 +1,5 @@
 export type ListingType = 'Sale' | 'Rent';
-export type ListingCategory = 'Stock' | 'TreeStock' | 'Livestock' | 'Equipment' | 'TreeProduct' | 'Other';
+export type ListingCategory = 'Stock' | 'TreeStock' | 'Livestock' | 'Equipment' | 'TreeProduct' | 'Other' | 'Wine';
 export type ListingStatus = 'Active' | 'Completed';
 export type ListingSourceKind =
   | 'Stock'
@@ -7,7 +7,9 @@ export type ListingSourceKind =
   | 'TreeProduct'
   | 'Livestock'
   | 'Production'
-  | 'GreenhouseStock';
+  | 'GreenhouseStock'
+  | 'WineBottle'
+  | 'WineBulk';
 
 export type MarketListing = {
   id: number;

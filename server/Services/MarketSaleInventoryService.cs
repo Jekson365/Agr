@@ -30,6 +30,8 @@ public partial class MarketSaleInventoryService(AppDbContext context) : IMarketS
             ListingSourceKind.Livestock => await ApplyLivestockAsync(order),
             ListingSourceKind.Production => await ApplyProductionAsync(order),
             ListingSourceKind.GreenhouseStock => await ApplyGreenhouseStockAsync(order),
+            ListingSourceKind.WineBottle => await ApplyWineAsync(order, bottles: true),
+            ListingSourceKind.WineBulk => await ApplyWineAsync(order, bottles: false),
             _ => MarketSaleInventoryResult.Nothing(),
         };
     }
@@ -69,6 +71,10 @@ public partial class MarketSaleInventoryService(AppDbContext context) : IMarketS
                 break;
             case ListingSourceKind.GreenhouseStock:
                 await ReverseGreenhouseStockAsync(order);
+                break;
+            case ListingSourceKind.WineBottle:
+            case ListingSourceKind.WineBulk:
+                await ReverseWineAsync(order);
                 break;
         }
     }

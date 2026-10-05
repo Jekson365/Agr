@@ -1,35 +1,10 @@
 import { useEffect, useState } from 'react';
 
 import { Modal } from '@/components/ui/modal';
-import { fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { listingItemLabel } from '@/config/market-listing';
-import { PRODUCTION_TYPE_LABEL_KEY, UNIT_LABEL_KEY } from '@/config/production';
-import { STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
-import { getAllAnimalProductions } from '@/services/animal-production-service';
-import { getProductionMovements, recordProductionSale } from '@/services/production-movement-service';
-import { getProductionTypes } from '@/services/production-type-service';
-import { getStock, recordStockSale } from '@/services/stock-service';
-import { getTreeProductBalances, getTreeProducts, recordTreeProductSale } from '@/services/tree-product-service';
-import { getTreeStock, recordTreeStockSale } from '@/services/tree-stock-service';
-import { getUnits } from '@/services/unit-service';
-import { TREE_PRODUCT_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import type { MarketListing } from '@/types/market-listing';
-
-/**
- * Where a sale is deducted from, resolved from the listing itself. `production` targets a
- * type/unit balance; the other two target one inventory row.
- */
-type SaleSource = {
-  kind: 'stock' | 'tree' | 'production' | 'treeProduct';
-  /** Stock/tree stock/tree product row id; unused for production. */
-  id: number;
-  productionTypeId?: number;
-  unitId?: number;
-  label: string;
-  amount: number;
-  unitLabel: string;
-};
+import { recordSale, resolveSaleSource, type SaleSource } from './record-sale-sources';
 
 type Props = {
   open: boolean;
@@ -63,131 +38,29 @@ export function RecordSaleModal({ open, listing, onCancel, onSold }: Props) {
     if (!open || !current) return;
     let cancelled = false;
 
-    async function resolveSource() {
-      if (!current) return;
-      setLoading(true);
-      setError(null);
-      setSource(null);
-      setQuantityInput(current.quantity != null ? String(current.quantity) : '');
-      try {
-        const resolved =
-          current.category === 'Stock'
-            ? await stockSource(current.itemType, current.title)
-            : current.category === 'TreeStock'
-              ? await treeStockSource(current.itemType, current.title)
-              : current.category === 'TreeProduct'
-                ? await treeProductSource(current.itemType, current.title)
-                : // Anything else may still come out of a production balance (milk, eggs…) or,
-                  // failing that, a stock item of the same kind.
-                  ((await productionSource(current.itemType)) ?? (await stockSource(current.itemType, current.title)));
+    setLoading(true);
+    setError(null);
+    setSource(null);
+    setQuantityInput(current.quantity != null ? String(current.quantity) : '');
+    resolveSaleSource(current, t)
+      .then((resolved) => {
         if (cancelled) return;
-
         setSource(resolved);
         if (resolved && current.quantity != null) {
           setQuantityInput(String(Math.min(current.quantity, resolved.amount)));
         }
-      } catch {
+      })
+      .catch(() => {
         if (!cancelled) setError(t('market.recordSaleError'));
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    }
+      });
 
-    /** Among rows of the listing's kind, the one named like the listing, else the fullest. */
-    function bestOf(candidates: SaleSource[], title: string): SaleSource | null {
-      if (candidates.length === 0) return null;
-      const wanted = title.trim().toLowerCase();
-      return (
-        candidates.find((c) => c.label.toLowerCase() === wanted) ??
-        candidates.reduce((best, c) => (c.amount > best.amount ? c : best))
-      );
-    }
-
-    async function stockSource(itemType: string, title: string): Promise<SaleSource | null> {
-      const rows = (await getStock())
-        .filter((s) => s.type === itemType)
-        .map<SaleSource>((s) => ({
-          kind: 'stock',
-          id: s.id,
-          label: s.name.trim() || stockTypeLabel(s.type, t),
-          amount: s.amount,
-          unitLabel: t(STOCK_UNIT_LABEL_KEY[s.unit]),
-        }));
-      return bestOf(rows, title);
-    }
-
-    async function treeStockSource(itemType: string, title: string): Promise<SaleSource | null> {
-      const rows = (await getTreeStock())
-        .filter((s) => s.type === itemType)
-        .map<SaleSource>((s) => ({
-          kind: 'tree',
-          id: s.id,
-          label: s.name.trim() || fruitTypeLabel(s.type, t),
-          amount: s.amount,
-          unitLabel: t(TREE_STOCK_UNIT_LABEL_KEY[s.unit]),
-        }));
-      return bestOf(rows, title);
-    }
-
-    /** The fruit product the listing names, and its balance on hand from the movement ledger. */
-    async function treeProductSource(itemType: string, title: string): Promise<SaleSource | null> {
-      const [productList, balances] = await Promise.all([getTreeProducts(), getTreeProductBalances()]);
-      const rows = productList
-        .filter((p) => p.name === itemType || p.name === title.trim())
-        .map<SaleSource>((p) => ({
-          kind: 'treeProduct',
-          id: p.id,
-          label: p.name,
-          amount: balances.get(p.id) ?? 0,
-          unitLabel: t(TREE_PRODUCT_UNIT_LABEL_KEY[p.unit] ?? 'farm.unitKg'),
-        }));
-      return bestOf(rows, title);
-    }
-
-    /** The balance of the production type the listing names: collected plus movements. */
-    async function productionSource(itemType: string): Promise<SaleSource | null> {
-      const types = await getProductionTypes();
-      const type = types.find((pt) => pt.name === itemType);
-      if (!type) return null;
-
-      const [records, movements, units] = await Promise.all([
-        getAllAnimalProductions(),
-        getProductionMovements(),
-        getUnits(),
-      ]);
-
-      // A type can be collected in more than one unit, and those balances are separate; the
-      // sale applies to the unit the most was collected in.
-      const byUnit = new Map<number, number>();
-      for (const record of records) {
-        if (record.productionTypeId !== type.id) continue;
-        byUnit.set(record.unitId, (byUnit.get(record.unitId) ?? 0) + record.quantity);
-      }
-      if (byUnit.size === 0) return null;
-      for (const movement of movements) {
-        if (movement.productionTypeId !== type.id) continue;
-        if (byUnit.has(movement.unitId)) byUnit.set(movement.unitId, byUnit.get(movement.unitId)! + movement.delta);
-      }
-
-      const [unitId, amount] = [...byUnit.entries()].reduce((best, entry) => (entry[1] > best[1] ? entry : best));
-      const unit = units.find((u) => u.id === unitId);
-      return {
-        kind: 'production',
-        id: type.id,
-        productionTypeId: type.id,
-        unitId,
-        label: t(PRODUCTION_TYPE_LABEL_KEY[type.name] ?? type.name),
-        amount,
-        unitLabel: unit ? t(UNIT_LABEL_KEY[unit.name] ?? unit.name) : '',
-      };
-    }
-
-    resolveSource();
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, listing]);
+  }, [open, listing, t]);
 
   if (!listing) return null;
 
@@ -214,15 +87,7 @@ export function RecordSaleModal({ open, listing, onCancel, onSold }: Props) {
     setSaving(true);
     setError(null);
     try {
-      if (source.kind === 'production') {
-        await recordProductionSale(source.productionTypeId!, source.unitId!, quantity, listing.id);
-      } else if (source.kind === 'treeProduct') {
-        await recordTreeProductSale(source.id, quantity);
-      } else if (source.kind === 'tree') {
-        await recordTreeStockSale(source.id, quantity, listing.id);
-      } else {
-        await recordStockSale(source.id, quantity, listing.id);
-      }
+      await recordSale(source, quantity, listing);
       onSold(quantity);
     } catch {
       setError(t('market.recordSaleError'));

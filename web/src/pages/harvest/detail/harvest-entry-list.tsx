@@ -27,7 +27,7 @@ type Props = {
   addForm?: ReactNode;
   rowActions?: (id: number) => ReactNode;
   onAdd?: () => void;
-  onEdit: (id: number) => void;
+  onEdit?: (id: number) => void;
   onDelete: (id: number) => void;
 };
 
@@ -77,9 +77,11 @@ export function HarvestEntryList({
                 <span className="hd-row-actions">{rowActions(row.id)}</span>
               ) : canEdit && (
                 <span className="hd-row-actions">
-                  <button type="button" className="hd-button" onClick={() => onEdit(row.id)}>
-                    {t('common.edit')}
-                  </button>
+                  {onEdit && (
+                    <button type="button" className="hd-button" onClick={() => onEdit(row.id)}>
+                      {t('common.edit')}
+                    </button>
+                  )}
                   <button type="button" className="hd-button danger" onClick={() => onDelete(row.id)}>
                     {t('common.delete')}
                   </button>

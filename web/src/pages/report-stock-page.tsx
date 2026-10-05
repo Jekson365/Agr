@@ -15,6 +15,7 @@ import { getHarvests } from '@/services/harvest-service';
 import { getStockMovementReport } from '@/services/report-service';
 import { getHarvestProducts, getTreeProductMovements, getTreeProducts } from '@/services/tree-product-service';
 import type { StockMovementSource } from '@/types/stock-movement';
+import type { TreeProductMovement } from '@/types/tree-product';
 import './report-stock-page.css';
 
 type PeriodMode = 'all' | 'year' | 'quarter' | 'custom';
@@ -160,7 +161,11 @@ export function ReportStockPage() {
       const harvestIdByProduct = new Map(harvestProducts.map((hp) => [hp.id, hp.harvestId]));
       const titleByHarvest = new Map(harvests.map((h) => [h.id, h.title]));
 
-      const treeRows: ReportRow[] = productMovements.map((m) => {
+      const fruitMovements = productMovements.filter(
+        (m): m is TreeProductMovement & { source: StockMovementSource } =>
+          productById.has(m.treeProductId) && m.source !== 'Winemaking'
+      );
+      const treeRows: ReportRow[] = fruitMovements.map((m) => {
         const harvestId = m.harvestProductId != null ? harvestIdByProduct.get(m.harvestProductId) : undefined;
         return {
           id: m.id,

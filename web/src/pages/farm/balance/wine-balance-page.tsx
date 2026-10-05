@@ -4,18 +4,24 @@ import { AdjustBalanceModal } from '@/components/farm/adjust-balance-modal';
 import { WINE_AREA } from '@/config/stock-areas';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
+import { loadBottleLots, type BottleLot } from '@/pages/wine/wine-bottle-lots';
 import { getHarvestAssessments } from '@/services/harvest-assessment-service';
 import { getMarketListings } from '@/services/market-listing-service';
 import { getStock } from '@/services/stock-service';
 import { getTreeProductMovements, getTreeProducts } from '@/services/tree-product-service';
+import { getWineBatches } from '@/services/wine-batch-service';
 import { ASSESSMENT_GRADES, type HarvestAssessment } from '@/types/harvest-assessment';
 import type { MarketListing } from '@/types/market-listing';
 import type { Stock } from '@/types/stock';
 import type { TreeProduct, TreeProductMovement } from '@/types/tree-product';
+import type { WineBatchSummary } from '@/types/wine';
 import { BalanceColumn } from './balance-column';
 import { BalanceLayout } from './balance-layout';
 import { balancesByTreeProduct } from './balance-sources';
 import { adjustOptions, listedFor, listedTotals, type ProductBalance } from './product-balance';
+import { WineBalanceCards } from './wine-balance-cards';
+import { wineAdjustOptions } from './wine-balance-options';
+import './wine-balance.css';
 
 export function WineBalancePage() {
   const { t } = useLanguage();
@@ -26,6 +32,8 @@ export function WineBalancePage() {
   const [vineyards, setVineyards] = useState<Stock[]>([]);
   const [bands, setBands] = useState<HarvestAssessment[]>([]);
   const [listings, setListings] = useState<MarketListing[]>([]);
+  const [batches, setBatches] = useState<WineBatchSummary[]>([]);
+  const [lots, setLots] = useState<BottleLot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,18 +45,22 @@ export function WineBalancePage() {
     setLoading(true);
     setError(null);
     try {
-      const [productList, movementList, vineyardList, listingList, bandRows] = await Promise.all([
+      const [productList, movementList, vineyardList, listingList, bandRows, batchList, lotList] = await Promise.all([
         getTreeProducts('Wine'),
         getTreeProductMovements(),
         getStock(true, 'Wine'),
         getMarketListings({ mine: true }),
         getHarvestAssessments().catch(() => []),
+        getWineBatches(true),
+        loadBottleLots(),
       ]);
       setProducts(productList);
       setMovements(movementList);
       setVineyards(vineyardList);
       setListings(listingList);
       setBands(bandRows);
+      setBatches(batchList);
+      setLots(lotList);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -109,6 +121,7 @@ export function WineBalancePage() {
         </button>
       }
     >
+      <h2 className="wine-balance-heading">{t('wine.grapesTitle')}</h2>
       <BalanceColumn
         amountHeader={t('balance.colBalance')}
         listedHeader={t('balance.colOnMarket')}
@@ -120,9 +133,12 @@ export function WineBalancePage() {
         captionFor={captionFor}
       />
 
+      <h2 className="wine-balance-heading">{t('wine.wineTitle')}</h2>
+      <WineBalanceCards batches={batches} />
+
       <AdjustBalanceModal
         open={adjustOpen}
-        options={adjustOptions(balances.filter((row) => !row.removed))}
+        options={[...adjustOptions(balances.filter((row) => !row.removed)), ...wineAdjustOptions(batches, lots, t)]}
         onClose={() => setAdjustOpen(false)}
         onSaved={load}
       />

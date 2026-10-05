@@ -29,6 +29,10 @@ public partial class MarketSalesController
         {
             return BadRequest("Price cannot be negative.");
         }
+        if (request.SourceKind == ListingSourceKind.WineBottle && quantity != decimal.Truncate(quantity))
+        {
+            return BadRequest("Bottles are counted whole.");
+        }
 
         var soldAt = MarketSalesPeriod.StartOfDayUtc(request.SoldOn ?? DateOnly.FromDateTime(DateTime.UtcNow));
         var amount = decimal.Round(request.Price * quantity, 2);

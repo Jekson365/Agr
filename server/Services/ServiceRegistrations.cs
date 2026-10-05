@@ -1,3 +1,4 @@
+using Server.Models;
 using Server.Repositories;
 using Server.Repositories.Interfaces;
 using Server.Services.Interfaces;
@@ -37,6 +38,12 @@ public static class ServiceRegistrations
         services.AddScoped<ISeedMovementRepository, SeedMovementRepository>();
         services.AddScoped<ISeedRepository, SeedRepository>();
         services.AddScoped<IHarvestSeedRepository, HarvestSeedRepository>();
+        services.AddScoped<IWineBatchRepository, WineBatchRepository>();
+        services.AddScoped<IWineBatchGrapeRepository, WineBatchGrapeRepository>();
+        services.AddScoped<IWineMovementRepository, WineMovementRepository>();
+        services.AddScoped<IWineRecordRepository<WineMeasurement>, WineMeasurementRepository>();
+        services.AddScoped<IWineRecordRepository<WineBottling>, WineBottlingRepository>();
+        services.AddScoped<IWineRecordRepository<WineOperation>, WineOperationRepository>();
         services.AddScoped<IHarvestTreeRepository, HarvestTreeRepository>();
         services.AddScoped<IHarvestChemicalRepository, HarvestChemicalRepository>();
         services.AddScoped<IHarvestEventRepository, HarvestEventRepository>();

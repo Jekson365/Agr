@@ -24,6 +24,7 @@ export const PAGE_HELP: Array<{ pattern: string; key: string }> = [
   { pattern: '/farm/wine/balance', key: 'balance' },
   { pattern: '/farm/wine/harvest', key: 'harvest' },
   { pattern: '/farm/wine/harvest/:id', key: 'harvestDetail' },
+  { pattern: '/farm/wine/bottles', key: 'balance' },
   { pattern: '/farm/wine/:id', key: 'stockHistory' },
   { pattern: '/farm/fruits', key: 'fruits' },
   { pattern: '/farm/fruits/balance', key: 'balance' },

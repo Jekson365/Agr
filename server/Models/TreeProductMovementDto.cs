@@ -12,6 +12,7 @@ public class TreeProductMovementDto
     public int Id { get; set; }
     public int TreeProductId { get; set; }
     public int? HarvestProductId { get; set; }
+    public int? WineBatchGrapeId { get; set; }
     public decimal Delta { get; set; }
     public TreeProductMovementSource Source { get; set; }
 

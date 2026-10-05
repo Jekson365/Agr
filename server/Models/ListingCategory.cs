@@ -13,4 +13,5 @@ public enum ListingCategory
     /// hand, drawn from the product's balance when the listing is marked sold.</summary>
     TreeProduct,
     Other,
+    Wine,
 }

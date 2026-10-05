@@ -235,7 +235,7 @@ CSS-in-JS. Class names are global and conventional, so **check for collisions be
 - The Georgian display face (`BPG Boxo`) is `@import`ed from a CDN and **must stay the first rule in
   `index.css`** — `@import` is only honoured before any other statement. Form controls get
   `font: inherit` explicitly, since they do not inherit fonts on their own.
-- Charts are hand-drawn (`components/charts/bar-chart.tsx`, `grouped-bar-chart.tsx`) — SVG/DOM, a
+- Charts are hand-drawn (`components/charts/bar-chart.tsx`, `grouped-bar-chart.tsx`, and `line-chart.tsx` — single series, SVG line with HTML dots/labels so text stays in `rem`) — SVG/DOM, a
   `niceCeil` axis helper, hover tooltips, click-to-select. No chart library is installed.
 - Modals go through `components/ui/modal.tsx` (`size: 'default' | 'wide' | 'full'`), with
   `ConfirmModal` for generic yes/no and `ConfirmDeleteModal` for deletions. Note `.btn-danger`,
@@ -293,6 +293,8 @@ lives, so pages stay thin and mobile can borrow the maths.
 | `market-listing`, `harvest-status`, `harvest-target`, `crop`, `age`, `configuration-labels` | Option lists and label maps. |
 | `landing` | The marketing page's packet/pricing data, reused by `PacketsModal` so caps are stated once. |
 | `stock-areas` | Crop vs wine stock: category, harvest kind, paths, units. `StockPage`, `StockBalancePage`, the stock form and onboarding's stock step take an `area`; `routes/stock-area-routes.tsx` mounts both areas' routes (`/farm/stock`… and `/farm/wine`…). Wine is the same stock machinery filtered by `category`, always grape in ძირი, with no seed (`seed: null`): no seed fields, seed link, seed tab or sowing gate (`harvest-status-gate.ts`). |
+| `wine`, `wine-readings` | The wine cellar („მარანი“, `pages/wine/`): stage/operation labels (`WINE_STAGES` leaves out `Aging` — still labelled for old rows, no longer offered), `LITERS_PER_KG` (0.65, the pressing suggestion), `wineBatchPath`, and the seven optional fermentation/lab readings with their ranges. Batches come from grape products (`pages/wine/wine-grape-options.ts`); the balance page shows grapes plus liters and bottles per batch (`wine` adjust targets per batch, `wineBottle` per bottling). |
+| `wine-bottles` | Bottle kinds by size — small under 5 L (bottles under 1 L included), medium 5 L up to 10 L, large 10 L and over — with an icon each. Bottles are counted per bottling (`pages/wine/wine-bottle-lots.ts`, server §5.9): every bottle sale, listing and adjustment picks a bottling, never a size. `/farm/wine/bottles` draws one icon per bottle in stock, grouped by kind; the sidebar lists it as „ნაშთები“ under მარანი (`nav-wine.ts`), apart from the grape-and-wine „ნაშთები“ beside it. |
 | `farm-modules` | The four farm modules (label, icon, switch) and `lockedModule(user, switch)` — the one check the route guard, sidebar, `/farm` tiles and purchase modal share. A stored user without `allowedModules` (a session from before modules) reads as everything allowed. |
 
 The rule this encodes: **the server sends raw catalog names, never display text** — translations and

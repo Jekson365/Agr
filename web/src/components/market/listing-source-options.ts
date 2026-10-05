@@ -2,6 +2,7 @@ import { fruitTypeLabel, TREE_PRODUCT_UNIT_LABEL_KEY, TREE_STOCK_UNIT_LABEL_KEY 
 import { livestockTypeLabel } from '@/config/livestock-kinds';
 import { PRODUCTION_TYPE_LABEL_KEY, UNIT_LABEL_KEY } from '@/config/production';
 import { STOCK_UNIT_LABEL_KEY, stockTypeLabel } from '@/config/stock-kinds';
+import { bottleLotLabel, loadBottleLots } from '@/pages/wine/wine-bottle-lots';
 import { getAllAnimalProductions } from '@/services/animal-production-service';
 import { getGreenhouseStock } from '@/services/greenhouse-stock-service';
 import { getLivestock } from '@/services/livestock-service';
@@ -11,6 +12,7 @@ import { getStock } from '@/services/stock-service';
 import { getTreeProductBalances, getTreeProducts } from '@/services/tree-product-service';
 import { getTreeStock } from '@/services/tree-stock-service';
 import { getUnits } from '@/services/unit-service';
+import { getWineBatches } from '@/services/wine-batch-service';
 import type { ListingCategory, ListingSourceKind } from '@/types/market-listing';
 
 export type ListingSource = {
@@ -31,6 +33,8 @@ export const SOURCE_KIND_OPTIONS: { value: ListingSourceKind; labelKey: string }
   { value: 'TreeProduct', labelKey: 'market.sourceTreeProduct' },
   { value: 'Production', labelKey: 'market.sourceProduction' },
   { value: 'GreenhouseStock', labelKey: 'market.sourceGreenhouseStock' },
+  { value: 'WineBottle', labelKey: 'market.sourceWineBottle' },
+  { value: 'WineBulk', labelKey: 'market.sourceWineBulk' },
 ];
 
 type Translate = (key: string) => string;
@@ -133,6 +137,34 @@ async function productionSources(t: Translate): Promise<ListingSource[]> {
   });
 }
 
+async function wineSources(bottles: boolean, t: Translate): Promise<ListingSource[]> {
+  const batches = await getWineBatches();
+  if (!bottles) {
+    return batches.map((batch) => ({
+      kind: 'WineBulk',
+      id: batch.id,
+      category: 'Wine',
+      itemType: '',
+      label: batch.name,
+      amount: batch.liters,
+      unitLabel: t('wine.unitLiter'),
+    }));
+  }
+  const names = new Map(batches.map((batch) => [batch.id, batch.name]));
+  return (await loadBottleLots())
+    .filter((lot) => names.has(lot.wineBatchId) && lot.left > 0)
+    .map((lot) => ({
+      kind: 'WineBottle',
+      id: lot.wineBatchId,
+      unitId: lot.bottlingId,
+      category: 'Wine',
+      itemType: '',
+      label: bottleLotLabel(lot, t, names.get(lot.wineBatchId)),
+      amount: lot.left,
+      unitLabel: t('wine.unitBottle'),
+    }));
+}
+
 export function loadSources(kind: ListingSourceKind, t: Translate): Promise<ListingSource[]> {
   switch (kind) {
     case 'Stock':
@@ -147,5 +179,9 @@ export function loadSources(kind: ListingSourceKind, t: Translate): Promise<List
       return livestockSources(t);
     case 'Production':
       return productionSources(t);
+    case 'WineBottle':
+      return wineSources(true, t);
+    case 'WineBulk':
+      return wineSources(false, t);
   }
 }

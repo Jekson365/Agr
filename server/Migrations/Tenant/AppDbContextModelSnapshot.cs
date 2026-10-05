@@ -3429,11 +3429,16 @@ namespace Server.Migrations.Tenant
                     b.Property<int>("TreeProductId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("WineBatchGrapeId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("HarvestProductId");
 
                     b.HasIndex("TreeProductId");
+
+                    b.HasIndex("WineBatchGrapeId");
 
                     b.ToTable("TreeProductMovements");
                 });
@@ -3703,6 +3708,272 @@ namespace Server.Migrations.Tenant
                             Name = "Dozen",
                             ShortName = "dz"
                         });
+                });
+
+            modelBuilder.Entity("Server.Models.WineBatch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Stage")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.Property<int>("Vintage")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WineBatches");
+                });
+
+            modelBuilder.Entity("Server.Models.WineBatchGrape", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("TreeProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("WineBatchId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TreeProductId");
+
+                    b.HasIndex("WineBatchId");
+
+                    b.ToTable("WineBatchGrapes");
+                });
+
+            modelBuilder.Entity("Server.Models.WineBottling", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("BottleSize")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Cost")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("Count")
+                        .HasColumnType("integer");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Lot")
+                        .HasColumnType("text");
+
+                    b.Property<int>("WineBatchId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WineBatchId");
+
+                    b.ToTable("WineBottlings");
+                });
+
+            modelBuilder.Entity("Server.Models.WineMeasurement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Acidity")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Alcohol")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal?>("FreeSo2")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Ph")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Sugar")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("Temperature")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal?>("TotalSo2")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("WineBatchId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WineBatchId");
+
+                    b.ToTable("WineMeasurements");
+                });
+
+            modelBuilder.Entity("Server.Models.WineMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BottleDelta")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Delta")
+                        .HasColumnType("numeric");
+
+                    b.Property<int?>("MarketOrderId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Revenue")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WineBatchId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WineBottlingId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("WineOperationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WineBatchId");
+
+                    b.HasIndex("WineBottlingId");
+
+                    b.HasIndex("WineOperationId");
+
+                    b.ToTable("WineMovements");
+                });
+
+            modelBuilder.Entity("Server.Models.WineOperation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Cost")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("LitersLost")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text");
+
+                    b.Property<int>("WineBatchId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WineBatchId");
+
+                    b.ToTable("WineOperations");
+                });
+
+            modelBuilder.Entity("Server.Models.WineStageChange", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("FromStage")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ToStage")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("WineBatchId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WineBatchId");
+
+                    b.ToTable("WineStageChanges");
                 });
 
             modelBuilder.Entity("Server.Models.AnimalProduction", b =>
@@ -4327,6 +4598,11 @@ namespace Server.Migrations.Tenant
                         .HasForeignKey("TreeProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Server.Models.WineBatchGrape", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchGrapeId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Server.Models.TreeSeedling", b =>
@@ -4383,6 +4659,76 @@ namespace Server.Migrations.Tenant
                     b.HasOne("Server.Models.TreeStock", null)
                         .WithMany()
                         .HasForeignKey("TreeStockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.WineBatchGrape", b =>
+                {
+                    b.HasOne("Server.Models.TreeProduct", null)
+                        .WithMany()
+                        .HasForeignKey("TreeProductId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.WineBatch", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.WineBottling", b =>
+                {
+                    b.HasOne("Server.Models.WineBatch", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.WineMeasurement", b =>
+                {
+                    b.HasOne("Server.Models.WineBatch", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.WineMovement", b =>
+                {
+                    b.HasOne("Server.Models.WineBatch", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Server.Models.WineBottling", null)
+                        .WithMany()
+                        .HasForeignKey("WineBottlingId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("Server.Models.WineOperation", null)
+                        .WithMany()
+                        .HasForeignKey("WineOperationId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Server.Models.WineOperation", b =>
+                {
+                    b.HasOne("Server.Models.WineBatch", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Server.Models.WineStageChange", b =>
+                {
+                    b.HasOne("Server.Models.WineBatch", null)
+                        .WithMany()
+                        .HasForeignKey("WineBatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

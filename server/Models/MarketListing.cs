@@ -60,7 +60,7 @@ public class MarketListing
     public int? SourceId { get; set; }
 
     /// <summary>
-    /// Only set for <see cref="ListingSourceKind.Production"/>, whose balances are keyed by
+    /// Set for <see cref="ListingSourceKind.Production"/>, whose balances are keyed by
     /// (ProductionTypeId, UnitId) rather than by a row of their own — litres and pieces of the
     /// same output are separate balances. <see cref="SourceId"/> carries the production type.
     /// </summary>

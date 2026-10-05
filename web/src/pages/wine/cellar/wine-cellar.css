@@ -1,0 +1,47 @@
+.wine-card .entity-tile-media {
+  background: color-mix(in srgb, var(--color-amber) 12%, var(--color-surface));
+}
+
+.wine-stage-badge {
+  position: absolute;
+  top: 0.625rem;
+  left: 0.625rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.wine-stage-badge.is-fermenting {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+.wine-stage-badge.is-aging {
+  background: var(--color-blue-soft);
+  color: var(--color-blue);
+}
+
+.wine-stage-badge.is-bottled {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.wine-card-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+}
+
+.wine-card-figures strong {
+  font-size: 1.125rem;
+  color: var(--color-dark);
+}
+
+.wine-card-reading {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}

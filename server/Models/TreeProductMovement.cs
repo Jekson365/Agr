@@ -12,6 +12,8 @@ public enum TreeProductMovementSource
 
     /// <summary>Produce bought in, recorded on a <see cref="PurchaseDocument"/>.</summary>
     Purchase,
+
+    Winemaking,
 }
 
 /// <summary>A single change to a <see cref="TreeProduct"/>'s balance, tagged with what caused it
@@ -28,6 +30,8 @@ public class TreeProductMovement
     /// movement instead of logging a new one, so history can't drift from the balance.
     /// </summary>
     public int? HarvestProductId { get; set; }
+
+    public int? WineBatchGrapeId { get; set; }
 
     /// <summary>Signed change to the balance — positive when harvested, negative when drawn down.</summary>
     public decimal Delta { get; set; }

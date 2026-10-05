@@ -1,0 +1,94 @@
+.wine-vintage {
+  margin-bottom: 1.25rem;
+}
+
+.wine-vintage-scroll {
+  overflow-x: auto;
+}
+
+.wine-vintage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.wine-vintage-table th,
+.wine-vintage-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.wine-vintage-table th[scope='row'],
+.wine-vintage-table thead th:first-child {
+  text-align: left;
+  font-weight: 600;
+}
+
+.wine-vintage-table thead th {
+  font-size: 0.8125rem;
+  color: var(--color-muted);
+}
+
+.wine-vintage-table tbody tr + tr {
+  border-top: 1px solid var(--color-border);
+}
+
+.wine-vintage-table td {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-dark);
+}
+
+.wine-vintage-table td.is-previous {
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.wine-change {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  background: var(--color-surface-sunken);
+  color: var(--color-muted);
+}
+
+.wine-change.is-good {
+  background: var(--color-green-muted);
+  color: var(--color-green);
+}
+
+.wine-change.is-bad {
+  background: var(--color-amber-soft);
+  color: var(--color-amber);
+}
+
+@media (max-width: 40rem) {
+  .wine-vintage-table,
+  .wine-vintage-table thead,
+  .wine-vintage-table tbody {
+    display: block;
+  }
+
+  .wine-vintage-table tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+  }
+
+  .wine-vintage-table thead th:first-child {
+    display: none;
+  }
+
+  .wine-vintage-table tbody th[scope='row'] {
+    grid-column: 1 / -1;
+    padding-bottom: 0;
+  }
+
+  .wine-vintage-table th,
+  .wine-vintage-table td {
+    padding: 0.375rem 0.5rem;
+  }
+}

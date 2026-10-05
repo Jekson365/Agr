@@ -1,6 +1,7 @@
 import { fruitKindImage, fruitTypeLabel } from '@/config/fruit-kinds';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
 import { stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
+import wineBottleIcon from '@/assets/icons/wine-bottle.svg';
 import type { ListingCategory, ListingSourceKind, ListingType } from '@/types/market-listing';
 
 export const LISTING_TYPE_OPTIONS: { value: ListingType; labelKey: string }[] = [
@@ -14,6 +15,7 @@ export const LISTING_CATEGORY_OPTIONS: { value: ListingCategory; labelKey: strin
   { value: 'Livestock', labelKey: 'market.categoryLivestock' },
   { value: 'Equipment', labelKey: 'market.categoryEquipment' },
   { value: 'TreeProduct', labelKey: 'market.categoryTreeProduct' },
+  { value: 'Wine', labelKey: 'market.categoryWine' },
   { value: 'Other', labelKey: 'market.categoryOther' },
 ];
 
@@ -24,6 +26,8 @@ export const LISTING_SOURCE_KIND_LABEL_KEY: Record<ListingSourceKind, string> = 
   TreeProduct: 'market.sourceTreeProduct',
   Production: 'market.sourceProduction',
   GreenhouseStock: 'market.sourceGreenhouseStock',
+  WineBottle: 'market.sourceWineBottle',
+  WineBulk: 'market.sourceWineBulk',
 };
 
 export const LISTING_CATEGORY_LABEL_KEY: Record<ListingCategory, string> = {
@@ -33,6 +37,7 @@ export const LISTING_CATEGORY_LABEL_KEY: Record<ListingCategory, string> = {
   Equipment: 'market.categoryEquipment',
   TreeProduct: 'market.categoryTreeProduct',
   Other: 'market.categoryOther',
+  Wine: 'market.categoryWine',
 };
 
 /** A listing's icon: the underlying stock/fruit/animal kind's artwork for those categories, or
@@ -45,6 +50,8 @@ export function listingImage(category: ListingCategory, itemType: string): strin
       return fruitKindImage(itemType);
     case 'Livestock':
       return livestockImage(itemType);
+    case 'Wine':
+      return wineBottleIcon;
     default:
       return null;
   }

@@ -660,6 +660,7 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options) : DbCo
             .HasIndex(t => new { t.TreeStockId, t.TreeIndex });
 
         ConfigureSoil(modelBuilder);
+        ConfigureWine(modelBuilder);
 
         // Each photo belongs to a single stock; deleting the stock removes its photo history.
         modelBuilder.Entity<StockPhoto>()

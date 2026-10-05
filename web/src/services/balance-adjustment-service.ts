@@ -7,6 +7,8 @@ const ENDPOINT: Record<BalanceAdjustTarget['kind'], string> = {
   treeProduct: '/api/treeproductmovements',
   production: '/api/productionmovements',
   greenhouseStock: '/api/greenhousestockmovements',
+  wine: '/api/winemovements',
+  wineBottle: '/api/winemovements',
 };
 
 function keyed(target: BalanceAdjustTarget): Record<string, number> {
@@ -21,12 +23,20 @@ function keyed(target: BalanceAdjustTarget): Record<string, number> {
       return { productionTypeId: target.productionTypeId, unitId: target.unitId };
     case 'greenhouseStock':
       return { greenhouseStockId: target.greenhouseStockId };
+    case 'wine':
+      return { wineBatchId: target.wineBatchId };
+    case 'wineBottle':
+      return { wineBatchId: target.wineBatchId, wineBottlingId: target.wineBottlingId };
   }
 }
 
 export function adjustBalance(target: BalanceAdjustTarget, adjustment: BalanceAdjustment) {
+  const body =
+    target.kind === 'wineBottle'
+      ? { ...keyed(target), ...adjustment, delta: 0, bottleDelta: Math.trunc(adjustment.delta) }
+      : { ...keyed(target), ...adjustment };
   return apiFetch<unknown>(ENDPOINT[target.kind], {
     method: 'POST',
-    body: JSON.stringify({ ...keyed(target), ...adjustment }),
+    body: JSON.stringify(body),
   });
 }

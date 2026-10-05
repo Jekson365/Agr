@@ -29,6 +29,7 @@ export function AmountField({ caption, amount, unitLabel, disabled, onSave }: Pr
     const next = Math.max(0, parseFloat(value) || 0);
     if (next === amount) {
       setValue(shown(next));
+      setFailed(false);
       return;
     }
     setSaving(true);
