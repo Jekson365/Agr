@@ -43,6 +43,18 @@
   --bottom: -228px;
 }
 
+.social-mascot.is-toma-wine {
+  --size: 540px;
+  --right: -70px;
+  --bottom: -50px;
+}
+
+.social-post.is-square .social-mascot.is-toma-wine {
+  --size: 440px;
+  --right: -55px;
+  --bottom: -40px;
+}
+
 .social-post.is-square .social-mascot.is-toma {
   --size: 540px;
   --right: -40px;

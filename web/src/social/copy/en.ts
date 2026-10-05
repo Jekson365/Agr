@@ -6,6 +6,7 @@ import type {
   PaperworkLabels,
   PostCopy,
   PostSlug,
+  WineryLabels,
 } from '@/social/copy/post-copy';
 
 const { harvest, market, reports, map } = en.landing;
@@ -104,6 +105,20 @@ export const EN_POSTS: Record<PostSlug, PostCopy> = {
     body: 'See how much your harvest has grown.',
     points: ['Yield, revenue and profit', 'Every harvest on one chart'],
   },
+  winery: {
+    eyebrow: 'Winemaking',
+    title: 'From the vineyard to the bottle',
+    accent: 'to the bottle',
+    body: `Pick the grapes, make the wine ${together('and fill the bottles')}.`,
+    points: ['From the harvest straight to the cellar', 'Balances update themselves'],
+  },
+};
+
+export const EN_WINERY: WineryLabels = {
+  harvest: 'Grape harvest',
+  making: 'Winemaking',
+  bottling: 'Bottling',
+  bottles: 'bottles',
 };
 
 export const EN_COVER: CoverCopy = {

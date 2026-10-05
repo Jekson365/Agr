@@ -1,5 +1,6 @@
 export const EN_GAPS = {
   farm: { fruitPeach: 'Peach', fruitPear: 'Pear', fruitCherry: 'Cherry' },
+  wine: { unitLiter: 'L' },
   harvest: {
     statusFlowering: 'Flowering',
     statusRipening: 'Ripening',

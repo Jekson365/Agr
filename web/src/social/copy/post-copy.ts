@@ -11,7 +11,8 @@ export type PostSlug =
   | 'paperwork'
   | 'animal-profile'
   | 'overview'
-  | 'harvest-compare';
+  | 'harvest-compare'
+  | 'winery';
 
 export type PostCopy = {
   eyebrow: string;
@@ -38,6 +39,13 @@ export type CompareLabels = {
   versus: string;
   before: string;
   profit: string;
+};
+
+export type WineryLabels = {
+  harvest: string;
+  making: string;
+  bottling: string;
+  bottles: string;
 };
 
 export type AnimalLabels = {

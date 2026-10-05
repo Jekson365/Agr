@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 
 import cowIcon from '@/assets/animals/cow.png';
 import coinIcon from '@/assets/coin.png';
+import grapeIcon from '@/assets/goods/grape.png';
 import milkIcon from '@/assets/goods/milk.png';
 import tomatoIcon from '@/assets/goods/tomato.png';
 import calendarIcon from '@/assets/icons/calendar.png';
@@ -12,6 +13,7 @@ import harvestIcon from '@/assets/icons/harvest.png';
 import marketIcon from '@/assets/icons/market.png';
 import reportIcon from '@/assets/icons/report.png';
 import treeSeedIcon from '@/assets/icons/tree-seed.png';
+import wineBottleIcon from '@/assets/icons/wine-bottle.svg';
 import animalsIcon from '@/assets/properties/animals.png';
 import fruitsIcon from '@/assets/properties/fruits.png';
 import landIcon from '@/assets/properties/land.png';
@@ -36,6 +38,7 @@ import { OverviewCard } from '@/social/visuals/overview-card';
 import { PaperworkCard } from '@/social/visuals/paperwork-card';
 import { ReportsCard } from '@/social/visuals/reports-card';
 import { TimelineCard } from '@/social/visuals/timeline-card';
+import { WineryCard } from '@/social/visuals/winery-card';
 
 export type SocialTheme = 'light' | 'dark' | 'photo';
 
@@ -150,5 +153,12 @@ export const SOCIAL_POSTS: SocialPost[] = [
     mascot: 'tomaCalm',
     sticker: tomatoIcon,
     Visual: CompareCard,
+  }),
+  post('winery', {
+    theme: 'dark',
+    icon: grapeIcon,
+    mascot: 'tomaWine',
+    sticker: wineBottleIcon,
+    Visual: WineryCard,
   }),
 ];

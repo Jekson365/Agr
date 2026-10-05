@@ -6,9 +6,12 @@ import type {
   PaperworkLabels,
   PostCopy,
   PostSlug,
+  WineryLabels,
 } from '@/social/copy/post-copy';
 
 const lead = (text: string) => text.split(/ — |: /)[0];
+
+const together = (text: string) => text.replaceAll(' ', String.fromCharCode(0xa0));
 
 const { manage, harvest, market, reports, map } = ka.landing;
 
@@ -104,6 +107,20 @@ export const KA_POSTS: Record<PostSlug, PostCopy> = {
     body: 'ნახე, რამდენით გაიზარდა შენი მოსავალი.',
     points: ['მოსავალი, შემოსავალი, მოგება', 'ყველა მოსავალი ერთ გრაფიკზე'],
   },
+  winery: {
+    eyebrow: ka.wine.title,
+    title: 'ვენახიდან ბოთლამდე',
+    accent: 'ბოთლამდე',
+    body: `მოკრიფე ყურძენი, დააყენე ღვინო ${together('და ჩამოასხი ბოთლებში')}.`,
+    points: ['რთველიდან პირდაპირ მარანში', 'ნაშთები თავისით ითვლება'],
+  },
+};
+
+export const KA_WINERY: WineryLabels = {
+  harvest: 'რთველი',
+  making: 'ღვინის დაყენება',
+  bottling: ka.wine.tabBottling,
+  bottles: ka.wine.unitBottle,
 };
 
 export const KA_COVER: CoverCopy = {
