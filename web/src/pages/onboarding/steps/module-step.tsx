@@ -21,10 +21,7 @@ export function ModuleStep({ value, onChange }: Props) {
         <span className="module-choice-warning-mark" aria-hidden="true">
           !
         </span>
-        <div>
-          <strong className="module-choice-warning-title">{t('onboarding.moduleWarningTitle')}</strong>
-          <p className="module-choice-warning-text">{t('onboarding.moduleWarningText')}</p>
-        </div>
+        <strong className="module-choice-warning-title">{t('onboarding.moduleWarningTitle')}</strong>
       </div>
 
       <div className="module-choice" role="radiogroup" aria-label={t('onboarding.stepModule')}>
