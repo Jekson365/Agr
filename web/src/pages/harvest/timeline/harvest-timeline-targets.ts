@@ -15,7 +15,7 @@ export type TargetRows = {
   treeStocks: TreeStock[];
 };
 
-export type TargetGroup = 'stock' | 'tree';
+export type TargetGroup = 'stock' | 'tree' | 'vine';
 
 export type TargetOption = { value: string; label: string; group: TargetGroup };
 
@@ -68,7 +68,11 @@ export function buildTargetOptions(
   for (const stock of rows.stocks) {
     const value = `stock:${stock.id}`;
     if (!used.has(value)) continue;
-    options.push({ value, label: stock.name.trim() || stockTypeLabel(stock.type, t), group: 'stock' });
+    options.push({
+      value,
+      label: stock.name.trim() || stockTypeLabel(stock.type, t),
+      group: stock.category === 'Wine' ? 'vine' : 'stock',
+    });
   }
 
   for (const stock of rows.treeStocks) {

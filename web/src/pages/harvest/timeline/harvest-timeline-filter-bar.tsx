@@ -4,23 +4,28 @@ import { SearchIcon } from '@/components/icons/misc-icons';
 import { HARVEST_STATUSES, HARVEST_STATUS_LABEL_KEY } from '@/config/harvest-status';
 import { useLanguage } from '@/contexts/language-context';
 import { isFiltering, optionsForKind, type TimelineFilters } from './harvest-timeline-filters';
-import type { TargetOption } from './harvest-timeline-targets';
+import type { TargetGroup, TargetOption } from './harvest-timeline-targets';
 import './harvest-timeline-filter-bar.css';
+
+const TARGET_GROUPS: { group: TargetGroup; labelKey: string }[] = [
+  { group: 'stock', labelKey: 'harvestTimeline.groupStock' },
+  { group: 'tree', labelKey: 'harvestTimeline.groupTree' },
+  { group: 'vine', labelKey: 'wine.stockTitle' },
+];
 
 type Props = {
   filters: TimelineFilters;
   options: TargetOption[];
   greenhouseOn: boolean;
+  wineOn: boolean;
   onChange: (next: TimelineFilters) => void;
   onClear: () => void;
 };
 
-export function HarvestTimelineFilterBar({ filters, options, greenhouseOn, onChange, onClear }: Props) {
+export function HarvestTimelineFilterBar({ filters, options, greenhouseOn, wineOn, onChange, onClear }: Props) {
   const { t } = useLanguage();
 
   const allowed = optionsForKind(options, filters.kind);
-  const stockOptions = allowed.filter((option) => option.group === 'stock');
-  const treeOptions = allowed.filter((option) => option.group === 'tree');
 
   function setKind(kind: TimelineFilters['kind']) {
     const next = optionsForKind(options, kind);
@@ -66,6 +71,7 @@ export function HarvestTimelineFilterBar({ filters, options, greenhouseOn, onCha
           <option value="all">{t('harvestTimeline.allKinds')}</option>
           <option value="crop">{t('harvestTimeline.kindCrop')}</option>
           <option value="fruit">{t('harvestTimeline.kindFruit')}</option>
+          {wineOn && <option value="wine">{t('harvestTimeline.kindWine')}</option>}
           {greenhouseOn && <option value="greenhouse">{t('farm.greenhouse')}</option>}
         </select>
 
@@ -77,24 +83,19 @@ export function HarvestTimelineFilterBar({ filters, options, greenhouseOn, onCha
           onChange={(e) => onChange({ ...filters, target: e.target.value })}
         >
           <option value="all">{t('harvestTimeline.allTargets')}</option>
-          {stockOptions.length > 0 && (
-            <optgroup label={t('harvestTimeline.groupStock')}>
-              {stockOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          {treeOptions.length > 0 && (
-            <optgroup label={t('harvestTimeline.groupTree')}>
-              {treeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </optgroup>
-          )}
+          {TARGET_GROUPS.map(({ group, labelKey }) => {
+            const groupOptions = allowed.filter((option) => option.group === group);
+            if (groupOptions.length === 0) return null;
+            return (
+              <optgroup key={group} label={t(labelKey)}>
+                {groupOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
+            );
+          })}
         </select>
 
         <label className={filters.hideCompleted ? 'hcal-filter-check active' : 'hcal-filter-check'}>

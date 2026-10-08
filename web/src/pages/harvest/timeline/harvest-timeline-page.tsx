@@ -7,7 +7,7 @@ import { useForecast } from '@/components/weather/use-forecast';
 import { WeatherStrip } from '@/components/weather/weather-strip';
 import { useConfiguration } from '@/contexts/configuration-context';
 import { useLanguage } from '@/contexts/language-context';
-import { GREENHOUSE_CONFIG } from '@/types/configuration';
+import { GREENHOUSE_CONFIG, WINE_CONFIG } from '@/types/configuration';
 import type { HarvestKind } from '@/types/harvest';
 import { HarvestTimelineCard } from './harvest-timeline-card';
 import { HarvestTimelineDayMenu } from './harvest-timeline-day-menu';
@@ -35,6 +35,7 @@ export function HarvestTimelinePage() {
   const { t, language } = useLanguage();
   const { isOn } = useConfiguration();
   const greenhouseOn = isOn(GREENHOUSE_CONFIG);
+  const wineOn = isOn(WINE_CONFIG);
   const data = useTimelineData(greenhouseOn);
   const forecast = useForecast();
 
@@ -104,6 +105,7 @@ export function HarvestTimelinePage() {
           filters={filters}
           options={data.targetOptions}
           greenhouseOn={greenhouseOn}
+          wineOn={wineOn}
           onChange={setFilters}
           onClear={() => setFilters(EMPTY_FILTERS)}
         />
@@ -174,6 +176,7 @@ export function HarvestTimelinePage() {
 
       <HarvestTimelineKindModal
         open={pendingDate != null}
+        wineOn={wineOn}
         onPick={(kind) => {
           setForm({ date: pendingDate ?? toIsoDate(days[0]), kind });
           setPendingDate(null);

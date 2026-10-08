@@ -24,7 +24,7 @@ export const EMPTY_FILTERS: TimelineFilters = {
 
 const STATUS_VALUES: TimelineFilters['status'][] = ['all', ...HARVEST_STATUSES];
 
-const KIND_VALUES: TimelineFilters['kind'][] = ['all', 'crop', 'fruit', 'greenhouse'];
+const KIND_VALUES: TimelineFilters['kind'][] = ['all', 'crop', 'fruit', 'wine', 'greenhouse'];
 
 function oneOf<T>(value: unknown, allowed: readonly T[], fallback: T): T {
   return allowed.includes(value as T) ? (value as T) : fallback;
@@ -70,6 +70,7 @@ export function isFiltering(filters: TimelineFilters): boolean {
 export function optionsForKind(options: TargetOption[], kind: TimelineFilters['kind']): TargetOption[] {
   if (kind === 'crop') return options.filter((option) => option.group === 'stock');
   if (kind === 'fruit') return options.filter((option) => option.group === 'tree');
+  if (kind === 'wine') return options.filter((option) => option.group === 'vine');
   if (kind === 'greenhouse') return [];
   return options;
 }

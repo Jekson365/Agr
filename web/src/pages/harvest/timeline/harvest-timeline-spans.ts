@@ -8,7 +8,7 @@ export const MIN_DAYS = 3;
 export const MAX_DAYS = 180;
 export const MONTHS_ONLY_FROM = 60;
 
-export type TimelineSource = 'crop' | 'fruit' | 'greenhouse';
+export type TimelineSource = 'crop' | 'fruit' | 'wine' | 'greenhouse';
 
 export type TimelineHarvest = {
   key: string;
@@ -41,15 +41,20 @@ function range(harvest: { date: string; expectedHarvestDate: string | null }) {
   return { start: start.slice(0, 10), end: end.slice(0, 10) };
 }
 
+function sourceOf(kind: HarvestKind): TimelineSource {
+  if (kind === 'Fruit') return 'fruit';
+  if (kind === 'Wine') return 'wine';
+  return 'crop';
+}
+
 export function fromHarvest(harvest: Harvest): TimelineHarvest {
-  const fruit = harvest.kind === 'Fruit';
-  const key = `${fruit ? 'fruit' : 'crop'}-${harvest.id}`;
+  const source = sourceOf(harvest.kind);
   return {
-    key,
+    key: `${source}-${harvest.id}`,
     title: harvest.title,
     ...range(harvest),
     status: harvest.status,
-    source: fruit ? 'fruit' : 'crop',
+    source,
     kind: harvest.kind,
     path: harvestDetailPath(harvest.kind, harvest.id),
     overdue: isOverdue(harvest),
