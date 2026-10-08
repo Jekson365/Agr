@@ -959,38 +959,12 @@ html:has(.landing-page) {
 
 /* ------------------------------------------------------- feature blocks */
 
-.landing-manage-rows {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-}
-
 .landing-card {
   padding: 26px 22px;
   border: 1px solid var(--color-border);
   border-radius: 22px;
   background: var(--color-surface);
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-}
-
-/* One feature per row, split into a copy column and an illustration column. The two columns trade
-   places on every other row, so the section zig-zags: text — icon, icon — text, text — icon … */
-.landing-manage-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  align-items: center;
-  gap: 56px;
-  /* Twice the height the content alone would ask for — the copy and the icon centre in the space. */
-  min-height: 440px;
-  padding: 48px 56px;
-}
-
-.landing-manage-row[data-layout='icon-first'] {
-  grid-template-columns: 300px minmax(0, 1fr);
-}
-
-.landing-manage-row[data-layout='icon-first'] .landing-card-icon {
-  order: -1;
 }
 
 .landing-card:hover {
@@ -1015,27 +989,9 @@ html:has(.landing-page) {
   object-fit: contain;
 }
 
-/* In a row the icon is the whole column, so it gets to be the illustration it wants to be. */
-.landing-manage-row .landing-card-icon {
-  justify-self: center;
-  width: 280px;
-  height: 280px;
-  margin: 0;
-  border-radius: 64px;
-}
-
-.landing-manage-row .landing-card-icon img {
-  width: 188px;
-  height: 188px;
-}
-
 .landing-card-title {
   margin: 0 0 8px;
   font-size: 1.0625rem;
-}
-
-.landing-manage-row .landing-card-title {
-  font-size: 1.25rem;
 }
 
 .landing-card-body {
@@ -1065,13 +1021,6 @@ html:has(.landing-page) {
   flex-shrink: 0;
   margin-top: 2px;
   color: var(--color-green);
-}
-
-/* The copy column is wide enough for the bullets to pair up instead of running long. */
-.landing-manage-row .landing-points {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 28px;
 }
 
 .landing-split {
@@ -2029,28 +1978,6 @@ html:has(.landing-page) {
     display: none;
   }
 
-  .landing-manage-row {
-    grid-template-columns: minmax(0, 1fr) 230px;
-    gap: 40px;
-    min-height: 360px;
-    padding: 38px 34px;
-  }
-
-  .landing-manage-row[data-layout='icon-first'] {
-    grid-template-columns: 230px minmax(0, 1fr);
-  }
-
-  .landing-manage-row .landing-card-icon {
-    width: 216px;
-    height: 216px;
-    border-radius: 50px;
-  }
-
-  .landing-manage-row .landing-card-icon img {
-    width: 146px;
-    height: 146px;
-  }
-
   .landing-split {
     gap: 40px;
   }
@@ -2084,29 +2011,6 @@ html:has(.landing-page) {
 
   .landing-header:not(.is-scrolled) .landing-menu-btn {
     border-color: rgba(255, 255, 255, 0.4);
-  }
-
-  /* Too narrow to sit side by side — every row stacks with the icon on top, alternation and all. */
-  /* Stacked, the content already fills the row — the extra height would just be dead space. */
-  .landing-manage-row,
-  .landing-manage-row[data-layout='icon-first'] {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-    min-height: 0;
-    padding: 26px 22px;
-  }
-
-  .landing-manage-row .landing-card-icon {
-    order: -1;
-    justify-self: start;
-    width: 132px;
-    height: 132px;
-    border-radius: 34px;
-  }
-
-  .landing-manage-row .landing-card-icon img {
-    width: 90px;
-    height: 90px;
   }
 
   .landing-split {
@@ -2198,10 +2102,6 @@ html:has(.landing-page) {
   }
 
   .landing-market-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .landing-manage-row .landing-points {
     grid-template-columns: minmax(0, 1fr);
   }
 

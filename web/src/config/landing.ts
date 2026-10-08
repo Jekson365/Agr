@@ -4,6 +4,7 @@ import goatIcon from '@/assets/animals/goat.png';
 import sheepIcon from '@/assets/animals/sheep.png';
 import cabbageIcon from '@/assets/goods/cabbage.png';
 import cucumberIcon from '@/assets/goods/cucumber.png';
+import grapeIcon from '@/assets/goods/grape.png';
 import tomatoIcon from '@/assets/goods/tomato.png';
 import calendarIcon from '@/assets/icons/calendar.png';
 import cameraIcon from '@/assets/icons/camera.png';
@@ -118,6 +119,7 @@ export const MANAGE_CARDS: LandingCard[] = [
   { id: 'stock', icon: plantsIcon, points: 4 },
   { id: 'livestock', icon: animalsIcon, points: 4 },
   { id: 'fruits', icon: fruitsIcon, points: 6 },
+  { id: 'wine', icon: grapeIcon, points: 5 },
 ];
 
 /** Section 4 — harvest management. */

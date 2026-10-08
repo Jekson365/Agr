@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject, type SVGProps } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from 'react';
 import { Link } from 'react-router-dom';
 
 import farmland from '@/assets/farmland-wide.webp';
@@ -28,70 +28,10 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { useCurrency } from '@/contexts/currency-context';
 import { LANGUAGES, useLanguage, type Language } from '@/contexts/language-context';
+import { ArrowIcon, CheckIcon, ChevronIcon, CloseIcon, MenuIcon } from '@/pages/landing/landing-icons';
+import { ManageCards } from '@/pages/landing/manage-cards';
 import { homePathFor } from '@/routes/home-path';
 import './landing-page.css';
-
-/* ------------------------------------------------------------------ icons */
-/* Line icons for the abstract claims (benefits, checkmarks, chrome). Anything that names a real
-   part of the app uses its own illustrated asset instead — see @/config/landing. */
-
-function Icon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="20"
-      height="20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.8}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      {...props}
-    />
-  );
-}
-
-function CheckIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon {...props}>
-      <path d="m5 12.5 4.5 4.5L19 7.5" />
-    </Icon>
-  );
-}
-
-function ArrowIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon width="18" height="18" {...props}>
-      <path d="M4 12h15" />
-      <path d="m13 6 6 6-6 6" />
-    </Icon>
-  );
-}
-
-function MenuIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon {...props}>
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </Icon>
-  );
-}
-
-function CloseIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon {...props}>
-      <path d="M6 6l12 12M18 6 6 18" />
-    </Icon>
-  );
-}
-
-function ChevronIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <Icon width="18" height="18" {...props}>
-      <path d="m6 9 6 6 6-6" />
-    </Icon>
-  );
-}
 
 /* Store badges — used only by the commented-out mobile section.
 
@@ -1138,35 +1078,7 @@ export function LandingPage() {
               lead={t('landing.manage.subtitle')}
             />
 
-            <div className="landing-manage-rows">
-              {MANAGE_CARDS.map((card, index) => (
-                <article
-                  key={card.id}
-                  className="landing-card landing-manage-row"
-                  /* Copy always comes first in the DOM (the icon is decorative); every other row
-                     swaps the two columns so the section reads text — icon, icon — text, … */
-                  data-layout={index % 2 === 0 ? 'text-first' : 'icon-first'}
-                  data-reveal
-                  style={{ '--reveal-delay': `${index * 80}ms` } as CSSProperties}
-                >
-                  <div className="landing-manage-copy">
-                    <h3 className="landing-card-title">{t(`landing.manage.${card.id}.title`)}</h3>
-                    <p className="landing-card-body">{t(`landing.manage.${card.id}.body`)}</p>
-                    <ul className="landing-points">
-                      {Array.from({ length: card.points }, (_, i) => (
-                        <li key={i}>
-                          <CheckIcon width={16} height={16} />
-                          {t(`landing.manage.${card.id}.point${i + 1}`)}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <span className="landing-card-icon">
-                    <img src={card.icon} alt="" loading="lazy" decoding="async" />
-                  </span>
-                </article>
-              ))}
-            </div>
+            <ManageCards />
           </div>
         </section>
 
