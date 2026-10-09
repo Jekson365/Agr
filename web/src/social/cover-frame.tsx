@@ -10,7 +10,7 @@ import '@/social/social.css';
 import '@/social/social-cover.css';
 
 const COVER = LANGUAGE === 'en' ? EN_COVER : KA_COVER;
-const AREAS: PostSlug[] = ['crops', 'livestock', 'orchard'];
+const AREAS: PostSlug[] = ['crops', 'livestock', 'orchard', 'winery'];
 const CHIPS = AREAS.flatMap((slug) => SOCIAL_POSTS.filter((post) => post.slug === slug));
 
 export function CoverFrame() {
