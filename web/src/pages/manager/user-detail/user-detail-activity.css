@@ -1,0 +1,50 @@
+.user-detail-activity-card {
+  margin-bottom: 16px;
+}
+
+.user-detail-grid > .user-detail-records-card {
+  grid-column: span 2;
+}
+
+@media (max-width: 1000px) {
+  .user-detail-grid > .user-detail-records-card {
+    grid-column: auto;
+  }
+}
+
+.user-detail-records {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 640px) {
+  .user-detail-records {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.user-detail-record {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-sunken);
+}
+
+.user-detail-record strong {
+  color: var(--color-dark);
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.user-detail-record span {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}

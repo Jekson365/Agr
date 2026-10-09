@@ -110,8 +110,12 @@ others (`greenhouse`, `livestock`, `fruitstock`, `marketplace`, `calendar`, `win
   behind `SuperAdminRoute` (non-operators land on `/404`) and shows the visitor analytics. The
   beacon feeding it is `components/analytics/visit-tracker.tsx`, mounted in `main.tsx` beside
   `<App />`; it records every path except `/manager*`, 600 ms after the route settles.
-- `/manager/users/:id` (same guard) is one account's farm — lands with plots, stocks, livestock and
-  fruit stocks — opened from that account's row on `/manager`.
+- `/manager/users/:id` (same guard) is one account's farm — an activity card (last active, device,
+  place, visits, sign-in, modules, storage, neighbours, sales), lands with plots, stocks, livestock,
+  fruit stocks, vineyards, wine batches, seeds, equipment, record counts and harvests — opened from
+  that account's row on `/manager`, whose „ბოლო აქტივობა“ column shows the same last-active value
+  (`pages/manager/last-active.ts`: the latest visit's date and time, or only a day when the daily
+  bonus is later).
 
 ---
 

@@ -45,6 +45,6 @@ public partial class AdminController
             request.Value ? "granted" : "withdrawn", id, op.Id, op.Email);
 
         var listingCount = await context.MarketListings.CountAsync(l => l.SellerId == id);
-        return Ok(AdminUserDto.From(user, listingCount));
+        return Ok(AdminUserDto.From(user, listingCount, await LastVisitAtAsync(id)));
     }
 }

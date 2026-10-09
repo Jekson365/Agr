@@ -37,7 +37,10 @@ public class AdminUserDto
     public FarmModule? FreeModule { get; set; }
     public bool NeedsModuleChoice { get; set; }
 
-    public static AdminUserDto From(User user, int listingCount) => new()
+    public DateTime? LastActiveAt { get; set; }
+    public DateOnly? LastActiveOn { get; set; }
+
+    public static AdminUserDto From(User user, int listingCount, DateTime? lastVisitAt) => new()
     {
         Id = user.Id,
         Name = user.Name,
@@ -58,6 +61,8 @@ public class AdminUserDto
         AllowedModules = ModuleAccess.AllowedFor(user),
         FreeModule = user.FreeModule,
         NeedsModuleChoice = ModuleAccess.NeedsChoice(user),
+        LastActiveAt = lastVisitAt,
+        LastActiveOn = user.LastDailyBonusOn,
     };
 }
 

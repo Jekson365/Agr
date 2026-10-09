@@ -75,8 +75,12 @@ public partial class AdminController(
             .GroupBy(l => l.SellerId)
             .Select(g => new { SellerId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SellerId, x => x.Count);
+        var lastVisits = await LastVisitsAsync();
 
-        return Ok(users.Select(u => AdminUserDto.From(u, counts.GetValueOrDefault(u.Id))));
+        return Ok(users.Select(u => AdminUserDto.From(
+            u,
+            counts.GetValueOrDefault(u.Id),
+            lastVisits.TryGetValue(u.Id, out var lastVisit) ? lastVisit : null)));
     }
 
     /// <summary>

@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/language-context';
 import { resolveAssetUrl } from '@/services/api-client';
 import type { AdminUser } from '@/types/admin';
 import type { StoragePlan } from '@/types/auth';
+import { lastActiveLabel } from './last-active';
 import './manager-delete.css';
 import { ManagerModulesCell } from './manager-modules-cell';
 import './manager-plan-select.css';
@@ -68,6 +69,7 @@ export function ManagerUsersTable({
                 <th className="numeric">{t('manager.colListings')}</th>
                 <th className="numeric">{t('manager.colDatabase')}</th>
                 <th>{t('manager.colJoined')}</th>
+                <th>{t('manager.colLastActive')}</th>
                 <th>{t('manager.colFarmAccess')}</th>
                 <th />
               </tr>
@@ -122,6 +124,7 @@ export function ManagerUsersTable({
                     {sizes === null ? '…' : sizeLabel(sizes[u.id])}
                   </td>
                   <td className="manager-user-sub">{formatLocalizedIsoDate(u.createdAt, language)}</td>
+                  <td className="manager-user-sub">{lastActiveLabel(u, language)}</td>
                   <td>
                     {/* An operator changing their own would have no way back in, so their row
                         shows the state without offering to change it. */}

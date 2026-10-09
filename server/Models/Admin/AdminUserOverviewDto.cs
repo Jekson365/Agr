@@ -9,6 +9,11 @@ public class AdminUserOverviewDto
     public List<AdminLivestockDto> Livestock { get; set; } = [];
     public List<AdminTreeStockDto> TreeStocks { get; set; } = [];
     public List<AdminHarvestDto> Harvests { get; set; } = [];
+    public AdminUserActivityDto Activity { get; set; } = new();
+    public List<AdminSeedDto> Seeds { get; set; } = [];
+    public List<AdminEquipmentDto> Equipment { get; set; } = [];
+    public List<AdminWineBatchDto> WineBatches { get; set; } = [];
+    public AdminRecordCountsDto Records { get; set; } = new();
 }
 
 public class AdminFarmDto
@@ -37,6 +42,7 @@ public class AdminStockDto
     public string Name { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public StockUnit Unit { get; set; }
+    public StockCategory Category { get; set; }
     public bool IsDeleted { get; set; }
 }
 

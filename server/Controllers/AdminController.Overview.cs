@@ -25,7 +25,12 @@ public partial class AdminController
         }
 
         var listingCount = await context.MarketListings.CountAsync(l => l.SellerId == id);
-        var overview = new AdminUserOverviewDto { User = AdminUserDto.From(user, listingCount) };
+        var activity = await ReadActivityAsync(user);
+        var overview = new AdminUserOverviewDto
+        {
+            User = AdminUserDto.From(user, listingCount, activity.LastVisit?.At),
+            Activity = activity,
+        };
 
         if (!await provisioner.ExistsAsync(id))
         {
@@ -48,6 +53,7 @@ public partial class AdminController
             }
 
             await FillHoldingsAsync(overview, db);
+            await FillDetailsAsync(overview, db);
         }
 
         return Ok(overview);
@@ -116,7 +122,8 @@ public partial class AdminController
             .OrderBy(s => s.IsDeleted).ThenBy(s => s.Id)
             .Select(s => new AdminStockDto
             {
-                Id = s.Id, Type = s.Type, Name = s.Name, Amount = s.Amount, Unit = s.Unit, IsDeleted = s.IsDeleted,
+                Id = s.Id, Type = s.Type, Name = s.Name, Amount = s.Amount, Unit = s.Unit, Category = s.Category,
+                IsDeleted = s.IsDeleted,
             })
             .ToListAsync();
 

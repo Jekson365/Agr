@@ -148,8 +148,13 @@ plain `SellerId` — and drops `farm_user_{id}` through `TenantDatabaseProvision
 own account and any `IsSuperAdmin` account. Uploaded files are not removed.
 
 **Reading one account's farm** is `GET /api/admin/users/{id}/overview` (`AdminController.Overview.cs`):
-farms with plots, stocks, livestock groups and tree stocks, read from that tenant through
-`OpenTenantAsync`. It answers `Database: Missing` when there is no `farm_user_{id}` and `Outdated`
+farms with plots, stocks (with their category), livestock groups, tree stocks, harvests, seeds,
+equipment, wine batches (liters and bottles left, summed from `WineMovements`) and record counts, read
+from that tenant through `OpenTenantAsync` (`AdminController.OverviewDetails.cs` for the later ones),
+plus `Activity` from master (`AdminController.Activity.cs`): sign-in method, farm creation, storage,
+the latest `SiteVisits` row (device, browser, place), sessions and page views, accepted neighbours and
+`Paid`/`Manual` sales. Every `AdminUserDto` carries `LastActiveAt` (that latest visit) and
+`LastActiveOn` (`LastDailyBonusOn`, a day only); the client shows whichever is later. It answers `Database: Missing` when there is no `farm_user_{id}` and `Outdated`
 when that database has pending migrations — it never migrates on a read; `POST
 /api/admin/users/{id}/migrate` does that on the operator's request (the same `ProvisionAsync` a
 login runs). `GET /api/admin/users/database-sizes` answers `{ userId: bytes }` for every

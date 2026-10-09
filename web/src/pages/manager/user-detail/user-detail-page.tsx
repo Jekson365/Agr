@@ -6,6 +6,7 @@ import '@/pages/manager/manager-page.css';
 import { useLanguage } from '@/contexts/language-context';
 import { getUserOverview, migrateUserDatabase } from '@/services/admin-service';
 import type { AdminUserOverview } from '@/types/admin';
+import { UserDetailActivity } from './user-detail-activity';
 import { UserDetailHeader } from './user-detail-header';
 import { UserDetailHoldings } from './user-detail-holdings';
 import './user-detail.css';
@@ -66,6 +67,7 @@ export function UserDetailPage() {
       ) : (
         <>
           <UserDetailHeader user={overview.user} />
+          <UserDetailActivity user={overview.user} activity={overview.activity} />
 
           {overview.database === 'Missing' && <p className="empty-state">{t('managerUser.noDatabase')}</p>}
 

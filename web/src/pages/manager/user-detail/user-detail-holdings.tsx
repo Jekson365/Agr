@@ -1,11 +1,12 @@
 import { fruitKindImage, fruitTypeLabel, TREE_STOCK_UNIT_LABEL_KEY } from '@/config/fruit-kinds';
 import { livestockImage, livestockTypeLabel } from '@/config/livestock-kinds';
-import { STOCK_UNIT_LABEL_KEY, stockKindImage, stockTypeLabel } from '@/config/stock-kinds';
 import { useLanguage } from '@/contexts/language-context';
 import type { AdminUserOverview } from '@/types/admin';
 import { formatAmount } from './user-detail-format';
 import { UserDetailHarvests } from './user-detail-harvests';
+import { equipmentItems, seedItems, stockItems, wineBatchItems } from './user-detail-item-builders';
 import { UserDetailLands } from './user-detail-lands';
+import { UserDetailRecords } from './user-detail-records';
 import { UserDetailSection, type DetailItem } from './user-detail-section';
 
 type Props = {
@@ -14,15 +15,6 @@ type Props = {
 
 export function UserDetailHoldings({ overview }: Props) {
   const { t } = useLanguage();
-
-  const stocks: DetailItem[] = overview.stocks.map((stock) => ({
-    key: `stock-${stock.id}`,
-    image: stockKindImage(stock.type),
-    title: stockTypeLabel(stock.type, t),
-    subtitle: stock.name,
-    value: `${formatAmount(stock.amount)} ${t(STOCK_UNIT_LABEL_KEY[stock.unit] ?? stock.unit)}`,
-    removed: stock.isDeleted,
-  }));
 
   const livestock: DetailItem[] = overview.livestock.map((herd) => ({
     key: `herd-${herd.id}`,
@@ -42,13 +34,21 @@ export function UserDetailHoldings({ overview }: Props) {
     removed: tree.isDeleted,
   }));
 
+  const crops = overview.stocks.filter((stock) => stock.category !== 'Wine');
+  const vines = overview.stocks.filter((stock) => stock.category === 'Wine');
+
   return (
     <div className="user-detail-holdings">
       <UserDetailLands farms={overview.farms} />
       <div className="user-detail-grid">
-        <UserDetailSection title={t('managerUser.stocks')} items={stocks} />
+        <UserDetailSection title={t('managerUser.stocks')} items={stockItems(crops, t)} />
         <UserDetailSection title={t('managerUser.livestock')} items={livestock} />
         <UserDetailSection title={t('managerUser.fruits')} items={fruits} />
+        <UserDetailSection title={t('wine.stockTitle')} items={stockItems(vines, t)} />
+        <UserDetailSection title={t('wine.cellarTitle')} items={wineBatchItems(overview.wineBatches, t)} />
+        <UserDetailSection title={t('seed.title')} items={seedItems(overview.seeds, t)} />
+        <UserDetailSection title={t('equipment.title')} items={equipmentItems(overview.equipment, t)} />
+        <UserDetailRecords records={overview.records} />
       </div>
       <UserDetailHarvests harvests={overview.harvests} />
     </div>

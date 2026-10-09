@@ -1,6 +1,14 @@
 import type { ListingCategory, ListingStatus, ListingType } from '@/types/market-listing';
+import type {
+  AdminEquipment,
+  AdminRecordCounts,
+  AdminSeed,
+  AdminUserActivity,
+  AdminWineBatch,
+} from '@/types/admin-details';
 import type { FarmModule, StoragePlan } from '@/types/auth';
 import type { HarvestKind, HarvestStatus } from '@/types/harvest';
+import type { StockCategory } from '@/types/stock';
 
 /**
  * A registered account, as the manager page sees it. Narrower than the server's `User` on purpose —
@@ -30,6 +38,8 @@ export type AdminUser = {
   allowedModules: FarmModule[];
   freeModule: FarmModule | null;
   needsModuleChoice: boolean;
+  lastActiveAt: string | null;
+  lastActiveOn: string | null;
 };
 
 /** A listing whose seller has asked for it to be promoted. */
@@ -77,6 +87,7 @@ export type AdminStock = {
   name: string;
   amount: number;
   unit: string;
+  category: StockCategory;
   isDeleted: boolean;
 };
 
@@ -107,6 +118,11 @@ export type AdminUserOverview = {
   livestock: AdminLivestock[];
   treeStocks: AdminTreeStock[];
   harvests: AdminHarvest[];
+  activity: AdminUserActivity;
+  seeds: AdminSeed[];
+  equipment: AdminEquipment[];
+  wineBatches: AdminWineBatch[];
+  records: AdminRecordCounts;
 };
 
 export type AdminHarvestYield = {
