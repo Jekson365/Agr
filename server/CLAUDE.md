@@ -361,8 +361,10 @@ so it shares none of `Harvest`'s machinery. It reuses `StockKind` names, `StockU
 ### 5.9 Wine cellar („მარანი“, `Data/AppDbContext.Wine.cs`, module `Wine`)
 - **`WineBatches`** — one wine lot: `Name`, `Vintage`, `Color` ∈ `Red|White|Amber|Rose` and `Method` ∈
   `Qvevri|Tank|Barrel` (both unused: the web client neither sends nor shows them, so new batches store
-  `Red` and `Qvevri`), `Stage` ∈ `Fermenting|Aging|Bottled` (history in `WineStageChanges`; the web
-  client no longer offers `Aging`, but old rows keep it, so the member stays),
+  `Red` and `Qvevri`), `Stage` ∈ `Fermenting|Aging|Bottled|Stocked` (history in `WineStageChanges`; the
+  web client no longer offers `Aging`, but old rows keep it, so the member stays). `Stocked` („ნაშთებში
+  გადატანილი“) is the last step: a stocked batch refuses delete (409, `StockedMessage`) and only a
+  stocked batch takes manual adjustments (409 otherwise, `NotStockedMessage`),
   `StartDate`, `Notes`, `IsDeleted`. **No stored balance** — liters and bottles are sums of its
   `WineMovements`; `WineBatchRepository.Summary.cs` returns them with grape kg, produced liters, costs,
   revenue, counts and latest readings, so `GET /api/winebatches` is one request per page.

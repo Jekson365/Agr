@@ -73,6 +73,9 @@
      seventh green or amber: it is a bookkeeping step, not another point in the growing season. */
   --color-stage-balanced: var(--color-violet);
 
+  --color-shelf: #caa06c;
+  --color-shelf-edge: #a2763f;
+
   /* Another farmer's land on the territory map, in that same blue. */
   --color-map-other: var(--color-blue);
 
@@ -128,6 +131,9 @@
   --color-violet-soft: #262040;
   --color-stage-balanced: var(--color-violet);
   --color-map-other: var(--color-blue);
+
+  --color-shelf: #7a5733;
+  --color-shelf-edge: #4e381f;
 
   --color-shadow: rgba(0, 0, 0, 0.5);
   --color-shadow-strong: rgba(0, 0, 0, 0.65);

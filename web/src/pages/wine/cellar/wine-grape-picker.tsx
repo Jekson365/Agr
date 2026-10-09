@@ -1,6 +1,5 @@
 import grapeIcon from '@/assets/goods/grape.png';
 import '@/components/farm/kind-picker.css';
-import { LITERS_PER_KG } from '@/config/wine';
 import { useLanguage } from '@/contexts/language-context';
 import type { GrapeOption } from '@/pages/wine/wine-grape-options';
 
@@ -11,24 +10,9 @@ type Props = {
   amount: string;
   onAmount: (value: string) => void;
   over: boolean;
-  liters: string;
-  onLiters: (value: string) => void;
-  totalKg: number;
-  suggested: number;
 };
 
-export function WineGrapePicker({
-  choices,
-  selected,
-  onSelect,
-  amount,
-  onAmount,
-  over,
-  liters,
-  onLiters,
-  totalKg,
-  suggested,
-}: Props) {
+export function WineGrapePicker({ choices, selected, onSelect, amount, onAmount, over }: Props) {
   const { t } = useLanguage();
 
   return (
@@ -64,14 +48,6 @@ export function WineGrapePicker({
           </span>
         </div>
       )}
-
-      <div className="field">
-        <label>{t('wine.liters')}</label>
-        <input value={liters} inputMode="decimal" placeholder="0" onChange={(e) => onLiters(e.target.value)} />
-        {totalKg > 0 && (
-          <span className="limit-hint">{t('wine.litersSuggestion', { liters: suggested, ratio: LITERS_PER_KG })}</span>
-        )}
-      </div>
     </>
   );
 }

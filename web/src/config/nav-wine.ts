@@ -15,7 +15,7 @@ export const WINE_NAV_ITEM: NavItem = {
   requiresConfig: WINE_CONFIG,
   children: [
     { to: WINE_AREA.stockPath, labelKey: WINE_AREA.titleKey, icon: grapeIcon, end: true },
-    { to: WINE_AREA.harvestPath, labelKey: 'dashboard.harvest', icon: harvestIcon },
+    { to: WINE_AREA.harvestPath, labelKey: 'wine.harvest', icon: harvestIcon },
     {
       to: WINE_CELLAR_PATH,
       labelKey: 'wine.cellarTitle',

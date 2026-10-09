@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { todayIsoDate } from '@/components/ui/date-utils';
 import { Modal } from '@/components/ui/modal';
-import { LITERS_PER_KG, parseAmount, round2 } from '@/config/wine';
+import { parseAmount } from '@/config/wine';
 import { useLanguage } from '@/contexts/language-context';
 import { loadGrapeOptions, type GrapeOption } from '@/pages/wine/wine-grape-options';
 import { ApiError } from '@/services/api-client';
@@ -32,7 +32,6 @@ export function WineBatchFormModal({ open, editing, onClose, onSaved }: Props) {
   const [options, setOptions] = useState<GrapeOption[]>([]);
   const [grapeId, setGrapeId] = useState<number | null>(null);
   const [grapeAmount, setGrapeAmount] = useState('');
-  const [liters, setLiters] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +40,6 @@ export function WineBatchFormModal({ open, editing, onClose, onSaved }: Props) {
     setError(null);
     setGrapeId(null);
     setGrapeAmount('');
-    setLiters(null);
     setDraft(
       editing
         ? {
@@ -59,9 +57,6 @@ export function WineBatchFormModal({ open, editing, onClose, onSaved }: Props) {
   const grape = choices.find((option) => option.treeProductId === grapeId) ?? choices[0] ?? null;
   const amount = grape ? parseAmount(grapeAmount) : 0;
   const over = grape != null && amount > grape.available;
-  const totalKg = round2(amount);
-  const suggested = round2(totalKg * LITERS_PER_KG);
-  const litersText = liters ?? (totalKg > 0 ? String(suggested) : '');
   const vintage = parseInt(draft.vintage, 10);
   const valid = draft.name.trim() !== '' && vintage >= 1900 && vintage <= 2200 && !over;
 
@@ -81,7 +76,7 @@ export function WineBatchFormModal({ open, editing, onClose, onSaved }: Props) {
         onSaved({ ...editing, ...fields }, false);
       } else {
         const grapes = grape && amount > 0 ? [{ treeProductId: grape.treeProductId, amount }] : [];
-        onSaved(await createWineBatch({ ...fields, liters: parseAmount(litersText), grapes }), true);
+        onSaved(await createWineBatch({ ...fields, grapes }), true);
       }
       onClose();
     } catch (err) {
@@ -104,10 +99,6 @@ export function WineBatchFormModal({ open, editing, onClose, onSaved }: Props) {
             amount={grapeAmount}
             onAmount={setGrapeAmount}
             over={over}
-            liters={litersText}
-            onLiters={setLiters}
-            totalKg={totalKg}
-            suggested={suggested}
           />
         )}
         {error && <div className="error-banner">{error}</div>}

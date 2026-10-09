@@ -11,6 +11,7 @@ import type { LandPlot } from '@/types/land-plot';
 type Props = {
   open: boolean;
   editingHarvest: Harvest | null;
+  landOptional?: boolean;
   onChange: (farmId: number | null, plotId: number | null) => void;
 };
 
@@ -18,7 +19,7 @@ function plotLabel(plot: LandPlot, t: (key: string) => string): string {
   return `${cropLabel(plot.crop, t)} · ${plot.area} ${t('farm.areaUnit')}`;
 }
 
-export function HarvestLandFields({ open, editingHarvest, onChange }: Props) {
+export function HarvestLandFields({ open, editingHarvest, landOptional = false, onChange }: Props) {
   const { t } = useLanguage();
 
   const [farms, setFarms] = useState<Farm[]>([]);
@@ -49,7 +50,7 @@ export function HarvestLandFields({ open, editingHarvest, onChange }: Props) {
       const farmList = all.filter((farm) => !farm.isRemoved || farm.id === editingHarvest?.farmId);
       setFarms(farmList);
 
-      const preset = editingHarvest?.farmId ?? farmList[0]?.id ?? null;
+      const preset = editingHarvest?.farmId ?? (landOptional ? null : farmList[0]?.id ?? null);
       setFarmId(preset);
       await loadPlots(preset, editingHarvest?.landPlotId ?? null);
     } catch {
@@ -94,10 +95,12 @@ export function HarvestLandFields({ open, editingHarvest, onChange }: Props) {
           <select
             value={farmId ?? ''}
             onChange={(e) => {
-              setFarmId(Number(e.target.value));
-              loadPlots(Number(e.target.value));
+              const next = e.target.value ? Number(e.target.value) : null;
+              setFarmId(next);
+              loadPlots(next);
             }}
           >
+            {landOptional && <option value="">{t('harvest.noLand')}</option>}
             {farms.map((farm) => (
               <option key={farm.id} value={farm.id}>
                 {farm.name}
@@ -107,7 +110,7 @@ export function HarvestLandFields({ open, editingHarvest, onChange }: Props) {
         )}
       </div>
 
-      {farms.length > 0 && (
+      {farmId != null && (
         <div className="field">
           <label>{t('harvest.plotLabel')}</label>
           {plotsLoading ? (

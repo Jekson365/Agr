@@ -89,7 +89,7 @@ export function WineCellarPage() {
                 key={batch.id}
                 batch={batch}
                 onEdit={() => openForm(batch)}
-                onDelete={() => setConfirmDelete(batch)}
+                onDelete={batch.stage === 'Stocked' ? undefined : () => setConfirmDelete(batch)}
               />
             ))}
           </div>

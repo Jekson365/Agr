@@ -1,4 +1,4 @@
-export type WineStage = 'Fermenting' | 'Aging' | 'Bottled';
+export type WineStage = 'Fermenting' | 'Aging' | 'Bottled' | 'Stocked';
 export type WineMovementSource = 'Production' | 'Bottling' | 'Loss' | 'Manual' | 'Market';
 export type WineOperationKind = 'PunchDown' | 'Racking' | 'ToppingUp' | 'Additive' | 'Filtration' | 'Other';
 
@@ -31,7 +31,6 @@ export type WineBatchSummary = WineBatch & {
 export type WineGrapeLine = { treeProductId: number; amount: number };
 
 export type CreateWineBatchRequest = Omit<WineBatch, 'id' | 'stage' | 'isDeleted'> & {
-  liters: number;
   grapes: WineGrapeLine[];
 };
 

@@ -38,7 +38,7 @@ export function WineHistorySection({ detail }: Props) {
     <section className="hd-panel">
       <div className="wine-section-head">
         <h2 className="hd-panel-title">{t('wine.tabHistory')}</h2>
-        {!batch.isDeleted && (
+        {!batch.isDeleted && batch.stage === 'Stocked' && (
           <button type="button" className="hd-button" onClick={() => setAdjustOpen(true)}>
             {t('wine.adjust')}
           </button>

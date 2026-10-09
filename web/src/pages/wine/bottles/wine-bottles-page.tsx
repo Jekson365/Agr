@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 
 import '@/components/farm/farm-crud.css';
-import { BOTTLE_TYPES, bottleTypeOf } from '@/config/wine-bottles';
 import { useLanguage } from '@/contexts/language-context';
 import { bottleLotLabel, loadBottleLots, type BottleLot } from '@/pages/wine/wine-bottle-lots';
 import { getWineBatches } from '@/services/wine-batch-service';
@@ -35,7 +34,12 @@ export function WineBottlesPage() {
     }
   }
 
-  const stocked = lots.filter((lot) => lot.left > 0);
+  const stocked = lots.filter((lot) => {
+    if (lot.left <= 0) return false;
+    const batch = batches.find((row) => row.id === lot.wineBatchId);
+    return batch?.stage === 'Stocked';
+  });
+  const sizes = [...new Set(stocked.map((lot) => lot.size))].sort((a, b) => a - b);
 
   function nameFor(lot: BottleLot): string {
     const batch = batches.find((row) => row.id === lot.wineBatchId);
@@ -62,11 +66,11 @@ export function WineBottlesPage() {
         <div className="empty-state">{t('wine.bottlesEmpty')}</div>
       ) : (
         <div className="wine-shelves">
-          {BOTTLE_TYPES.map((type) => (
+          {sizes.map((size) => (
             <WineBottleShelf
-              key={type}
-              type={type}
-              lots={stocked.filter((lot) => bottleTypeOf(lot.size) === type)}
+              key={size}
+              size={size}
+              lots={stocked.filter((lot) => lot.size === size)}
               nameFor={nameFor}
             />
           ))}

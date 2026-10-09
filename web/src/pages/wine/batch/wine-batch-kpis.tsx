@@ -4,10 +4,9 @@ import type { WineBatchSummary } from '@/types/wine';
 
 type Props = {
   batch: WineBatchSummary;
-  onEditLiters: () => void;
 };
 
-export function WineBatchKpis({ batch, onEditLiters }: Props) {
+export function WineBatchKpis({ batch }: Props) {
   const { t } = useLanguage();
   const ratio = batch.grapeKg > 0 ? round2(batch.producedLiters / batch.grapeKg) : null;
 
@@ -25,11 +24,6 @@ export function WineBatchKpis({ batch, onEditLiters }: Props) {
         <div key={tile.key} className="wine-kpi">
           <span className="wine-kpi-label">{tile.label}</span>
           <strong className="wine-kpi-value">{tile.value}</strong>
-          {tile.key === 'produced' && !batch.isDeleted && (
-            <button type="button" className="wine-kpi-edit" onClick={onEditLiters}>
-              {t('wine.litersEdit')}
-            </button>
-          )}
         </div>
       ))}
     </div>

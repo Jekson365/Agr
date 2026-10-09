@@ -29,14 +29,18 @@ public class WineMovementsController(
             return BadRequest("Nothing to adjust.");
         }
 
-        var deleted = await batchRepository.IsDeletedAsync(request.WineBatchId);
-        if (deleted is null)
+        var batch = await batchRepository.GetByIdAsync(request.WineBatchId);
+        if (batch is null)
         {
             return NotFound();
         }
-        if (deleted.Value)
+        if (batch.IsDeleted)
         {
             return Conflict(WineBatchesController.DeletedMessage);
+        }
+        if (batch.Stage != WineStage.Stocked)
+        {
+            return Conflict(WineBatchesController.NotStockedMessage);
         }
 
         var (liters, bottles) = await movementRepository.GetBalanceAsync(request.WineBatchId);

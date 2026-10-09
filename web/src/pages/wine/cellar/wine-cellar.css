@@ -27,6 +27,10 @@
   background: var(--color-green-muted);
   color: var(--color-green);
 }
+.wine-stage-badge.is-stocked {
+  background: var(--color-violet-soft);
+  color: var(--color-violet);
+}
 
 .wine-card-figures {
   display: flex;

@@ -18,6 +18,8 @@ public partial class WineBatchesController(
     IPlanLimitService planLimitService) : ControllerBase
 {
     public const string DeletedMessage = "This wine batch was removed.";
+    public const string StockedMessage = "A batch moved to stock can no longer be deleted.";
+    public const string NotStockedMessage = "Move this batch to stock before adjusting its balance.";
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<WineBatchSummary>>> GetAll([FromQuery] bool includeDeleted = false)
@@ -109,9 +111,14 @@ public partial class WineBatchesController(
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id)
     {
-        if (await batchRepository.IsDeletedAsync(id) is null)
+        var batch = await batchRepository.GetByIdAsync(id);
+        if (batch is null)
         {
             return NotFound();
+        }
+        if (batch.Stage == WineStage.Stocked)
+        {
+            return Conflict(StockedMessage);
         }
 
         if (await batchRepository.HasRecordsAsync(id))

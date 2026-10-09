@@ -7,6 +7,7 @@ export type BottleLot = {
   size: number;
   lot: string | null;
   left: number;
+  date: string;
 };
 
 export async function loadBottleLots(wineBatchId?: number): Promise<BottleLot[]> {
@@ -24,6 +25,7 @@ export async function loadBottleLots(wineBatchId?: number): Promise<BottleLot[]>
     size: bottling.bottleSize,
     lot: bottling.lot,
     left: left.get(bottling.id) ?? 0,
+    date: bottling.date,
   }));
 }
 

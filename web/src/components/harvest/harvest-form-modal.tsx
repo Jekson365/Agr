@@ -49,11 +49,12 @@ export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, presetDa
     setSelectedPlotId(plotId);
   }, []);
 
+  const landOptional = (editingHarvest?.kind ?? kind) === 'Wine';
   const trimmedTitle = titleInput.trim();
-  const canSubmit = !!trimmedTitle && !!date && selectedFarmId != null && !saving;
+  const canSubmit = !!trimmedTitle && !!date && (landOptional || selectedFarmId != null) && !saving;
 
   async function handleSubmit() {
-    if (!canSubmit || selectedFarmId == null) return;
+    if (!canSubmit) return;
 
     setSaving(true);
     setFormError(null);
@@ -118,7 +119,7 @@ export function HarvestFormModal({ open, kind = 'Crop', editingHarvest, presetDa
 
         {editingHarvest && <HarvestStatusField harvest={editingHarvest} value={status} onChange={setStatus} />}
 
-        <HarvestLandFields open={open} editingHarvest={editingHarvest} onChange={handleLand} />
+        <HarvestLandFields open={open} editingHarvest={editingHarvest} landOptional={landOptional} onChange={handleLand} />
 
         {formError && <div className="error-banner">{formError}</div>}
       </div>

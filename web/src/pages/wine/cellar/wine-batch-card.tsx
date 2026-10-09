@@ -10,7 +10,7 @@ import type { WineBatchSummary } from '@/types/wine';
 type Props = {
   batch: WineBatchSummary;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete?: () => void;
 };
 
 export function WineBatchCard({ batch, onEdit, onDelete }: Props) {

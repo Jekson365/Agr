@@ -2,9 +2,11 @@ import { useState } from 'react';
 
 import grapeIcon from '@/assets/goods/grape.png';
 import { ConfirmDeleteModal } from '@/components/farm/confirm-delete-modal';
+import { round2 } from '@/config/wine';
 import { useLanguage } from '@/contexts/language-context';
 import { AmountField } from '@/pages/harvest/detail/amount-field';
 import { HarvestEntryList, type EntryRow } from '@/pages/harvest/detail/harvest-entry-list';
+import { setProducedLiters } from '@/services/wine-batch-service';
 import { deleteWineGrape, updateWineGrape } from '@/services/wine-grape-service';
 import type { WineBatchDetail } from './use-wine-batch';
 import { WineGrapeFormModal } from './wine-grape-form-modal';
@@ -82,6 +84,26 @@ export function WineGrapesSection({ detail }: Props) {
         onAdd={() => setFormOpen(true)}
         onDelete={askDelete}
       />
+
+      {batch.stage === 'Bottled' && (
+        <div className="wine-result">
+          <AmountField
+            caption={t('wine.produced')}
+            amount={round2(batch.producedLiters)}
+            unitLabel={t('wine.unitLiter')}
+            disabled={batch.isDeleted}
+            onSave={async (liters) => {
+              await setProducedLiters(batch.id, liters);
+              await detail.refresh();
+            }}
+          />
+          {batch.producedLiters > 0 && (
+            <span className={batch.liters > 0 ? 'limit-hint listing-quantity-over' : 'limit-hint'}>
+              {batch.liters > 0 ? t('wine.toBottle', { liters: round2(batch.liters) }) : t('wine.fullyBottled')}
+            </span>
+          )}
+        </div>
+      )}
 
       <WineGrapeFormModal
         open={formOpen}

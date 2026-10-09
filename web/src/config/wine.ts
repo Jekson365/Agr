@@ -10,12 +10,13 @@ export function wineBatchPath(id: number): string {
   return `${WINE_CELLAR_PATH}/${id}`;
 }
 
-export const WINE_STAGES: WineStage[] = ['Fermenting', 'Bottled'];
+export const WINE_STAGES: WineStage[] = ['Fermenting', 'Bottled', 'Stocked'];
 
 export const WINE_STAGE_LABEL_KEY: Record<WineStage, string> = {
   Fermenting: 'wine.stageFermenting',
   Aging: 'wine.stageAging',
   Bottled: 'wine.stageBottled',
+  Stocked: 'wine.stageStocked',
 };
 
 export const WINE_SOURCE_LABEL_KEY: Record<WineMovementSource, string> = {
