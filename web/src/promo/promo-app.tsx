@@ -20,6 +20,8 @@ import { StageBackground } from '@/promo/stage-background';
 import { Stickers } from '@/promo/stickers';
 import { DURATION, STAGE_HEIGHT, STAGE_WIDTH } from '@/promo/timeline';
 import { ClockContext } from '@/promo/use-clock';
+import { WineryScenes } from '@/promo/winery/wn-scenes';
+import { WINERY_DURATION } from '@/promo/winery/wn-timeline';
 import { SOCIAL_FORMATS } from '@/social/formats';
 
 type Mode = { kind: 'live' } | { kind: 'render' } | { kind: 'still'; time: number };
@@ -27,12 +29,13 @@ type Mode = { kind: 'live' } | { kind: 'render' } | { kind: 'still'; time: numbe
 const FORMAT = new URLSearchParams(window.location.search).get('format');
 const MOBILE = FORMAT === 'mobile';
 const VIDEO = new URLSearchParams(window.location.search).get('video');
-const POST = VIDEO === 'finances';
+const POST = VIDEO === 'finances' || VIDEO === 'winery';
 const VIDEO_LENGTH: Record<string, number> = {
   harvest: CYCLE_DURATION,
   reports: REPORTS_DURATION,
   packets: PACKETS_DURATION,
   finances: FIN_DURATION,
+  winery: WINERY_DURATION,
 };
 const LENGTH = (VIDEO && VIDEO_LENGTH[VIDEO]) || DURATION;
 const STAGE = POST
@@ -117,6 +120,8 @@ export function PromoApp() {
             <PacketsScenes />
           ) : VIDEO === 'finances' ? (
             <FinancesScenes />
+          ) : VIDEO === 'winery' ? (
+            <WineryScenes />
           ) : MOBILE ? (
             <MobileScenes />
           ) : (

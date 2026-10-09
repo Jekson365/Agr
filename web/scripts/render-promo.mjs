@@ -8,9 +8,9 @@ import puppeteer from 'puppeteer-core';
 import { createServer } from 'vite';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
-const VIDEOS = { harvest: 'harvest-cycle', reports: 'harvest-reports', packets: 'packets', finances: 'finances' };
+const VIDEOS = { harvest: 'harvest-cycle', reports: 'harvest-reports', packets: 'packets', finances: 'finances', winery: 'winery' };
 const video = Object.keys(VIDEOS).find((name) => process.argv.includes(`--${name}`)) ?? null;
-const post = video === 'finances';
+const post = video === 'finances' || video === 'winery';
 const square = post && process.argv.includes('--square');
 const mobile = !video && process.argv.includes('--mobile');
 const lang = process.argv.includes('--en') ? 'en' : 'ka';
